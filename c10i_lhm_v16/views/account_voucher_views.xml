@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ========== Spesifikasi Report ========== -->
+        <report
+            id="account.report_voucher_cash_bank"
+            string="Report Voucher"
+            model="account.voucher"
+            report_type="qweb-pdf"
+            name="c10i_lhm.report_voucher_cash_bank"
+            file="c10i_lhm/report/report_voucher.jrxml"
+            menu="False"
+        />
+
+        <report
+            id="account.report_voucher_cash_bank_draft"
+            string="Report Voucher"
+            model="account.voucher"
+            report_type="qweb-pdf"
+            name="c10i_lhm.report_voucher_cash_bank_draft"
+            file="c10i_lhm/report/report_voucher.jrxml"
+        />
+    </data>
+</odoo>

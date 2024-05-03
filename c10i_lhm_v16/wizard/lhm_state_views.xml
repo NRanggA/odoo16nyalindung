@@ -1,0 +1,57 @@
+<odoo>
+    <data>
+
+        <record id="lhm_transaction_progress_view" model="ir.ui.view">
+            <field name="name">lhm.transaction.progress.form</field>
+            <field name="model">lhm.transaction.progress</field>
+            <field name="arch" type="xml">
+                <form string="Proses Laporan Harian Mandor yg dipilih" version="16.0">
+                    <group>
+                        <p class="oe_grey">
+                            Setelah LHM di Proses, progress pekerjaan Harian akan terakumulasi per Lokasi
+                        </p>
+                    </group>
+                    <footer>
+                        <button name="run_progress" string="Proses" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_lhm_progress" model="ir.actions.act_window">
+            <field name="name">LHM Proses</field>
+            <field name="res_model">lhm.transaction.progress</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="model_lhm_transaction"/>
+            <field name="binding_type">action</field>
+        </record>
+
+        <record id="lhm_transaction_set_draft_view" model="ir.ui.view">
+            <field name="name">lhm.transaction.set.draft.form</field>
+            <field name="model">lhm.transaction.set.draft</field>
+            <field name="arch" type="xml">
+                <form string="Set to Draft Laporan Harian Mandor yg dipilih" version="16.0">
+                    <group>
+                        <p class="oe_grey"/>
+                    </group>
+                    <footer>
+                        <button name="set_draft" string="Set to Draft" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_lhm_set_draft" model="ir.actions.act_window">
+            <field name="name">Set to Draft</field>
+            <field name="res_model">lhm.transaction.set.draft</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="model_lhm_transaction"/>
+            <field name="binding_type">action</field>
+        </record>
+
+    </data>
+</odoo>

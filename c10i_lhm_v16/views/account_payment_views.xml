@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ========== Spesifikasi Report ========== -->
+        <report
+            id="account.report_payment_cash_bank"
+            string="Report Payment"
+            model="account.payment"
+            report_type="qweb-pdf"
+            name="c10i_lhm.report_payment_cash_bank"
+            file="c10i_lhm/report/report_payment.jrxml"
+            menu="False"
+        />
+    </data>
+</odoo>
