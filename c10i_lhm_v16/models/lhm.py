@@ -476,7 +476,7 @@ class lhm_utility(models.Model):
     location_type_id    = fields.Many2one("lhm.location.type", string="Type Lokasi", ondelete="restrict", default=_default_location_type)
     group_progress_id   = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
     reg_number          = fields.Char("Nomor Polisi")
-    asset_id            = fields.Many2one('account.asset.asset', string='Asset', ondelete="restrict")
+    # asset_id            = fields.Many2one('account.asset.asset', string='Asset', ondelete="restrict")
     ownership           = fields.Selection([('inventory', 'Inventaris'), ('rental', 'Rental')], string='Kepemilikan', default='inventory')
     partner_id          = fields.Many2one('res.partner', 'Vendor')
     uom_performance     = fields.Selection([('km', 'KM'), ('hm', 'HM')], string='Satuan', default='km')
@@ -652,7 +652,7 @@ class lhm_plant_block(models.Model):
     tm_age              = fields.Char('Umur TM', compute='_compute_time_plant', store=True)
     tbm_age             = fields.Char('Umur TBM', compute='_compute_time_plant', store=True)
     planting_time       = fields.Integer(string="Lama Tanam", compute="_compute_time_plant", store=True)
-    block_uom           = fields.Many2one('product.uom', string="Satuan")
+    # block_uom           = fields.Many2one('product.uom', string="Satuan")
     date_start          = fields.Date('Tanggal Awal Tanam')
     year                = fields.Integer(string='Tahun Tanam', default=fields.Datetime.now().year)
     land_class_id       = fields.Many2one("lhm.land.class", string="Kelas Lahan", ondelete="restrict")
@@ -873,7 +873,7 @@ class lhm_infrastruktur(models.Model):
     afdeling_id             = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict")
     length                  = fields.Float("Panjang")
     width                   = fields.Float("Lebar")
-    satuan_id               = fields.Many2one("product.uom", string="Satuan", ondelete="restrict")
+    # satuan_id               = fields.Many2one("product.uom", string="Satuan", ondelete="restrict")
     volume                  = fields.Float("Volume")
     date_finished           = fields.Date("Tanggal Selesai")
     development_value       = fields.Float("Biaya")
@@ -1069,12 +1069,13 @@ class lhm_project(models.Model):
             self.location_id.write({'active': True})
         self.state = 'done'
 
+    # Error karena field subtype_project_id tidak terdapat di model ini
     @api.onchange('location_type_id')
     def onchange_attendance_id(self):
         res = {}
-        if self.location_type_id:
-            self.subtype_project_id = False
-        return res
+        # if self.location_type_id:
+        #     self.subtype_project_id = False
+        # return res
 
     # @api.model
     # def create(self, values):
