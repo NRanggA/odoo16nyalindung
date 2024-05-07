@@ -841,7 +841,9 @@
                             </group>
                             <group>
                                 <field name="ownership"/>
-                                <!-- <field name="partner_id" domain="[('supplier','=',True)]" attrs="{'required': [('ownership','=','rental')], 'invisible': [('ownership','=','inventory')]}" /> -->
+
+                                <!-- Error pada field partner_id = domain="[('supplier','=',True)]" -->
+                                <field name="partner_id" attrs="{'required': [('ownership','=','rental')], 'invisible': [('ownership','=','inventory')]}" />
                                 <field name="responsible_id" context="{'form_view_ref':'c10i_lhm.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_purchase"/>
                                 <field name="date_approve"/>
@@ -1245,7 +1247,7 @@
                                 <field name="date_start" readonly="1"/>
                                 <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name='owner_type' />
-                                <!-- <field name='plasma_pricelist_id' groups='c10i_lhm.group_plantation_manager' domain="[('plantation_pricelist_type','=','pricelist_plasma')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <field name='plasma_pricelist_id' groups='c10i_lhm_v16.group_plantation_manager' domain="[('plantation_pricelist_type','=','pricelist_plasma')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                         </group>
                         <group name="Status Tanam">
@@ -1720,7 +1722,7 @@
         <!-- End Of Master BJR -->
 
         <!-- Transaksi LHM -->
-        <!-- <record id="view_lhm_transaction_form" model="ir.ui.view">
+        <record id="view_lhm_transaction_form" model="ir.ui.view">
             <field name="name">view.lhm.transaction.form</field>
             <field name="model">lhm.transaction</field>
             <field name="arch" type="xml">
@@ -1777,35 +1779,35 @@
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <!-- <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/> -->
                                         <field name="no_line" invisible="1" />
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
-                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}"/>
+                                        <!-- <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}"/> -->
+                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/> -->
+                                        <!-- <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}"/> -->
                                         <field name="non_work_day" readonly="1"/>
-                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
 
                                         <!-- BEGIN : POC Nyalindung -->
-                                        <!-- <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <!-- <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <!-- <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <!-- <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <!-- <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <!-- <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
                                         <!-- END : POC Nyalindung -->
 
-                                        <!-- <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <!-- <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
-                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
+                                        <!-- <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/> -->
                                         <!-- END : POC Nyalindung -->
-                                        <!-- <field name="overtime_value" invisible="0" groups="base.group_no_one"/> -->
+                                        <field name="overtime_value" invisible="0" groups="base.group_no_one"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
                                             <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/> -->
                                         <!-- END : POC Nyalindung -->
-                                        <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/>
+                                        <field name="panen" invisible="0" string="P" groups="base.group_no_one"/>
                                         <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/>
                                         <field name="progressive" invisible="0" string="M" groups="base.group_no_one"/>
                                         <field name="attendance_type" invisible="0" string="A" groups="base.group_no_one"/>
@@ -1842,11 +1844,11 @@
                                         <field name="updated" invisible="1"/>
                                     </tree>
                                 </field>
-                            </page> -->
-                            <!-- <page string="Material">  -->
+                            </page>
+                            <page string="Material"> 
                                 <!--attrs="{'invisible': ['|',('material_line_ids','=',[]),('state','=','draft')]}"> -->
-                                <!-- <field name="material_line_ids" nolabel="1" attrs="{'readonly': [('state','not in',['draft','in_progress']),('approval','=',True)]}"> -->
-                                    <!-- <tree editable="bottom" create="false">
+                                <field name="material_line_ids" nolabel="1" attrs="{'readonly': [('state','not in',['draft','in_progress']),('approval','=',True)]}">
+                                    <tree editable="bottom" create="false">
                                         <field name="date" readonly="1" groups="base.no_one"/>
                                         <field name="name" readonly="1"/>
                                         <field name="product_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -1861,8 +1863,8 @@
                                         <field name="realization"/>
                                         <field name="residual_qty" readonly="1"/>
                                         <field name="progress_id" invisible="1"/>
-                                    </tree> -->
-                                <!-- </field>
+                                    </tree>
+                                </field>
                             </page>
                             <page string="History" attrs="{'invisible': [('emp_out_ids','=',[]),('emp_in_ids','=',[])]}">
                                 <group string="Keluar">
@@ -1881,7 +1883,7 @@
                     </div>
                 </form>
             </field>
-        </record> -->
+        </record>
 
         <record id="view_lhm_transaction_tree" model="ir.ui.view">
             <field name="name">view.lhm.transaction.tree</field>
@@ -2079,8 +2081,10 @@
         </record>
         <!-- End Of LHM Transaction Process Line -->
 
+
+
         <!-- Transaksi Buku Mesin -->
-        <!-- <record id="view_lhm_machine_form" model="ir.ui.view">
+        <record id="view_lhm_machine_form" model="ir.ui.view">
             <field name="name">view.lhm.machine.form</field>
             <field name="model">lhm.machine</field>
             <field name="arch" type="xml">
@@ -2091,7 +2095,8 @@
                         <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
                     </header>
-                    <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
+                    <field name="doc_type_id" invisible="1"/>
+                    <field name="approval" invisible="1"/>
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
@@ -2099,12 +2104,14 @@
                         </div>
                         <group name="lhm_machine">
                             <group>
-                                <field name="machine_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_machine_form', 'default_type':'ma'}}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]" attrs="{'readonly': [('line_ids','!=',[])]}"/>
+                                <field name="machine_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_machine_form', 'default_type':'ma'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+
+                                <!-- Error field pada domain  field di bawah ini, domain="[('special','=',False),('state','=','draft')]" -->
+                                <!-- <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
-                                <field name="uom_performance" />
+                                <field name="uom_performance"/>
                                 <field name="machine_code"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -2137,7 +2144,8 @@
                     </div>
                 </form>
             </field>
-        </record> -->
+        </record>
+
 
         <record id="view_lhm_machine_tree" model="ir.ui.view">
             <field name="name">view.lhm.machine.tree</field>
@@ -2237,7 +2245,7 @@
         <!-- End Of LHM Machine Line -->
 
         <!-- Transaksi Buku Kendaraan -->
-        <!-- <record id="view_lhm_vehicle_form" model="ir.ui.view">
+        <record id="view_lhm_vehicle_form" model="ir.ui.view">
             <field name="name">view.lhm.vehicle.form</field>
             <field name="model">lhm.vehicle</field>
             <field name="arch" type="xml">
@@ -2248,7 +2256,8 @@
                         <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
                     </header>
-                    <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
+                    <field name="doc_type_id" invisible="1"/>
+                    <field name="approval" invisible="1"/>
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
@@ -2256,14 +2265,16 @@
                         </div>
                         <group name="lhm_vehicle">
                             <group>
-                                <field name="vehicle_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_vehicle_form', 'default_type':'vh'}}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="vehicle_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_vehicle_form', 'default_type':'vh'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="vehicle_code" readonly="1"/>
-                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]" attrs="{'readonly': [('line_ids','!=',[])]}"/>
+
+                                <!-- Error pada domain field di bawah ini domain="[('special','=',False),('state','=','draft')]" -->
+                                <!-- <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
-                                <field name="reg_number" />
-                                <field name="uom_performance" />
+                                <field name="reg_number"/>
+                                <field name="uom_performance"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_start" readonly="1" invisible="1"/>
@@ -2272,7 +2283,9 @@
                         </group>
                         <notebook>
                             <page string="Detail Aktivitas">
-                                <field name="line_ids" nolabel="1" widget="one2many_list" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}" context="{'line_ids':line_ids, 'vehicle_id':vehicle_id, 'period_id': account_period_id}">
+
+                                <!-- error context, 'period_id': account_period_id}" -->
+                                <field name="line_ids" nolabel="1" widget="one2many_list" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}" context="{'line_ids':line_ids, 'vehicle_id':vehicle_id}">
                                     <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="name" invisible="1"/>
@@ -2299,7 +2312,8 @@
                     </sheet>
                 </form>
             </field>
-        </record> -->
+        </record>
+
 
         <record id="view_lhm_vehicle_tree" model="ir.ui.view">
             <field name="name">view.lhm.vehicle.tree</field>
@@ -2409,18 +2423,19 @@
         <!-- End Of LHM Vehicle Line -->
 
         <!-- Transaksi Buku Workshop -->
-        <!-- <record id="view_lhm_workshop_form" model="ir.ui.view">
+        <record id="view_lhm_workshop_form" model="ir.ui.view">
             <field name="name">view.lhm.workshop.form</field>
             <field name="model">lhm.workshop</field>
             <field name="arch" type="xml">
                 <form string="Buku Workshop">
-                    <header attrs="{'invisible': [('approval','!=',True)]}">
+                    <header>
                         <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
                         <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
                         <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
                     </header>
-                    <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
+                    <field name="doc_type_id" invisible="1"/>
+                    <field name="approval" invisible="1"/>
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
@@ -2428,12 +2443,14 @@
                         </div>
                         <group name="lhm_workshop">
                             <group>
-                                <field name="workshop_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_workshop_form', 'default_type':'ws'}}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]" attrs="{'readonly': [('line_ids','!=',[])]}"/>
+                                <field name="workshop_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_workshop_form', 'default_type':'ws'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+
+                                <!-- Error domain pada field ini domain="[('special','=',False),('state','=','draft')]"  -->
+                                <!-- <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
-                                <field name="workshop_code" />
+                                <field name="workshop_code"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_start" readonly="1" invisible="1"/>
@@ -2463,7 +2480,8 @@
                     </div>
                 </form>
             </field>
-        </record> -->
+        </record>
+
 
         <record id="view_lhm_workshop_tree" model="ir.ui.view">
             <field name="name">view.lhm.workshop.tree</field>
@@ -2561,7 +2579,7 @@
         <!-- End Of LHM Workshop Line -->
 
         <!-- Transaksi Buku Kontraktor -->
-        <!-- <record id="view_lhm_contractor_form" model="ir.ui.view">
+        <record id="view_lhm_contractor_form" model="ir.ui.view">
             <field name="name">view.lhm.contractor.form</field>
             <field name="model">lhm.contractor</field>
             <field name="arch" type="xml">
@@ -2581,16 +2599,21 @@
                         </div>
                         <group name="lhm_contractor">
                             <group>
-                                <label string="Alat"/>
+                                <label for="contractor_vehicle" string="Alat"/>
                                 <div>
                                     <field name="contractor_vehicle" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
-                                    <label for="" string="Dasar Perhitungan" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)]}"/>
+                                    <label for="total_type" string="Dasar Perhitungan" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)]}"/>
                                     <field name="total_type" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)],'required':[('contractor_vehicle','!=',False)]}"/>
                                 </div>
-                                <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+
+                                <!-- error domain pada field ini, domain="[('supplier','=',True)]" -->
+                                <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="payment_type" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/>
-                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
-                                <label for="periode" string="Periode Pembayaran"/>
+
+                                <!-- Error domain pada field ini,
+                                domain="[('special','=',False),('state','=','draft')]"  -->
+                                <!-- <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/> -->
+                                <label for="date_start" string="Periode Pembayaran"/>
                                 <div>
                                     <field name="date_start" class="oe_inline" nolabel="1" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/> -
                                     <field name="date_end" nolabel="1" class="oe_inline" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
@@ -2609,7 +2632,9 @@
                         </group>
                         <notebook>
                             <page string="Detail Aktivitas">
-                                <field name="line_vehicle_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids, 'period_id':account_period_id, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
+
+                                <!-- error conteks pada field ini, 'period_id':account_period_id -->
+                                <field name="line_vehicle_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
                                         <field name="tidak_ditagihkan"/>
@@ -2671,9 +2696,9 @@
                                         <field name="real_stock_qty" readonly="1"/>
                                         <field name="stock_qty" readonly="1"/>
                                         <field name="realization"/>
-                                        <field name="residual_qty" readonly="1"/> -->
+                                        <field name="residual_qty" readonly="1"/>
                                         <!-- <field name="line_id" invisible="1"/> -->
-                                   <!--  </tree>
+                                    </tree>
                                 </field>
                             </page>
                         </notebook>
@@ -2685,7 +2710,7 @@
                     </div>
                 </form>
             </field>
-        </record> -->
+        </record>
 
         <record id="view_lhm_contractor_tree" model="ir.ui.view">
             <field name="name">view.lhm.contractor.tree</field>
@@ -2749,7 +2774,7 @@
         <record model="ir.actions.act_window.view" id="action_lhm_contractor_form">
             <field name="sequence" eval="2"/>
             <field name="view_mode">form</field>
-            <!-- <field name="view_id" ref="view_lhm_contractor_form"/> -->
+            <field name="view_id" ref="view_lhm_contractor_form"/>
             <field name="act_window_id" ref="action_lhm_contractor"/>
         </record>
         <record id="action_lhm_contractor_all" model="ir.actions.act_window">
@@ -2775,7 +2800,7 @@
         <record model="ir.actions.act_window.view" id="action_lhm_contractor_all_form">
             <field name="sequence" eval="2"/>
             <field name="view_mode">form</field>
-            <!-- <field name="view_id" ref="view_lhm_contractor_form"/> -->
+            <field name="view_id" ref="view_lhm_contractor_form"/>
             <field name="act_window_id" ref="action_lhm_contractor_all"/>
         </record>
         <menuitem id="submenu_lhm_contractor" action="action_lhm_contractor" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="50"/>
@@ -2835,9 +2860,14 @@
                         </div>
                         <group name="lhm_vehicle_contractor">
                             <group>
-                                <!-- <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+
+                                <!-- error domain pada field ini,domain="[('supplier','=',True)]" -->
+                                <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="payment_type" attrs="{'readonly': [('line_ids','!=',[])]}" required="1"/>
-                                <!-- <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]" attrs="{'readonly': [('line_ids','!=',[])]}"/> -->
+
+                                <!-- error domain pada field ini, domain="[('special','=',False),('state','=','draft')]" -->
+                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('line_ids','!=',[])]}"/>
+
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="contractor_vehicle"/>
                             </group>
@@ -2859,7 +2889,7 @@
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
                                         <field name="date"/>
-                                        <!--<field name="vehicle_id" domain="[('ownership','=','rental')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>-->
+                                        <!-- <field name="vehicle_id" domain="[('ownership','=','rental')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -3023,13 +3053,15 @@
                                 <field name="reg_number_subtitue" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','=',False)]}"/>
                                 <field name="ownership" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','!=',False)]}"/>
                                 <field name="ownership_subtitute" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','=',False)]}"/>
-                                <!-- <field name="contractor_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('supplier','=',True)]" attrs="{'required': ['|', ('ownership','=','rental'), ('ownership_subtitute','=','rental')], 'invisible': [('ownership','!=','rental'), ('ownership_subtitute','!=','rental')]}"/> -->
+
+                                <!-- error domain pada field ini, domain="[('supplier','=',True)]" -->
+                                <field name="contractor_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': ['|', ('ownership','=','rental'), ('ownership_subtitute','=','rental')], 'invisible': [('ownership','!=','rental'), ('ownership_subtitute','!=','rental')]}"/>
                                 <field name="lhm_contractor_id" invisible="1"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
 
                             <group name="timbangan_pks" string="Timbangan PKS">
-                                <!-- <field name="pks_id" domain="[('is_pks','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <field name="pks_id" domain="[('is_pks','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_pks" />
                                 <field name="timbang_isi_pks" />
                                 <field name="timbang_ksg_pks" />

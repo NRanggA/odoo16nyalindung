@@ -340,6 +340,7 @@
             <field name="view_id" ref="wizard_report_produksi_view"/>
             <field name="target">current</field>
         </record>
+        
         <menuitem id="submenu_laporan_produksi"
                   parent="menu_plantation_report"
                   name="Laporan Produksi"
