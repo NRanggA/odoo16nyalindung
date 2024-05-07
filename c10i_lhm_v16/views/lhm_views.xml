@@ -526,8 +526,8 @@
                                 <field name="is_panen" required="0"/>
                             </group>
                             <group string="Satuan">
-                                <field name="uom_id" required="0"/>
-                                <field name="uom2_id" required="0"/>
+                                <!-- <field name="uom_id" required="0"/> -->
+                                <!-- <field name="uom2_id" required="0"/> -->
                             </group>
                             <group string="Reporting">
                                 <field name="is_variance" required="0" string="Variance Progress Kerja"/>
@@ -583,8 +583,8 @@
                     <field name="code"/>
                     <field name="name"/>
                     <field name="parent_id"/>
-                    <field name="uom_id"/>
-                    <field name="uom2_id"/>
+                    <!-- <field name="uom_id"/> -->
+                    <!-- <field name="uom2_id"/> -->
                     <field name="type_id"/>
                     <field name="is_panen"/>
                     <field name="company_id" invisible="1"/>

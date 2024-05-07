@@ -270,8 +270,8 @@ class lhm_activity(models.Model):
     parent_left     = fields.Integer('Left Parent', index=1)
     parent_right    = fields.Integer('Right Parent', index=1)
     parent_code     = fields.Char(related="parent_id.code", string="Parent Activity", readonly=True, store=True)
-    uom_id          = fields.Many2one("product.uom", string="Satuan 1", ondelete="restrict")
-    uom2_id         = fields.Many2one("product.uom", string="Satuan 2", ondelete="restrict")
+    # uom_id          = fields.Many2one("product.uom", string="Satuan 1", ondelete="restrict")
+    # uom2_id         = fields.Many2one("product.uom", string="Satuan 2", ondelete="restrict")
     active          = fields.Boolean("Active", default=True)
     is_panen        = fields.Boolean("Panen", default=False)
     is_variance     = fields.Boolean("Is Variance?", default=False, help="centang untuk menghitung variance di laporan progress kerja")
@@ -299,8 +299,9 @@ class lhm_activity(models.Model):
 
     @api.depends('parent_id')
     def _compute_level(self):
-        for level in self:
-            self.level = len(self.search([('id', 'parent_of', [level.id])]))
+        print("Sukses Form LHM Activity")
+        # for level in self:
+        #     self.level = len(self.search([('id', 'parent_of', [level.id])]))
 
     def _get_account(self):
         self.ensure_one()
