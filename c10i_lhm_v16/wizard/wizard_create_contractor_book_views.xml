@@ -17,9 +17,7 @@
                             <!-- domain="[('supplier','=',True)]" -->
                             <!-- Unknown field "res.partner.supplier" in domain of <field name="contractor_id"> ([('supplier','=',True)])) -->
                             <field name="contractor_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-
-                            <!-- Unknown field "account.period.special" in domain of <field name="account_period_id"> ([('special','=',False)])) -->
-                            <field name="account_period_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            <field name="account_period_id" domain="[('special','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             <field name="payment_type"/>
                             <field name="date_start"/>
                             <field name="date_end"/>
@@ -70,7 +68,11 @@
         </record>
 
         <menuitem id="menu_create_contractor_book" 
-                  action="action_create_contractor_book" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="50"/>
+                  action="action_create_contractor_book" 
+                  parent="menu_plantation_transaction" 
+                  groups="group_plantation_operator" 
+                  name="Input Buku Kontraktor atas NAB"
+                  sequence="50"/>
         
     </data>
 </odoo>

@@ -1,0 +1,25 @@
+<odoo>
+
+  <data>
+    <record id="data_account_period_1" model="account.period">
+        <field name="name">Januari - Maret</field>
+        <field name="code">16251271281</field>
+        <field name="special">True</field>
+        <field name="date_start">2024-01-01</field>
+        <field name="date_stop">2024-03-31</field>
+        <!-- <field name="fiscalyear_id" ref="1"/> -->
+        <field name="state">draft</field>
+    </record>
+    <record id="data_account_period_2" model="account.period">
+        <field name="name">April - Mei</field>
+        <field name="code">16251271282</field>
+        <field name="special">True</field>
+        <field name="date_start">2024-04-01</field>
+        <field name="date_stop">2024-05-11</field>
+        <!-- <field name="fiscalyear_id" ref="1"/> -->
+        <field name="state">draft</field>
+    </record>
+
+  </data>
+
+</odoo>

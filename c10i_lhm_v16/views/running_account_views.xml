@@ -99,7 +99,7 @@
                                         <field name="total_journal" groups="base.group_no_one"/>
                                         <field name="charge_type" groups="base.group_no_one"/>
                                         <field name="charge_op_id" groups="base.group_no_one"/>
-                                        <field name="charge_gc_id" groups="base.group_no_one"/>
+                                        <!-- <field name="charge_gc_id" groups="base.group_no_one"/> -->
                                         <field name="charge_idc_id" groups="base.group_no_one"/>
                                         <field name="plant_block_id" groups="base.group_no_one"/>
                                         <field name="status" groups="base.group_no_one"/>

@@ -279,12 +279,12 @@ class HrEmployee(models.Model):
         return ptkp and ptkp.id or False
 
     no_induk    = fields.Char('NIK', default="/")
-    gender      = fields.Selection([
+    gender      = fields.Selection(selection_add=[
                     ('Laki-laki', 'Laki-laki'),
                     ('Perempuan', 'Perempuan'),
                     ('Lainnya', 'Lainnya')
                 ], default="Lainnya", string='Jenis Kelamin')
-    marital     = fields.Selection([
+    marital     = fields.Selection(selection_add=[
                     ('TK', 'Tidak Menikah'),
                     ('K', 'Menikah'),
                 ], default="TK", string='Status Pernikahan')

@@ -35,7 +35,7 @@ class StockMove(models.Model):
     plantation_location_type_id     = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     plantation_location_id          = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
     plantation_activity_id          = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
-    plantation_activity_name        = fields.Char(related="plantation_activity_id.name", string="Nama Aktivitas", ondelete="restrict")
+    plantation_activity_name        = fields.Char(related="plantation_activity_id.name", string="Nama Aktivitas")
     account_id                      = fields.Many2one(comodel_name="account.account", string="Allocation", ondelete="restrict")
     skb                             = fields.Boolean(related="picking_id.skb", string="SKB", store=True)
     plantation_validator            = fields.Boolean("Plantation Validator", related="plantation_location_type_id.no_line")
@@ -80,9 +80,9 @@ class StockMove(models.Model):
     def onchange_product_id(self):
         product                 = self.product_id.with_context(lang=self.partner_id.lang or self.env.user.lang)
         self.name               = product.partner_ref
-        self.product_uom        = product.uom_id.id
+        self.product_uom        = uom.uom_id.id
         self.product_uom_qty    = 0.0
-        return {'domain': {'product_uom': [('category_id', '=', product.uom_id.category_id.id)]}}
+        return {'domain': {'product_uom': [('category_id', '=', uom.uom_id.category_id.id)]}}
 
     @api.onchange('plantation_activity_id')
     def _onchange_plantation_activity_id(self):

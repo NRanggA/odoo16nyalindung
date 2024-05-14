@@ -21,13 +21,13 @@ class RunningAccount(models.Model):
     @api.model
     def _get_state(self):
         STATUS = [('draft', 'Draft')]
-        STATUS += _RUNNING_SELECTION
+        # STATUS += _RUNNING_SELECTION
         STATUS.append(('done', 'Completed'))
         return STATUS
 
 
     name = fields.Char(string='Running Name', readonly=True, compute='_compute_running_name', store=True)
-    account_period_id = fields.Many2one("account.period", string="Accounting Period", ondelete="restrict", track_visibility='onchange')
+    account_period_id = fields.Many2one("account.period", string="Accounting Period", ondelete="restrict", tracking=True)
     running_sequence_ids = fields.One2many("running.account.sequence", inverse_name="running_account_id", string="Sequence", readonly=True)
     running_line_ids = fields.One2many("running.account.line", inverse_name="running_account_id", string="Details")
     running_line_detail_ids = fields.One2many("running.account.line.detail", inverse_name="running_account_id", string="Details")
@@ -880,7 +880,7 @@ class RunningAccountMoveLine(models.Model):
     status = fields.Selection(selection=[('tm','Tanaman Menghasilkan'),('tbm','Tanaman Belum Menghasilkan')], related='plant_block_id.status', string='Status Blok')
     planted = fields.Float(related='plant_block_id.planted', string='Area ditanam')
     koefisien_luas = fields.Float(related='plant_block_id.koefisien_luas', string='Koefisien Luasan')
-    charge_gc_id = fields.Many2one('account.cost.center', related='infrastruktur_id.charge_gc_id', string='Pembebanan GC')
+    # charge_gc_id = fields.Many2one('account.cost.center', related='infrastruktur_id.charge_gc_id', string='Pembebanan GC')
     charge_idc_id = fields.Many2one('res.afdeling', related='infrastruktur_id.charge_idc_id', string='Pembebanan IDC')
     counterpart_account_id = fields.Many2one('account.account', string='Kontra Akun')
 

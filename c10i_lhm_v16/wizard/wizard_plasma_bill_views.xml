@@ -69,7 +69,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_config_profit_sharing" action="action_plasma_profit_sharing" parent="menu_plantation_config" groups="group_plantation_manager" sequence="121"/>
+        <menuitem id="menu_config_profit_sharing" name="Formula Bagi Hasil" action="action_plasma_profit_sharing" parent="menu_plantation_config" groups="group_plantation_manager" sequence="121"/>
 
         <record model='ir.ui.view' id='wizard_lhm_bill_plasma_view'>
             <field name="name">wizard.lhm.bill.plasma.view</field>
@@ -82,7 +82,7 @@
                     </header>
                     <group>
                         <group>
-                            <!-- <field name="period_id" domain="[('special','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                            <field name="period_id" domain="[('special','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             <field name="date_from"/>
                             <field name="date_to"/>
                             <field name="sharing_profit_id" invisible="1" required="1"/>
@@ -130,6 +130,10 @@
         </record>
 
         <menuitem id="menu_lhm_bill_plasma" 
-                  action="action_lhm_bill_plasma" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="31"/>
+                  action="action_lhm_bill_plasma" 
+                  parent="submenu_lhm_nab" 
+                  groups="group_plantation_operator" 
+                  name="Generate Bill TBS Plasma"
+                  sequence="31"/>
     </data>
 </odoo>

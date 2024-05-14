@@ -15,7 +15,7 @@ class LhmGenNabWizard(models.TransientModel):
     date_from       = fields.Date(string='Dari Tanggal', required=True)
     date_to         = fields.Date(string='SD Tanggal', required=True)
     pks_id          = fields.Many2one(comodel_name="res.partner", string="Nama PKS", ondelete="restrict", required=True)
-    product_id      = fields.Many2one('product.template', string='Product', change_default=True, ondelete='restrict', required=True, domain="[('is_nab','=',True)]", track_visibility='onchange')
+    product_id      = fields.Many2one('product.template', string='Product', change_default=True, ondelete='restrict', required=True, domain="[('is_nab','=',True)]")
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     
     header_nab_ids  = fields.One2many(comodel_name='lhm.gen.nab.header.wizard', inverse_name='nab_id', string='Header NAB', copy=False)
@@ -186,7 +186,7 @@ class LhmGenNabHeaderWizard(models.TransientModel):
     date_from       = fields.Date(string='Dari Tanggal', required=True)
     date_to         = fields.Date(string='SD Tanggal', required=True)
     qty             = fields.Float('Jumlah Barang', required=True)
-    uom_id          = fields.Many2one(comodel_name="product.uom", string="Satuan", ondelete="restrict", required=False)
+    uom_id          = fields.Many2one(comodel_name="uom.uom", string="Satuan", ondelete="restrict", required=False)
     price           = fields.Float('Harga Satuan', required=False)
     total           = fields.Float('Jumlah Harga', required=False)
     

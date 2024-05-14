@@ -7,7 +7,9 @@
             <field name="model">wizard.report.du.all.select</field>
             <field name="arch" type="xml">
                 <form string="Daftar Upah">
-                    <center><h1>Laporan Daftar Upah</h1></center>
+                    <center>
+                        <h1>Laporan Daftar Upah</h1>
+                    </center>
                     <group>
                         <group>
                             <field name="name" required="1"/>
@@ -96,14 +98,17 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
                         </div>
                         <group name="plantation_salary">
                             <group>
                                 <field name="period_id"/>
                                 <label for="from_date" string="Periode Laporan"/>
                                 <div>
-                                    <field name="from_date" class="oe_inline" nolabel="1" required="1"/> -
+                                    <field name="from_date" class="oe_inline" nolabel="1" required="1"/>
+ -
                                     <field name="to_date" nolabel="1" class="oe_inline" required="1"/>
                                 </div>
                             </group>
@@ -250,9 +255,9 @@
             <field name="domain">[]</field>
             <field name="context">{'readonly_by_pass': ['period_id']}</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Laporan Daftar Upah.
-              </p>
+                </p>
             </field>
         </record>
 
@@ -261,7 +266,7 @@
         <menuitem id="submenu_daftar_upah" name="Daftar Upah" action="view_plantation_salary_action" parent="menu_plantation_report" groups="group_plantation_manager" sequence="60"/>
         <!-- End of Report DU -->
 
-        
+
         <!--Plantation Allowance Type -->
         <record id="view_plantation_allowance_type_form" model="ir.ui.view">
             <field name="name">view.plantation.allowance.type.form</field>
@@ -277,7 +282,9 @@
                         <div class="oe_button_box" name="button_box"/>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Potongan" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Potongan" required="1"/>
+                            </h1>
                         </div>
                         <group name="potongan">
                             <group>
@@ -341,9 +348,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Tipe Potongan.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_plantation_allowance_type_config" name="Tipe Potongan/Tunjangan" action="action_plantation_allowance_type" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="75"/>
@@ -366,7 +373,9 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="No. Dok" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
                         </div>
                         <group name="potongan">
                             <group>
@@ -439,9 +448,9 @@
             <field name="context">{}</field>
             <field name="domain">[('potongan','=',True)]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Potongan Lainnya.
-              </p>
+                </p>
             </field>
         </record>
 
@@ -476,7 +485,9 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="No. Dok" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
                         </div>
                         <group name="tunjangan">
                             <group>
@@ -521,9 +532,9 @@
             <field name="context">{}</field>
             <field name="domain">[('tunjangan','=',True)]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Tunjangan.
-              </p>
+                </p>
             </field>
         </record>
 
@@ -558,7 +569,9 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="No. Dok" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
                         </div>
                         <group name="rapel">
                             <group>
@@ -603,9 +616,9 @@
             <field name="context">{}</field>
             <field name="domain">[('rapel','=',True)]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Rapelan/THR.
-              </p>
+                </p>
             </field>
         </record>
 
@@ -640,7 +653,9 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="No. Dok" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
                         </div>
                         <group name="potongan_koperasi">
                             <group>
@@ -685,9 +700,9 @@
             <field name="context">{}</field>
             <field name="domain">[('koperasi','=',True)]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Potongan Koperasi.
-              </p>
+                </p>
             </field>
         </record>
 

@@ -15,7 +15,7 @@ class ReportWpCost(models.Model):
     _description = 'Report WP Cost'
 
     name = fields.Char("Name", readonly=True)
-    account_period_id = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", track_visibility='onchange')
+    account_period_id = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", tracking=True)
     line_ids = fields.One2many("report.wp.cost.line", inverse_name="report_id", string="Details")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
 

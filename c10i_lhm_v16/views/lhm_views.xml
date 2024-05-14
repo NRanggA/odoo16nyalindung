@@ -49,13 +49,13 @@
             <field name="model">plantation.location.reference</field>
             <field name="arch" type="xml">
                 <search string="Referensi Lokasi">
-                    <!-- <field name="name" string="Referensi Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Referensi Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>  ERROR CONTEXT -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -526,8 +526,8 @@
                                 <field name="is_panen" required="0"/>
                             </group>
                             <group string="Satuan">
-                                <!-- <field name="uom_id" required="0"/> -->
-                                <!-- <field name="uom2_id" required="0"/> -->
+                                <field name="uom_id" required="0"/>
+                                <field name="uom2_id" required="0"/>
                             </group>
                             <group string="Reporting">
                                 <field name="is_variance" required="0" string="Variance Progress Kerja"/>
@@ -583,8 +583,8 @@
                     <field name="code"/>
                     <field name="name"/>
                     <field name="parent_id"/>
-                    <!-- <field name="uom_id"/> -->
-                    <!-- <field name="uom2_id"/> -->
+                    <field name="uom_id"/>
+                    <field name="uom2_id"/>
                     <field name="type_id"/>
                     <field name="is_panen"/>
                     <field name="company_id" invisible="1"/>
@@ -1239,7 +1239,7 @@
                                 <field name="company_id" readonly="1"/>
                             </group>
                             <group>
-                                <!-- <field name="block_uom"/> -->
+                                <field name="block_uom"/>
                                 <field name="planted"/>
                                 <field name="plantable"/>
                                 <field name="total_plant"/>
@@ -1449,23 +1449,23 @@
                                 <field name="volume"/>
                             </group>
                             <group string="Pembangunan">
-                                <!-- <field name="satuan_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <field name="satuan_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_finished"/>
                                 <field name="development_value" widget="monetary"/>
                             </group>
                             <group string="Pembebanan">
                                 <field name="charge_type"/>
                                 <field name="charge_op_id" attrs="{'invisible':[('charge_type','!=','op')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="charge_gc_id" attrs="{'invisible':[('charge_type','!=','gc')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <!-- <field name="charge_gc_id" attrs="{'invisible':[('charge_type','!=','gc')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                 <field name="charge_idc_id" attrs="{'invisible':[('charge_type','!=','idc')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
 
                                 <!-- Error pada field dibawh ini attrs = ,('charge_gc_id','!=',False) -->
-                                <field name="beban_infras_account_id" attrs="{'required':['|',('charge_op_id','!=',False),'|',('charge_idc_id','!=',False),('charge_gc_id','!=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <!-- <field name="beban_infras_account_id" attrs="{'required':['|',('charge_op_id','!=',False),'|',('charge_idc_id','!=',False),('charge_gc_id','!=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
 
                                 <field name="tm_beban_infras_account_id" attrs="{'required':[('charge_op_id','!=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
 
                                 <!-- Error pada field dibawh ini attrs = ,('charge_gc_id','!=',False) -->
-                                <field name="counterpart_expense_account_id" attrs="{'required':['|',('charge_op_id','!=',False),'|',('charge_idc_id','!=',False),('charge_gc_id','!=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <!-- <field name="counterpart_expense_account_id" attrs="{'required':['|',('charge_op_id','!=',False),'|',('charge_idc_id','!=',False),('charge_gc_id','!=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                             </group>
                         </group>
                     </sheet>
@@ -1854,7 +1854,7 @@
                                 <!--attrs="{'invisible': ['|',('material_line_ids','=',[]),('state','=','draft')]}"> -->
                                 <field name="material_line_ids" nolabel="1" attrs="{'readonly': [('state','not in',['draft','in_progress']),('approval','=',True)]}">
                                     <tree editable="bottom" create="false">
-                                        <field name="date" readonly="1" groups="base.no_one"/>
+                                        <field name="date" readonly="1" groups="base.group_no_one"/>
                                         <field name="name" readonly="1"/>
                                         <field name="product_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="activity_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>

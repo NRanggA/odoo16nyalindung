@@ -33,10 +33,10 @@
         'data/ir_sequence_data.xml',
         # 'data/ir_cron_data.xml',
         'data/user_data.xml',
-        # 'data/operating_unit_data.xml',
+        'data/operating_unit_data.xml',
         # 'data/stock_data.xml',
         'data/running_sequence_data.xml',
-        # 'data/allowance_type_data.xml',
+        'data/allowance_type_data.xml',
 
         'wizard/wizard_move_employee_views.xml', # button pindah di komen karena error nama fungsi nya
 
@@ -82,6 +82,7 @@
         
         'wizard/wizard_create_contractor_book_views.xml',
         'wizard/lhm_state_views.xml',
+        # 'views/data_demo_account_period.xml', # Data dummy dari account.period
 
     ],
     # only loaded in demonstration mode

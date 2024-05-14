@@ -29,7 +29,10 @@ class LhmContractorBill(models.TransientModel):
     def _get_npwp(self):
         result = []
         for wizard in self:
-            self.has_npwp = wizard.contractor_id.has_npwp
+            self.has_npwp = True
+            # self.has_npwp = wizard.contractor_id.has_npwp
+            # print("Error field has.npwp tidak ditemukan di model res.partner")
+
 
     # @api.multi
     def generate_line(self):

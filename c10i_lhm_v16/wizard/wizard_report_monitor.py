@@ -26,7 +26,7 @@ class WizardReportMonitor(models.TransientModel):
     date_end        = fields.Date("Sampai Tgl", required=True)
     kemandoran_ids  = fields.Many2many(comodel_name="hr.foreman", string="Kemandoran", ondelete="restrict", compute="_compute_kemandoran")
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    user_id         = fields.Many2one('res.users', string='Penanggung Jawab', index=True, track_visibility='onchange', default=lambda self: self.env.user)
+    user_id         = fields.Many2one('res.users', string='Penanggung Jawab', index=True, default=lambda self: self.env.user)
     du_ids          = fields.One2many(comodel_name='wizard.report.monitor.du', inverse_name='monitor_id', string='Monitor Daftar Upah', copy=False)
 
 

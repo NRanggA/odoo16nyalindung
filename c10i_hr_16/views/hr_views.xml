@@ -775,7 +775,7 @@
             <field name="search_view_id" ref="view_nature_filter"/>
         </record>
 
-        <menuitem id="menu_nature" action="action_nature" parent="hr.menu_human_resources_configuration" groups="hr.group_hr_manager" sequence="25"/>
+        <menuitem id="menu_nature" action="action_nature" name="Natura" parent="hr.menu_human_resources_configuration" groups="hr.group_hr_manager" sequence="25"/>
 
         <!-- Employee Religion-->
         <record id="view_employee_religion_form" model="ir.ui.view">

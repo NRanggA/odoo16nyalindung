@@ -47,7 +47,7 @@ class hr_employee(models.Model):
     npwp                    = fields.Char('NPWP', )
     bpjs_kesehatan          = fields.Char('BPJS Kesehatan', )
     bpjs_ketenagakerjaan    = fields.Char('BPJS Ketenagakerjaan', )
-    ptkp_id                 = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", track_visibility='onchange')
+    ptkp_id                 = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", tracking=True)
     religion                = fields.Many2one(comodel_name='hr.employee.religion', string="Agama")
     education_ids           = fields.One2many('hr.employee.education.line','employee_id', string="Jenjang Pendidikan", )
     license_ids             = fields.One2many('hr.employee.driving.license.line', 'employee_id', string="SIM", )
