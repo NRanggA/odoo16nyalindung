@@ -77,6 +77,7 @@
         <menuitem id="menu_plantation_location_reference_config" name="Grouping LPPH" action="action_plantation_location_reference" parent="menu_plantation_config" groups="group_plantation_operator_all" sequence="12"/>
         <!-- End Of Plantation Location Reference -->
 
+
         <!-- LHM Location Type -->
         <record id="view_lhm_location_type_form" model="ir.ui.view">
             <field name="name">view.lhm.location.type.form</field>
@@ -165,13 +166,13 @@
             <field name="model">lhm.location.type</field>
             <field name="arch" type="xml">
                 <search string="Tipe Lokasi">
-                    <!-- <field name="name" string="Tipe Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Tipe Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> Error Context-->
+                    </group>
                 </search>
             </field>
         </record>
@@ -192,6 +193,7 @@
         </record>
         <menuitem id="menu_lhm_location_type_config" name="Tipe Lokasi" action="action_lhm_location_type" parent="menu_plantation_config" groups="base.group_no_one" sequence="13"/>
         <!-- End Of LHM Location Type -->
+
 
         <!-- LHM Sub Location Type -->
         <record id="view_lhm_sub_location_type_form" model="ir.ui.view">
@@ -240,13 +242,13 @@
             <field name="model">lhm.sub.location.type</field>
             <field name="arch" type="xml">
                 <search string="Subtipe Lokasi">
-                   <!--  <field name="name" string="Tipe Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Tipe Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> Error Context -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -267,6 +269,7 @@
         </record>
         <menuitem id="menu_lhm_sub_location_type_config" action="action_lhm_sub_location_type" parent="menu_plantation_config" groups="base.group_no_one" sequence="14"/>
         <!-- End Of LHM Sub Location Type -->
+
 
         <!-- LHM Location -->
         <record id="view_lhm_location_form" model="ir.ui.view">
@@ -319,14 +322,14 @@
             <field name="model">lhm.location</field>
             <field name="arch" type="xml">
                 <search string="Lokasi">
-                    <!-- <field name="name" string="Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Tipe" domain="[]" context="{'group_by':'type_id'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Tipe" domain="[]" context="{'group_by':'type_id'}"/> ERROR CONTEXT-->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>  ERROR CONTEXT-->
+                    </group>
                 </search>
             </field>
         </record>
@@ -347,6 +350,7 @@
         </record>
         <menuitem id="menu_lhm_location_config" name="Lokasi" action="action_lhm_location" parent="main_menu_lhm" groups="group_plantation_operator_all" sequence="22"/>
         <!-- End Of LHM Location -->
+
 
         <!-- LHM UOM -->
         <!--<record id="view_lhm_uom_form" model="ir.ui.view">-->
@@ -423,6 +427,7 @@
         <!--<menuitem id="menu_lhm_uom_config" action="action_lhm_uom" parent="menu_plantation_config" groups="base.group_no_one" sequence="20"/>-->
         <!-- End Of LHM UOM -->
 
+
         <!-- LHM Master Beban Muatan -->
         <record id="view_lhm_charge_type_form" model="ir.ui.view">
             <field name="name">view.lhm.charge.type.form</field>
@@ -472,13 +477,13 @@
             <field name="model">lhm.charge.type</field>
             <field name="arch" type="xml">
                 <search string="Jenis MUatan">
-                    <!-- <field name="name" string="Jenis Muatan" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Jenis Muatan" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> ERROR CONTEXT -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -499,6 +504,7 @@
         </record>
         <menuitem id="menu_lhm_charge_type_config" action="action_lhm_charge_type" parent="menu_plantation_config" groups="base.group_no_one" sequence="27"/>
         <!-- End Of Master Beban Muatan -->
+
 
         <!-- LHM Activity -->
         <record id="view_lhm_activity_form" model="ir.ui.view">
@@ -597,7 +603,7 @@
             <field name="model">lhm.activity</field>
             <field name="arch" type="xml">
                 <search string="Aktivitas">
-                    <!-- <field name="name" string="Aktifitas" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Aktifitas" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <field name="parent_id"/>
                     <field name="type_id"/>
                     <field name="uom_id"/>
@@ -608,9 +614,9 @@
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Type" domain="[]" context="{'group_by':'type_id'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Type" domain="[]" context="{'group_by':'type_id'}"/>
+                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>  ERROR CONTEXT -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -630,6 +636,8 @@
             </field>
         </record>
         <menuitem id="menu_lhm_master_activity" action="action_lhm_activity" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="10"/>
+
+
 
         <record id="view_activity_noparent_tree" model="ir.ui.view">
             <field name="name">view.activity.noparent.tree</field>
@@ -785,13 +793,13 @@
             <field name="model">res.afdeling</field>
             <field name="arch" type="xml">
                 <search string="Indirect Cost">
-                    <!-- <field name="name" string="Nama Indirect Cost" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Nama Indirect Cost" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -812,6 +820,7 @@
         </record>
         <menuitem id="menu_plantation_indirect_cost_master" name="Indirect Cost" action="action_plantation_indirect_cost_lhm" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="28"/>
         <!--End Of Master Indirect Cost -->
+
 
         <!-- Master LHM Utility Vehicle-->
         <record id="view_lhm_utility_vehicle_form" model="ir.ui.view">
@@ -882,15 +891,15 @@
             <field name="model">lhm.utility</field>
             <field name="arch" type="xml">
                 <search string="Kendaraan">
-                    <!-- <field name="name" string="Kendaraan" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Kendaraan" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <field name="reg_number" string="No Polisi"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Satuan" domain="[]" context="{'group_by':'uom_performance'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Satuan" domain="[]" context="{'group_by':'uom_performance'}"/> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -925,6 +934,7 @@
 
         <menuitem id="menu_master_lhm_utility_vehicle" name="Kendaraan" action="action_lhm_utility_vehicle" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="30"/>
         <!--End Of LHM Master Utility Vehicle -->
+
 
         <!-- Master LHM Utility Machine-->
         <record id="view_lhm_utility_machine_form" model="ir.ui.view">
@@ -989,14 +999,14 @@
             <field name="model">lhm.utility</field>
             <field name="arch" type="xml">
                 <search string="Mesin">
-                    <!-- <field name="name" string="Mesin" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Mesin" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Satuan" domain="[]" context="{'group_by':'uom_performance'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Satuan" domain="[]" context="{'group_by':'uom_performance'}"/> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1031,6 +1041,7 @@
 
         <menuitem id="menu_master_lhm_utility_machine" name="Mesin" action="action_lhm_utility_machine" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="40"/>
         <!--End Of LHM Master Utility Machine-->
+
 
         <!-- Master LHM Utility Workshop-->
         <record id="view_lhm_utility_workshop_form" model="ir.ui.view">
@@ -1089,14 +1100,14 @@
             <field name="model">lhm.utility</field>
             <field name="arch" type="xml">
                 <search string="Workshop">
-                    <!-- <field name="name" string="Workshop" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Workshop" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Satuan" domain="[]" context="{'group_by':'uom_performance'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Satuan" domain="[]" context="{'group_by':'uom_performance'}"/> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1131,6 +1142,7 @@
 
         <menuitem id="menu_master_lhm_utility_workshop" name="Workshop" action="action_lhm_utility_workshop" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="50"/>
         <!--End Of LHM Master Utility Workshop-->
+
 
         <!-- LHM Blok Tanah -->
         <record id="view_lhm_land_block_form" model="ir.ui.view">
@@ -1179,13 +1191,13 @@
             <field name="model">lhm.land.block</field>
             <field name="arch" type="xml">
                 <search string="Blok Tanah">
-                    <!-- <field name="name" string="Blok Tanah" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Blok Tanah" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1206,6 +1218,7 @@
         </record>
         <menuitem id="menu_lhm_land_block_config" action="action_lhm_land_block" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="59"/>
         <!-- End Of LHM Blok Tanah -->
+
 
         <!-- Master LHM Blok Tanam-->
         <record id="view_lhm_plant_block_form" model="ir.ui.view">
@@ -1297,15 +1310,15 @@
             <field name="model">lhm.plant.block</field>
             <field name="arch" type="xml">
                 <search string="Blok Tanam">
-                    <!-- <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="need_to_be_approved" string="Block Need Approval" domain="[('need_to_be_approved','=',True)]"/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Afdeling" domain="[]" context="{'group_by':'afdeling_id'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Afdeling" domain="[]" context="{'group_by':'afdeling_id'}"/> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1327,6 +1340,7 @@
 
         <menuitem id="menu_master_lhm_plant_block" action="action_lhm_plant_block" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="60"/>
         <!--End Of LHM Master Blok Tanam-->
+
 
         <!-- Master LHM Nursery-->
         <record id="view_lhm_nursery_form" model="ir.ui.view">
@@ -1385,13 +1399,13 @@
             <field name="model">lhm.nursery</field>
             <field name="arch" type="xml">
                 <search string="Blok Bibitan">
-                    <!-- <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1413,6 +1427,7 @@
 
         <menuitem id="menu_master_lhm_nursery" action="action_lhm_nursery" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="70"/>
         <!--End Of Master LHM Nursery-->
+
 
         <!-- Master LHM Infrastruktur-->
         <record id="view_lhm_infrastruktur_form" model="ir.ui.view">
@@ -1493,13 +1508,13 @@
             <field name="model">lhm.infrastruktur</field>
             <field name="arch" type="xml">
                 <search string="Infrastruktur">
-                    <!-- <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1521,6 +1536,7 @@
 
         <menuitem id="menu_master_lhm_infrastruktur" action="action_lhm_infrastruktur" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="80"/>
         <!--End Of Master LHM Infrastruktur-->
+
 
         <!-- Master LHM Project-->
         <record id="view_lhm_project_form" model="ir.ui.view">
@@ -1620,13 +1636,13 @@
             <field name="model">lhm.project</field>
             <field name="arch" type="xml">
                 <search string="Project">
-                    <!-- <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Deskripsi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1648,6 +1664,7 @@
 
         <menuitem id="menu_master_lhm_project" action="action_lhm_project" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="90"/>
         <!--End Of Master LHM Project-->
+
 
         <!-- LHM Master BJR -->
         <record id="view_lhm_bjr_form" model="ir.ui.view">
@@ -1697,13 +1714,13 @@
             <field name="model">lhm.bjr</field>
             <field name="arch" type="xml">
                 <search string="Penetapan BJR">
-                   <!--  <field name="block_id" string="Lokasi" />
+                    <field name="block_id" string="Lokasi" />
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1725,6 +1742,7 @@
 
         <menuitem id="menu_master_lhm_bjr" action="action_lhm_bjr" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="120"/>
         <!-- End Of Master BJR -->
+
 
         <!-- Transaksi LHM -->
         <record id="view_lhm_transaction_form" model="ir.ui.view">
@@ -1915,7 +1933,7 @@
             <field name="model">lhm.transaction</field>
             <field name="arch" type="xml">
                 <search string="Laporan Harian Mandor">
-                    <!-- <field name="name" string="Nama LHM"/>
+                    <field name="name" string="Nama LHM"/>
                     <field name="kemandoran_id" string="Kemandoran" filter_domain="['|',('kemandoran_code','ilike',self),('kemandoran_id','ilike',self)]"/>
                     <field name="asisten_mandor_id" string="Mandor 1" filter_domain="['|',('asisten_mandor_id','ilike',self),('nik_mandor','ilike',self)]"/>
                     <field name="mandor_id" string="Mandor" filter_domain="['|',('mandor_id','ilike',self),('nik_mandor','ilike',self)]"/>
@@ -1930,14 +1948,14 @@
                     <filter name="done" string="Done" domain="[('state','=','done')]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Status" domain="[]" context="{'group_by':'state'}"/>
+                        <!-- <filter string="Status" domain="[]" context="{'group_by':'state'}"/>
                         <filter string="Kemandoran" domain="[]" context="{'group_by':'kemandoran_id'}"/>
                         <filter string="Mandor 1" domain="[]" context="{'group_by':'asisten_mandor_id'}"/>
                         <filter string="Mandor" domain="[]" context="{'group_by':'mandor_id'}"/>
                         <filter string="Afdeling/DIvisi" domain="[]" context="{'group_by':'location'}"/>
                         <filter string="Penanggung Jawab" domain="[]" context="{'group_by':'user_id'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -1974,6 +1992,7 @@
         <menuitem id="submenu_lhm_transaction" name="Laporan Harian Mandor" action="action_lhm_transaction" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="10"/>
         <menuitem id="submenu_lhm_transaction_all" name="Laporan Harian Mandor" action="action_lhm_transaction_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="10"/>
         <!-- End Of Transaksi LHM -->
+
 
         <!-- LHM Transaction Line-->
         <record id="view_lhm_transaction_line_form" model="ir.ui.view">
@@ -2177,7 +2196,7 @@
                     <field name="name" string="Nama Buku Mesin"/>
                     <field name="machine_id" string="Nama Mesin" filter_domain="['|',('machine_code','ilike',self),('machine_id','ilike',self)]"/>
                     <separator/>
-                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> Pada domain tidak ditemukan field date-->
                     <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                     <separator/>
                     <group expand="0" string="Group By">
@@ -2219,6 +2238,7 @@
         <menuitem id="submenu_lhm_machine" action="action_lhm_machine" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="20"/>
         <menuitem id="submenu_lhm_machine_all" action="action_lhm_machine_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="20"/>
         <!-- End of Transaksi Buku Mesin -->
+
 
         <!-- LHM Machine Line-->
         <record id="view_lhm_machine_line_form" model="ir.ui.view">
@@ -2319,7 +2339,6 @@
             </field>
         </record>
 
-
         <record id="view_lhm_vehicle_tree" model="ir.ui.view">
             <field name="name">view.lhm.vehicle.tree</field>
             <field name="model">lhm.vehicle</field>
@@ -2343,16 +2362,16 @@
             <field name="model">lhm.vehicle</field>
             <field name="arch" type="xml">
                 <search string="Buku Kendaraan">
-                    <!-- <field name="name" string="Nama Buku Kendaraan"/>
+                    <field name="name" string="Nama Buku Kendaraan"/>
                     <field name="vehicle_id" string="Nama Kendaraan" filter_domain="['|',('vehicle_code','ilike',self),('vehicle_id','ilike',self)]"/>
-                    <separator/> -->
-                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
-                    <!-- <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> date tidak ditemukan pada model lhm.vehicle-->
+                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Kendaraan" domain="[]" context="{'group_by':'vehicle_id'}"/>
-                        <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Kendaraan" domain="[]" context="{'group_by':'vehicle_id'}"/> -->
+                        <!-- <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -2388,6 +2407,7 @@
         <menuitem id="submenu_lhm_vehicle" action="action_lhm_vehicle" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="30"/>
         <menuitem id="submenu_lhm_vehicle_all" action="action_lhm_vehicle_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/>
         <!-- End of Transaksi Buku Kendaraan -->
+
 
         <!-- LHM Vehicle Line-->
         <record id="view_lhm_vehicle_line_form" model="ir.ui.view">
@@ -2509,16 +2529,16 @@
             <field name="model">lhm.workshop</field>
             <field name="arch" type="xml">
                 <search string="Buku Workshop">
-                   <!--  <field name="name" string="Nama Buku Workhhop"/>
+                    <field name="name" string="Nama Buku Workhhop"/>
                     <field name="workshop_id" string="Nama Workshop" filter_domain="['|',('workshop_code','ilike',self),('workshop_id','ilike',self)]"/>
                     <separator/>
-                    <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> field date tidak ditemkan pada model -->
                     <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Workshop" domain="[]" context="{'group_by':'workshop_id'}"/>
-                        <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Workshop" domain="[]" context="{'group_by':'workshop_id'}"/> -->
+                        <!-- <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -2554,6 +2574,7 @@
         <menuitem id="submenu_lhm_workshop" action="action_lhm_workshop" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="30"/>
         <menuitem id="submenu_lhm_workshop_all" action="action_lhm_workshop_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/>
         <!-- End of Transaksi Buku Workshop -->
+
 
         <!-- LHM Workshop Line-->
         <record id="view_lhm_workshop_line_form" model="ir.ui.view">
@@ -2742,16 +2763,16 @@
             <field name="model">lhm.contractor</field>
             <field name="arch" type="xml">
                 <search string="Buku Kontraktor">
-                   <!--  <field name="name" string="Nama Kontrak"/>
+                    <field name="name" string="Nama Kontrak"/>
                     <field name="supplier_id" string="Nama Kontraktor" filter_domain="['|',('supplier_id','ilike',self),('supplier_code','ilike',self)]"/>
                     <separator/>
-                    <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
                     <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Kontraktor" domain="[]" context="{'group_by':'supplier_id'}"/>
-                        <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Kontraktor" domain="[]" context="{'group_by':'supplier_id'}"/> -->
+                        <!-- <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -2811,6 +2832,7 @@
         <menuitem id="submenu_lhm_contractor" action="action_lhm_contractor" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="50"/>
         <menuitem id="submenu_lhm_contractor_all" action="action_lhm_contractor_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="50"/>
         <!-- End of Transaksi Buku Kontraktor -->
+
 
         <!-- LHM Contractor Line-->
         <record id="view_lhm_contractor_line_form" model="ir.ui.view">
@@ -2941,13 +2963,13 @@
             <field name="model">lhm.contractor</field>
             <field name="arch" type="xml">
                 <search string="Buku Kontraktor Alat">
-                    <!-- <field name="name" string="Nama Kontrak"/>
+                    <field name="name" string="Nama Kontrak"/>
                     <field name="supplier_id" string="Nama Kontraktor" filter_domain="['|',('supplier_id','ilike',self),('supplier_code','ilike',self)]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Kontraktor" domain="[]" context="{'group_by':'supplier_id'}"/>
-                        <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Kontraktor" domain="[]" context="{'group_by':'supplier_id'}"/> -->
+                        <!-- <filter string="Periode" domain="[]" context="{'group_by':'account_period_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -2980,6 +3002,7 @@
         </record>
         <!--<menuitem id="submenu_lhm_vehicle_contractor" action="action_lhm_vehicle_contractor" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="51"/>-->
         <!-- End of Transaksi Buku Kontraktor Alat-->
+
 
         <!-- LHM Contractor Vehicle Line-->
         <record id="view_lhm_vehicle_contractor_line_form" model="ir.ui.view">
@@ -3153,15 +3176,15 @@
             <field name="model">lhm.nab</field>
             <field name="arch" type="xml">
                 <search string="Nota Angkut Buah">
-                    <!-- <field name="name" string="Nota Angkut Buah"/>
+                    <field name="name" string="Nota Angkut Buah"/>
                     <separator/>
-                    <filter name="date_today" string="Today" domain="[('date_nab', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date_nab', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
                     <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Kepemilikan" domain="[]" context="{'group_by':'ownership'}"/>
-                        <filter string="No Polisi" domain="[]" context="{'group_by':'reg_number'}"/>
-                    </group> -->
+                        <!-- <filter string="Kepemilikan" domain="[]" context="{'group_by':'ownership'}"/> -->
+                        <!-- <filter string="No Polisi" domain="[]" context="{'group_by':'reg_number'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -3200,6 +3223,7 @@
         <menuitem id="submenu_lhm_nab_input" name="Nota Angkut Buah - Input" action="action_lhm_nab_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="10"/>
         <menuitem id="submenu_lhm_nab_input_all" name="Nota Angkut Buah - Input" action="action_lhm_nab_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="10"/>
         <!-- End of Transaksi Nota Angkut Buah Input-->
+
 
         <!-- Transaksi Nota Afkir Buah Input-->
         <record id="view_lhm_nab_afkir_form" model="ir.ui.view">
@@ -3351,11 +3375,11 @@
             <field name="model">lhm.restan.balance</field>
             <field name="arch" type="xml">
                 <search string="Lokasi">
-                    <!-- <field name="block_id" string="Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="block_id" string="Lokasi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -3376,6 +3400,7 @@
         </record>
         <menuitem id="menu_master_lhm_restan_balance" action="action_lhm_restan_balance" parent="menu_plantation_config" groups="base.group_no_one" sequence="60"/>
         <!-- End Of Master Saldo Awal Restan -->
+
 
         <!-- LHM Land Class -->
         <record id="view_lhm_land_class_form" model="ir.ui.view">
@@ -3424,13 +3449,13 @@
             <field name="model">lhm.land.class</field>
             <field name="arch" type="xml">
                 <search string="Kelas Tanah">
-                   <!--  <field name="name" string="Kelas Tanah" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Kelas Tanah" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>
@@ -3451,6 +3476,7 @@
         </record>
         <menuitem id="menu_lhm_land_class_config" action="action_lhm_land_class" parent="menu_plantation_config" groups="base.group_no_one" sequence="40"/>
         <!-- End Of LHM Land Class -->
+
 
         <!-- LHM Kecambah Kelapa Sawit -->
         <record id="view_lhm_palm_oil_sprouts_form" model="ir.ui.view">
@@ -3499,13 +3525,13 @@
             <field name="model">lhm.palm.oil.sprouts</field>
             <field name="arch" type="xml">
                 <search string="Kecambah Kelapa Sawit">
-                   <!--  <field name="name" string="Kecambah Kelapa Sawit" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Kecambah Kelapa Sawit" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <separator/>
                     <filter name="active" string="Active" domain="[('active','=',True)]"/>
                     <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                     <group expand="0" string="Group By">
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
                 </search>
             </field>
         </record>

@@ -162,7 +162,7 @@
                 <search string="Running Account">
                     <field name="name" string="Nama Running Account"/>
                     <group expand="0" string="Group By">
-                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> ERROR CONTEXT -->
                     </group>
                 </search>
             </field>

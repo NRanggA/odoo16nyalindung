@@ -38,7 +38,7 @@
         'data/running_sequence_data.xml',
         'data/allowance_type_data.xml',
 
-        'wizard/wizard_move_employee_views.xml', # button pindah di komen karena error nama fungsi nya
+        'wizard/wizard_move_employee_views.xml',
 
         'views/hr_views.xml',
 
@@ -47,28 +47,28 @@
 
         'views/res_views.xml',
         'views/lhm_views.xml',
-        'views/product_views.xml', # Ada group yang tidak di ketahui pada modul product
+        'views/product_views.xml',                      # Ada group yang tidak di ketahui pada modul product
         'views/res_partner_views.xml',
         'views/stock_views.xml',
-        'views/account_views.xml', # Banyak model yang tidak ditemukan di dalam security nya
+        'views/account_views.xml',                      # modul account.cost.center tidak di temukan atau tidak digunakan dalam odoo versi 16
         'views/plantation_salary_views.xml',
         'views/report_invoice.xml',
-        'views/account_report.xml', # Penulisan report di ubah menjadi report versi 16
-        'views/running_account_views.xml', # filter di komen line 165
-        'views/report_costing_views.xml', # report dan filter di komen
-        # 'views/account_voucher_views.xml', #c10i_account di ubah menjadi account
-        # 'views/account_payment_views.xml', #c10i_account di ubah menjadi account
+        'views/account_report.xml',                     
+        'views/running_account_views.xml',              # Error Context pada bagian filter view_running_account_filter
+        'views/report_costing_views.xml',               # Error context pada bagian filter view_report_wp_cost_filter dan pada tag report nya dikomen.
+        # 'views/account_voucher_views.xml',            # C10i_account di ubah menjadi account
+        # 'views/account_payment_views.xml',            # C10i_account di ubah menjadi account
 
 
         'wizard/stock_backorder_confirmation_views.xml',
         'wizard/wizard_nab_generate_invoice_views.xml',
-        'wizard/wizard_report_produksi_views.xml', # menu report nya masih bermasalah
+        'wizard/wizard_report_produksi_views.xml',      # menu report nya masih bermasalah
         'wizard/wizard_report_progres_kerja_views.xml', # tag report di komen pada halaman ini
         'wizard/wizard_report_export_data_views.xml',
         'wizard/wizard_report_monitor_views.xml',
         'wizard/wizard_report_invoice_views.xml',
 
-        # 'views/account_invoice_views.xml', # account.invoice_form dan account.invoice_supplier_form tidak di temukan
+        # 'views/account_invoice_views.xml',              # account.invoice_form dan account.invoice_supplier_form tidak di temukan dan modul c10i_account tidak ada
 
         'wizard/wizard_report_stock_picking_views.xml',
 
@@ -76,7 +76,7 @@
 
         'wizard/wizard_report_inventory_views.xml',
         'wizard/wizard_report_cash_bank_views.xml',
-        'wizard/wizard_contractor_bill_views.xml', # beberapa field di komen karena tidak ada di model
+        'wizard/wizard_contractor_bill_views.xml', 
         'wizard/wizard_plasma_bill_views.xml',
         'wizard/wizard_running_account_report_views.xml', # error sintaks
         

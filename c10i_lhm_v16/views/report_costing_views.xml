@@ -65,8 +65,8 @@
                     <field name="name" string="Name"/>
                     <field name="account_period_id" string="Period"/>
                     <group expand="0" string="Group By">
-                        <!-- <filter string="Period" domain="[]" context="{'group_by':'account_period_id'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                        <!-- <filter string="Period" domain="[]" context="{'group_by':'account_period_id'}"/> ERROR CONTEXT-->
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>  ERROR CONTEXT-->
                     </group>
                 </search>
             </field>
