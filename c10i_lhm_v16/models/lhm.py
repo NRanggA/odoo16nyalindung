@@ -477,7 +477,7 @@ class lhm_utility(models.Model):
     location_type_id    = fields.Many2one("lhm.location.type", string="Type Lokasi", ondelete="restrict", default=_default_location_type)
     group_progress_id   = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
     reg_number          = fields.Char("Nomor Polisi")
-    # asset_id            = fields.Many2one('account.asset.asset', string='Asset', ondelete="restrict") / masukkan model
+    asset_id            = fields.Many2one('account.asset.asset', string='Asset', ondelete="restrict")
     ownership           = fields.Selection([('inventory', 'Inventaris'), ('rental', 'Rental')], string='Kepemilikan', default='inventory')
     partner_id          = fields.Many2one('res.partner', 'Vendor')
     uom_performance     = fields.Selection([('km', 'KM'), ('hm', 'HM')], string='Satuan', default='km')

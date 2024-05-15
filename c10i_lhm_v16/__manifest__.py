@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'stock', 'hr', 'account', 'c10i_hr_16', 'operating_unit'],
+    'depends': ['base', 'stock', 'hr', 'account', 'c10i_hr_16', 'operating_unit', 'om_account_asset'],
 
     # always loaded
     'data': [
