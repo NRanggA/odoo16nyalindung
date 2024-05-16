@@ -84,6 +84,10 @@
         'wizard/lhm_state_views.xml',
         # 'views/data_demo_account_period.xml', # Data dummy dari account.period
 
+        #REPORT
+        # 'report/report_running_account_template.xml',
+        # 'report/report_running_account_action.xml',
+
     ],
     # only loaded in demonstration mode
     'demo': [

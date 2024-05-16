@@ -1,62 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <odoo>
     <!-- Defining the Wizard View -->
-    <data>
-        <!-- <record id="wizard_running_account_report" model="ir.ui.view">
-            <field name="name">Laporan Running Account</field>
-            <field name="model">wizard.running.account.report</field>
-            <field name="arch" type="xml">
-                <form string="Laporan Running Account">
+    <record id="view_wizard_running_account_report_form" model="ir.ui.view">
+        <field name="name">wizard.running.account.report.form</field>
+        <field name="model">wizard.running.account.report</field>
+        <field name="arch" type="xml">
+            <form string="Laporan Running Account">
+                <group>
                     <group>
-                        <group>
-                            <field name="account_period_id"/>
-                            <field name="report_type"/>
-                        </group>
-                        <group>
-                            <field name="company_id" widget="selection"/>
-                        </group>
+                        <field name="account_period_id"/>
+                        <field name="report_type"/>
                     </group>
-                    <footer>
-                        <button icon="fa-print" name="create_report" string="Print" type="object" colspan="2" default_focus="1"/>
-                        or
-                        <button string="Cancel" class="btn-secondary" special="cancel"/>
-                    </footer>
-                </form>
-            </field>
-        </record> -->
+                    <group>
+                        <field name="company_id" widget="selection"/>
+                    </group>
+                </group>
+                <footer>
+                    <button icon="fa-print" name="create_report" string="Print" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 
-       <!--  <record id="action_running_account_report" model="ir.actions.act_window">
-            <field name="name">Laporan Running Account</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">wizard.running.account.report</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="wizard_running_account_report"/>
-            <field name="target">new</field>
-        </record> -->
+    <!-- Defining the Action for the Wizard -->
+    <record id="action_running_account_report" model="ir.actions.act_window">
+        <field name="name">Laporan Running Account</field>
+        <field name="res_model">wizard.running.account.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_wizard_running_account_report_form"/>
+    </record>
 
-        <!-- <menuitem name="Laporan Running Account" parent="menu_plantation_report" action="action_running_account_report" id="menu_running_account_report" icon="fa-print" sequence="9"/> -->
-
-        <!-- Specifying the report -->
-
-        <!-- Konten lainnya seperti report -->
-
-        <!-- <report string="Laporan Running Account"
-            model="wizard.running.account.report"
-            auto="True"
-            name="running_account_report"
-            rml="c10i_lhm/report/report_running_account.jrxml"
-            id="running_account_report"
-            menu="False"
-            /> -->
-
-        <!-- <report string="Laporan Running Account Excel Edition"
-            model="wizard.running.account.report"
-            auto="True"
-            name="running_account_report_xls"
-            rml="c10i_lhm/report/report_running_account.jrxml"
-            id="running_account_report_xls"
-            menu="False"
-            /> -->
-    </data>
+    <!-- Adding the Menu Item for the Report -->
+    <menuitem id="menu_running_account_report" name="Laporan Running Account" parent="menu_plantation_report" action="action_running_account_report" sequence="9"/>
 </odoo>
+
+
+
+<!-- Specifying the report -->
+
+<!-- Konten lainnya seperti report -->
+
+<!-- <report string="Laporan Running Account" model="wizard.running.account.report" auto="True" name="running_account_report" rml="c10i_lhm/report/report_running_account.jrxml" id="running_account_report" menu="False" /> -->
+
+<!-- <report string="Laporan Running Account Excel Edition" model="wizard.running.account.report" auto="True" name="running_account_report_xls" rml="c10i_lhm/report/report_running_account.jrxml" id="running_account_report_xls" menu="False" /> -->
