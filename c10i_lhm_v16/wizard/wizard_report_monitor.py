@@ -8,27 +8,26 @@ class WizardReportMonitor(models.TransientModel):
     _name           = "wizard.report.monitor"
     _description    = "Monitoring DU Harian"
 
-    # @api.one
     @api.depends('user_id')
     def _compute_kemandoran(self):
-        for kemandoran in self:
-            if self.env.user.id == (self.env['ir.model.data'].xmlid_to_res_id('base.user_root') or 1):
+        for record in self:
+            user_root_id = self.env.ref('base.user_root').id if self.env.ref('base.user_root') else 1
+            if self.env.user.id == user_root_id:
                 foreman_ids = self.env['hr.foreman'].search([])
-                if foreman_ids:
-                    kemandoran.kemandoran_ids = foreman_ids.ids
-            elif kemandoran.user_id:
-                foreman_ids = self.env['hr.foreman'].search([('user_input_id','=',kemandoran.user_id.id)])
-                if foreman_ids:
-                    kemandoran.kemandoran_ids = foreman_ids.ids
+                record.kemandoran_ids = foreman_ids.ids if foreman_ids else []
+            elif record.user_id:
+                foreman_ids = self.env['hr.foreman'].search([('user_input_id', '=', record.user_id.id)])
+                record.kemandoran_ids = foreman_ids.ids if foreman_ids else []
+            else:
+                record.kemandoran_ids = []
 
-    name            = fields.Char(default="Monitoring DU Harian")
-    date_start      = fields.Date("Periode Dari Tgl", required=True)
-    date_end        = fields.Date("Sampai Tgl", required=True)
-    kemandoran_ids  = fields.Many2many(comodel_name="hr.foreman", string="Kemandoran", ondelete="restrict", compute="_compute_kemandoran")
-    company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    user_id         = fields.Many2one('res.users', string='Penanggung Jawab', index=True, default=lambda self: self.env.user)
-    du_ids          = fields.One2many(comodel_name='wizard.report.monitor.du', inverse_name='monitor_id', string='Monitor Daftar Upah', copy=False)
-
+    name = fields.Char(default="Monitoring DU Harian")
+    date_start = fields.Date("Periode Dari Tgl", required=True)
+    date_end = fields.Date("Sampai Tgl", required=True)
+    kemandoran_ids = fields.Many2many(comodel_name="hr.foreman", string="Kemandoran", ondelete="restrict", compute="_compute_kemandoran", default=[])
+    company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
+    user_id = fields.Many2one('res.users', string='Penanggung Jawab', index=True, default=lambda self: self.env.user)
+    du_ids = fields.One2many(comodel_name='wizard.report.monitor.du', inverse_name='monitor_id', string='Monitor Daftar Upah', copy=False)
 
     # @api.multi
     def generate_report(self):

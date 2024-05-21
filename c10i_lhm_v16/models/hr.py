@@ -2,6 +2,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 
 
@@ -28,11 +29,15 @@ class HrMinimumWage(models.Model):
 
     @api.onchange('year', 'date_from', 'date_to', 'employee_id', 'employee_type_id', 'basic_salary_type')
     def onchange_date_and_year(self):
-        domain = [('id', '!=', self.id), ('year', '=', self.year), ('basic_salary_type', '=', False)]
+        domain = [('year', '=', self.year), ('basic_salary_type', '=', False)]
         if self.employee_id:
-            domain = [('id', '!=', self.id), ('year', '=', self.year), ('employee_id', '=', self.employee_id.id)]
+            domain.append(('employee_id', '=', self.employee_id.id))
         elif self.employee_type_id:
-            domain = [('id', '!=', self.id), ('year', '=', self.year), ('employee_type_id', '=', self.employee_type_id.id)]
+            domain.append(('employee_type_id', '=', self.employee_type_id.id))
+        
+        if self.id:
+            domain.append(('id', '!=', self.id))
+        
         other_ids = self.env['hr.minimum.wage'].search(domain, order="date_to asc", limit=1)
         
         if other_ids:
@@ -47,14 +52,14 @@ class HrMinimumWage(models.Model):
 
         if self.date_to and (self.employee_id or self.employee_type_id):
             if self.date_to <= self.date_from:
-                raise Warning(_('Kesalahan Input Data'), _('Tanggal Berakhir Harus Lebih Besar dari Tanggal Mulai'))
+                raise UserError(_('Kesalahan Input Data: Tanggal Berakhir Harus Lebih Besar dari Tanggal Mulai'))
             elif self.date_to.year != self.year:
                 self.date_to = datetime(self.year, 12, 31)
-                raise Warning(_('Kesalahan Input Data'), _("Tanggal %s tidak dalam tahun: %s.") % (self.date_to, self.year))
+                raise UserError(_("Tanggal %s tidak dalam tahun: %s.") % (self.date_to, self.year))
 
         if self.year:
             if other_ids and other_ids.date_to == datetime(self.year, 12, 31) and (self.employee_id or self.employee_type_id):
-                raise Warning(_('Kesalahan Input Data'), _("Semua range tanggal pada tahun %s sudah didefinisikan") % self.year)
+                raise UserError(_("Semua range tanggal pada tahun %s sudah didefinisikan") % self.year)
             elif other_ids:
                 self.date_from = other_ids.date_to + relativedelta(days=1)
             else:

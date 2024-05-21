@@ -1802,38 +1802,49 @@
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <!-- <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/> -->
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
                                         <field name="no_line" invisible="1" />
-                                        <!-- <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}"/> -->
-                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/> -->
-                                        <!-- <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}"/> -->
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
+                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}"/>
                                         <field name="non_work_day" readonly="1"/>
-                                        <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
 
                                         <!-- BEGIN : POC Nyalindung -->
-                                        <!-- <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
-                                        <!-- <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
-                                        <!-- <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
-                                        <!-- <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
-                                        <!-- <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
                                         <!-- END : POC Nyalindung -->
 
-                                        <!-- <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/> -->
+                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
-                                        <!-- <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
+                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
-                                            <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/> -->
+                                            <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
                                         <field name="overtime_value" invisible="0" groups="base.group_no_one"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
-                                            <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/> -->
+                                            <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
-                                        <field name="panen" invisible="0" string="P" groups="base.group_no_one"/>
-                                        <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/>
+
+                                        <!-- Error ang sama karena groups nya -->
+                                        <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/> -->
+                                        <field name="panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+
+                                        <!-- error yang saya karena groups -->
+                                        <!-- <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/> -->
+                                        <field name="overtime"  attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+
                                         <field name="progressive" invisible="0" string="M" groups="base.group_no_one"/>
-                                        <field name="attendance_type" invisible="0" string="A" groups="base.group_no_one"/>
+                                        
+                                        <!-- Dikomen karena error groups nya -->
+                                        <!-- <field name="attendance_type" invisible="0" string="A" groups="base.group_no_one"/> -->
+                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        
                                         <field name="valid" invisible="0" string="V" groups="base.group_no_one"/>
                                         <field name="kontanan" invisible="1"/>
                                         <field name="transfer_id" invisible="1"/>
@@ -2129,9 +2140,7 @@
                         <group name="lhm_machine">
                             <group>
                                 <field name="machine_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_machine_form', 'default_type':'ma'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-
-                                <!-- Error field pada domain  field di bawah ini, domain="[('special','=',False),('state','=','draft')]" -->
-                                <!-- <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
@@ -2292,9 +2301,7 @@
                             <group>
                                 <field name="vehicle_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_vehicle_form', 'default_type':'vh'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="vehicle_code" readonly="1"/>
-
-                                <!-- Error pada domain field di bawah ini domain="[('special','=',False),('state','=','draft')]" -->
-                                <!-- <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
@@ -2469,9 +2476,7 @@
                         <group name="lhm_workshop">
                             <group>
                                 <field name="workshop_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_workshop_form', 'default_type':'ws'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-
-                                <!-- Error domain pada field ini domain="[('special','=',False),('state','=','draft')]"  -->
-                                <!-- <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
@@ -2637,8 +2642,8 @@
                                 <field name="payment_type" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/>
 
                                 <!-- Error domain pada field ini,
-                                domain="[('special','=',False),('state','=','draft')]"  -->
-                                <!-- <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/> -->
+                                  -->
+                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <label for="date_start" string="Periode Pembayaran"/>
                                 <div>
                                     <field name="date_start" class="oe_inline" nolabel="1" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/> -

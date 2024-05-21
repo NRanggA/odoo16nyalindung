@@ -98,21 +98,21 @@
             <field name="model">hr.employee</field>
             <field name="priority">20</field>
             <field name="inherit_id" ref="hr.view_employee_form"/>
-            <field name="mode">primary</field>
+            <!-- <field name="mode">primary</field> -->
             <field name="arch" type="xml">
-                <div name="button_box" position="inside">
+               <!-- Pastikan posisi 'button_box' sesuai -->
+                <xpath expr="//div[@name='button_box']" position="inside">
                     <button
-                            name    = "%(action_wizard_move_employee)d"
-                            string  = "Pindah"
-                            type    = "action"
-                            icon    = "fa-sign-out"
-                            help    = "Memindahkan Karyawan ke Kemandoran Lain"
-                            class   = "oe_stat_button"
-                            context = "{'from_karyawan': True}"
-                            />
-                            <!-- attrs   = "{'invisible':[('move_state','=','ongoing')]}" -->
-                </div>
-                <!-- Invisible Field -->
+                        name="%(action_wizard_move_employee)d"
+                        string="Pindah"
+                        type="action"
+                        icon="fa-sign-out"
+                        help="Memindahkan Karyawan ke Kemandoran Lain"
+                        class="oe_stat_button"
+                        context="{'from_karyawan': True}"
+                    />
+                </xpath>
+                <!-- Invisible Fields -->
                 <xpath expr="//field[@name='category_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
