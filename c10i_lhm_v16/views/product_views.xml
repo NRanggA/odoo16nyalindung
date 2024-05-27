@@ -47,10 +47,7 @@
                 <tree string="Products Price List">
                     <field name="sequence" widget="handle" />
                     <field name="name"/>
-
-                    <!-- Error ini karena field partner_id tidak ada di model product.pricelist -->
                     <field name="partner_id"/>
-                    
                     <field name="currency_id" groups="base.group_multi_currency"/>
                 </tree>
             </field>
@@ -77,7 +74,7 @@
                             <field name="pks_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'invisible':[('plantation_pricelist_type','!=','pricelist_transport')]}"/>
                             <field name="currency_id" groups="base.group_multi_currency" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                            <field name="country_group_ids"/>
+                            <!-- <field name="country_group_ids"/> -->
                         </group>
 
                         <!-- Dikomen karena group tidak di ketahui -->

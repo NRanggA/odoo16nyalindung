@@ -676,7 +676,8 @@ class lhm_plant_block(models.Model):
     @api.onchange('afdeling_id')
     def _onchange_afdeling_id(self):
         if self.afdeling_id:
-            self.block = self.afdeling_id.code or False
+            print("Error Karena field block tidak ada di model ini !")
+            # self.block = self.afdeling_id.code or False
 
     def button_set_as_tm(self):
         self.status = 'tm'

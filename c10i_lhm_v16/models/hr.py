@@ -89,6 +89,7 @@ class HrForeman(models.Model):
     notes               = fields.Text("Catatan")
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     employee_ids        = fields.One2many('hr.employee', 'kemandoran_id', string="Daftar Karyawan")
+    
 
     def name_get(self):
         result = []
@@ -302,7 +303,7 @@ class HrEmployee(models.Model):
     place_of_birth      = fields.Char('Place of Birth')
     children            = fields.Integer(string='Number of Children')
 
-    # contract_type = fields.Many2one(comodel_name='hr.contract.type', string='Jenis Kontrak', ondelete="restrict")
+    contract_type = fields.Many2one(comodel_name='hr.contract.type', string='Jenis Kontrak', ondelete="restrict")
     
     start_date_contract = fields.Date(string="Mulai Kontrak")
     end_date_contract   = fields.Date(string="Selesai Kontrak")

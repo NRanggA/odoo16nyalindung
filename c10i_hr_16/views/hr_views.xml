@@ -44,8 +44,6 @@
             </field>
         </record>
 
-
-
         <record id="hr.view_hr_job_tree" model="ir.ui.view">
             <field name="name">hr.job.tree</field>
             <field name="model">hr.job</field>
@@ -105,10 +103,207 @@
             </field>
         </record>
 
-
         <menuitem action="hr.action_hr_job" id="hr.menu_c10i_hr_job" parent="hr.menu_hr_root" sequence="91" groups="hr.group_hr_user"/>
 
-        <!-- HR Employee-->
+
+        <!-- Inherit Form Employee -->
+        <record id="view_karyawan_form_inherit" model="ir.ui.view">
+            <field name="name">view.karyawan.ho.form</field>
+            <field name="model">hr.employee</field>
+            <field name="priority" eval="22"/>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <page name="public" position="attributes">
+                    <attribute name="string">Informasi Umum</attribute>
+                </page>
+                <page name="personal_information" position="attributes">
+                    <attribute name="string">Data Pribadi</attribute>
+                </page>
+                <page name="hr_settings" position="attributes">
+                    <attribute name="string">Pengaturan HR</attribute>
+                </page>
+
+                <xpath expr="//page[@name='public']/*[1]" position="before">
+                    <group>
+                        <group string="Data Karyawan" name="employee_data_info">
+                            <field name="no_induk"/>
+                        </group>
+                        <group string="Kontrak Kerja" name="employee_work_contract">
+                        </group>
+                        <group string="Otoritas" name="employee_authority">
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Informasi Lain ..." colspan="4"/>
+                </xpath>
+                <xpath expr="//page[@name='personal_information']/*[1]" position="before">
+                    <group>
+                        <group string="Kewarganegaraan &amp; Data Lainnya">
+                            <field name="nationality_id" options='{"no_open": True, "no_create": True}' string="Kewarganegaraan"/>
+                            <field name="identification_id" groups="hr.group_hr_user" string="No. KTP"/>
+                            <field name="npwp"/>
+                            <field name="bpjs_kesehatan"/>
+                            <field name="bpjs_ketenagakerjaan"/>
+                            <field name="passport_id" groups="hr.group_hr_user" string="No. Passport"/>
+                            <field name="bank_account_id" context="{'default_partner_id': address_home_id}" string="Rekening Bank"/>
+                        </group>
+                        <group string="Data Diri">
+                            <field name="birthday" string="Tanggal Lahir" required="1"/>
+                            <field name="gender" string="Jenis Kelamin" required="1"/>
+                            <field name="religion" required="1"/>
+                            <field name="marital" required="1"/>
+                            <field name="ptkp_id" domain="[('marital','=',marital)]" options="{'no_create_edit': True}" required="1"/>
+                            <label for="street" string="Alamat"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Alamat..." class="o_address_street"/>
+                                <field name="street2" placeholder="Alamat 2..." class="o_address_street"/>
+                                <!-- <field name="city_id" placeholder="Kota" style="width:50%;" options='{"no_open": True}'/> -->
+                                 <field name="state_id" style="width:32%;" placeholder="Provinsi" options='{"no_open": True}'/>
+                                <field name="zip" placeholder="Kode Pos" style="width:18%;"/>
+                                <field name="country_id" placeholder="Negara" class="o_address_country" options='{"no_open": True}'/>
+                            </div>
+                        </group>
+                    </group>
+                </xpath>
+                <xpath expr="//page[@name='hr_settings']/*[1]" position="before">
+                    <group>
+                        <group string="Pengaturan Umum" name="active_group">
+                            <field name="address_home_id" context="{'show_address': 1}" options='{"always_reload": True, "highlight_first_line": True}' string="Alamat Rumah"/>
+                            <field name="user_id" string="Relasi User"/>
+                            <field name="calendar_id" string="Jam Kerja"/>
+                        </group>
+                        <group string="Data Perusahaan">
+                            <field name="company_id" readonly="1" string="Nama Perusahaan"/>
+                            <field name="address_id" context="{'show_address': 1}" options='{"always_reload": True, "highlight_first_line": True}' string="Alamat Perusahaan"/>
+                            <field name="mobile_phone"/>
+                            <field name="work_phone"/>
+                            <field name="work_email" widget="email"/>
+                        </group>
+                    </group>
+                </xpath>
+                
+                <xpath expr="//notebook/page[@name='personal_information']" position="after">
+                    <page name="education_information" string="Pendidikan" groups="hr.group_hr_user">
+                        <group>
+                            <field name="education_ids">
+                                <tree string="Pendidikan" editable="bottom">
+                                    <field name="level"/>
+                                    <field name="name"/>
+                                    <field name="major"/>
+                                    <field name="start_year"/>
+                                    <field name="end_year"/>
+                                    <field name="note"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <div class="oe_title">
+                                            <label for="name" class="oe_edit_only"/>
+                                            <h1>
+                                                <field name="name" placeholder="Nama Sekolah"/>
+                                            </h1>
+                                        </div>
+                                        <group>
+                                            <group>
+                                                <field name="level"/>
+                                                <field name="major"/>
+                                            </group>
+                                            <group>
+                                                <field name="start_year"/>
+                                                <field name="end_year"/>
+                                            </group>
+                                        </group>
+                                        <field name="note" nolabel="1" colspan="4"/>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </group>
+                    </page>
+                    <page name="license_information" string="SIM" groups="hr.group_hr_user">
+                        <group>
+                            <field name="license_ids">
+                                <tree string="SIM" editable="bottom">
+                                    <field name="license_type"/>
+                                    <field name="name"/>
+                                    <field name="expiry_date"/>
+                                    <field name="note"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <div class="oe_title">
+                                            <label for="name" class="oe_edit_only"/>
+                                            <h1>
+                                                <field name="name" placeholder="No. SIM"/>
+                                            </h1>
+                                        </div>
+                                        <group>
+                                            <group>
+                                                <field name="license_type"/>
+                                            </group>
+                                            <group>
+                                                <field name="expiry_date"/>
+                                            </group>
+                                        </group>
+                                        <field name="note" nolabel="1" colspan="4"/>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </group>
+                    </page>
+                    <page name="experience_information" string="Pengalaman Kerja" groups="hr.group_hr_user">
+                        <group>
+                            <field name="experinece_ids">
+                                <tree string="Pengalaman Kerja" editable="bottom">
+                                    <field name="name"/>
+                                    <field name="job_name"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="note"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <div class="oe_title">
+                                            <label for="name" class="oe_edit_only"/>
+                                            <h1>
+                                                <field name="name" placeholder="No. SIM"/>
+                                            </h1>
+                                        </div>
+                                        <group>
+                                            <group>
+                                                <field name="start_date"/>
+                                                <field name="job_name"/>
+                                            </group>
+                                            <group>
+                                                <field name="end_date"/>
+                                            </group>
+                                        </group>
+                                        <field name="note" nolabel="1" colspan="4"/>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </group>
+                    </page>
+                    <page name="ptkp_information" string="PTKP History" groups="hr.group_hr_user">
+                        <group>
+                            <field name="ptkp_history_ids" readonly="1">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="ptkp_id"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="date"/>
+                                        <field name="ptkp_id"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- HR Employee
         <record id="hr.view_employee_form" model="ir.ui.view">
             <field name="name">view.c10i.employee.form</field>
             <field name="model">hr.employee</field>
@@ -121,8 +316,7 @@
                                 <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
                             </button>
                         </div>
-                        <!-- DI komen karena field image tidak ada di dalam hr.employee -->
-                        <!-- <field name="image" widget='image' class="oe_avatar" options='{"preview_image":"image_medium"}'/> -->
+                        <field name="image_1920" widget='image' class="oe_avatar" options='{"preview_image":"image_1024"}'/>
                         <div class="oe_title">
                             <label for="name" string="name" class="oe_edit_only"/>
                             <h1>
@@ -134,12 +328,13 @@
                             <page name="public" string="Informasi Umum">
                                 <group>
                                     <group string="Data Karyawan" name="employee_data_info">
+
                                         <field name="no_induk"/>
-                                        <!-- <field name="department_id" string="Departemen"/> -->
+                                        <field name="department_id" string="Departemen"/> -->
                                         <!-- <field name="job_id" string="Posisi"/> -->
                                         <!-- <field name="parent_id" string="Nama Manajer"/> -->
                                         <!-- <field name="coach_id" string="Nama Kepala Bagian"/> -->
-                                        <field name="work_location"/>
+                                        <!-- <field name="work_location"/>
                                     </group>
                                 </group>
                                 <field name="notes" placeholder="Informasi Lain ..." colspan="4"/>
@@ -164,15 +359,17 @@
                                         <label for="street" string="Alamat"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Alamat..." class="o_address_street"/>
-                                            <field name="street2" placeholder="Alamat 2..." class="o_address_street"/>
+                                            <field name="street2" placeholder="Alamat 2..." class="o_address_street"/> -->
                                             <!-- <field name="city_id" placeholder="Kota" style="width:50%;" options='{"no_open": True}'/> -->
-                                            <field name="state_id" style="width:32%;" placeholder="Provinsi" options='{"no_open": True}'/>
+                                            <!-- <field name="state_id" style="width:32%;" placeholder="Provinsi" options='{"no_open": True}'/>
                                             <field name="zip" placeholder="Kode Pos" style="width:18%;"/>
                                             <field name="country_id" placeholder="Negara" class="o_address_country" options='{"no_open": True}'/>
                                         </div>
                                     </group>
                                 </group>
                             </page>
+
+
                             <page name="education_information" string="Pendidikan" groups="hr.group_hr_user">
                                 <group>
                                     <field name="education_ids" nolabel="1">
@@ -288,13 +485,15 @@
                                     </field>
                                 </group>
                             </page>
+
+
                             <page name="hr_settings" string="Pengaturan HR" groups="hr.group_hr_user">
                                 <group>
                                     <group string="Pengaturan Umum" name="active_group">
                                         <field name="address_home_id" context="{'show_address': 1}" options='{"always_reload": True, "highlight_first_line": True}' string="Alamat Rumah"/>
-                                        <field name="user_id" string="Relasi User"/>
+                                        <field name="user_id" string="Relasi User"/> -->
                                         <!-- <field name="calendar_id" string="Jam Kerja"/> -->
-                                    </group>
+                                    <!-- </group>
                                     <group string="Data Perusahaan">
                                         <field name="company_id" readonly="1" string="Nama Perusahaan"/>
                                         <field name="address_id" context="{'show_address': 1}" options='{"always_reload": True, "highlight_first_line": True}' string="Alamat Perusahaan"/>
@@ -304,6 +503,7 @@
                                     </group>
                                 </group>
                             </page>
+
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
@@ -312,16 +512,13 @@
                     </div>
                 </form>
             </field>
-        </record>
+        </record> -->
 
-        <record id="hr.open_view_employee_list_my" model="ir.actions.act_window">
+        <!-- <record id="hr.open_view_employee_list_my" model="ir.actions.act_window">
           <field name="name">Karyawan</field>
           <field name="res_model">hr.employee</field>
-          <!-- <field name="view_type">form</field> -->
           <field name="view_mode">kanban,tree,form</field>
-          <!-- <field name="domain" eval="[]"/> -->
           <field name="context">{}</field>
-          <!-- <field name="view_id" eval="False"/> -->
           <field name="search_view_id" ref="hr.view_employee_filter"/>
           <field name="help" type="html">
               <p class="oe_view_nocontent_create">
@@ -332,10 +529,10 @@
                   data kontak, posisi pekerjaan, ketersediaan, dll.
               </p>
           </field>
-        </record>
+        </record> -->
 
 
-        <menuitem id="hr.menu_open_view_employee_list_my" action="hr.open_view_employee_list_my" parent="hr.menu_hr_root" sequence="3"/>
+        <!-- <menuitem id="hr.menu_open_view_employee_list_my" action="hr.open_view_employee_list_my" parent="hr.menu_hr_root" sequence="3"/> -->
 
         <!-- HR Department -->
         <!-- <record id="hr.open_module_tree_department" model="ir.actions.act_window">

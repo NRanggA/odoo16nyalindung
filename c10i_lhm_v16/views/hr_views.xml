@@ -45,7 +45,7 @@
         <menuitem id="menu_plantation_nature" action="c10i_hr_16.action_nature" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="49"/>
         
         <menuitem id="menu_partner_kontraktor" name="Kontraktor" parent="menu_lhm_master" action="base.action_partner_supplier_form" sequence="10" groups="group_plantation_supervisor"/>
-        
+
         <!-- Menu From HR Base -->
         <!-- HR Employee Movement Form -->
         <record id="view_hr_foreman_movement_form" model="ir.ui.view">
@@ -79,28 +79,62 @@
         </record>
         <!-- End Of HR Employee Movement Form -->
 
-        <!-- Employee Form -->
-        <!-- <record id="view_karyawan_ho_form" model="ir.ui.view">
-            <field name="name">view.karyawan.ho.form</field>
+        <!-- inherit ke employee melalui field yang ada di modul c10i_hr -->
+        <record id="view_employee_form_inherit_lhm" model="ir.ui.view">
+            <field name="name">view.employee.form.inherit.lhm</field>
             <field name="model">hr.employee</field>
-            <field name="priority" eval="22"/>
-            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="inherit_id" ref="c10i_hr_16.view_karyawan_form_inherit"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='department_id']" position="after">
-                    <field name="sub_department_id"/>
+                <!-- Locate the field 'no_induk' and insert 'type_id' before it -->
+                <xpath expr="//page[@name='public']//field[@name='no_induk']" position="before">
+                    <field name="type_id"/>
+                </xpath>
+                <xpath expr="//page[@name='public']//group[@name='employee_data_info']" position="inside">
+                    <field name="basic_salary_type" required="1" widget="radio" options="{'horizontal': true}"/>
+                    
+                    <!-- Tidak bisa di munculkan karena model nya masih belom ditemukan atau modul cost center belom ada -->
+                    <!-- <field name="cost_center_id"/>  -->
+                    
+                    <field name="plantation_location_type_id"/>
+                    <field name="plantation_location_id"/>
+                    <field name="plantation_activity_hkne_id"/>
+                    <field name="plantation_activity_natura_id"/>
+                    <field name="plantation_activity_bpjs_tk_id"/>
+                    <field name="plantation_activity_bpjs_kes_id"/>
+                </xpath>
+                
+                <xpath expr="//page[@name='public']//group[@name='employee_authority']" position="inside">
+                    <field name="mandor"/>
+                    <field name="master"/>
+                    <field name="kerani"/>
+                    <field name="auto_generate" groups="base.group_no_one"/>/>
+                    <field name="noedit_foreman" groups="base.group_no_one"/>
+                </xpath>
+
+                <xpath expr="//page[@name='public']//group[@name='employee_work_contract']" position="inside">
+                    <field name="contract_type" options='{"no_open": True}' invisible="1"/>
+                    <label for="contract_type" string="Periode Kontrak" invisible="1"/>
+                    <div invisible="1">
+                        <field name="start_date_contract" class="oe_inline" nolabel="1" invisible="1"/> s/d
+                        <field name="end_date_contract" nolabel="1" class="oe_inline" invisible="1"/>
+                    </div>
+                    <!-- Error pada attrs="{'readonly':[('noedit_foreman','=',True)]}" pada field kemandoran_id -->
+                    <field name="kemandoran_id" required="1"/>
+                    <field name="mandor_id" readonly="1"/>
+                    <field name="work_start_date"/>
+                    <field name="appointment_date"/>
+                    <field name="work_end_date"/>
+                    <field name="move_state" invisible="0"/>
                 </xpath>
             </field>
-        </record> -->
+        </record>
 
         <!-- Employee Form -->
         <record id="view_karyawan_form" model="ir.ui.view">
             <field name="name">view.karyawan.form</field>
             <field name="model">hr.employee</field>
-            <field name="priority">20</field>
             <field name="inherit_id" ref="hr.view_employee_form"/>
-            <!-- <field name="mode">primary</field> -->
             <field name="arch" type="xml">
-               <!-- Pastikan posisi 'button_box' sesuai -->
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <button
                         name="%(action_wizard_move_employee)d"
@@ -112,20 +146,43 @@
                         context="{'from_karyawan': True}"
                     />
                 </xpath>
+
+                <!-- Menambahkan field pada form -->
+                <xpath expr="//field[@name='department_id']" position="after">
+                    <field name="sub_department_id"/>
+                </xpath>
+
+                <!-- Mengubah naama string pada beberapa field -->
+                <xpath expr="//field[@name='job_id']" position="attributes">
+                    <attribute name="string">Posisi</attribute>
+                </xpath>
+                <xpath expr="//field[@name='department_id']" position="attributes">
+                    <attribute name="string">Department</attribute>
+                </xpath>
+                <xpath expr="//field[@name='parent_id']" position="attributes">
+                    <attribute name="string">Nama Manajer</attribute>
+                </xpath>
+                <xpath expr="//field[@name='coach_id']" position="attributes">
+                    <attribute name="string">Nama Kepala Bagian</attribute>
+                </xpath>
+                <xpath expr="//field[@name='work_location_id']" position="attributes">
+                    <attribute name="string">Lokasi Pekerjaan</attribute>
+                </xpath>
+
                 <!-- Invisible Fields -->
-                <xpath expr="//field[@name='category_ids']" position="attributes">
+ <!--                <xpath expr="//field[@name='category_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-                <xpath expr="//field[@name='work_location']" position="attributes">
+                <xpath expr="//field[@name='work_location_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-                <!-- <xpath expr="//field[@name='parent_id']" position="attributes">
+                <xpath expr="//field[@name='parent_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='coach_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath> -->
-                <!-- <xpath expr="//field[@name='coach_id']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath> -->
-                <xpath expr="//page[@name='education_information']" position="attributes">
+                <!-- <xpath expr="//page[@name='education_information']" position="attributes">
                     <attribute name="invisible">0</attribute>
                 </xpath>
                 <xpath expr="//page[@name='license_information']" position="attributes">
@@ -133,8 +190,9 @@
                 </xpath>
                 <xpath expr="//page[@name='experience_information']" position="attributes">
                     <attribute name="invisible">0</attribute>
-                </xpath>
+                </xpath> -->
                 <!-- End Of Invisible Field -->
+
                 <!-- Required Field -->
                 <!-- <xpath expr="//field[@name='department_id']" position="attributes">
                     <attribute name="required">1</attribute>
@@ -145,6 +203,7 @@
                 <!-- <xpath expr="//field[@name='job_id']" position="attributes">
                     <attribute name="required">1</attribute>
                 </xpath> -->
+
                 <!-- End Of Required Field -->
                 <!-- Inject Group -->
                 <!-- <xpath expr="//page[@name='hr_settings']" position="attributes">
@@ -190,16 +249,16 @@
                     <field name="plantation_activity_bpjs_tk_id"/>
                     <field name="plantation_activity_bpjs_kes_id"/>
                 </xpath> -->
-                <xpath expr="//field[@name='no_induk']" position="before">
-                    <field name="type_id" options='{"no_create_edit": True}' required="1"/>
-                </xpath>
-                <xpath expr="//field[@name='no_induk']" position="replace">
+<!--                 <xpath expr="//page[@name='public']//group[@name='employee_data_info']" position="inside">
+                    <field name="type_id"/>
+                </xpath> -->
+<!--                 <xpath expr="//field[@name='no_induk']" position="replace">
                     <label for="no_induk"/>
                     <div>
-                        <field name="no_induk" nolabel="1" style="width:60%;" attrs="{'required':[('custom_nik','=',True)],'readonly': [('no_induk', '!=', '/'),('custom_nik','=',False)]}"/>
+                        <field name="no_induk" nolabel="1" style="width:60%;" attrs="{'required':[('custom_nik','=',True)],'readonly': [('no_induk', '!=', '/'),('custom_nik','=',False)]}"/> -->
                         <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
                         <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
-                        <field name="custom_nik" nolabel="1"/><label for="custom_nik"/>
+                        <!-- <field name="custom_nik" nolabel="1"/><label for="custom_nik"/>
                     </div>
                     <field name="basic_salary_type" required="1" widget="radio" options="{'horizontal': true}"/>
                 </xpath>
@@ -226,7 +285,7 @@
                         <field name="bpjs_ketenagakerjaan" nolabel="1" style="width:90%;" attrs="{'required':[('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
                         <field name="bpjs_tk_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
                     </div>
-                </xpath>
+                </xpath> -->
                 <!-- <xpath expr="//group[@name='employee_authority']" position="inside">
                     <field name="mandor"/>
                     <field name="master"/>
@@ -250,9 +309,9 @@
                         <field name="move_state" invisible="0"/>
                     </group>
                 </xpath> -->
-                <xpath expr="//page[@name='personal_information']" position="after">
+                <!-- <xpath expr="//page[@name='personal_information']" position="after">
                     <page string="History">
-                        <group coslpan="8" string="Pindah Kemandoran">
+                        <group string="Pindah Kemandoran">
                             <field name="movement_ids" nolabel="1" readonly="1">
                                 <tree>
                                     <field name="date"/>
@@ -264,7 +323,7 @@
                                 </tree>
                             </field>
                         </group>
-                        <group coslpan="8" attrs="{'invisible': [('basic_salary_type','!=','employee')]}" string="UMR" groups="c10i_lhm_v16.group_plantation_manager">
+                        <group attrs="{'invisible': [('basic_salary_type','!=','employee')]}" string="UMR" groups="c10i_lhm_v16.group_plantation_manager">
                             <field name="umr_ids" nolabel="1" readonly="1">
                                 <tree>
                                     <field name="date_from"/>
@@ -275,7 +334,7 @@
                             </field>
                         </group>
                     </page>
-                </xpath>
+                </xpath> -->
                 <!-- <xpath expr="//field[@name='calendar_id']" position="after">
                     <field name="is_lhm" readonly="1"/>
                 </xpath> -->
@@ -330,13 +389,13 @@
             <field name="act_window_id" ref="action_karyawan_view"/>
         </record>
 
-        <record model="ir.actions.act_window.view" id="action_karyawan_view_form">
+<!--         <record model="ir.actions.act_window.view" id="action_karyawan_view_form">
             <field name="sequence" eval="3"/>
             <field name="view_mode">form</field>
             <field name="view_id" ref="view_karyawan_form"/>
             <field name="act_window_id" ref="action_karyawan_view"/>
         </record>
-
+ -->
         <menuitem id="menu_karyawan" name="Karyawan" action="action_karyawan_view" parent="menu_lhm_karyawan" sequence="10" groups="group_plantation_supervisor,group_plantation_operator_employee"/>
         <!--End Of Employee Form -->
 
@@ -711,7 +770,7 @@
                                 </group>
                             </group>
                         </group>
-                        <group string="History UMR" coslpan="8" attrs="{'invisible': [('monthly_employee','=',True)]}" groups="c10i_lhm_v16.group_plantation_manager">
+                        <group string="History UMR" colspan="8" attrs="{'invisible': [('monthly_employee','=',True)]}" groups="c10i_lhm_v16.group_plantation_manager">
                             <field name="umr_ids" nolabel="1" readonly="1">
                                 <tree>
                                     <field name="date_from"/>

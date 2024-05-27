@@ -21,19 +21,19 @@ class hr_employee(models.Model):
     _description    = 'Employee Management'
 
     #Override From HR base Odoo
-    work_phone      = fields.Char('No. Telephone', related='address_id.phone', readonly=True)
-    mobile_phone    = fields.Char('No. Handphone', related='address_id.mobile', readonly=True)
-    work_email      = fields.Char('Alamat Email', related='address_id.email', readonly=True)
-    work_location   = fields.Char('Lokasi Pekerjaan')
+    work_phone      = fields.Char('No. Telephone', related='address_id.phone', readonly=True) #sudah ada
+    mobile_phone    = fields.Char('No. Handphone', related='address_id.mobile', readonly=True) #sudah ada
+    work_email      = fields.Char('Alamat Email', related='address_id.email', readonly=True) #sudah ada
+    work_location   = fields.Char('Lokasi Pekerjaan') ##sudah ada tapi berubah menjadi work_location_id
     gender          = fields.Selection([
                         ('Laki-laki', 'Laki-laki'),
                         ('Perempuan', 'Perempuan'),
                         ('Lainnya', 'Lainnya')
-                        ], string='Jenis Kelamin', groups='hr.group_hr_user')
+                        ], string='Jenis Kelamin', groups='hr.group_hr_user') # Sudah ada
     marital         = fields.Selection([
                         ('TK', 'Tidak Menikah'),
                         ('K', 'Menikah'),
-                        ], string='Status Pernikahan', groups='hr.group_hr_user')
+                        ], string='Status Pernikahan', groups='hr.group_hr_user') #sudah ada
 
     #New Fields
     street                  = fields.Char(string="Alamat 1")
@@ -53,6 +53,8 @@ class hr_employee(models.Model):
     license_ids             = fields.One2many('hr.employee.driving.license.line', 'employee_id', string="SIM", )
     experinece_ids          = fields.One2many('hr.employee.experience.line', 'employee_id', string="Pengalaman Kerja", )
     ptkp_history_ids        = fields.One2many('hr.ptkp.history', 'employee_id', string="PTKP History", )
+    calendar_id             = fields.Many2one('resource.calendar', string="Jam Kerja")
+
 
     @api.model
     def create(self, values):
