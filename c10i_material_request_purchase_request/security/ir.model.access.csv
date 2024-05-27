@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_material_request_pr_user,material.request pr_user,model_material_request,purchase_request.group_purchase_request_user,1,0,0,0
+access_material_request_line_pr_user,material.request.line pr_user,model_material_request_line,purchase_request.group_purchase_request_user,1,0,0,0
+access_purchase_request_mr_user,purchase.request mr_user,model_purchase_request,c10i_material_request.group_material_request_user,1,0,0,0
+access_purchase_request_line_mr_user,purchase.request.line mr_user,model_purchase_request_line,c10i_material_request.group_material_request_user,1,0,0,0
+access_wizard_create_internal_move,wizard.create.internal.move mr_user,model_wizard_create_internal_move,,1,1,1,1
+access_wizard_create_internal_move_line,wizard.create.internal.move.line mr_user,model_wizard_create_internal_move_line,,1,1,1,1

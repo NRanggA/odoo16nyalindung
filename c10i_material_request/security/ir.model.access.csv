@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_material_request_user,material.request user,model_material_request,base.group_user,1,1,1,0
+access_material_request_line_user,material.request.line user,model_material_request_line,base.group_user,1,1,1,1
+access_material_request_mngr,material.request manager,model_material_request,c10i_material_request.group_material_request_manager,1,1,1,1
+access_material_request_stock_user,material.request,model_material_request,stock.group_stock_user,1,0,0,0
+access_material_request_line_stock_user,material.request.line,model_material_request_line,stock.group_stock_user,1,0,0,0
+access_stock_location_mr_user,stock.location,stock.model_stock_location,c10i_material_request.group_material_request_user,1,0,0,0
+access_stock_warehouse_mr_user,stock.warehouse,stock.model_stock_warehouse,c10i_material_request.group_material_request_user,1,0,0,0
+access_stock_picking_mr_user,stock.picking,stock.model_stock_picking,c10i_material_request.group_material_request_user,1,1,1,1
+access_stock_move_mr_user,stock.move,stock.model_stock_move,c10i_material_request.group_material_request_user,1,1,1,0
+access_stock_location_mr_manager,stock.location,stock.model_stock_location,c10i_material_request.group_material_request_manager,1,0,0,0
+access_stock_warehouse_mr_manager,stock.warehouse,stock.model_stock_warehouse,c10i_material_request.group_material_request_manager,1,0,0,0
+access_stock_picking_mr_manager,stock.picking,stock.model_stock_picking,c10i_material_request.group_material_request_manager,1,1,1,1
+access_stock_move_mr_manager,stock.move,stock.model_stock_move,c10i_material_request.group_material_request_manager,1,1,1,1

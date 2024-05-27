@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="material_request_form" model="ir.ui.view">
+        <field name="name">material.request.form</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <form string="Material Request">
+                <header>
+                    <button name="action_submit" string="Submit" states="draft" type="object" class="oe_highlight"/>
+                    <button name="action_approved" string="Approve" states="submit" type="object" class="oe_highlight" groups="c10i_material_request.group_material_request_manager"/>
+                    <button name="action_done" string="Close" type="object" class="oe_highlight" attrs="{'invisible': ['|',('state','!=','approved'),('issue_state','!=','issued')]}"/>
+                    <button name="force_close" string="Force Close" attrs="{'invisible': [('allow_force_close','=',False)]}" type="object"/>
+                    <button name="action_reject" string="Reject" states="submit" type="object" groups="c10i_material_request.group_material_request_manager"/>
+                    <button name="action_cancel" string="Cancel" states="draft,submit,reject,approved" type="object" groups="c10i_material_request.group_material_request_manager"/>
+                    <button name="action_draft" string="Set to Draft" states="cancel,reject" type="object" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submit,approved,done"/>
+                </header>
+                <sheet>
+                    <field name="issue_state" invisible="1" />
+                    <field name="allow_force_close" invisible="1" />
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object"  name="action_open_picking"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':[('picking_count', '=', 0)]}"
+                            groups="stock.group_stock_user">
+                            <field name="picking_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" nolabel="1" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="requested_by" required="1" attrs="{'readonly': [('state','!=','draft')]}" options="{'no_create_edit': True, 'no_create': True}"/>
+                            <field name="description" attrs="{'readonly': [('state','!=','draft')]}"/>
+                        </group>
+                        <group>
+                            <field name="date_request" required="1" attrs="{'readonly': [('state','!=','draft')]}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="picking_type_id" required="1" attrs="{'readonly': [('state','!=','draft')]}" options="{'no_create_edit': True, 'no_create': True}"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Products">
+                            <field name="line_ids" required="1" attrs="{'readonly': [('state','in',('done','reject','cancel'))]}" >
+                                <tree editable="bottom">
+                                    <field name="product_id" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="name" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="product_qty" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="qty_available"/>
+                                    <field name="uom_id" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="qty_issued_method" invisible="1"/>
+                                    <field name="qty_done_manual" invisible="1"/>
+                                    <field name="qty_done" attrs="{'column_invisible': [('parent.state', 'not in', ('approved', 'done'))], 'readonly': [('qty_issued_method', '!=', 'manual')]}" optional="show"/>
+                                    <field name="qty_to_issue" invisible="1"/>
+                                </tree>
+                                <form>
+                                    <label for="name" />
+                                    <field name="name" nolabel="1"/>
+                                    <group>
+                                        <group>
+                                            <field name="product_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                                            <field name="product_qty"/>
+                                            <field name="uom_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                                        </group>
+                                        <group>
+                                            <field name="qty_done"/>
+                                            <field name="qty_available"/>
+                                        </group>
+                                    </group>
+                                    <label for="move_ids" attrs="{'invisible': [('move_ids','=',[])]}"/>
+                                    <field name="move_ids" attrs="{'invisible': [('move_ids','=',[])]}" readonly="1"/>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="material_request_tree" model="ir.ui.view">
+        <field name="name">material.request.tree</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <tree string="Material Request">
+                <field name="name" />
+                <field name="requested_by"/>
+                <field name="date_request"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state" widget="badge" decoration-danger="state=='reject'" decoration-warning="state=='submit'" decoration-success="state=='approved'"/>
+                <field name="issue_state" widget="badge" optional="show" decoration-warning="issue_state in ('partial','to_issue')" decoration-success="issue_state=='issued'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="material_request_search" model="ir.ui.view">
+        <field name="name">material.request.select</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <search string="Search Material Request">
+                <field name="name"/>
+                <field name="requested_by"/>
+                <filter
+                    name="mr_to_issue"
+                    string="To Issue"
+                    domain="[('issue_state','in', ['to_issue','partial'])]"
+                    help="No RFQ or Purchase has been created"
+                />
+             </search>
+        </field>
+    </record>
+    
+    <record model="ir.actions.act_window" id="material_request_action">
+        <field name="name">Material Requests</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">material.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain"></field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="material_request_search" />
+    </record>
+
+    <menuitem id="menu_material_request_root" sequence="10" name="Material Requests" web_icon="c10i_material_request,static/description/icon.png" groups="c10i_material_request.group_material_request_user"/>
+
+    <menuitem id="submenu_material_request" parent="menu_material_request_root" sequence="1" name="Material Requests"/>
+    
+    <menuitem action="material_request_action" id="menu_material_request" parent="submenu_material_request" sequence="1"/>
+
+</odoo>

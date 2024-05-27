@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="account_direct_payment_form" model="ir.ui.view">
+        <field name="name">account.direct.payment.form.plantation</field>
+        <field name="model">account.direct.payment</field>
+        <field name="inherit_id" ref="c10i_direct_payment.account_direct_payment_form"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="before">
+                <field name="operating_unit_id" options="{'no_create_edit': True, 'no_create': True}" groups="operating_unit.group_multi_operating_unit"/>
+            </field>
+            <field name="account_id" position="before">
+                <field name="filtered_cost_activity_ids" invisible="1"/>
+                <field name="cost_allocation_mark" invisible="1"/>
+
+                <field name="cost_allocation_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                <field name="cost_center_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'required': [('cost_allocation_mark','!=','none')]}"/>
+                <field name="cost_activity_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('id','in',filtered_cost_activity_ids)]" attrs="{'required': [('cost_allocation_mark','!=','none')]}"/>
+            </field>
+        </field>
+    </record>
+    
+    <record id="account_direct_payment_tree" model="ir.ui.view">
+        <field name="name">account.direct.payment.tree.plantation</field>
+        <field name="model">account.direct.payment</field>
+        <field name="inherit_id" ref="c10i_direct_payment.account_direct_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="before">
+                <field name="operating_unit_id" optional="hide" groups="operating_unit.group_multi_operating_unit"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="account_employee_expense_form" model="ir.ui.view">
+        <field name="name">account.direct.payment.employee.expense.form.plantation</field>
+        <field name="model">account.direct.payment</field>
+        <field name="inherit_id" ref="c10i_direct_payment_employee_expense.account_employee_expense_form"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="before">
+                <field name="operating_unit_id" options="{'no_create_edit': True, 'no_create': True}" groups="operating_unit.group_multi_operating_unit"/>
+            </field>
+            <field name="account_id" position="before">
+                <field name="filtered_cost_activity_ids" invisible="1"/>
+                <field name="cost_allocation_mark" invisible="1"/>
+
+                <field name="cost_allocation_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                <field name="cost_center_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'required': [('cost_allocation_mark','!=','none')]}"/>
+                <field name="cost_activity_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('id','in',filtered_cost_activity_ids)]" attrs="{'required': [('cost_allocation_mark','!=','none')]}"/>
+            </field>
+        </field>
+    </record>
+    
+    <record id="account_employee_expense_tree" model="ir.ui.view">
+        <field name="name">account.direct.payment.employee.expense.tree.plantation</field>
+        <field name="model">account.direct.payment</field>
+        <field name="inherit_id" ref="c10i_direct_payment_employee_expense.account_employee_expense_tree"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="before">
+                <field name="operating_unit_id" optional="hide" groups="operating_unit.group_multi_operating_unit"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="account_employee_advance_tree" model="ir.ui.view">
+        <field name="name">account.direct.payment.employee.advance.tree.plantation</field>
+        <field name="model">account.direct.payment</field>
+        <field name="inherit_id" ref="c10i_direct_payment_employee_expense.account_employee_advance_tree"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="before">
+                <field name="operating_unit_id" optional="hide" groups="operating_unit.group_multi_operating_unit"/>
+            </field>
+        </field>
+    </record>
+</odoo>

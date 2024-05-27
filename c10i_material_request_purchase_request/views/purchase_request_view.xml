@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="view_purchase_request_form" model="ir.ui.view">
+        <field name="name">purchase.request.form</field>
+        <field name="model">purchase.request</field>
+        <field name="inherit_id" ref="purchase_request.view_purchase_request_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button type="object"  name="action_open_material_request"
+                    class="oe_stat_button"
+                    icon="fa-shopping-cart" attrs="{'invisible': [('material_request_count','=',0)]}"
+                    groups="c10i_material_request.group_material_request_user">
+                    <field name="material_request_count" widget="statinfo"/>
+                </button>
+
+
+                <button type="object"  name="action_open_internal_move"
+                    class="oe_stat_button"
+                    icon="fa-shopping-cart" attrs="{'invisible': [('internal_move_count','=',0)]}">
+                    <field name="internal_move_count" widget="statinfo"/>
+                </button>
+
+
+
+            </div>
+            <xpath expr="//button[@name='button_approved']" position="before">
+                <button
+                        name="%(action_internal_move)d"
+                        attrs="{'invisible': [('state','=',['draft','to_approve'])]}"
+                        string="Create IM"
+                        type="action"
+                        class="oe_highlight"
+                    />
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="before">
+                <field name="material_request_id" invisible="1" groups="c10i_material_request.group_material_request_user"/>
+            </xpath>
+            <xpath expr="//field[@name='picking_type_id']" position="before">
+                <field name="warehouse_id"/>
+            </xpath>
+             <xpath expr="//field[@name='picking_type_id']" position="attributes">
+                 <attribute name="domain">
+                    [('warehouse_id', '=', warehouse_id),('code','=','incoming')]
+                </attribute>
+            </xpath>
+            
+
+            <xpath expr="//field[@name='line_ids']/tree/field[@name='product_id']" position="before">
+                <field name="material_request_line_id" invisible="1" groups="c10i_material_request.group_material_request_user"/>
+               
+            </xpath>
+
+              <xpath expr="//field[@name='line_ids']/form/sheet/group/group/field[@name='product_id']" position="after">
+                <field name="qty_im_process"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

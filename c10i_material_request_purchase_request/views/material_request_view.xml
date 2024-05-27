@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="material_request_form" model="ir.ui.view">
+        <field name="name">material.request.form</field>
+        <field name="model">material.request</field>
+        <field name="inherit_id" ref="c10i_material_request.material_request_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button type="object"  name="action_open_purchase_request"
+                    class="oe_stat_button"
+                    icon="fa-shopping-cart" attrs="{'invisible': [('state','!=','approved'),('purchase_request_count','=',0)]}"
+                    groups="purchase_request.group_purchase_request_user">
+                    <field name="purchase_request_count" widget="statinfo"/>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

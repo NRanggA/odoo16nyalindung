@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<odoo>
+	<record id="view_account_move_line_filter" model="ir.ui.view">
+        <field name="name">account.move.line.search</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_account_move_line_filter"/>
+        <field name="arch" type="xml">
+            <filter name="group_by_account" position="after">
+                <filter string="Cost Allocation" name="group_by_cost_allocation" domain="[]" context="{'group_by': 'cost_allocation_id'}"/>
+                <filter string="Cost Center" name="group_by_cost_center" domain="[]" context="{'group_by': 'cost_center_id'}"/>
+                <filter string="Activity" name="group_by_activity" domain="[]" context="{'group_by': 'cost_activity_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+
+     <record id="move_line_tree_running_account_grouped" model="ir.ui.view">
+        <field name="name">account.move.line.tree.running.account.grouped</field>
+        <field name="model">account.move.line</field>
+        <field eval="1" name="priority"/>
+        <field name="arch" type="xml">
+            <tree string="Journal Items" create="false" expand="context.get('expand', False)" multi_edit="1">
+                <field name="date" optional="show" readonly="1"/>
+                <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" optional="show"/>
+                <field name="move_id" optional="show"/>
+                <field name="account_id" optional="show" options="{'no_open': True, 'no_create': True}"
+                       domain="[('company_id', '=', company_id)]"
+                       groups="account.group_account_readonly"/>
+                <field name="statement_id" invisible="1"/>
+                <field name="partner_id" optional="show" readonly="1"/>
+                <field name="ref" optional="hide"/>
+                <field name="name"/>
+                <field name="reconciled" invisible="1"/>
+                <field name="matching_number" string="Matching" optional="show" invisible="1"/>
+                <field name="reconcile_model_id" invisible="1"/>
+                <field name="date_maturity" optional="hide" invisible="1"/>
+                <field name="analytic_account_id" optional="hide" groups="analytic.group_analytic_accounting" attrs="{'readonly':[('parent_state','=','posted')]}" invisible="1"/>
+                <field name="analytic_tag_ids" optional="hide" readonly="1" groups="analytic.group_analytic_tags" invisible="1"/>
+                <field name="debit" sum="Total Debit" readonly="1"/>
+                <field name="credit" sum="Total Credit" readonly="1"/>
+                <field name="balance" sum="Total Balance" readonly="1" optional="hide"/>
+                <field name="amount_currency" readonly="1" groups="base.group_multi_currency"/>
+                <field name="currency_id" readonly="1" groups="base.group_multi_currency" optional="hide" string="Original Currency"/>
+                <field name="company_currency_id" invisible="1"/>
+                <field name="parent_state" invisible="1"/>
+                <field name="tax_ids" widget="many2many_tags" width="0.5" optional="hide" readonly="1" invisible="1"/>
+                <field name="tax_tag_ids" widget="many2many_tags" width="0.5" optional="hide" string="Tax Grids"
+                       options="{'no_open': True, 'no_create': True}"
+                       domain="[('applicability', '=', 'taxes')]" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_account_moves_journal_running_account" model="ir.actions.act_window">
+        <field name="context">{'search_default_group_by_account': 1, 'search_default_group_by_cost_center': 1, 'search_default_posted':1, 'name_groupby':1, 'expand': 1}</field>
+        <field name="name">Running Account</field>
+        <field name="res_model">account.move.line</field>
+        <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
+        <field name="view_id" ref="move_line_tree_running_account_grouped"/>
+        <field name="view_mode">tree,pivot,graph</field>
+    </record>
+</odoo>

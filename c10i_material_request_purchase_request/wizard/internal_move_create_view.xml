@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+
+
+	<record id="view_create_internal_move" model="ir.ui.view">
+		<field name="name">Create Internal Transfer</field>
+		<field name="model">wizard.create.internal.move</field>
+		<field name="arch" type="xml">
+			<form string="Create Internal Transfer">
+				<sheet>
+				<separator string="Detail Internal Transfer"/>
+					<group>
+						<field name="source_loc_id" required="1"/>
+						<field name="dest_loc_id" required="1"/>
+					</group>
+					<notebook colspan="4">
+						<page string="Detail Product">
+							<field name="lines">
+								<tree string="Product" editable="bottom">
+									<field name="pr_line_id" invisible="0"/>
+									<field name="product_id" options="{'no_create': True}"/>
+									<field name="unprocessed_qty" invisible="1"/>
+									<field name="product_qty"/>
+								</tree>
+							</field>
+						</page>
+					</notebook>
+				</sheet>
+				<footer>
+					<button name="action_create_im" string="Create Internal Transfer" type="object" class="oe_highlight"/>
+					<button string="Cancel" class="btn-default" special="cancel"/>
+				</footer>
+			</form>
+		</field>
+	</record>
+
+
+
+	  <record id="action_internal_move" model="ir.actions.act_window">
+          	<field name="name">Create Internal Transfer</field>
+        	<field name="type">ir.actions.act_window</field>
+        	<field name="res_model">wizard.create.internal.move</field>
+        	<field name="view_mode">form</field>
+        	<field name="view_id" ref="view_create_internal_move"/>
+        	<field name="target">new</field>
+        </record>
+
+
+</odoo>

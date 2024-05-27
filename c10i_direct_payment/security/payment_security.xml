@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2018-2019 ForgeFlow, S.L.
+     License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl-3.0) -->
+<odoo>
+    <record model="ir.rule" id="direct_payment_comp_rule">
+        <field name="name">Direct Payment multi-company</field>
+        <field name="model_id" ref="c10i_direct_payment.model_account_direct_payment" />
+        <field name="global" eval="True" />
+        <field name="domain_force">
+            ['|',('company_id','=',False),('company_id', 'in', company_ids)]
+        </field>
+    </record>
+    <record model="ir.rule" id="direct_payment_line_comp_rule">
+        <field name="name">Direct Payment Line multi-company</field>
+        <field name="model_id" ref="c10i_direct_payment.model_account_direct_payment_line" />
+        <field name="global" eval="True" />
+        <field name="domain_force">
+            ['|',('payment_id.company_id','=',False),('payment_id.company_id', 'in', company_ids)]
+        </field>
+    </record>
+</odoo>

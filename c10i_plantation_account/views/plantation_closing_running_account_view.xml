@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- plantation.closing.running.account -->
+    <record id="plantation_closing_running_account_form" model="ir.ui.view">
+        <field name="name">plantation.closing.running.account.form</field>
+        <field name="model">plantation.closing.running.account</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header>
+                </header>
+                <sheet>
+                    <!-- <field name="closing_sequence_id" invisible="1" /> -->
+                    <field name="type" invisible="1"/>
+                    <field name="currency_id" invisible="1" />
+                    <group>
+                        <group>
+                            <field name="running_id" />
+                            <field name="total_usage" />
+                            <field name="total_cost" />
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+
+                    <field name="line_ids">
+                    	<tree>
+                            <!-- <field name="closing_running_line_id" /> -->
+                            <!-- <field name="running_id" /> -->
+                            <!-- <field name="currency_id" /> -->
+                            <field name="cost_allocation_id" />
+                            <field name="cost_center_id" />
+                            <field name="cost_activity_id" />
+                            <field name="dest_account_id" />
+                            <field name="usage" />
+                            <field name="distributed_cost" />
+                    	</tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="plantation_closing_running_account_tree" model="ir.ui.view">
+        <field name="name">plantation.closing.running.account.tree</field>
+        <field name="model">plantation.closing.running.account</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="currency_id" invisible="1" />
+                <field name="type"/>
+                <field name="running_id" />
+                <field name="total_usage" sum="usage"/>
+                <field name="total_cost" sum="cost"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="plantation_closing_running_account_search" model="ir.ui.view">
+        <field name="name">plantation.closing.running.account.search</field>
+        <field name="model">plantation.closing.running.account</field>
+        <field name="arch" type="xml">
+            <search string="Search Payslip">
+                <field name="running_id"/>
+                <group expand="0" string="Group By...">
+                    <filter name="group_running" string="Running" domain="[]" context="{'group_by' : 'running_id'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_plantation_closing_running_account" model="ir.actions.act_window">
+        <field name="name">Running Account</field>
+        <field name="res_model">plantation.closing.running.account</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="plantation_closing_running_account_search"/>
+        <field name="context">{'default_search_group_running': 1}</field>
+    </record>
+    <!-- END: plantation.closing.running.account -->
+</odoo>

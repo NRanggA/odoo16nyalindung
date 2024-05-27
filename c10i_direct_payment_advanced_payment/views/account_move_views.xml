@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <record id="view_move_form_inherit_account_advanced_vendor" model="ir.ui.view">
+        <field name="name">account.move.view.form.inherit.vendor.advanced.payment</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='journal_div']" position="after">
+
+                <!-- <field name="has_advanced" attr="{'invisible':[('move_type','not in',['in_invoice','out_invoice'])]}" /> -->
+                <field name="has_advanced" invisible="1" />
+                <field name="is_advanced" invisible="1" />
+            </xpath>
+
+            <xpath expr="//button[@name='button_draft']" position="after">
+                <button string="Add Advanced" name="action_add_advanced" type="object" attrs="{'invisible': ['|',('is_advanced','=',True),('has_advanced','=',True)]}"/>
+                <button string="Remove Advanced" name="action_remove_advanced" type="object" attrs="{'invisible': ['|',('is_advanced','=',True),('has_advanced','=',False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    
+    <!-- ir.module.category -->
+    <!-- <record id="module_category_account" model="ir.module.category">
+        <field name="name">Finance</field>
+        <field name="sequence">11</field>
+        <field name="parent_id" ref="c10i_plantation.base_module_category_plantation"/>
+    </record> -->
+    <!-- END: ir.module.category -->
+
+    <!-- <record id="group_plantation_account_user" model="res.groups">
+        <field name="name">Operator</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="category_id" ref="module_category_account"/>
+    </record> -->
+
+    <!-- <record id="group_plantation_account_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_account"/>
+        <field name="implied_ids" eval="[(4, ref('group_plantation_account_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record> -->
+    
+    <!-- <data noupdate="1"> -->
+    <data noupdate="0">
+        <!-- Global Rule -->
+        <record model="ir.rule" id="account_journal_multiou_rule">
+            <field name="name">Journal multi-operatingunit</field>
+            <field name="model_id" ref="account.model_account_journal" />
+            <field name="global" eval="True" />
+            <field name="domain_force">
+                ['|',('operating_unit_id','=',False),('operating_unit_id', 'in', operating_unit_ids)]
+            </field>
+        </record>
+
+        <record model="ir.rule" id="direct_payment_multiou_rule">
+            <field name="name">Direct Payment multi-operatingunit</field>
+            <field name="model_id" ref="c10i_direct_payment.model_account_direct_payment" />
+            <field name="global" eval="True" />
+            <field name="domain_force">
+                ['|',('operating_unit_id','=',False),('operating_unit_id', 'in', operating_unit_ids)]
+            </field>
+        </record>
+        
+        <record model="ir.rule" id="direct_payment_line_multiou_rule">
+            <field name="name">Direct Payment Line multi-operatingunit</field>
+            <field name="model_id" ref="c10i_direct_payment.model_account_direct_payment_line" />
+            <field name="global" eval="True" />
+            <field name="domain_force">
+                ['|',('payment_id.operating_unit_id','=',False),('payment_id.operating_unit_id', 'in', operating_unit_ids)]
+            </field>
+        </record>
+
+        <!-- Plantation User Rule -->
+        <!-- <record model="ir.rule" id="plantation_account_journal_multiou_rule">
+            <field name="name">Plantation Journal multi-operatingunit</field>
+            <field name="model_id" ref="account.model_account_journal" />
+            <field name="groups" eval="[(4,ref('c10i_plantation.group_plantation_account_user'))]"/>
+            <field name="domain_force">
+                [('operating_unit_id', 'in', operating_unit_ids)]
+            </field>
+        </record> -->
+
+        <record model="ir.rule" id="plantation_direct_payment_multiou_rule">
+            <field name="name">Plantation Direct Payment multi-operatingunit</field>
+            <field name="model_id" ref="c10i_direct_payment.model_account_direct_payment" />
+            <field name="groups" eval="[(4,ref('c10i_plantation.group_plantation_account_user'))]"/>
+            <field name="domain_force">
+                [('operating_unit_id', 'in', operating_unit_ids)]
+            </field>
+        </record>
+        
+        <record model="ir.rule" id="plantation_direct_payment_line_multiou_rule">
+            <field name="name">Plantation Direct Payment Line multi-operatingunit</field>
+            <field name="model_id" ref="c10i_direct_payment.model_account_direct_payment_line" />
+            <field name="groups" eval="[(4,ref('c10i_plantation.group_plantation_account_user'))]"/>
+            <field name="domain_force">
+                [('payment_id.operating_unit_id', 'in', operating_unit_ids)]
+            </field>
+        </record>
+    </data>
+
+</odoo>

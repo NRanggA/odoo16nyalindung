@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_direct_payment_user,account.direct.payment user,c10i_direct_payment.model_account_direct_payment,account.group_account_invoice,1,1,1,1,
+access_account_direct_payment_line_user,account.direct.payment.line user,c10i_direct_payment.model_account_direct_payment_line,account.group_account_invoice,1,1,1,1,
+access_account_direct_payment_readonly,account.direct.payment readony,c10i_direct_payment.model_account_direct_payment,account.group_account_readonly,1,0,0,0,
+access_account_direct_payment_line_readonly,account.direct.payment.line readonly,c10i_direct_payment.model_account_direct_payment_line,account.group_account_readonly,1,0,0,0,

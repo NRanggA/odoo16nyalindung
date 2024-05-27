@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<odoo>
+    <menuitem id="finance_root" name="Branch Finance" sequence="43" web_icon="c10i_plantation_account,static/description/icon.png" groups="c10i_plantation.group_plantation_account_user"/>
+
+    <record id="open_plantation_account_journal_dashboard_kanban" model="ir.actions.act_window">
+        <field name="name">Accounting Dashboard</field>
+        <field name="res_model">account.journal</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="usage">menu</field>
+        <field name="context">{'search_default_liquidity':1}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_neutral_face">
+                This is the accounting dashboard
+            </p><p>
+                If you have not installed a chart of account, please install one first.<br/>
+               <a type="action" name="%(account.open_account_charts_modules)d" tabindex="-1">Browse available countries.</a>
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_board_journal_plantation" name="Dashboard" action="open_plantation_account_journal_dashboard_kanban" sequence="1" parent="c10i_plantation_account.finance_root"/>
+
+    <menuitem id="finance_inbound_root" name="Inbound" sequence="5" parent="c10i_plantation_account.finance_root"/>
+        <menuitem id="finance_direct_payment_in" name="Direct Receive" sequence="10" parent="c10i_plantation_account.finance_inbound_root" action="c10i_direct_payment.account_direct_payment_action"/>
+
+    <menuitem id="finance_outbound_root" name="Outbound" sequence="10" parent="c10i_plantation_account.finance_root"/>
+        <menuitem id="finance_bill" name="Bills" sequence="5" parent="c10i_plantation_account.finance_outbound_root" action="account.action_move_in_invoice_type"/>
+        <menuitem id="finance_direct_payment_out" name="Direct Payment" sequence="10" parent="c10i_plantation_account.finance_outbound_root" action="c10i_direct_payment.account_direct_payment_action"/>
+        <!-- <menuitem id="finance_direct_payment" name="Direct Payment" sequence="10" parent="c10i_plantation_account.finance_outbound_root"/> -->
+    
+    <menuitem id="finance_report_root" name="Reporting" sequence="100" parent="c10i_plantation_account.finance_root"/>
+
+    <menuitem id="plantation_closing_root" name="Plantation" sequence="1" parent="account.menu_finance_entries"/>
+    <menuitem id="menu_closing_sequence" action="action_plantation_closing_sequence" sequence="1" parent="plantation_closing_root"/>
+</odoo>
