@@ -58,7 +58,7 @@ class AccountPayment(models.Model):
                     amount_total += amount
                     payment_lines.append((0, 0, line_vals))
  
-                    if pline.write_off_amount != 0 and pline.write_off_account_id:
+                    if pline.write_off_amount != 0 and pline.wo_account_id:
                         write_off_amount = self.currency_id._convert(pline.write_off_amount, self.move_id.company_currency_id, self.company_id, self.date)
                         if write_off_amount > 0:
                             wo_debit = write_off_amount
@@ -66,7 +66,7 @@ class AccountPayment(models.Model):
                             wo_kredit = abs(write_off_amount)
                         
                         write_off_vals = {
-                            'account_id': pline.write_off_account_id,
+                            'account_id': pline.wo_account_id,
                             'debit': wo_debit,
                             'credit': wo_kredit,
                             'amount_currency': amount_currency,
@@ -237,7 +237,7 @@ class AccountPaymentLine(models.Model):
     amount_residual = fields.Float('Amount Residual')
     amount_to_pay = fields.Float('Amount to Pay')
     write_off_amount = fields.Float('Write off Amount')
-    write_off_account_id = fields.Many2one('account.account', string='Write off Account')
+    wo_account_id = fields.Many2one('account.account', string='Write off Account')
     origin = fields.Char('Origin')
     is_full_payment = fields.Boolean('Full Payment')
     payment_difference = fields.Float('Payment Difference', compute='_get_payment_diffrence')
