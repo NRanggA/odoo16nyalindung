@@ -126,6 +126,87 @@
                     <field name="work_end_date"/>
                     <field name="move_state" invisible="0"/>
                 </xpath>
+
+                <xpath expr="//field[@name='no_induk']" position="replace">
+                    <label for="no_induk"/>
+                    <div>
+                        <field name="no_induk" nolabel="1" style="width:60%;" attrs="{'required':[('custom_nik','=',True)],'readonly': [('no_induk', '!=', '/'),('custom_nik','=',False)]}"/>
+                        <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
+                        <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
+                        <field name="custom_nik" nolabel="1"/><label for="custom_nik"/>
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='bpjs_kesehatan']" position="replace">
+                    <label for="bpjs_kesehatan"/>
+                    <div>
+                        <field name="kesehatan" nolabel="1"/>
+                        <field name="bpjs_kesehatan" nolabel="1" style="width:90%;" attrs="{'required':[('kesehatan','=',True)],'readonly': [('kesehatan','=',False)]}"/>
+                        <field name="bpjs_kes_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('kesehatan','=',True)],'readonly': [('kesehatan','=',False)]}"/>
+
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='npwp']" position="replace">
+                    <label for="npwp"/>
+                    <div>
+                        <field name="is_npwp" nolabel="1"/>
+                        <field name="npwp" nolabel="1" style="width:90%;" attrs="{'required':[('is_npwp','=',True)],'readonly': [('is_npwp','=',False)]}"/>
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='bpjs_ketenagakerjaan']" position="replace">
+                    <label for="bpjs_ketenagakerjaan"/>
+                    <div>
+                        <field name="ketenagakerjaan" nolabel="1"/>
+                        <field name="bpjs_ketenagakerjaan" nolabel="1" style="width:90%;" attrs="{'required':[('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
+                        <field name="bpjs_tk_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
+                    </div>
+                </xpath>
+               
+                <xpath expr="//page[@name='personal_information']" position="after">
+                    <page string="History">
+                        <group string="Pindah Kemandoran">
+                            <field name="movement_ids" readonly="1">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="src_foreman_id"/>
+                                    <field name="dest_foreman_id"/>
+                                    <field name="moved_date"/>
+                                    <field name="note"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group attrs="{'invisible': [('basic_salary_type','!=','employee')]}" string="UMR" groups="c10i_lhm_v16.group_plantation_manager">
+                            <field name="umr_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="umr_month"/>
+                                    <field name="year"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+                
+                <xpath expr="//field[@name='calendar_id']" position="after">
+                    <field name="is_lhm" readonly="1"/>
+                </xpath>
+
+                <xpath expr="//page[@name='education_information']" position="attributes">
+                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
+                </xpath>
+                <xpath expr="//page[@name='license_information']" position="attributes">
+                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
+                </xpath>
+                <xpath expr="//page[@name='experience_information']" position="attributes">
+                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
+                </xpath>
+                <xpath expr="//button[@name='toggle_active']" position="attributes">
+                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
+                </xpath>
             </field>
         </record>
 
@@ -154,7 +235,8 @@
 
                 <!-- Mengubah naama string pada beberapa field -->
                 <xpath expr="//field[@name='job_id']" position="attributes">
-                    <attribute name="string">Posisi</attribute>
+                    <attribute name="string">Jabatan</attribute>
+                    <attribute name="domain">[('department_id','=',department_id),('is_lhm','=',True)]</attribute>
                 </xpath>
                 <xpath expr="//field[@name='department_id']" position="attributes">
                     <attribute name="string">Department</attribute>
@@ -170,7 +252,7 @@
                 </xpath>
 
                 <!-- Invisible Fields -->
- <!--                <xpath expr="//field[@name='category_ids']" position="attributes">
+ <!--           <xpath expr="//field[@name='category_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
                 <xpath expr="//field[@name='work_location_id']" position="attributes">
@@ -194,29 +276,20 @@
                 <!-- End Of Invisible Field -->
 
                 <!-- Required Field -->
-                <!-- <xpath expr="//field[@name='department_id']" position="attributes">
+                <xpath expr="//field[@name='department_id']" position="attributes">
                     <attribute name="required">1</attribute>
-                </xpath> -->
-                <!-- <xpath expr="//field[@name='sub_department_id']" position="attributes">
+                </xpath>
+                <xpath expr="//field[@name='sub_department_id']" position="attributes">
                     <attribute name="required">1</attribute>
-                </xpath> -->
-                <!-- <xpath expr="//field[@name='job_id']" position="attributes">
+                </xpath>
+                <xpath expr="//field[@name='job_id']" position="attributes">
                     <attribute name="required">1</attribute>
-                </xpath> -->
-
+                </xpath>
                 <!-- End Of Required Field -->
+
                 <!-- Inject Group -->
-                <!-- <xpath expr="//page[@name='hr_settings']" position="attributes">
+                <xpath expr="//page[@name='hr_settings']" position="attributes">
                     <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_super</attribute>
-                </xpath>
-                <xpath expr="//page[@name='education_information']" position="attributes">
-                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
-                </xpath>
-                <xpath expr="//page[@name='license_information']" position="attributes">
-                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
-                </xpath>
-                <xpath expr="//page[@name='experience_information']" position="attributes">
-                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
                 </xpath>
                 <xpath expr="//page[@name='personal_information']" position="attributes">
                     <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
@@ -227,117 +300,8 @@
                 <xpath expr="//field[@name='identification_id']" position="attributes">
                     <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
                 </xpath>
-                <xpath expr="//button[@name='toggle_active']" position="attributes">
-                    <attribute name="groups">hr.group_hr_user,c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_operator_employee</attribute>
-                </xpath> -->
                 <!-- End Of Inject Group -->
 
-                <!-- String Modification -->
-                <!-- <xpath expr="//field[@name='job_id']" position="attributes">
-                    <attribute name="string">Jabatan</attribute>
-                    <attribute name="domain">[('department_id','=',department_id),('is_lhm','=',True)]</attribute>
-                </xpath> -->
-                <!-- End Of String Modification -->
-                <!-- <xpath expr="//field[@name='job_id']" position="after">
-                    <field name="afdeling_id" invisible="1"/>
-                    <field name="division_id" invisible="1"/>
-                    <field name="cost_center_id"/>
-                    <field name="plantation_location_type_id"/>
-                    <field name="plantation_location_id"/>
-                    <field name="plantation_activity_hkne_id"/>
-                    <field name="plantation_activity_natura_id"/>
-                    <field name="plantation_activity_bpjs_tk_id"/>
-                    <field name="plantation_activity_bpjs_kes_id"/>
-                </xpath> -->
-<!--                 <xpath expr="//page[@name='public']//group[@name='employee_data_info']" position="inside">
-                    <field name="type_id"/>
-                </xpath> -->
-<!--                 <xpath expr="//field[@name='no_induk']" position="replace">
-                    <label for="no_induk"/>
-                    <div>
-                        <field name="no_induk" nolabel="1" style="width:60%;" attrs="{'required':[('custom_nik','=',True)],'readonly': [('no_induk', '!=', '/'),('custom_nik','=',False)]}"/> -->
-                        <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
-                        <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
-                        <!-- <field name="custom_nik" nolabel="1"/><label for="custom_nik"/>
-                    </div>
-                    <field name="basic_salary_type" required="1" widget="radio" options="{'horizontal': true}"/>
-                </xpath>
-                <xpath expr="//field[@name='bpjs_kesehatan']" position="replace">
-                    <label for="bpjs_kesehatan"/>
-                    <div>
-                        <field name="kesehatan" nolabel="1"/>
-                        <field name="bpjs_kesehatan" nolabel="1" style="width:90%;" attrs="{'required':[('kesehatan','=',True)],'readonly': [('kesehatan','=',False)]}"/>
-                        <field name="bpjs_kes_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('kesehatan','=',True)],'readonly': [('kesehatan','=',False)]}"/>
-
-                    </div>
-                </xpath>
-                <xpath expr="//field[@name='npwp']" position="replace">
-                    <label for="npwp"/>
-                    <div>
-                        <field name="is_npwp" nolabel="1"/>
-                        <field name="npwp" nolabel="1" style="width:90%;" attrs="{'required':[('is_npwp','=',True)],'readonly': [('is_npwp','=',False)]}"/>
-                    </div>
-                </xpath>
-                <xpath expr="//field[@name='bpjs_ketenagakerjaan']" position="replace">
-                    <label for="bpjs_ketenagakerjaan"/>
-                    <div>
-                        <field name="ketenagakerjaan" nolabel="1"/>
-                        <field name="bpjs_ketenagakerjaan" nolabel="1" style="width:90%;" attrs="{'required':[('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
-                        <field name="bpjs_tk_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
-                    </div>
-                </xpath> -->
-                <!-- <xpath expr="//group[@name='employee_authority']" position="inside">
-                    <field name="mandor"/>
-                    <field name="master"/>
-                    <field name="kerani"/>
-                    <field name="auto_generate" groups="base.group_no_one"/>/>
-                    <field name="noedit_foreman" groups="base.group_no_one"/>
-                </xpath>
-                <xpath expr="//group[@name='employee_authority']" position="before">
-                    <group string="Kontrak Kerja">
-                        <field name="contract_type" options='{"no_open": True}' invisible="1"/>
-                        <label string="Periode Kontrak" invisible="1"/>
-                        <div invisible="1">
-                            <field name="start_date_contract" class="oe_inline" nolabel="1" invisible="1"/> s/d
-                            <field name="end_date_contract" nolabel="1" class="oe_inline" invisible="1"/>
-                        </div>
-                        <field name="kemandoran_id" required="1" attrs="{'readonly':[('noedit_foreman','=',True)]}"/>
-                        <field name="mandor_id" readonly="1"/>
-                        <field name="work_start_date"/>
-                        <field name="appointment_date"/>
-                        <field name="work_end_date"/>
-                        <field name="move_state" invisible="0"/>
-                    </group>
-                </xpath> -->
-                <!-- <xpath expr="//page[@name='personal_information']" position="after">
-                    <page string="History">
-                        <group string="Pindah Kemandoran">
-                            <field name="movement_ids" nolabel="1" readonly="1">
-                                <tree>
-                                    <field name="date"/>
-                                    <field name="src_foreman_id"/>
-                                    <field name="dest_foreman_id"/>
-                                    <field name="moved_date"/>
-                                    <field name="note"/>
-                                    <field name="state"/>
-                                </tree>
-                            </field>
-                        </group>
-                        <group attrs="{'invisible': [('basic_salary_type','!=','employee')]}" string="UMR" groups="c10i_lhm_v16.group_plantation_manager">
-                            <field name="umr_ids" nolabel="1" readonly="1">
-                                <tree>
-                                    <field name="date_from"/>
-                                    <field name="date_to"/>
-                                    <field name="umr_month"/>
-                                    <field name="year"/>
-                                </tree>
-                            </field>
-                        </group>
-                    </page>
-                </xpath> -->
-                <!-- <xpath expr="//field[@name='calendar_id']" position="after">
-                    <field name="is_lhm" readonly="1"/>
-                </xpath> -->
             </field>
         </record>
 
