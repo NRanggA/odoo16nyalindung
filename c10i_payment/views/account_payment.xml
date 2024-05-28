@@ -25,11 +25,11 @@
                   <field name="invoice_date" readonly="1"/>
                   <field name="due_date" readonly="1"/>
                   <field name="amount_residual" readonly="1"/>
-                  <field name="is_full_payment" />
-                  <field name="amount_to_pay" sum="amount_to_pay"/>
+                  <field name="is_full_payment" attrs="{'readonly': [('parent.state','=','posted')]}"/>
+                  <field name="amount_to_pay" sum="amount_to_pay" attrs="{'readonly': [('parent.state','=','posted')]}"/>
                   <field name="payment_difference"/>
-                  <field name="write_off_amount"/>
-                  <field name="wo_account_id"/>
+                  <field name="write_off_amount" attrs="{'readonly': [('parent.state','=','posted')]}"/>
+                  <field name="write_off_account_id" attrs="{'readonly': [('parent.state','=','posted')]}"/>
                 </tree>
               </field>
             </page>
