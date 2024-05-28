@@ -29,7 +29,7 @@
                   <field name="amount_to_pay" sum="amount_to_pay"/>
                   <field name="payment_difference"/>
                   <field name="write_off_amount"/>
-<!--                   <field name="write_off_account_id"/> -->
+                  <field name="wo_account_id"/>
                 </tree>
               </field>
             </page>
