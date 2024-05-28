@@ -114,6 +114,17 @@
             <field name="inherit_id" ref="hr.view_employee_form"/>
             <field name="arch" type="xml">
 
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="toggle_active" type="object" groups="hr.group_hr_user" class="oe_stat_button" icon="fa-archive">
+                        <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+                    </button>
+                </xpath>
+
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="placeholder">Nama Karyawan</attribute>
+                </xpath>
+
+                <!-- Ubah nama dari page -->
                 <page name="public" position="attributes">
                     <attribute name="string">Informasi Umum</attribute>
                 </page>
@@ -123,6 +134,15 @@
                 <page name="hr_settings" position="attributes">
                     <attribute name="string">Pengaturan HR</attribute>
                 </page>
+
+                <!-- Menghilangkan page yang tidak digunakan pada bawaan odoo -->
+                <xpath expr="//page[@name='personal_information']/group/group[3]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+<!--                 <xpath expr="//page[@name='personal_information']/group/group[4]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+ -->
 
                 <xpath expr="//page[@name='public']/*[1]" position="before">
                     <group>
@@ -136,6 +156,7 @@
                     </group>
                     <field name="notes" placeholder="Informasi Lain ..." colspan="4"/>
                 </xpath>
+
                 <xpath expr="//page[@name='personal_information']/*[1]" position="before">
                     <group>
                         <group string="Kewarganegaraan &amp; Data Lainnya">
@@ -165,6 +186,7 @@
                         </group>
                     </group>
                 </xpath>
+
                 <xpath expr="//page[@name='hr_settings']/*[1]" position="before">
                     <group>
                         <group string="Pengaturan Umum" name="active_group">
