@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <record id="account_view_account_payment_form_inherit" model="ir.ui.view">
+    <field name="name">account.view.account.payment.form.inherit</field>
+    <field name="model">account.payment</field>
+    <field name="inherit_id" ref="account.view_account_payment_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="//button[@name='button_open_invoices']" position="before">
+          <button name="get_bills" type="object" class="oe_stat_button" icon="fa-refresh">
+            <div class="o_stat_info o_field_widget">
+                <span class="o_stat_value text-success">
+                  Invoices
+                </span>
+            </div>
+          </button>
+        </xpath>
+        <xpath expr="sheet" position="inside">
+          <notebook>
+            <page name="name" string="Invoices" attrs="{'invisible' : [('payment_line_ids', '=', True)]}">
+              <field name="payment_line_ids">
+                <tree create="false" editable="top">
+                  <field name="move_id" readonly="1"/>
+                  <field name="origin" readonly="1"/>
+                  <field name="invoice_date" readonly="1"/>
+                  <field name="due_date" readonly="1"/>
+                  <field name="amount_residual" readonly="1"/>
+                  <field name="is_full_payment" />
+                  <field name="amount_to_pay" sum="amount_to_pay"/>
+                  <field name="payment_difference"/>
+                  <field name="write_off_amount"/>
+                  <field name="account_id"/>
+                </tree>
+              </field>
+            </page>
+          </notebook>
+        </xpath>
+    </field>
+  </record>
+
+</odoo>
