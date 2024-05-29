@@ -79,22 +79,22 @@
         </record>
         <!-- End Of HR Employee Movement Form -->
 
-        <!-- inherit ke employee melalui field yang ada di modul c10i_hr -->
+
+
+        <!-- inherit ke employee melalui field inherit yang ada di modul c10i_hr -->
         <record id="view_employee_form_inherit_lhm" model="ir.ui.view">
             <field name="name">view.employee.form.inherit.lhm</field>
             <field name="model">hr.employee</field>
             <field name="inherit_id" ref="c10i_hr_16.view_karyawan_form_inherit"/>
             <field name="arch" type="xml">
-                <!-- Locate the field 'no_induk' and insert 'type_id' before it -->
                 <xpath expr="//page[@name='public']//field[@name='no_induk']" position="before">
                     <field name="type_id"/>
                 </xpath>
+
                 <xpath expr="//page[@name='public']//group[@name='employee_data_info']" position="inside">
                     <field name="basic_salary_type" required="1" widget="radio" options="{'horizontal': true}"/>
-                    
                     <!-- Tidak bisa di munculkan karena model nya masih belom ditemukan atau modul cost center belom ada -->
                     <!-- <field name="cost_center_id"/>  -->
-                    
                     <field name="plantation_location_type_id"/>
                     <field name="plantation_location_id"/>
                     <field name="plantation_activity_hkne_id"/>
@@ -163,33 +163,6 @@
                         <field name="bpjs_tk_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
                     </div>
                 </xpath>
-               
-                <xpath expr="//page[@name='personal_information']" position="after">
-                    <page string="History">
-                        <group string="Pindah Kemandoran">
-                            <field name="movement_ids" readonly="1">
-                                <tree>
-                                    <field name="date"/>
-                                    <field name="src_foreman_id"/>
-                                    <field name="dest_foreman_id"/>
-                                    <field name="moved_date"/>
-                                    <field name="note"/>
-                                    <field name="state"/>
-                                </tree>
-                            </field>
-                        </group>
-                        <group attrs="{'invisible': [('basic_salary_type','!=','employee')]}" string="UMR" groups="c10i_lhm_v16.group_plantation_manager">
-                            <field name="umr_ids" nolabel="1" readonly="1">
-                                <tree>
-                                    <field name="date_from"/>
-                                    <field name="date_to"/>
-                                    <field name="umr_month"/>
-                                    <field name="year"/>
-                                </tree>
-                            </field>
-                        </group>
-                    </page>
-                </xpath>
                 
                 <xpath expr="//field[@name='calendar_id']" position="after">
                     <field name="is_lhm" readonly="1"/>
@@ -210,7 +183,7 @@
             </field>
         </record>
 
-        <!-- Employee Form -->
+        <!-- inherit langsung ke Employee Form -->
         <record id="view_karyawan_form" model="ir.ui.view">
             <field name="name">view.karyawan.form</field>
             <field name="model">hr.employee</field>
@@ -238,19 +211,33 @@
                     <attribute name="string">Jabatan</attribute>
                     <attribute name="domain">[('department_id','=',department_id),('is_lhm','=',True)]</attribute>
                 </xpath>
-                <xpath expr="//field[@name='department_id']" position="attributes">
-                    <attribute name="string">Department</attribute>
-                </xpath>
-                <xpath expr="//field[@name='parent_id']" position="attributes">
-                    <attribute name="string">Nama Manajer</attribute>
-                </xpath>
-                <xpath expr="//field[@name='coach_id']" position="attributes">
-                    <attribute name="string">Nama Kepala Bagian</attribute>
-                </xpath>
-                <xpath expr="//field[@name='work_location_id']" position="attributes">
-                    <attribute name="string">Lokasi Pekerjaan</attribute>
-                </xpath>
 
+                <!-- Menambahkan page -->
+                <xpath expr="//page[@name='personal_information']" position="after">
+                    <page string="History">
+                        <separator string="Pindah Kemandoran" colspan="4"/>
+                        <field name="movement_ids">
+                            <tree create="false">
+                                <field name="date"/>
+                                <field name="src_foreman_id"/>
+                                <field name="dest_foreman_id"/>
+                                <field name="moved_date"/>
+                                <field name="note"/>
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                        <separator string="UMR" colspan="4" attrs="{'invisible': [('basic_salary_type','!=','employee')]}" groups="c10i_lhm_v16.group_plantation_manager">
+                            <field name="umr_ids" nolabel="1">
+                                <tree create="false">
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="umr_month"/>
+                                    <field name="year"/>
+                                </tree>
+                            </field>
+                        </separator>
+                    </page>
+                </xpath>
                 <!-- Invisible Fields -->
  <!--           <xpath expr="//field[@name='category_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
@@ -304,6 +291,8 @@
 
             </field>
         </record>
+
+
 
         <record id="view_employee_tree" model="ir.ui.view">
             <field name="name">hr.employee.tree</field>

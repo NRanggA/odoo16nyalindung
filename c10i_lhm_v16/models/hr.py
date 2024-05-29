@@ -285,22 +285,21 @@ class HrEmployee(models.Model):
         return ptkp and ptkp.id or False
 
     no_induk    = fields.Char('NIK', default="/")
-    gender      = fields.Selection(selection_add=[
-                    ('Laki-laki', 'Laki-laki'),
-                    ('Perempuan', 'Perempuan'),
-                    ('Lainnya', 'Lainnya')
-                ], default="Lainnya", string='Jenis Kelamin')
-    marital     = fields.Selection(selection_add=[
-                    ('TK', 'Tidak Menikah'),
-                    ('K', 'Menikah'),
-                ], default="TK", string='Status Pernikahan')
+    # gender      = fields.Selection(selection_add=[
+    #                 ('Laki-laki', 'Laki-laki'),
+    #                 ('Perempuan', 'Perempuan'),
+    #                 ('Lainnya', 'Lainnya')
+    #             ], default="Lainnya", string='Jenis Kelamin')
+    # marital     = fields.Selection(selection_add=[
+    #                 ('TK', 'Tidak Menikah'),
+    #                 ('K', 'Menikah'),
+    #             ], default="TK", string='Status Pernikahan')
     ptkp_id     = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", default=_default_ptkp)
     religion    = fields.Many2one(comodel_name='hr.employee.religion', string="Agama", default=_default_religion)
     birthday    = fields.Date('Date of Birth', default=fields.Date.today())
     identification_id   = fields.Char(string='Identification No')
     passport_id         = fields.Char('Passport No')
     bank_account_id     = fields.Many2one('res.partner.bank', string='Bank Account Number', domain="[('partner_id', '=', address_home_id)]", help='Employee bank salary account')
-    place_of_birth      = fields.Char('Place of Birth')
     children            = fields.Integer(string='Number of Children')
 
     contract_type = fields.Many2one(comodel_name='hr.contract.type', string='Jenis Kontrak', ondelete="restrict")

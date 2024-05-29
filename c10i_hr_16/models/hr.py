@@ -20,28 +20,27 @@ class hr_employee(models.Model):
     _inherit        = 'hr.employee'
     _description    = 'Employee Management'
 
-    #Override From HR base Odoo
-    work_phone      = fields.Char('No. Telephone', related='address_id.phone', readonly=True) #sudah ada
-    mobile_phone    = fields.Char('No. Handphone', related='address_id.mobile', readonly=True) #sudah ada
-    work_email      = fields.Char('Alamat Email', related='address_id.email', readonly=True) #sudah ada
-    work_location   = fields.Char('Lokasi Pekerjaan') ##sudah ada tapi berubah menjadi work_location_id
-    gender          = fields.Selection([
-                        ('Laki-laki', 'Laki-laki'),
-                        ('Perempuan', 'Perempuan'),
-                        ('Lainnya', 'Lainnya')
-                        ], string='Jenis Kelamin', groups='hr.group_hr_user') # Sudah ada
-    marital         = fields.Selection([
-                        ('TK', 'Tidak Menikah'),
-                        ('K', 'Menikah'),
-                        ], string='Status Pernikahan', groups='hr.group_hr_user') #sudah ada
+    work_phone_company      = fields.Char('No. Telephone Perusahaan', related='address_id.phone', readonly=True) #sudah ada
+    mobile_phone_company    = fields.Char('No. Handphone Perusahaan', related='address_id.mobile', readonly=True) #sudah ada
+    work_email_company      = fields.Char('Alamat Email Perusaahaan', related='address_id.email', readonly=True) #sudah ada
+    work_location_company   = fields.Char('Lokasi Pekerjaan') ##sudah ada tapi berubah menjadi work_location_id
+    # gender          = fields.Selection([
+    #                     ('Laki-laki', 'Laki-laki'),
+    #                     ('Perempuan', 'Perempuan'),
+    #                     ('Lainnya', 'Lainnya')
+    #                     ], string='Jenis Kelamin', groups='hr.group_hr_user') # Sudah ada
+    # marital         = fields.Selection([
+    #                     ('TK', 'Tidak Menikah'),
+    #                     ('K', 'Menikah'),
+    #                     ], string='Status Pernikahan', groups='hr.group_hr_user') #sudah ada
 
     #New Fields
     street                  = fields.Char(string="Alamat 1")
     street2                 = fields.Char(string="Alamat 2")
     zip                     = fields.Char(string="Kode Pos")
-    city_id                 = fields.Many2one('res.state.city', 'Kota/ Kabupaten', domain="[('state_id', '=', state_id),('country_id', '=', country_id)]")
-    state_id                = fields.Many2one('res.country.state', 'Provinsi', domain="[('country_id', '=', country_id)]")
     country_id              = fields.Many2one('res.country', 'Negara')
+    state_id                = fields.Many2one('res.country.state', 'Provinsi', domain="[('country_id', '=', country_id)]")
+    city_id                 = fields.Many2one('res.city', 'Kota/ Kabupaten', domain="[('state_id', '=', state_id),('country_id', '=', country_id)]")
     nationality_id          = fields.Many2one('res.country', 'Kewarganegaraan')
     no_induk                = fields.Char('NIK',)
     npwp                    = fields.Char('NPWP', )
@@ -54,7 +53,8 @@ class hr_employee(models.Model):
     experinece_ids          = fields.One2many('hr.employee.experience.line', 'employee_id', string="Pengalaman Kerja", )
     ptkp_history_ids        = fields.One2many('hr.ptkp.history', 'employee_id', string="PTKP History", )
     calendar_id             = fields.Many2one('resource.calendar', string="Jam Kerja")
-
+    pensiun                 = fields.Boolean(string='Pensiun', default=False)
+    place_of_birth          = fields.Char('Tempat Lahir')
 
     @api.model
     def create(self, values):
