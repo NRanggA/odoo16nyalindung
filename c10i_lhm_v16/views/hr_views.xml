@@ -725,18 +725,18 @@
                                 </group>
                             </group>
                         </group>
-                        <group string="History UMR" colspan="8" attrs="{'invisible': [('monthly_employee','=',True)]}" groups="c10i_lhm_v16.group_plantation_manager">
-                            <field name="umr_ids" nolabel="1" readonly="1">
-                                <tree>
-                                    <field name="date_from"/>
-                                    <field name="date_to"/>
-                                    <field name="umr_month"/>
-                                    <field name="umr_day"/>
-                                    <field name="work_day"/>
-                                    <field name="year"/>
-                                </tree>
-                            </field>
-                        </group>
+
+                        <separator string="History UMR" attrs="{'invisible': [('monthly_employee','=',True)]}" groups="c10i_lhm_v16.group_plantation_manager"/>
+                        <field name="umr_ids" attrs="{'invisible': [('monthly_employee','=',True)]}" groups="c10i_lhm_v16.group_plantation_manager">
+                            <tree create="false">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="umr_month"/>
+                                <field name="umr_day"/>
+                                <field name="work_day"/>
+                                <field name="year"/>
+                            </tree>
+                        </field>
                     </sheet>
                 </form>
             </field>

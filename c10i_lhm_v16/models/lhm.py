@@ -1312,87 +1312,88 @@ class lhm_transaction(models.Model):
         if self.date and self.kemandoran_id:
             other_ids = self.env['lhm.transaction'].search([('id', '!=', self._origin.id), ('date', '=', self.date), ('kemandoran_id', '=', self.kemandoran_id.id)])
             if other_ids:
-                self.date           = False
-                self.kemandoran_id  = False
+                self.date = False
+                self.kemandoran_id = False
                 return {
-                    'value'     : {'lhm_line_ids': map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])},
-                    'warning'   : {'title': _('Kesalahan Input Data'),
-                                   'message': _("Dokumen sudah ada: %s.") % other_ids[-1].name, },
+                    'value': {'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids]))},
+                    'warning': {'title': _('Kesalahan Input Data'),
+                                'message': _("Dokumen sudah ada: %s.") % other_ids[-1].name},
                 }
         if self.date and self.kemandoran_id and not other_ids:
-            transfer_out_ids    = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False), ])
-            transfer_in_ids     = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'in'), ('kemandoran_from_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
-            other_out_attn      = self.env['hr.attendance.type'].search([('type', '=', 'out')], limit=1)
-            other_in_attn       = self.env['hr.attendance.type'].search([('type', '=', 'in')], limit=1)
-            emp_out_ids         = [x.employee_id.id for x in transfer_out_ids]
-            list_employee       = []
-            seq                 = 1
+            transfer_out_ids = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
+            transfer_in_ids = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'in'), ('kemandoran_from_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
+            other_out_attn = self.env['hr.attendance.type'].search([('type', '=', 'out')], limit=1)
+            other_in_attn = self.env['hr.attendance.type'].search([('type', '=', 'in')], limit=1)
+            emp_out_ids = [x.employee_id.id for x in transfer_out_ids]
+            list_employee = []
+            seq = 1
             for employee in self.kemandoran_id.employee_ids:
-                min_wage    = False
+                min_wage = False
                 if employee and employee.basic_salary_type == 'employee':
-                    min_wage = self.env['hr.minimum.wage'].search([('employee_id', '=', employee.id), ('date_from', '<=', self.date), ('date_to', '>=', self.date)],limit=1)
+                    min_wage = self.env['hr.minimum.wage'].search([('employee_id', '=', employee.id), ('date_from', '<=', self.date), ('date_to', '>=', self.date)], limit=1)
                 elif employee and employee.basic_salary_type == 'employee_type':
                     min_wage = self.env['hr.minimum.wage'].search([('employee_type_id', '=', employee.type_id.id), ('date_from', '<=', self.date), ('date_to', '>=', self.date)], limit=1)
                 if not min_wage:
                     return {
-                        'value'     : {
-                                        'lhm_line_ids'  : map(lambda x: (2, x), [x.id for x in self.lhm_line_ids]),
-                                        'date'          : False,
-                                        'kemandoran_id' : False,
-                                    },
-                        'warning'   : {
-                                        'title': _('Kesalahan Input Data'),
-                                        'message': _("UMR tidak ditemukan untuk range tanggal: %s.") % (self.date)
-                                    },
+                        'value': {
+                            'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
+                            'date': False,
+                            'kemandoran_id': False,
+                        },
+                        'warning': {
+                            'title': _('Kesalahan Input Data'),
+                            'message': _("UMR tidak ditemukan untuk range tanggal: %s.") % (self.date)
+                        },
                     }
-                values          = {
-                    'sequence'              : seq,
-                    'date'                  : self.date or False,
-                    'work_day'              : 0.0,
-                    'non_work_day'          : 0.0,
-                    'total_hke'             : 0.0,
-                    'total_hkne'            : 0.0,
-                    'min_wage_value_date'   : 0.0,
-                    'work_result'           : 0.0,
-                    'premi'                 : 0.0,
-                    'overtime_value'        : 0.0,
-                    'penalty'               : 0.0,
-                    'name'                  : employee and employee.no_induk or False,
-                    'employee_id'           : employee and employee.id or False,
-                    'min_wage_id'           : min_wage and min_wage.id or False,
-                    'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
+                values = {
+                    'sequence': seq,
+                    'date': self.date or False,
+                    'work_day': 0.0,
+                    'non_work_day': 0.0,
+                    'total_hke': 0.0,
+                    'total_hkne': 0.0,
+                    'min_wage_value_date': 0.0,
+                    'work_result': 0.0,
+                    'premi': 0.0,
+                    'overtime_value': 0.0,
+                    'penalty': 0.0,
+                    'name': employee and employee.no_induk or False,
+                    'employee_id': employee and employee.id or False,
+                    'min_wage_id': min_wage and min_wage.id or False,
+                    'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
                 }
                 if employee.id in emp_out_ids:
                     values.update({
-                        'attendance_id' : other_out_attn and other_out_attn.id or False,
-                        'transfer_id'   : self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False), ('employee_id', '=', employee.id)], limit=1).id or False
+                        'attendance_id': other_out_attn and other_out_attn.id or False,
+                        'transfer_id': self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False), ('employee_id', '=', employee.id)], limit=1).id or False
                     })
                 list_employee.append((0, 0, values))
-                seq     += 1
+                seq += 1
             if transfer_in_ids:
                 for transfer in transfer_in_ids:
                     values = {
-                        'sequence'              : seq,
-                        'date'                  : self.date or False,
-                        'work_day'              : 0.0,
-                        'non_work_day'          : 0.0,
-                        'total_hke'             : 0.0,
-                        'total_hkne'            : 0.0,
-                        'min_wage_value_date'   : 0.0,
-                        'work_result'           : 0.0,
-                        'premi'                 : 0.0,
-                        'overtime_value'        : 0.0,
-                        'penalty'               : 0.0,
-                        'name'                  : transfer and transfer.employee_id and transfer.employee_id.no_induk or False,
-                        'employee_id'           : transfer and transfer.employee_id and transfer.employee_id.id or False,
-                        'min_wage_id'           : min_wage and min_wage.id or False,
-                        'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
-                        'attendance_id'         : other_in_attn and other_in_attn.id or False,
-                        'transfer_id'           : transfer and transfer.id or False
+                        'sequence': seq,
+                        'date': self.date or False,
+                        'work_day': 0.0,
+                        'non_work_day': 0.0,
+                        'total_hke': 0.0,
+                        'total_hkne': 0.0,
+                        'min_wage_value_date': 0.0,
+                        'work_result': 0.0,
+                        'premi': 0.0,
+                        'overtime_value': 0.0,
+                        'penalty': 0.0,
+                        'name': transfer and transfer.employee_id and transfer.employee_id.no_induk or False,
+                        'employee_id': transfer and transfer.employee_id and transfer.employee_id.id or False,
+                        'min_wage_id': min_wage and min_wage.id or False,
+                        'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
+                        'attendance_id': other_in_attn and other_in_attn.id or False,
+                        'transfer_id': transfer and transfer.id or False
                     }
                     list_employee.append((0, 0, values))
                     seq += 1
             self.lhm_line_ids = list_employee
+
 
     def button_draft(self):
         if self.state in ['close']:
@@ -2150,6 +2151,7 @@ class lhm_machine(models.Model):
             values['name']  = (machine.code or "") + "/" + year + "-" + month
         return super(lhm_machine, self).write(values)
 
+# LANJUT BSOK 
 class lhm_machine_line(models.Model):
     _name           = 'lhm.machine.line'
     _description    = 'LHM Machine Line'
@@ -2159,8 +2161,8 @@ class lhm_machine_line(models.Model):
     def _get_doc_activity_ids(self):
         for object in self:
             activity_list = []
-            doc_id      = self.env['res.doc.type'].search([('code', '=', 'bm')])[-1]
-            level_1     = self.env['lhm.activity'].search([('level', '=', 1)])[-1]
+            doc_id      = self.env['res.doc.type'].search([('code', '=', 'bm')], limit=1)
+            level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
             avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
@@ -2180,10 +2182,16 @@ class lhm_machine_line(models.Model):
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                if avail != []:
+                if avail:
                     object.doc_activity_ids = [(6, 0, avail)]
+                else:
+                    object.doc_activity_ids = [(6, 0, activity_list)]
             else:
                 object.doc_activity_ids = [(6, 0, activity_list)]
+
+            # Ensure doc_activity_ids is never empty or undefined
+            if not object.doc_activity_ids:
+                object.doc_activity_ids = [(6, 0, [])]
 
     name                = fields.Char("Nama", readonly=True, related="lhm_machine_id.name", store=True)
     date                = fields.Date("Tanggal", copy=False)
@@ -2251,11 +2259,11 @@ class lhm_vehicle(models.Model):
                 plantation_transaction.operating_unit_id = plantation_transaction.user_id.default_operating_unit_id
 
     def _default_doc_id(self):
-        doc_id = self.env['res.doc.type'].search([('code', '=', 'bk')])[-1]
+        doc_id = self.env['res.doc.type'].search([('code', '=', 'bk')], limit=1)
         return doc_id and doc_id.id or False
 
     def _default_state(self):
-        doc_id = self.env['res.doc.type'].search([('code', '=', 'bk')])[-1]
+        doc_id = self.env['res.doc.type'].search([('code', '=', 'bk')], limit=1)
         if doc_id and doc_id.approval:
             state = 'draft'
         else:
@@ -2350,8 +2358,8 @@ class lhm_vehicle_line(models.Model):
     def _get_doc_activity_ids(self):
         for object in self:
             activity_list = []
-            doc_id      = self.env['res.doc.type'].search([('code', '=', 'bk')])[-1]
-            level_1     = self.env['lhm.activity'].search([('level', '=', 1)])[-1]
+            doc_id      = self.env['res.doc.type'].search([('code', '=', 'bk')], limit=1)
+            level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
             avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
@@ -2498,11 +2506,11 @@ class lhm_workshop(models.Model):
                 plantation_transaction.operating_unit_id = plantation_transaction.user_id.default_operating_unit_id
 
     def _default_doc_id(self):
-        doc_id = self.env['res.doc.type'].search([('code', '=', 'bw')])[-1]
+        doc_id = self.env['res.doc.type'].search([('code', '=', 'bw')], limit=1)
         return doc_id and doc_id.id or False
 
     def _default_state(self):
-        doc_id = self.env['res.doc.type'].search([('code', '=', 'bw')])[-1]
+        doc_id = self.env['res.doc.type'].search([('code', '=', 'bw')], limit=1)
         if doc_id and doc_id.approval:
             state = 'draft'
         else:
@@ -2591,8 +2599,8 @@ class lhm_workshop_line(models.Model):
     def _get_doc_activity_ids(self):
         for object in self:
             activity_list = []
-            doc_id      = self.env['res.doc.type'].search([('code', '=', 'bw')])[-1]
-            level_1     = self.env['lhm.activity'].search([('level', '=', 1)])[-1]
+            doc_id      = self.env['res.doc.type'].search([('code', '=', 'bw')], limit=1)
+            level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
             avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
             if doc_id:
                 for act in avail_act:

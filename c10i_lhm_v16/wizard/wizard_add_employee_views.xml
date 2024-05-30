@@ -11,7 +11,7 @@
                             <field name="attendance_id" domain="[('special','=',True)]" widget="selection" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" required="1"/>
                             <field name="kemandoran_from_id" attrs="{'readonly': [('attendance_type','in',['out'])],'required': [('attendance_type','in',['in'])],'invisible': [('attendance_type','in',['na','kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             <field name="kemandoran_to_id" attrs="{'readonly': [('attendance_type','in',['in'])],'required': [('attendance_type','in',['out'])],'invisible': [('attendance_type','in',['na','kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                            <field name="employee_id" context="{'form_view_ref':'c10i_lhm.view_karyawan_form', 'tree_view_ref':'c10i_lhm.view_employee_tree'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" required="1"/>
+                            <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form', 'tree_view_ref':'c10i_lhm_v16.view_employee_tree'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" required="1"/>
                             <field name="residual_hk" readonly="1" attrs="{'invisible': [('attendance_type','not in',['kj'])]}"/>
                         </group>
                         <group>
