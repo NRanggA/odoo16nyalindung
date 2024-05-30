@@ -78,11 +78,14 @@ class StockMove(models.Model):
 
     @api.onchange('product_id')
     def onchange_product_id(self):
-        product                 = self.product_id.with_context(lang=self.partner_id.lang or self.env.user.lang)
-        self.name               = product.partner_ref
-        self.product_uom        = uom.uom_id.id
-        self.product_uom_qty    = 0.0
-        return {'domain': {'product_uom': [('category_id', '=', uom.uom_id.category_id.id)]}}
+        if not self.product_id:
+            return
+
+        product = self.product_id.with_context(lang=self.partner_id.lang or self.env.user.lang)
+        self.name = product.partner_ref
+        self.product_uom = self.product_id.uom_id.id
+        self.product_uom_qty = 0.0
+        return {'domain': {'product_uom': [('category_id', '=', self.product_id.uom_id.category_id.id)]}}
 
     @api.onchange('plantation_activity_id')
     def _onchange_plantation_activity_id(self):
