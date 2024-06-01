@@ -40,6 +40,7 @@
 
         'wizard/wizard_move_employee_views.xml',
 
+        'views/account_views.xml',                      # modul account.cost.center tidak di temukan atau tidak digunakan dalam odoo versi 16
         'views/hr_views.xml',
 
         'wizard/wizard_add_employee_views.xml',
@@ -50,7 +51,6 @@
         'views/product_views.xml',                      # Ada group yang tidak di ketahui pada modul product
         'views/res_partner_views.xml',
         'views/stock_views.xml',
-        'views/account_views.xml',                      # modul account.cost.center tidak di temukan atau tidak digunakan dalam odoo versi 16
         'views/plantation_salary_views.xml',
         'views/report_invoice.xml',
         'views/account_report.xml',                     

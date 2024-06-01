@@ -17,34 +17,37 @@
         <menuitem id="menu_lhm_karyawan" name="Karyawan" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="19"/>
 
         <menuitem id="menu_lhm_master" name="Master Data" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="20"/>
-        
+
         <menuitem id="menu_lhm_activity" name="Aktivitas" parent="main_menu_lhm" groups="group_plantation_supervisor" sequence="21"/>
-        
+
         <menuitem id="menu_lhm_rawat" name="Rawat" parent="main_menu_lhm" groups="group_plantation_operator" sequence="30"/>
-        
+
         <menuitem id="menu_lhm_closing" name="Closing" parent="main_menu_lhm" groups="group_plantation_manager" sequence="40"/>
-        
+
         <menuitem id="menu_lhm_report" name="Laporan" parent="main_menu_lhm" groups="group_plantation_operator,group_plantation_operator_can_see_salary,group_plantation_reporting_all,group_plantation_reporting_production" sequence="50"/>
-        
+
         <menuitem id="menu_plantation_report" name="Plantation" parent="menu_lhm_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="10"/>
-        
+
         <menuitem id="menu_lhm_config" name="Konfigurasi" parent="main_menu_lhm" groups="base.group_no_one" sequence="60"/>
-        
+
         <menuitem id="menu_running_config" name="Running Account" parent="menu_lhm_config" groups="base.group_no_one" sequence="10"/>
-        
+
         <menuitem id="menu_plantation_config" name="Plantation" parent="menu_lhm_config" groups="base.group_no_one" sequence="11"/>
-        
+
         <menuitem id="menu_plantation_ptkp" action="c10i_hr_16.action_ptkp" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="45"/>
-        
+
         <menuitem id="menu_plantation_insurance" action="c10i_hr_16.action_insurance" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="55" name="Asuransi/BPJS"/>
-        
+
         <menuitem id="menu_plantation_overtime" action="c10i_hr_16.action_overtime" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="60"/>
-        
+
         <menuitem id="menu_plantation_employee_religion" action="c10i_hr_16.action_employee_religion" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="70"/>
-        
+
         <menuitem id="menu_plantation_nature" action="c10i_hr_16.action_nature" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="49"/>
-        
+
         <menuitem id="menu_partner_kontraktor" name="Kontraktor" parent="menu_lhm_master" action="base.action_partner_supplier_form" sequence="10" groups="group_plantation_supervisor"/>
+
+        <!-- <menuitem id="menu_account_period" name="Account Period" action="account_period_action" parent="main_menu_lhm"/> -->
+        <menuitem id="menu_account_period" name="Account Period" action="account_period_action" parent="main_menu_lhm" sequence="10"/>
 
         <!-- Menu From HR Base -->
         <!-- HR Employee Movement Form -->
@@ -59,7 +62,9 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
                         </div>
                         <group name="employee_movement_type">
                             <group>
@@ -102,12 +107,13 @@
                     <field name="plantation_activity_bpjs_tk_id"/>
                     <field name="plantation_activity_bpjs_kes_id"/>
                 </xpath>
-                
+
                 <xpath expr="//page[@name='public']//group[@name='employee_authority']" position="inside">
                     <field name="mandor"/>
                     <field name="master"/>
                     <field name="kerani"/>
-                    <field name="auto_generate" groups="base.group_no_one"/>/>
+                    <field name="auto_generate" groups="base.group_no_one"/>
+/>
                     <field name="noedit_foreman" groups="base.group_no_one"/>
                 </xpath>
 
@@ -115,7 +121,8 @@
                     <field name="contract_type" options='{"no_open": True}' invisible="1"/>
                     <label for="contract_type" string="Periode Kontrak" invisible="1"/>
                     <div invisible="1">
-                        <field name="start_date_contract" class="oe_inline" nolabel="1" invisible="1"/> s/d
+                        <field name="start_date_contract" class="oe_inline" nolabel="1" invisible="1"/>
+ s/d
                         <field name="end_date_contract" nolabel="1" class="oe_inline" invisible="1"/>
                     </div>
                     <!-- Error pada attrs="{'readonly':[('noedit_foreman','=',True)]}" pada field kemandoran_id -->
@@ -133,7 +140,8 @@
                         <field name="no_induk" nolabel="1" style="width:60%;" attrs="{'required':[('custom_nik','=',True)],'readonly': [('no_induk', '!=', '/'),('custom_nik','=',False)]}"/>
                         <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
                         <!-- attrs="{'invisible':[('auto_generate','!=',False)]}" -->
-                        <field name="custom_nik" nolabel="1"/><label for="custom_nik"/>
+                        <field name="custom_nik" nolabel="1"/>
+                        <label for="custom_nik"/>
                     </div>
                 </xpath>
 
@@ -190,7 +198,7 @@
                         <field name="bpjs_tk_date_start" placeholder="Tanggal Daftar" attrs="{'required': [('ketenagakerjaan','=',True)],'readonly': [('ketenagakerjaan','=',False)]}"/>
                     </div>
                 </xpath>
-                
+
                 <xpath expr="//field[@name='calendar_id']" position="after">
                     <field name="is_lhm" readonly="1"/>
                 </xpath>
@@ -217,15 +225,7 @@
             <field name="inherit_id" ref="hr.view_employee_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//div[@name='button_box']" position="inside">
-                    <button
-                        name="%(action_wizard_move_employee)d"
-                        string="Pindah"
-                        type="action"
-                        icon="fa-sign-out"
-                        help="Memindahkan Karyawan ke Kemandoran Lain"
-                        class="oe_stat_button"
-                        context="{'from_karyawan': True}"
-                    />
+                    <button name="%(action_wizard_move_employee)d" string="Pindah" type="action" icon="fa-sign-out" help="Memindahkan Karyawan ke Kemandoran Lain" class="oe_stat_button" context="{'from_karyawan': True}" />
                 </xpath>
 
                 <!-- Menambahkan field pada form -->
@@ -239,9 +239,9 @@
                     <attribute name="domain">[('department_id','=',department_id),('is_lhm','=',True)]</attribute>
                 </xpath>
 
-                
+
                 <!-- Invisible Fields -->
- <!--           <xpath expr="//field[@name='category_ids']" position="attributes">
+                <!--           <xpath expr="//field[@name='category_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
                 <xpath expr="//field[@name='work_location_id']" position="attributes">
@@ -344,7 +344,7 @@
             <field name="act_window_id" ref="action_karyawan_view"/>
         </record>
 
-<!--         <record model="ir.actions.act_window.view" id="action_karyawan_view_form">
+        <!--         <record model="ir.actions.act_window.view" id="action_karyawan_view_form">
             <field name="sequence" eval="3"/>
             <field name="view_mode">form</field>
             <field name="view_id" ref="view_karyawan_form"/>
@@ -363,14 +363,14 @@
             <field name="mode">primary</field>
             <field name="arch" type="xml">
                 <!-- Error karena parent tidak ditemukan -->
-                
+
                 <!-- <xpath expr="//button[@name='set_recruit']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath> -->
                 <!-- <xpath expr="//button[@name='set_open']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath> -->
-                
+
                 <xpath expr="//field[@name='department_id']" position="after">
                     <field name="is_lhm" invisible="1"/>
                 </xpath>
@@ -396,13 +396,15 @@
             <field name="context">{"default_is_lhm":1}</field>
             <field name="domain">[('is_lhm','=',True)]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan posisi pekerjaan baru di LHM.
-              </p><p>
+                </p>
+                <p>
                 Digunakan untuk mendefinisikan pekerjaan dan kebutuhan mereka. Anda dapat melacak jumlah karyawan yang Anda miliki per posisi pekerjaan dan ikuti perubahan sesuai dengan apa yang anda rencanakan untuk kedepannya.
-              </p><p>
+                </p>
+                <p>
                 Anda dapat melampirkan survei ke posisi pekerjaan. Ini akan digunakan diproses rekrutmen untuk mengevaluasi pelamar untuk posisi pekerjaan.
-              </p>
+                </p>
             </field>
         </record>
 
@@ -467,9 +469,9 @@
             <field name="search_view_id" ref="c10i_hr_16.view_minimum_wage_filter"/>
             <field name="context">{'readonly_by_pass': True}</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk membuat UMR baru.
-              </p>
+                </p>
             </field>
         </record>
         <record model="ir.actions.act_window.view" id="action_hr_minimum_wage_plantation_tree">
@@ -510,9 +512,9 @@
             <field name="context">{"default_is_lhm":1}</field>
             <field name="domain">[('is_lhm','=',True)]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk membuat departemen baru.
-              </p>
+                </p>
             </field>
         </record>
 
@@ -554,7 +556,9 @@
                         <div class="oe_button_box" name="button_box"/>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Asisten" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Asisten" required="1"/>
+                            </h1>
                         </div>
                         <group name="employee_sub_department">
                             <group>
@@ -606,9 +610,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan pangkat.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_sub_departemen_lhm_config" action="action_sub_department" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="30"/>
@@ -629,7 +633,9 @@
                         <div class="oe_button_box" name="button_box"/>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Teknik Sipil" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Teknik Sipil" required="1"/>
+                            </h1>
                         </div>
                         <group name="employee_division">
                             <group>
@@ -681,9 +687,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan pangkat.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_division_lhm_config" name="Divisi" action="action_division_lhm" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="24"/>
@@ -703,7 +709,9 @@
                         </div>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Bulanan" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Bulanan" required="1"/>
+                            </h1>
                         </div>
                         <group name="employee_type">
                             <group string="General Information">
@@ -787,9 +795,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Tipe Karyawan.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_employee_type_lhm_config" name="Tipe Karyawan" action="action_employee_type_lhm" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="15"/>
@@ -809,7 +817,9 @@
                         </div>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Staff" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Staff" required="1"/>
+                            </h1>
                         </div>
                         <group name="employee_type">
                             <group>
@@ -861,9 +871,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Status Karyawan.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_employee_status_lhm_config" action="action_employee_status_lhm" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="40"/>
@@ -883,7 +893,9 @@
                         </div>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Teknik Transport" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Teknik Transport" required="1"/>
+                            </h1>
                         </div>
                         <group name="foreman_information">
                             <group>
@@ -982,9 +994,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Kemandoran.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_hr_foreman_lhm" name="Kemandoran" action="action_hr_foreman_lhm" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="20"/>
@@ -1005,7 +1017,9 @@
                         <div class="oe_button_box" name="button_box"/>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" placeholder="Cuti Tahunan" required="1"/></h1>
+                            <h1>
+                                <field name="name" placeholder="Cuti Tahunan" required="1"/>
+                            </h1>
                         </div>
                         <group name="attendance_type">
                             <group>
@@ -1064,9 +1078,9 @@
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
+                <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Tipe Absensi.
-              </p>
+                </p>
             </field>
         </record>
         <menuitem id="menu_hr_attendance_type_config" action="action_hr_attendance_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>

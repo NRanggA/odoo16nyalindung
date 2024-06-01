@@ -825,7 +825,7 @@
                         <group>
                             <group>
                                 <field name="year" required="1"/>
-                                <field name="date_from" readonly="1"/>
+                                <field name="date_from"/>
                             </group>
                             <group>
                                 <field name="umr_month" required="1"/>

@@ -2331,7 +2331,7 @@
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="performance1"/>
                                         <field name="uom_performance1_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="performance2"/>
@@ -2499,7 +2499,8 @@
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('workshop_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="use_hours" widget="float_time"/>
                                     </tree>
                                 </field>
@@ -2644,8 +2645,6 @@
                                 <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="payment_type" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/>
 
-                                <!-- Error domain pada field ini,
-                                  -->
                                 <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <label for="date_start" string="Periode Pembayaran"/>
                                 <div>
@@ -2681,7 +2680,8 @@
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2]),('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2]),('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="nilai"/>
                                         <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>

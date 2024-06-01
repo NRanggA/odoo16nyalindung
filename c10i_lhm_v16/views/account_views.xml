@@ -1,6 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+
+        <!-- Account Period Form view -->
+        <record id="account_period_view_form" model="ir.ui.view">
+            <field name="name">account.period.view.form</field>
+            <field name="model">account.period</field>
+            <field name="arch" type="xml">
+                <form string="Account Period">
+                    <header>
+                        <button name="close_period" string="Close Period" type="object" states="draft" class="oe_highlight"/>
+                        <button name="periodical_post_entries" string="Post All Entries in this Period" type="object" states="draft"/>
+                        <button name="reopen_period" string="Re-Open Period" type="object" states="done" groups="account.group_account_manager"/>
+                        <field name="state" widget="statusbar" nolabel="1"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="year"/>
+                                <label for="date_start" string="Duration"/>
+                                <div>
+                                    <field name="date_start" class="oe_inline" nolabel="1"/>
+ -
+                                    <field name="date_stop" nolabel="1" class="oe_inline"/>
+                                </div>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field name="special"/>
+                                <field name="company_id" widget="selection"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Account Period Tree view -->
+        <record id="account_period_view_tree" model="ir.ui.view">
+            <field name="name">account.period.view.tree</field>
+            <field name="model">account.period</field>
+            <field name="arch" type="xml">
+                <tree string="Account Period">
+                    <field name="name" />
+                    <field name="code" />
+                    <field name="special" />
+                    <field name="date_start" />
+                    <field name="date_stop" />
+                    <field name="year" />
+                    <field name="company_id" />
+                    <field name="state" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action Account Period -->
+        <record id="account_period_action" model="ir.actions.act_window">
+            <field name="name">Account Period</field>
+            <field name="res_model">account.period</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Klik untuk menambahkan account period.
+                </p>
+            </field>
+        </record>
+
+
+
         <record id="view_account_move_form" model="ir.ui.view">
             <field name="name">view.account.move.form</field>
             <field name="model">account.move</field>
@@ -71,7 +141,7 @@
             </field>
         </record>
 
-       <!--  <record id="view_voucher_form_inherit_plantation" model="ir.ui.view">
+        <!--  <record id="view_voucher_form_inherit_plantation" model="ir.ui.view">
             <field name="model">account.voucher</field>
             <field name="inherit_id" ref="c10i_account.view_voucher_form"/>
             <field name="arch" type="xml">
@@ -119,13 +189,13 @@
             <field name="model">account.settlement.advance</field>
             <field name="inherit_id" ref="c10i_employee_advance.settlement_advance_form"/>
             <field name="arch" type="xml"> -->
-                <!-- <xpath expr="//form/sheet/notebook/page[@name='settlemet_line']/field[@name='settlement_line_ids']/form/group/group[2]/field[@name='account_id']" position="before">
+        <!-- <xpath expr="//form/sheet/notebook/page[@name='settlemet_line']/field[@name='settlement_line_ids']/form/group/group[2]/field[@name='account_id']" position="before">
                     <field name="plantation_location_type_id" options="{'no_create_edit':True, 'no_create':True}"/>
                     <field name="plantation_location_id" domain="[('type_id','=',plantation_location_type_id)]" attrs="{'readonly': [('plantation_validator', '=', True)], 'required': [('plantation_validator', '=', False)]}" options="{'no_create_edit':True, 'no_create':True}"/>
                     <field name="plantation_activity_id" domain="[('type_id','=',plantation_location_type_id)]" attrs="{'readonly': [('plantation_validator', '=', True)], 'required': [('plantation_validator', '=', False)]}" options="{'no_create_edit':True, 'no_create':True}"/>
                     <field name="plantation_validator" invisible="1"/>
                 </xpath> -->
-                <!-- <xpath expr="//form/sheet/notebook/page[@name='settlemet_line']/field[@name='settlement_line_ids']/form/group/group[2]/field[@name='account_id']" position="attributes">
+        <!-- <xpath expr="//form/sheet/notebook/page[@name='settlemet_line']/field[@name='settlement_line_ids']/form/group/group[2]/field[@name='account_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
                 <xpath expr="//form/sheet/notebook/page[@name='settlemet_line']/field[@name='settlement_line_ids']/form/group/group[2]/field[@name='amount']" position="attributes">

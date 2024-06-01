@@ -2379,10 +2379,16 @@ class lhm_vehicle_line(models.Model):
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                if avail != []:
+                if avail:
                     object.doc_activity_ids = [(6, 0, avail)]
+                else:
+                    object.doc_activity_ids = [(6, 0, activity_list)]
             else:
                 object.doc_activity_ids = [(6, 0, activity_list)]
+
+            # Ensure doc_activity_ids is never empty or undefined
+            if not object.doc_activity_ids:
+                object.doc_activity_ids = [(6, 0, [])]
 
     @api.depends("activity_id")
     def _get_charge_activity_ids(self):
@@ -2620,10 +2626,16 @@ class lhm_workshop_line(models.Model):
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                if avail != []:
+                if avail:
                     object.doc_activity_ids = [(6, 0, avail)]
+                else:
+                    object.doc_activity_ids = [(6, 0, activity_list)]
             else:
                 object.doc_activity_ids = [(6, 0, activity_list)]
+
+            # Ensure doc_activity_ids is never empty or undefined
+            if not object.doc_activity_ids:
+                object.doc_activity_ids = [(6, 0, [])]
 
     name                = fields.Char("Nama", readonly=True, related="lhm_workshop_id.name", store=True)
     date                = fields.Date("Tanggal", )
@@ -3095,67 +3107,73 @@ class lhm_contractor_material_line(models.Model):
             line.residual_qty = residual
 
 class lhm_contractor_line(models.Model):
-    _name           = 'lhm.contractor.line'
-    _description    = 'LHM Contractor Line'
+    _name = 'lhm.contractor.line'
+    _description = 'LHM Contractor Line'
 
-    @api.depends("location_type_id","location_id")
+    @api.depends("location_type_id", "location_id")
     def _get_doc_activity_ids(self):
-        for object in self:
+        for record in self:
             activity_list = []
-            if object.contractor_id._context.get('default_type',object.contractor_id.type) == 'vendor':
-                doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkt')])[-1]
+            if record.contractor_id._context.get('default_type', record.contractor_id.type) == 'vendor':
+                doc_id = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
             else:
-                doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkta')])[-1]
-            level_1     = self.env['lhm.activity'].search([('level', '=', 1)])[-1]
-            avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
+                doc_id = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
+            level_1 = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
+            avail_act = self.env['lhm.activity'].search([('type_id', '=', record.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if (object.location_type_id and object.location_type_id.project) and object.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id', '=', object.location_id.id)])
+            if record.location_type_id and record.location_type_id.project and record.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', record.location_id.id)])
                 project_act = []
                 avail = []
                 if level_1:
                     avail.append(level_1.id)
                 for project in project_ids:
                     project_act += [x.activity_id.id for x in project.line_ids]
-                if project_act != []:
+                if project_act:
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                if avail != []:
-                    object.doc_activity_ids = [(6, 0, avail)]
+                if avail:
+                    record.doc_activity_ids = [(6, 0, avail)]
+                else:
+                    record.doc_activity_ids = [(6, 0, activity_list)]
             else:
-                object.doc_activity_ids = [(6, 0, activity_list)]
+                record.doc_activity_ids = [(6, 0, activity_list)]
 
-    name                = fields.Char(related='activity_id.name', readonly=True)
-    date                = fields.Date("Tanggal", )
-    location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
-    no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
-    location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
-    activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
-    doc_activity_ids    = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
-    nilai               = fields.Float('Hasil 1')
-    uom_id              = fields.Many2one("uom.uom", string="Satuan 1", ondelete="restrict")
-    nilai2              = fields.Float('Hasil 2')
-    uom2_id             = fields.Many2one("uom.uom", string="Satuan 2", ondelete="restrict")
-    unit_price          = fields.Float('Tarif Satuan')
-    total               = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
-    type                = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', related="contractor_id.type", readonly=True)
-    supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
-    contractor_vehicle  = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
-    contractor_id       = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
-    tidak_ditagihkan    = fields.Boolean(string="Tidak Ditagihkan")
-    skip_constraint     = fields.Boolean(string="Skip Constraint")
+            if not record.doc_activity_ids:
+                record.doc_activity_ids = [(6, 0, [])]
+
+    # Field definitions
+    name = fields.Char(related='activity_id.name', readonly=True)
+    date = fields.Date("Tanggal")
+    location_type_id = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    no_line = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
+    location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+    doc_activity_ids = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
+    nilai = fields.Float('Hasil 1')
+    uom_id = fields.Many2one("uom.uom", string="Satuan 1", ondelete="restrict")
+    nilai2 = fields.Float('Hasil 2')
+    uom2_id = fields.Many2one("uom.uom", string="Satuan 2", ondelete="restrict")
+    unit_price = fields.Float('Tarif Satuan')
+    total = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
+    type = fields.Selection([('vehicle', 'Alat'), ('vendor', 'Vendor')], string='Type', related="contractor_id.type", readonly=True)
+    supplier_id = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
+    contractor_vehicle = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
+    contractor_id = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
+    tidak_ditagihkan = fields.Boolean(string="Tidak Ditagihkan")
+    skip_constraint = fields.Boolean(string="Skip Constraint")
 
     @api.onchange('activity_id')
     def _onchange_activity_id(self):
         if self.activity_id:
-            self.uom_id     = self.activity_id.uom_id and self.activity_id.uom_id.id or False
-            self.uom2_id    = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
+            self.uom_id = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            self.uom2_id = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
 
     @api.onchange('location_type_id')
     def _onchange_location_type_id(self):
@@ -3187,11 +3205,11 @@ class lhm_contractor_line(models.Model):
                               '%s - %s.\n'
                               'Ubah tanggal atau hapus baris di Daftar Buku Kontraktor') % (
                             self.date, self.contractor_id.date_start, self.contractor_id.date_end))
-        domain          = []
-        total_domain    = 0
+        domain = []
+        total_domain = 0
         if self.date:
             domain.append(('date', '=', self.date))
-            total_domain +=1
+            total_domain += 1
         if self.location_id:
             domain.append(('location_id', '=', self.location_id.id))
             total_domain += 1
@@ -3214,6 +3232,7 @@ class lhm_contractor_line(models.Model):
                               'Kode Aktivitas   : %s.\n'
                               'Ganti salah satu detail atau hapus baris yang sama') % (self.date, self.location_id.code, self.activity_id.code))
         return True
+
 
 class lhm_contractor_vehicle_line(models.Model):
     _inherit        = 'lhm.contractor.line'
