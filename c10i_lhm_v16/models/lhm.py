@@ -1165,6 +1165,7 @@ class lhm_transaction(models.Model):
         for plantation_transaction in self:
             if plantation_transaction.date:
                 period_id = self.env['account.period'].search([('date_start', '<=', plantation_transaction.date), ('date_stop', '>=', plantation_transaction.date), ('special','=',False)])
+                print("======>", period_id)
                 if period_id:
                     plantation_transaction.account_period_id = period_id
 
@@ -1225,6 +1226,7 @@ class lhm_transaction(models.Model):
                                          "* Closed: LHM sudah diclosing. \n")
     invoice_id          = fields.Many2one('account.move', 'Payroll Invoice')
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
+
 
     @api.depends('process_line_ids.nab_line_ids', 'process_line_ids.nab_afkir_line_ids')
     def _check_pending_nab_link(self):

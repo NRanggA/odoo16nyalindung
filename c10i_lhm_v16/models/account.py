@@ -16,7 +16,7 @@ class account_period(models.Model):
     date_start      = fields.Date('Start of Period', required=True, states={'done': [('readonly', True)]})
     date_stop       = fields.Date('End of Period', required=True, states={'done': [('readonly', True)]})
     # fiscalyear_id   = fields.Many2one('account.fiscalyear', 'Fiscal Year', required=True, states={'done': [('readonly', True)]}, index=True)
-    year            = fields.Integer(string='Fascial Year', default=fields.Datetime.now().year)
+    year            = fields.Integer(string='Year', default=fields.Datetime.now().year)
     state           = fields.Selection([('draft', 'Open'), ('done', 'Closed')], 'Status', readonly=True, copy=False,
                              default='draft',
                              help='When monthly periods are created. The status is \'Draft\'. At the end of monthly period it is in \'Done\' status.')
@@ -24,10 +24,6 @@ class account_period(models.Model):
 
 
     def close_period(self):
-        for record in self:
-            record.state = "done"
-
-    def periodical_post_entries(self):
         for record in self:
             record.state = "done"
     

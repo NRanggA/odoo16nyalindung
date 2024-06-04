@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'stock', 'hr', 'account', 'c10i_hr_16', 'operating_unit', 'om_account_asset'],
+    'depends': ['base', 'stock', 'hr', 'account', 'c10i_hr_16', 'operating_unit', 'om_account_asset', 'report_xlsx'],
 
     # always loaded
     'data': [
@@ -78,7 +78,10 @@
         'wizard/wizard_report_cash_bank_views.xml',
         'wizard/wizard_contractor_bill_views.xml', 
         'wizard/wizard_plasma_bill_views.xml',
+        
         'wizard/wizard_running_account_report_views.xml', # error sintaks
+        'report/report_running_account_template.xml',
+        'report/report_running_account_action.xml',
         
         'wizard/wizard_create_contractor_book_views.xml',
         'wizard/lhm_state_views.xml',

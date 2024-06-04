@@ -2,13 +2,75 @@
 <odoo>
   <template id="report_running_account_pdf">
     <t t-call="web.html_container">
-      <!-- Header Table -->
-      <div>
-        <h2>Informasi Laporan Running Account PDF</h2>
-      </div>
-      <div class="page">
-
-      </div>
+        <div class="page">
+            <h2>PT KONSALTEN SOLUSI INDONESIA</h2>
+            <h3>LAPORAN RUNNING ACCOUNT</h3>
+            <p>Periode : <t t-esc="account_period_id"/></p>
+             <style>
+                .table {
+                    width: 100%;
+                    margin-bottom: 1rem;
+                    background-color: transparent;
+                    border-collapse: collapse;
+                }
+                .table-sm th,
+                .table-sm td {
+                    padding: .3rem;
+                }
+                .table-bordered {
+                    border: 1px solid #dee2e6;
+                }
+                .table-bordered th,
+                .table-bordered td {
+                    border: 1px solid #dee2e6;
+                }
+                .text-right {
+                    text-align: right;
+                }
+            </style>
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Tipe Lokasi</th>
+                        <th>Kode Utilitas</th>
+                        <th>Kode Aktivitas</th>
+                        <th>Aktivitas</th>
+                        <th>Nilai Running</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_data" t-as="row">
+                        <tr>
+                            <td><t t-esc="row['seq']"/></td>
+                            <td><t t-esc="row['location_type']"/></td>
+                            <td><t t-esc="row['code']"/></td>
+                            <td><t t-esc="row['activity_code']"/></td>
+                            <td><t t-esc="row['activity']"/></td>
+                            <td class="text-right"><t t-esc="row['amount']"/></td>
+                        </tr>
+                    </t>
+                </tbody>
+                </table>
+        </div>
     </t>
   </template>
+
+
+    <record id="paperformat_running_account_report" model="report.paperformat">
+        <field name="name">Running Account Report</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="page_width">0</field>
+        <field name="page_width">0</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_right">5</field>
+        <field name="margin_left">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
 </odoo>

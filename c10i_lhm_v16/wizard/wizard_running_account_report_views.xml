@@ -16,7 +16,7 @@
                     </group>
                 </group>
                 <footer>
-                    <button icon="fa-print" name="create_report" string="Print" type="object" class="btn-primary"/>
+                    <button icon="fa-print" name="action_print_report" string="Print" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

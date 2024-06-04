@@ -23,9 +23,10 @@
                                 <field name="company_id" readonly="1"/>
                             </group>
                         </group>
-                        <group string="Grouping Report">
-                            <field name="group_ids" nolabel="1"/>
-                        </group>
+                        <!-- <group string="Grouping Report"> -->
+                        <separator string="Grouping Report"/>
+                        <field name="group_ids" nolabel="1"/>
+                        <!-- </group> -->
                     </sheet>
                 </form>
             </field>

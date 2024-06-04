@@ -10,7 +10,6 @@
                 <form string="Account Period">
                     <header>
                         <button name="close_period" string="Close Period" type="object" states="draft" class="oe_highlight"/>
-                        <button name="periodical_post_entries" string="Post All Entries in this Period" type="object" states="draft"/>
                         <button name="reopen_period" string="Re-Open Period" type="object" states="done" groups="account.group_account_manager"/>
                         <field name="state" widget="statusbar" nolabel="1"/>
                     </header>
