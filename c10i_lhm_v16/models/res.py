@@ -102,7 +102,7 @@ class ResRunning(models.Model):
     line_ids    = fields.One2many(comodel_name='res.running.line', inverse_name="running_id", string="Running Detail")
     company_id  = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
 
-RUNNING_SELECTION = [
+_RUNNING_SELECTION = [
     ('running', 'Running Account'), 
     ('project', 'Project'),
     ('nursery', 'Nursery'),
@@ -117,7 +117,7 @@ class ResRunningLine(models.Model):
     _description    = 'Running Sequence Line'
 
     def _get_state(self):
-        return RUNNING_SELECTION
+        return list(_RUNNING_SELECTION)
 
     name                = fields.Char("Name", related="doc_id.name", readonly=True)
     sequence            = fields.Integer("Sequence")

@@ -1,0 +1,20 @@
+<odoo>
+
+	<!-- Action untuk report PDF -->
+	<record id="action_progres_kerja_harian_report_pdf" model="ir.action.report">
+		<field name="name">Laporan Progres Kerja Harian PDF</field>
+		<field name="model">wizard.report.progres.kerja.harian</field>
+		<field name="report_type">qweb-pdf</field>
+		<field name="report_name">c10i_lhm_v16.report_progres_kerja_harian_pdf</field>
+		<field name="report_file">c10i_lhm_v16.report_progres_kerja_harian_pdf</field>
+		<field name="print_report_name">'(REPORT RUNNING ACCOUNT PDF)'</field>
+		<!-- <field name="paperformat_id" ref="paperformat_running_account_report"/> -->
+		<field name="binding_model_id" ref="c10i_lhm_v16.model_wizard_report_progres_kerja_harian"/>
+		<field name="binding_type">report</field>
+	</record>
+
+	<!-- Action untuk report Excell -->
+	
+
+
+</odoo>

@@ -1677,8 +1677,8 @@ class lhm_transaction_line(models.Model):
     def _get_doc_activity_ids(self):
         for object in self:
             activity_list   = []
-            doc_id          = self.env['res.doc.type'].search([('code','=','lhm')])[-1]
-            level_1         = self.env['lhm.activity'].search([('level','=',1)])[-1]
+            doc_id          = self.env['res.doc.type'].search([('code','=','lhm')], limit=1)
+            level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',object.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
@@ -1698,10 +1698,16 @@ class lhm_transaction_line(models.Model):
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                if avail != []:
+                if avail:
                     object.doc_activity_ids = [(6, 0, avail)]
+                else:
+                    object.doc_activity_ids = [(6, 0, activity_list)]
             else:
                 object.doc_activity_ids = [(6, 0, activity_list)]
+
+            # Ensure doc_activity_ids is never empty or undefined
+            if not object.doc_activity_ids:
+                object.doc_activity_ids = [(6, 0, [])]
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
@@ -3112,43 +3118,38 @@ class lhm_contractor_line(models.Model):
     _name = 'lhm.contractor.line'
     _description = 'LHM Contractor Line'
 
-    @api.depends("location_type_id", "location_id")
+    @api.depends("location_type_id","location_id")
     def _get_doc_activity_ids(self):
-        for record in self:
+        for object in self:
             activity_list = []
-            if record.contractor_id._context.get('default_type', record.contractor_id.type) == 'vendor':
-                doc_id = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
+            if object.contractor_id._context.get('default_type',object.contractor_id.type) == 'vendor':
+                doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
             else:
-                doc_id = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
-            level_1 = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
-            avail_act = self.env['lhm.activity'].search([('type_id', '=', record.location_type_id.id)])
+                doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
+            level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
+            avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if record.location_type_id and record.location_type_id.project and record.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id', '=', record.location_id.id)])
+            if (object.location_type_id and object.location_type_id.project) and object.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', object.location_id.id)])
                 project_act = []
                 avail = []
                 if level_1:
                     avail.append(level_1.id)
                 for project in project_ids:
                     project_act += [x.activity_id.id for x in project.line_ids]
-                if project_act:
+                if project_act != []:
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                if avail:
-                    record.doc_activity_ids = [(6, 0, avail)]
-                else:
-                    record.doc_activity_ids = [(6, 0, activity_list)]
+                if avail != []:
+                    object.doc_activity_ids = [(6, 0, avail)]
             else:
-                record.doc_activity_ids = [(6, 0, activity_list)]
-
-            if not record.doc_activity_ids:
-                record.doc_activity_ids = [(6, 0, [])]
+                object.doc_activity_ids = [(6, 0, activity_list)]
 
     # Field definitions
     name = fields.Char(related='activity_id.name', readonly=True)

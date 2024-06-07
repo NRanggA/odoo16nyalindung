@@ -65,9 +65,8 @@
                                 <field name="company_id" readonly="1"/>
                             </group>
                         </group>
-                        <group string="Grouping Report">
-                            <field name="group_ids" nolabel="1"/>
-                        </group>
+                        <separator string="Grouping Report"/>
+                        <field name="group_ids" nolabel="1"/>
                     </sheet>
                 </form>
             </field>

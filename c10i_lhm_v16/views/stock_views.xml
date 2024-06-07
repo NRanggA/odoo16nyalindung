@@ -19,32 +19,35 @@
             <field name="model">stock.picking</field>
             <field name="priority">25</field>
             <field name="inherit_id" ref="stock.view_picking_form"/>
-            <field name="mode">primary</field>
+            <!-- <field name="mode">primary</field> -->
             <field name="arch" type="xml">
                 <field name="location_id" position="before">
-                    <field name="employee_id" context="{'form_view_ref':'c10i_lhm.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" options="{'no_create_edit':True, 'no_create':True}"/>
+                    <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" options="{'no_create_edit':True, 'no_create':True}"/>
                     <field name="bpb_number"/>
                 </field>
                 <field name="partner_id" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
-                <!-- <field name="min_date" position="attributes">
+
+                <field name="scheduled_date" position="attributes">
                     <attribute name="invisible">1</attribute>
-                </field> -->
+                </field>
+                
                 <field name="origin" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
+
                 <field name="location_dest_id" position="attributes">
                     <attribute name="attrs">{'invisible': [('picking_type_code', '=', 'incoming')], 'readonly': [('picking_type_code', '=', 'plantation')]}</attribute>
                 </field>
-                <!-- <field name="min_date" position="before">
+                <field name="scheduled_date" position="before">
                     <field name="skb" invisible="1"/>
                     <field name="organization_type" required="1"/>
                     <field name="afdeling_id" attrs="{'invisible': [('organization_type','!=','afdeling')]}"/>
                     <field name="division_id" attrs="{'invisible': [('organization_type','!=','division')]}"/>
-                </field> -->
-                <!-- <xpath expr="//field[@name='move_lines']" position="replace">
-                    <field name="move_lines" attrs="{'readonly': [('state', 'in', ('cancel', 'partially_available', 'assigned', 'done'))]}" options="{'reload_on_button': True}" mode="tree,kanban" context="{'address_in_id': partner_id, 'form_view_ref':'stock.view_move_picking_form', 'tree_view_ref':'stock.view_move_picking_tree', 'default_picking_type_id': picking_type_id, 'default_location_id': location_id, 'default_location_dest_id': location_dest_id}">
+                </field>
+                <xpath expr="//field[@name='move_line_ids_without_package']" position="replace">
+                    <field name="move_ids" attrs="{'readonly': [('state', 'in', ('cancel', 'partially_available', 'assigned', 'done'))]}" options="{'reload_on_button': True}" mode="tree,kanban" context="{'address_in_id': partner_id, 'form_view_ref':'stock.view_move_picking_form', 'tree_view_ref':'stock.view_move_picking_tree', 'default_picking_type_id': picking_type_id, 'default_location_id': location_id, 'default_location_dest_id': location_dest_id}">
                         <kanban class="o_kanban_mobile">
                             <field name="product_id"/>
                             <field name="availability"/>
@@ -76,28 +79,33 @@
                         <tree decoration-muted="scrapped == True" string="Stock Moves" editable="bottom">
                             <field name="product_id" options="{'no_create': True}"/>
                             <field name="name" invisible="1"/>
+
+                            <!-- Baru di tambahkan karena beberapa field pada domain nya memerlukan field ini -->
+                            <field name="company_id" invisible="1"/>
+                            <field name="product_uom_category_id" invisible="1"/>
+                            
                             <field name="product_uom_qty"/>
                             <field name="product_uom" options="{'no_open': True, 'no_create': True}" string="Unit of Measure" groups="product.group_uom"/>
                             <field name="location_id" invisible="1"/>
                             <field name="create_date" invisible="1" />
-                            <field name="date_expected" invisible="1" />
+                            <field name="date" invisible="1" />
                             <field name="picking_type_id" invisible="1"/>
                             <field name="scrapped" invisible="1"/>
                             <field name="availability" invisible="1"/>
                             <field name="reserved_availability" invisible="1"/>
                             <field name="location_dest_id" invisible="1"/>
-                            <field name="remaining_qty" invisible="1"/>
+                            <!-- <field name="remaining_qty" invisible="1"/> -->
                             <field name="plantation_location_type_id" options="{'no_create_edit':True, 'no_create':True}"/>
                             <field name="plantation_location_id" domain="[('type_id','=',plantation_location_type_id)]" attrs="{'readonly': [('plantation_validator', '=', True)]}" options="{'no_create_edit':True, 'no_create':True}"/>
                             <field name="plantation_activity_id" domain="[('type_id','=',plantation_location_type_id)]" attrs="{'readonly': [('plantation_validator', '=', True)]}" options="{'no_create_edit':True, 'no_create':True}"/>
                             <field name="plantation_activity_name" readonly="1"/>
                             <field name="account_id" attrs="{'readonly': [('plantation_validator', '=', False)]}" options="{'no_create_edit':True, 'no_create':True}"/>
                             <field name="plantation_validator" invisible="1"/>
-                            <field name="note" invisible="0"/>
+                            <!-- <field name="note" invisible="0"/> -->
                             <field name="state"/>
                         </tree>
                     </field>
-                </xpath> -->
+                </xpath>
             </field>
         </record>
         <record id="action_stock_picking_skb" model="ir.actions.act_window">

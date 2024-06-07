@@ -12,7 +12,7 @@ class WizardReportProgresKerjaHarian(models.TransientModel):
     date_end        = fields.Date("Sampai Tgl", required=True)
     type            = fields.Selection([('harian', 'Harian')], string='Type', default='harian')
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    report_type     = fields.Selection([('xlsx', 'XLSX'), ('xls', 'XLS'), ('pdf', 'PDF'), ], string='Type', default='xlsx')
+    report_type     = fields.Selection([('xlsx', 'XLSX'),('pdf', 'PDF')], string='Type', default='xlsx')
     group_ids       = fields.Many2many('plantation.location.reference', 'grouping_progress_report_rel', 'wizard_id', 'loc_ref_id', string="Grouping")
 
     # @api.multi

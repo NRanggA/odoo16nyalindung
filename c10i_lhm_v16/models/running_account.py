@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+# from res import _RUNNING_SELECTION
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -18,12 +19,12 @@ class RunningAccount(models.Model):
         running_sequence_id = self.env['res.running'].search([], order="id desc", limit=1)
         return running_sequence_id.id or False
 
-    @api.model
-    def _get_state(self):
-        STATUS = [('draft', 'Draft')]
-        # STATUS += _RUNNING_SELECTION
-        STATUS.append(('done', 'Completed'))
-        return STATUS
+    # @api.model
+    # def _get_state(self):
+    #     STATUS = [('draft', 'Draft')]
+    #     STATUS += _RUNNING_SELECTION
+    #     STATUS.append(('done', 'Completed'))
+    #     return STATUS
 
 
     name = fields.Char(string='Running Name', readonly=True, compute='_compute_running_name', store=True)
@@ -34,7 +35,7 @@ class RunningAccount(models.Model):
     running_move_line_ids = fields.One2many("running.account.move.line", inverse_name="running_account_id", string="Details")
     running_sequence_id = fields.Many2one('res.running', string='Running Sequence', default=_default_running_sequence_id)
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    state = fields.Selection(selection=_get_state, string='Status', default='running')
+    state = fields.Selection(selection=[('running', 'Running'), ('nursery', 'Nursery'), ('planting', 'Planting'), ('infrastructure', 'Infrastructure'), ('other', 'Other'), ('closing', 'Closing')], string='Status', default='running')
     move_ids = fields.Many2many('account.move', 'account_move_running_rel', 'running_account_id', 'move_id', 'Journal Entries')
 
     @api.depends('account_period_id')
