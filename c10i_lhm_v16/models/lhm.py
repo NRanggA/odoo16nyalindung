@@ -1675,19 +1675,19 @@ class lhm_transaction_line(models.Model):
 
     @api.depends("location_type_id","location_id")
     def _get_doc_activity_ids(self):
-        for object in self:
+        for line in self:
             activity_list   = []
             doc_id          = self.env['res.doc.type'].search([('code','=','lhm')], limit=1)
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
-            avail_act       = self.env['lhm.activity'].search([('type_id','=',object.location_type_id.id)])
+            avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if (object.location_type_id and object.location_type_id.project) and object.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id','=',object.location_id.id)])
+            if (line.location_type_id and line.location_type_id.project) and line.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
                 project_act = []
                 avail       = []
                 if level_1:
@@ -1699,15 +1699,15 @@ class lhm_transaction_line(models.Model):
                         if act_project in activity_list:
                             avail.append(act_project)
                 if avail:
-                    object.doc_activity_ids = [(6, 0, avail)]
+                    line.doc_activity_ids = [(6, 0, avail)]
                 else:
-                    object.doc_activity_ids = [(6, 0, activity_list)]
+                    line.doc_activity_ids = [(6, 0, activity_list)]
             else:
-                object.doc_activity_ids = [(6, 0, activity_list)]
+                line.doc_activity_ids = [(6, 0, activity_list)]
 
             # Ensure doc_activity_ids is never empty or undefined
-            if not object.doc_activity_ids:
-                object.doc_activity_ids = [(6, 0, [])]
+            if not line.doc_activity_ids:
+                line.doc_activity_ids = [(6, 0, [])]
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
@@ -2167,19 +2167,19 @@ class lhm_machine_line(models.Model):
 
     @api.depends("location_type_id","location_id")
     def _get_doc_activity_ids(self):
-        for object in self:
+        for line in self:
             activity_list = []
             doc_id      = self.env['res.doc.type'].search([('code', '=', 'bm')], limit=1)
             level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
-            avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
+            avail_act   = self.env['lhm.activity'].search([('type_id', '=', line.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if (object.location_type_id and object.location_type_id.project) and object.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id', '=', object.location_id.id)])
+            if (line.location_type_id and line.location_type_id.project) and line.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', line.location_id.id)])
                 project_act = []
                 avail = []
                 if level_1:
@@ -2191,15 +2191,15 @@ class lhm_machine_line(models.Model):
                         if act_project in activity_list:
                             avail.append(act_project)
                 if avail:
-                    object.doc_activity_ids = [(6, 0, avail)]
+                    line.doc_activity_ids = [(6, 0, avail)]
                 else:
-                    object.doc_activity_ids = [(6, 0, activity_list)]
+                    line.doc_activity_ids = [(6, 0, activity_list)]
             else:
-                object.doc_activity_ids = [(6, 0, activity_list)]
+                line.doc_activity_ids = [(6, 0, activity_list)]
 
             # Ensure doc_activity_ids is never empty or undefined
-            if not object.doc_activity_ids:
-                object.doc_activity_ids = [(6, 0, [])]
+            if not line.doc_activity_ids:
+                line.doc_activity_ids = [(6, 0, [])]
 
     name                = fields.Char("Nama", readonly=True, related="lhm_machine_id.name", store=True)
     date                = fields.Date("Tanggal", copy=False)
@@ -2364,19 +2364,19 @@ class lhm_vehicle_line(models.Model):
 
     @api.depends("location_type_id","location_id")
     def _get_doc_activity_ids(self):
-        for object in self:
+        for line in self:
             activity_list = []
             doc_id      = self.env['res.doc.type'].search([('code', '=', 'bk')], limit=1)
             level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
-            avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
+            avail_act   = self.env['lhm.activity'].search([('type_id', '=', line.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if (object.location_type_id and object.location_type_id.project) and object.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id', '=', object.location_id.id)])
+            if (line.location_type_id and line.location_type_id.project) and line.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', line.location_id.id)])
                 project_act = []
                 avail = []
                 if level_1:
@@ -2388,15 +2388,15 @@ class lhm_vehicle_line(models.Model):
                         if act_project in activity_list:
                             avail.append(act_project)
                 if avail:
-                    object.doc_activity_ids = [(6, 0, avail)]
+                    line.doc_activity_ids = [(6, 0, avail)]
                 else:
-                    object.doc_activity_ids = [(6, 0, activity_list)]
+                    line.doc_activity_ids = [(6, 0, activity_list)]
             else:
-                object.doc_activity_ids = [(6, 0, activity_list)]
+                line.doc_activity_ids = [(6, 0, activity_list)]
 
             # Ensure doc_activity_ids is never empty or undefined
-            if not object.doc_activity_ids:
-                object.doc_activity_ids = [(6, 0, [])]
+            if not line.doc_activity_ids:
+                line.doc_activity_ids = [(6, 0, [])]
 
     @api.depends("activity_id")
     def _get_charge_activity_ids(self):
@@ -2611,19 +2611,19 @@ class lhm_workshop_line(models.Model):
 
     @api.depends("location_type_id","location_id")
     def _get_doc_activity_ids(self):
-        for object in self:
+        for line in self:
             activity_list = []
             doc_id      = self.env['res.doc.type'].search([('code', '=', 'bw')], limit=1)
             level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
-            avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
+            avail_act   = self.env['lhm.activity'].search([('type_id', '=', line.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if (object.location_type_id and object.location_type_id.project) and object.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id', '=', object.location_id.id)])
+            if (line.location_type_id and line.location_type_id.project) and line.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', line.location_id.id)])
                 project_act = []
                 avail = []
                 if level_1:
@@ -2635,15 +2635,15 @@ class lhm_workshop_line(models.Model):
                         if act_project in activity_list:
                             avail.append(act_project)
                 if avail:
-                    object.doc_activity_ids = [(6, 0, avail)]
+                    line.doc_activity_ids = [(6, 0, avail)]
                 else:
-                    object.doc_activity_ids = [(6, 0, activity_list)]
+                    line.doc_activity_ids = [(6, 0, activity_list)]
             else:
-                object.doc_activity_ids = [(6, 0, activity_list)]
+                line.doc_activity_ids = [(6, 0, activity_list)]
 
             # Ensure doc_activity_ids is never empty or undefined
-            if not object.doc_activity_ids:
-                object.doc_activity_ids = [(6, 0, [])]
+            if not line.doc_activity_ids:
+                line.doc_activity_ids = [(6, 0, [])]
 
     name                = fields.Char("Nama", readonly=True, related="lhm_workshop_id.name", store=True)
     date                = fields.Date("Tanggal", )
@@ -3120,22 +3120,22 @@ class lhm_contractor_line(models.Model):
 
     @api.depends("location_type_id","location_id")
     def _get_doc_activity_ids(self):
-        for object in self:
+        for line in self:
             activity_list = []
-            if object.contractor_id._context.get('default_type',object.contractor_id.type) == 'vendor':
+            if line.contractor_id._context.get('default_type',line.contractor_id.type) == 'vendor':
                 doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
             else:
                 doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
             level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
-            avail_act   = self.env['lhm.activity'].search([('type_id', '=', object.location_type_id.id)])
+            avail_act   = self.env['lhm.activity'].search([('type_id', '=', line.location_type_id.id)])
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
             if level_1:
                 activity_list.append(level_1.id)
-            if (object.location_type_id and object.location_type_id.project) and object.location_id:
-                project_ids = self.env['lhm.project'].search([('location_id', '=', object.location_id.id)])
+            if (line.location_type_id and line.location_type_id.project) and line.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', line.location_id.id)])
                 project_act = []
                 avail = []
                 if level_1:
@@ -3147,9 +3147,9 @@ class lhm_contractor_line(models.Model):
                         if act_project in activity_list:
                             avail.append(act_project)
                 if avail != []:
-                    object.doc_activity_ids = [(6, 0, avail)]
+                    line.doc_activity_ids = [(6, 0, avail)]
             else:
-                object.doc_activity_ids = [(6, 0, activity_list)]
+                line.doc_activity_ids = [(6, 0, activity_list)]
 
     # Field definitions
     name = fields.Char(related='activity_id.name', readonly=True)
