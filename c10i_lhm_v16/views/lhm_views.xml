@@ -1797,19 +1797,18 @@
                                 <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
                                     <tree editable="bottom" create="false" class="table_header_freeze">
                                         <field name="sequence" string="" readonly="1" invisible="1"/>
-                                        <field name="name" readonly="1"/>
+                                        <field name="name" readonly="1" force_save="1"/>
                                         <field name="date" invisible="1"/>
-                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- pembaharuan -->
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
                                         <field name="no_line" invisible="1" />
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}"/>
                                         
-                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/> -->
-                                        <field name="activity_id" domain="[
-                                            ('type_id','=',location_type_id),
-                                            ('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))
+                                        <!-- Pembaharuan -->
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
                                         ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
                                         
                                         <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}"/>
