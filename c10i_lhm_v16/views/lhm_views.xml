@@ -2166,10 +2166,9 @@
                                     <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('machine_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
 

@@ -2059,6 +2059,7 @@ class lhm_machine(models.Model):
         period_id   = self.env['account.period'].search([('date_start', '<=', date),
                                                         ('date_stop', '>=', date),
                                                         ('special', '=', False)])
+        # print(f"============Tanggal========== {date} period : {period_id}")
         period = False
         if period_id and len(period_id) > 1:
             period  = period_id[-1]
@@ -2140,8 +2141,14 @@ class lhm_machine(models.Model):
 
     @api.model
     def create(self, values):
+
+        print(f"==== Data value : {values}")
+        print(f"===== DATA MESIN : {self.machine_id.id}")
+        print(f"===== DATA ACCOUNT PERIOD : {self.account_period_id.id}")
+
         machine     = self.env['lhm.utility'].search([('id', '=', values.get('machine_id'))])
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
+
         if period_id:
             month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
             year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
@@ -2159,7 +2166,6 @@ class lhm_machine(models.Model):
             values['name']  = (machine.code or "") + "/" + year + "-" + month
         return super(lhm_machine, self).write(values)
 
-# LANJUT BSOK 
 class lhm_machine_line(models.Model):
     _name           = 'lhm.machine.line'
     _description    = 'LHM Machine Line'
