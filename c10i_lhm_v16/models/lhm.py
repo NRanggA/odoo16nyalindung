@@ -2150,8 +2150,10 @@ class lhm_machine(models.Model):
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
 
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
+            # month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
+            # year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
+            month = period_id.date_start.strftime('%m')
+            year = period_id.date_start.strftime('%Y')
             values['name']  = (machine.code or "") + "/" + year + "-" + month
         else:
             values['name']  = (machine.code or "") + "/"
@@ -2161,8 +2163,10 @@ class lhm_machine(models.Model):
         machine     = self.env['lhm.utility'].search([('id', '=', values.get('machine_id',self.machine_id.id))])
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id',self.account_period_id.id))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
+            # month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
+            # year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
+            month = period_id.date_start.strftime('%m')
+            year = period_id.date_start.strftime('%Y')
             values['name']  = (machine.code or "") + "/" + year + "-" + month
         return super(lhm_machine, self).write(values)
 
