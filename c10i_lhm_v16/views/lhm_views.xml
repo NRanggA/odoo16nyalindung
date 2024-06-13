@@ -654,7 +654,7 @@
                 </tree>
             </field>
         </record>
-
+        
         <record id="open_view_activity_noparent_tree" model="ir.actions.act_window">
             <field name="name">Hirarki Aktivitas</field>
             <field name="res_model">lhm.activity</field>
@@ -665,7 +665,9 @@
             <field name="context">{}</field>
         </record>
         <menuitem id="menu_activity_hierarchy" action="open_view_activity_noparent_tree" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="20"/>
+        
         <!-- End Of LHM Activity -->
+
 
         <!--&lt;!&ndash; Plantation Sub Activity &ndash;&gt;-->
         <!--<record id="view_plantation_sub_activity_form" model="ir.ui.view">-->
@@ -742,6 +744,7 @@
         <!--</record>-->
         <!--<menuitem id="menu_plantation_sub_activity_config" action="action_plantation_sub_activity_type" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="11"/>-->
         <!--&lt;!&ndash; End Of Plantation Sub Activity &ndash;&gt;-->
+
 
         <!--Master Indirect Cost -->
         <record id="view_plantation_indirect_cost_form" model="ir.ui.view">
@@ -1041,6 +1044,7 @@
 
         <menuitem id="menu_master_lhm_utility_machine" name="Mesin" action="action_lhm_utility_machine" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="40"/>
         <!--End Of LHM Master Utility Machine-->
+
 
 
         <!-- Master LHM Utility Workshop-->
@@ -1765,7 +1769,7 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
                         </div>
                         <group name="lhm_transaction">
                             <group>
@@ -2009,7 +2013,7 @@
             </field>
         </record>
         <menuitem id="submenu_lhm_transaction" name="Laporan Harian Mandor" action="action_lhm_transaction" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="10"/>
-        <menuitem id="submenu_lhm_transaction_all" name="Laporan Harian Mandor" action="action_lhm_transaction_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="submenu_lhm_transaction_all" name="Laporan Harian Mandor" action="action_lhm_transaction_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End Of Transaksi LHM -->
 
 
@@ -2143,17 +2147,17 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
                         </div>
                         <group name="lhm_machine">
                             <group>
-                                <field name="machine_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_machine_form', 'default_type':'ma'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <field name="machine_id" force_save="1" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_machine_form', 'default_type':'ma'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="account_period_id" force_save="1" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
-                                <field name="uom_performance"/>
-                                <field name="machine_code"/>
+                                <field name="uom_performance" force_save="1"/>
+                                <field name="machine_code" force_save="1"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_start" readonly="1" invisible="1"/>
@@ -2188,7 +2192,6 @@
                 </form>
             </field>
         </record>
-
 
         <record id="view_lhm_machine_tree" model="ir.ui.view">
             <field name="name">view.lhm.machine.tree</field>
@@ -2255,9 +2258,8 @@
             </field>
         </record>
         <menuitem id="submenu_lhm_machine" action="action_lhm_machine" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="20"/>
-        <menuitem id="submenu_lhm_machine_all" action="action_lhm_machine_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="20"/>
+        <!-- <menuitem id="submenu_lhm_machine_all" action="action_lhm_machine_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="20"/> -->
         <!-- End of Transaksi Buku Mesin -->
-
 
         <!-- LHM Machine Line-->
         <record id="view_lhm_machine_line_form" model="ir.ui.view">
@@ -2288,6 +2290,7 @@
         </record>
         <!-- End Of LHM Machine Line -->
 
+
         <!-- Transaksi Buku Kendaraan -->
         <record id="view_lhm_vehicle_form" model="ir.ui.view">
             <field name="name">view.lhm.vehicle.form</field>
@@ -2305,18 +2308,18 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
                         </div>
                         <group name="lhm_vehicle">
                             <group>
-                                <field name="vehicle_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_vehicle_form', 'default_type':'vh'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="vehicle_code" readonly="1"/>
-                                <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <field name="vehicle_id" force_save="1" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_vehicle_form', 'default_type':'vh'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="vehicle_code" readonly="1" force_save="1"/>
+                                <field name="account_period_id" required="1" force_save="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
-                                <field name="reg_number"/>
-                                <field name="uom_performance"/>
+                                <field name="reg_number" force_save="1"/>
+                                <field name="uom_performance" force_save="1"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_start" readonly="1" invisible="1"/>
@@ -2335,7 +2338,7 @@
                                         <field name="start_value"/>
                                         <field name="end_value"/>
                                         <field name="difference_value"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids"  readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
@@ -2346,7 +2349,7 @@
                                         <field name="performance2"/>
                                         <field name="uom_performance2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="filter_charge_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids[0][2])]"/>
+                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids)]"/>
                                         <field name="value_charge"/>
                                         <field name="uom_charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                     </tree>
@@ -2424,9 +2427,8 @@
             </field>
         </record>
         <menuitem id="submenu_lhm_vehicle" action="action_lhm_vehicle" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="30"/>
-        <menuitem id="submenu_lhm_vehicle_all" action="action_lhm_vehicle_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_vehicle_all" action="action_lhm_vehicle_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Buku Kendaraan -->
-
 
         <!-- LHM Vehicle Line-->
         <record id="view_lhm_vehicle_line_form" model="ir.ui.view">
@@ -2466,6 +2468,7 @@
         </record>
         <!-- End Of LHM Vehicle Line -->
 
+
         <!-- Transaksi Buku Workshop -->
         <record id="view_lhm_workshop_form" model="ir.ui.view">
             <field name="name">view.lhm.workshop.form</field>
@@ -2483,16 +2486,16 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
                         </div>
                         <group name="lhm_workshop">
                             <group>
-                                <field name="workshop_id" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_workshop_form', 'default_type':'ws'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="account_period_id" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <field name="workshop_id" force_save="1" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_workshop_form', 'default_type':'ws'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="account_period_id" force_save="1" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
-                                <field name="workshop_code"/>
+                                <field name="workshop_code" force_save="1"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="date_start" readonly="1" invisible="1"/>
@@ -2505,7 +2508,7 @@
                                     <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('workshop_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
@@ -2524,7 +2527,6 @@
                 </form>
             </field>
         </record>
-
 
         <record id="view_lhm_workshop_tree" model="ir.ui.view">
             <field name="name">view.lhm.workshop.tree</field>
@@ -2590,9 +2592,8 @@
             </field>
         </record>
         <menuitem id="submenu_lhm_workshop" action="action_lhm_workshop" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="30"/>
-        <menuitem id="submenu_lhm_workshop_all" action="action_lhm_workshop_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_workshop_all" action="action_lhm_workshop_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Buku Workshop -->
-
 
         <!-- LHM Workshop Line-->
         <record id="view_lhm_workshop_line_form" model="ir.ui.view">
@@ -2622,6 +2623,7 @@
         </record>
         <!-- End Of LHM Workshop Line -->
 
+
         <!-- Transaksi Buku Kontraktor -->
         <record id="view_lhm_contractor_form" model="ir.ui.view">
             <field name="name">view.lhm.contractor.form</field>
@@ -2639,7 +2641,7 @@
                     <sheet>
                         <div class="oe_title">
                             <label for="name" string="Nama" class="oe_edit_only"/>
-                            <h1><field name="name" readonly="1"/></h1>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
                         </div>
                         <group name="lhm_contractor">
                             <group>
@@ -2650,15 +2652,14 @@
                                     <field name="total_type" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)],'required':[('contractor_vehicle','!=',False)]}"/>
                                 </div>
 
-                                <!-- error domain pada field ini, domain="[('supplier','=',True)]" -->
-                                <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="payment_type" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/>
+                                <field name="supplier_id" force_save="1" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="payment_type" force_save="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/>
 
-                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <field name="account_period_id" force_save="1" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <label for="date_start" string="Periode Pembayaran"/>
                                 <div>
-                                    <field name="date_start" class="oe_inline" nolabel="1" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/> -
-                                    <field name="date_end" nolabel="1" class="oe_inline" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
+                                    <field name="date_start" force_save="1" class="oe_inline" nolabel="1" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/> -
+                                    <field name="date_end" force_save="1" nolabel="1" class="oe_inline" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
                                 </div>
                             </group>
                             <group>
@@ -2850,7 +2851,7 @@
             <field name="act_window_id" ref="action_lhm_contractor_all"/>
         </record>
         <menuitem id="submenu_lhm_contractor" action="action_lhm_contractor" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="50"/>
-        <menuitem id="submenu_lhm_contractor_all" action="action_lhm_contractor_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="50"/>
+        <!-- <menuitem id="submenu_lhm_contractor_all" action="action_lhm_contractor_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="50"/> -->
         <!-- End of Transaksi Buku Kontraktor -->
 
 
@@ -2886,6 +2887,7 @@
             </field>
         </record>
         <!-- End Of LHM Contractor Line -->
+
 
         <!-- Transaksi Buku Kontraktor Alat-->
         <record id="view_lhm_vehicle_contractor_form" model="ir.ui.view">
@@ -3023,7 +3025,6 @@
         <!--<menuitem id="submenu_lhm_vehicle_contractor" action="action_lhm_vehicle_contractor" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="51"/>-->
         <!-- End of Transaksi Buku Kontraktor Alat-->
 
-
         <!-- LHM Contractor Vehicle Line-->
         <record id="view_lhm_vehicle_contractor_line_form" model="ir.ui.view">
             <field name="name">view.lhm.vehicle.contractor.line.form</field>
@@ -3057,6 +3058,7 @@
             </field>
         </record>
         <!-- End Of LHM Contractor Vehicle Line -->
+
 
         <!-- Transaksi Nota Angkut Buah Input-->
         <record id="view_lhm_nab_form" model="ir.ui.view">
@@ -3239,9 +3241,9 @@
         </record>
 
         <menuitem id="submenu_lhm_nab" name="Nota Angkut Buah" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/>
-        <menuitem id="submenu_lhm_nab_all" name="Nota Angkut Buah" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nab_all" name="Nota Angkut Buah" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
         <menuitem id="submenu_lhm_nab_input" name="Nota Angkut Buah - Input" action="action_lhm_nab_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="10"/>
-        <menuitem id="submenu_lhm_nab_input_all" name="Nota Angkut Buah - Input" action="action_lhm_nab_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="submenu_lhm_nab_input_all" name="Nota Angkut Buah - Input" action="action_lhm_nab_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End of Transaksi Nota Angkut Buah Input-->
 
 
@@ -3347,7 +3349,7 @@
         </record>
 
         <menuitem id="submenu_lhm_nab_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/>
-        <menuitem id="submenu_lhm_nab_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nab_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Nota Afkir Buah Input-->
 
 

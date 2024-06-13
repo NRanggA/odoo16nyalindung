@@ -8,11 +8,11 @@
 
         <menuitem id="menu_lhm_running" name="Running" parent="main_menu_lhm" groups="group_plantation_super" sequence="11"/>
 
-        <menuitem id="menu_lhm_transaction_all" name="Transaksi All" parent="main_menu_lhm" groups="group_plantation_super" sequence="11"/>
+        <!-- <menuitem id="menu_lhm_transaction_all" name="Transaksi All" parent="main_menu_lhm" groups="group_plantation_super" sequence="11"/> -->
 
         <menuitem id="menu_plantation_transaction" name="Plantation" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="10"/>
 
-        <menuitem id="menu_plantation_transaction_all" name="Plantation" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="menu_plantation_transaction_all" name="Plantation" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="10"/> -->
 
         <menuitem id="menu_lhm_karyawan" name="Karyawan" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="19"/>
 

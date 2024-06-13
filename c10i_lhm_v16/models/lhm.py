@@ -22,6 +22,8 @@ from odoo.osv import expression
 import base64
 import xlrd
 
+_logger = logging.getLogger(__name__)
+
 BULAN_INDONESIA = [('1', 'Januari'),
                    ('2', 'Februari'),
                    ('3', 'Maret'),
@@ -35,6 +37,8 @@ BULAN_INDONESIA = [('1', 'Januari'),
                    ('11', 'November'),
                    ('12', 'Desember')]
 TAHUN           = [(num, str(num)) for num in range((datetime.datetime.now().year) - 30, (datetime.datetime.now().year) + 1)]
+
+
 
 #---------------------------------------------------------------------------------------------------------------------------#
 #############################################################################################################################
@@ -1153,7 +1157,7 @@ class lhm_transaction(models.Model):
 
     @api.model
     def _get_state(self):
-        doc_id  = self.env['res.doc.type'].search([('code', '=', 'lhm')])[-1]
+        doc_id  = self.env['res.doc.type'].search([('code', '=', 'lhm')], limit=1)
         if doc_id and doc_id.approval:
             state = [('draft', 'New'), ('in_progress', 'Progress'), ('confirmed', 'Confirmed'), ('done', 'Approved'), ('close', 'Close')]
         else:
@@ -1668,6 +1672,33 @@ class lhm_transaction(models.Model):
         transaction = super(lhm_transaction, self).unlink()
         return transaction
 
+    @api.model
+    def create(self, values):
+        kemandoran = self.env['hr.foreman'].search([('id', '=', values.get('kemandoran_id'))])
+        date = values.get('date')
+
+        if kemandoran:
+            values['name'] = f"{kemandoran.code or ''}/{date}"
+        else:
+            values['name'] = f"{kemandoran.code or ''}/"
+
+        return super(lhm_transaction, self).create(values)
+
+    def write(self, values):
+        for record in self:
+            kemandoran_id = values.get('kemandoran_id')
+            date          = values.get('date')
+
+            if kemandoran_id or date:
+                if kemandoran_id:
+                    kemandoran = self.env['hr.foreman'].browse(kemandoran_id)
+                else:
+                    kemandoran = record.kemandoran_id
+
+            date = date or record.date
+            values['name'] = f"{kemandoran.code or ''}/{date}"
+        return super(lhm_transaction, self).write(values)
+
 class lhm_transaction_line(models.Model):
     _name           = 'lhm.transaction.line'
     _description    = 'Detail Transaksi Laporan Harian Mandor'
@@ -2059,7 +2090,6 @@ class lhm_machine(models.Model):
         period_id   = self.env['account.period'].search([('date_start', '<=', date),
                                                         ('date_stop', '>=', date),
                                                         ('special', '=', False)])
-        # print(f"============Tanggal========== {date} period : {period_id}")
         period = False
         if period_id and len(period_id) > 1:
             period  = period_id[-1]
@@ -2120,6 +2150,7 @@ class lhm_machine(models.Model):
                                 'message': _("Dokumen sudah ada: %s.") % other_ids.name, },
                 }
 
+
     def unlink(self):
         for machine in self:
             if machine.state not in ['draft'] and self.doc_type_id.approval == True:
@@ -2141,34 +2172,33 @@ class lhm_machine(models.Model):
 
     @api.model
     def create(self, values):
-
-        print(f"==== Data value : {values}")
-        print(f"===== DATA MESIN : {self.machine_id.id}")
-        print(f"===== DATA ACCOUNT PERIOD : {self.account_period_id.id}")
-
-        machine     = self.env['lhm.utility'].search([('id', '=', values.get('machine_id'))])
-        period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
+        machine = self.env['lhm.utility'].search([('id', '=', values.get('machine_id'))])
+        period_id = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
 
         if period_id:
-            # month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
-            # year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
             month = period_id.date_start.strftime('%m')
             year = period_id.date_start.strftime('%Y')
-            values['name']  = (machine.code or "") + "/" + year + "-" + month
+            values['name'] = f"{machine.code or ''}/{year}-{month}"
         else:
-            values['name']  = (machine.code or "") + "/"
+            values['name'] = f"{machine.code or ''}/"
+
         return super(lhm_machine, self).create(values)
 
+
     def write(self, values):
-        machine     = self.env['lhm.utility'].search([('id', '=', values.get('machine_id',self.machine_id.id))])
-        period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id',self.account_period_id.id))])
-        if period_id:
-            # month           = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%m')
-            # year            = datetime.datetime.strptime(period_id.date_start,'%Y-%m-%d').strftime('%Y')
-            month = period_id.date_start.strftime('%m')
-            year = period_id.date_start.strftime('%Y')
-            values['name']  = (machine.code or "") + "/" + year + "-" + month
+        for record in self:
+            machine_id = values.get('machine_id', record.machine_id.id)
+            account_period_id = values.get('account_period_id', record.account_period_id.id)
+
+            machine = self.env['lhm.utility'].browse(machine_id)
+            period_id = self.env['account.period'].browse(account_period_id)
+            if period_id:
+                month = period_id.date_start.strftime('%m')
+                year = period_id.date_start.strftime('%Y')
+                values['name'] = f"{machine.code or ''}/{year}-{month}"
+
         return super(lhm_machine, self).write(values)
+
 
 class lhm_machine_line(models.Model):
     _name           = 'lhm.machine.line'
@@ -2347,8 +2377,8 @@ class lhm_vehicle(models.Model):
         vehicle     = self.env['lhm.utility'].search([('id', '=', values.get('vehicle_id'))])
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%Y')
+            month           = period_id.date_start.strftime('%m')
+            year            = period_id.date_start.strftime('%Y')
             values['name']  = (vehicle.code or "") + "/" + year + "-" + month
         else:
             values['name'] = (vehicle.code or "") + "/"
@@ -2358,9 +2388,9 @@ class lhm_vehicle(models.Model):
         vehicle     = self.env['lhm.utility'].search([('id', '=', values.get('vehicle_id', self.vehicle_id.id))])
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%Y')
-            values['name']  = (vehicle.code or "") + "/" + year + "-" + month
+            month             = period_id.date_start.strftime('%m')
+            year              = period_id.date_start.strftime('%Y')
+            values['name']    = (vehicle.code or "") + "/" + year + "-" + month
         return super(lhm_vehicle, self).write(values)
 
 class lhm_vehicle_line(models.Model):
@@ -2599,8 +2629,8 @@ class lhm_workshop(models.Model):
         workshop    = self.env['lhm.utility'].search([('id', '=', values.get('workshop_id'))])
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%Y')
+            month             = period_id.date_start.strftime('%m')
+            year              = period_id.date_start.strftime('%Y')
             values['name']  = (workshop.code or "") + "/" + year + "-" + month
         else:
             values['name']  = (workshop.code or "") + "/"
@@ -2610,8 +2640,8 @@ class lhm_workshop(models.Model):
         workshop    = self.env['lhm.utility'].search([('id', '=', values.get('workshop_id', self.workshop_id.id))])
         period_id   = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%Y')
+            month             = period_id.date_start.strftime('%m')
+            year              = period_id.date_start.strftime('%Y')
             values['name']  = (workshop.code or "") + "/" + year + "-" + month
         return super(lhm_workshop, self).write(values)
 
@@ -2651,7 +2681,6 @@ class lhm_workshop_line(models.Model):
             else:
                 line.doc_activity_ids = [(6, 0, activity_list)]
 
-            # Ensure doc_activity_ids is never empty or undefined
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
 
@@ -2731,16 +2760,16 @@ class lhm_contractor(models.Model):
 
     def _default_doc_id(self):
         if self._context.get('default_type',self.type) == 'vendor':
-            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkt')])[-1]
+            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
         else:
-            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkta')])[-1]
+            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
         return doc_id and doc_id.id or False
 
     def _default_state(self):
         if self._context.get('default_type',self.type) == 'vendor':
-            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkt')])[-1]
+            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
         else:
-            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkta')])[-1]
+            doc_id = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
         if doc_id and doc_id.approval:
             state = 'draft'
         else:
@@ -2810,51 +2839,6 @@ class lhm_contractor(models.Model):
             if records:
                 raise UserError(_('Buku Kontraktor sudah pernah dibuat untuk periode %s.')%rec.account_period_id.name)
 
-    # @api.onchange('date_start', 'date_end', 'supplier_id', 'contractor_vehicle', 'payment_type')
-    # def onchange_validate(self):
-    #     if not self.date_start or not self.date_end:
-    #         return {}
-    #     if self.payment_type
-
-    #     if self.date_start > self.date_end:
-    #         self.date_end = self.date_start
-    #         return {
-    #                 'warning': {'title': _('Kesalahan Input Data'),
-    #                             'message': _("Tanggal Berakhir Harus Lebih Besar dari Tanggal Mulai")},
-    #             }
-
-    #     # domain = [('id', '!=', self._origin.id), ('date_from', '>=', self.date_from)]
-    #     domain = [('id', '!=', self._origin.id)]
-    #     if self.activity_id:
-    #         domain.append(('activity_id', '=', self.activity_id.id))
-    #     else:
-    #         domain.append(('activity_id', '=', False))
-
-    #     if self.basic_salary_type and self.basic_salary_type=='employee' and self.employee_id:
-    #         self.employee_type_id = False
-    #         domain.append(('employee_id', '=', self.employee_id.id))
-    #     else:
-    #         domain.append(('employee_id', '=', False))
-        
-    #     if self.basic_salary_type and self.basic_salary_type=='employee_type' and self.employee_type_id:
-    #         self.employee_id = False
-    #         domain.append(('employee_type_id', '=', self.employee_type_id.id))
-    #     else:
-    #         domain.append(('employee_type_id', '=', False))
-
-    #     # Validasi UMR yg sama jika tanggal berakhir-nya sudah didefinisikan ditempat lain
-    #     check = self.env['hr.minimum.wage'].search(domain+[('date_to','>=',self.date_from)], order="date_to asc")
-    #     if check:
-    #         self.date_from = False
-    #         self.date_to = False
-    #         return {
-    #                 'warning': {'title': _('Invalid Data Input'),
-    #                     'message': _("UMR ini sudah didefinisikan pada %s dengan durasi antara %s s.d %s \n\
-    #                     Silahkan diubah terlebih dahulu untuk membuat durasi UMR baru")% \
-    #                     (check[-1].name, check[-1].date_from, check[-1].date_to)
-    #                     },
-    #                 }
-
     @api.onchange('supplier_id','account_period_id','payment_type','contractor_vehicle')
     def onchange_validate(self):
         if self.supplier_id and self.account_period_id and self.type:
@@ -2875,8 +2859,8 @@ class lhm_contractor(models.Model):
                                 'message': _("Dokumen sudah ada: %s.") % other_ids.name, },
                 }
             if self.payment_type:
-                month       = datetime.datetime.strptime(self.account_period_id.date_start, '%Y-%m-%d').strftime('%m')
-                year        = datetime.datetime.strptime(self.account_period_id.date_start, '%Y-%m-%d').strftime('%Y')
+                month           = self.account_period_id.date_start.strftime('%m')
+                year            = self.account_period_id.date_start.strftime('%Y')
                 last_day    = calendar.monthrange(int(year), int(month))[1]
                 if self.payment_type=='payment1':
                     self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '01')
@@ -2927,8 +2911,8 @@ class lhm_contractor(models.Model):
         supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id'))])
         period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%Y')
+            month           = period_id.date_start.strftime('%m')
+            year            = period_id.date_start.strftime('%Y')
             values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
         else:
             values['name']  = (supplier_id.code or "") + "/"
@@ -3035,8 +3019,8 @@ class lhm_contractor(models.Model):
         supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id', self.supplier_id.id))])
         period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
         if period_id:
-            month           = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%m')
-            year            = datetime.datetime.strptime(period_id.date_start, '%Y-%m-%d').strftime('%Y')
+            month           = period_id.date_start.strftime('%m')
+            year            = period_id.date_start.strftime('%Y')
             values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
         return super(lhm_contractor, self).write(values)
 
@@ -3213,6 +3197,7 @@ class lhm_contractor_line(models.Model):
     def _check_date_line(self):
         if self.skip_constraint:
             return True
+
         if not (self.date >= self.contractor_id.date_start and self.date <= self.contractor_id.date_end):
             raise UserError(_('Tanggal %s pada Buku Kontraktor tidak dalam Periode Pembayaran \n'
                               '%s - %s.\n'
