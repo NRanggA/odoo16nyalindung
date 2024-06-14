@@ -1718,7 +1718,10 @@ class lhm_transaction_line(models.Model):
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
 
-            print("==== DATA LEVEL 1 : {level_1}")
+            print(f"===== DATA DOC_ID : {doc_id}")
+            print(f"===== DATA LEVEL 1 : {level_1}")
+            print(f"===== DATA AVAIL_ACT : {avail_act}")
+
 
             if doc_id:
                 for act in avail_act:

@@ -1801,43 +1801,43 @@
                                 <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
                                     <tree editable="bottom" create="false" class="table_header_freeze">
                                         <field name="sequence" string="" readonly="1" invisible="1"/>
-                                        <field name="name" readonly="1" force_save="1"/>
+                                        <field name="name" readonly="1" force_save="1" optional="hide"/>
                                         <field name="date" invisible="1"/>
                                         <!-- pembaharuan -->
-                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
+                                        <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
                                         
                                         <!-- diubah menjadi 0 supaya muncul activity_id nya -->
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
                                         
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="hide"/>
                                         <field name="no_line" invisible="1" />
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}"/>
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" optional="hide"/>
                                         
                                         <!-- Pembaharuan -->
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
-                                        ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
+                                        ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="hide"/>
                                         
-                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}"/>
-                                        <field name="non_work_day" readonly="1"/>
-                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="hide"/>
+                                        <field name="non_work_day" readonly="1" optional="hide"/>
+                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
 
                                         <!-- BEGIN : POC Nyalindung -->
-                                        <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
                                         <!-- END : POC Nyalindung -->
 
-                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
-                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/>
+                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="hide"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
                                             <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
-                                        <field name="overtime_value" invisible="0" groups="base.group_no_one"/>
+                                        <field name="overtime_value" invisible="0" groups="base.group_no_one" optional="hide"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
                                             <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
@@ -1845,27 +1845,27 @@
 
                                         <!-- Error ang sama karena groups nya -->
                                         <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/> -->
-                                        <field name="panen" invisible="0" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="panen" invisible="0" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
 
                                         <!-- error yang saya karena groups -->
                                         <!-- <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/> -->
-                                        <field name="overtime" invisible="0" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="overtime" invisible="0" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
 
-                                        <field name="progressive" invisible="0" string="M" groups="base.group_no_one"/>
+                                        <field name="progressive" invisible="0" string="M" groups="base.group_no_one" optional="hide"/>
                                         
                                         <!-- Dikomen karena error groups nya -->
                                         <!-- <field name="attendance_type" invisible="0" string="A" groups="base.group_no_one"/> -->
-                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="hide"/>
                                         
-                                        <field name="valid" invisible="0" string="V" groups="base.group_no_one"/>
+                                        <field name="valid" invisible="0" string="V" groups="base.group_no_one" optional="hide"/>
                                         <field name="kontanan" invisible="1"/>
                                         <field name="transfer_id" invisible="1"/>
-                                        <field name="min_wage_id" invisible="0" groups="base.group_no_one"/>
-                                        <field name="total_hke" invisible="0" groups="base.group_no_one"/>
-                                        <field name="total_hkne" invisible="0" groups="base.group_no_one"/>
-                                        <field name="min_wage_value" invisible="0" groups="base.group_no_one"/>
-                                        <field name="min_wage_value_date" invisible="0" groups="base.group_no_one"/>
-                                        <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one"/>
+                                        <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="total_hke" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="total_hkne" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="hide"/>
                                     </tree>
                                 </field>
                             </page>
