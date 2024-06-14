@@ -301,11 +301,17 @@ class lhm_activity(models.Model):
     _parent_order   = 'code, name'
     _order          = 'code, parent_left asc'
 
+    # @api.depends('parent_id')
+    # def _compute_level(self):
+    #     for level in self:
+    #         self.level = len(self.search([('id', 'parent_of', [level.id])]))
+
     @api.depends('parent_id')
     def _compute_level(self):
-        print("Sukses Form LHM Activity")
-        # for level in self:
-        #     self.level = len(self.search([('id', 'parent_of', [level.id])]))
+        for record in self:
+            parent_path = record.parent_id.parent_path if record.parent_id else ''
+            record.level = parent_path.count('/') + 1 if parent_path else 0
+    
 
     def _get_account(self):
         self.ensure_one()
@@ -1711,6 +1717,9 @@ class lhm_transaction_line(models.Model):
             doc_id          = self.env['res.doc.type'].search([('code','=','lhm')], limit=1)
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+
+            print("==== DATA LEVEL 1 : {level_1}")
+
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:

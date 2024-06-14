@@ -5,7 +5,7 @@
             <field name="name">wizard.create.contractor.book.view</field>
             <field name="model">wizard.create.contractor.book</field>
             <field name="arch" type="xml">
-                <form string="Create Contractor Book" version="7.0" create="false" edit="false">
+                <form string="Create Contractor Book">
                     <header>
                         <button name="generate_line" class="oe_highlight" string="Generate" type="object"/>
                         <button name="create_contractor_book" class="oe_highlight" string="Create Buku Kontraktor" type="object"/>

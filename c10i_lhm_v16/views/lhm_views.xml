@@ -1936,17 +1936,17 @@
             <field name="model">lhm.transaction</field>
             <field name="arch" type="xml">
                 <tree string="Laporan Harian Mandor">
-                    <field name="name"/>
-                    <field name="date"/>
-                    <field name="date_start" invisible="0"/>
-                    <field name="date_stop" invisible="0"/>
-                    <field name="kemandoran_id"/>
-                    <field name="location"/>
-                    <field name="asisten_mandor_id"/>
-                    <field name="mandor_id"/>
-                    <field name="kerani_id"/>
-                    <field name="user_id"/>
-                    <field name="state"/>
+                    <field name="name" optional="hide"/>
+                    <field name="date" optional="hide" />
+                    <field name="date_start" invisible="0" optional="hide" />
+                    <field name="date_stop" invisible="0" optional="hide" />
+                    <field name="kemandoran_id" optional="hide" />
+                    <field name="location" optional="hide" />
+                    <field name="asisten_mandor_id" optional="hide" />
+                    <field name="mandor_id" optional="hide" />
+                    <field name="kerani_id" optional="hide" />
+                    <field name="user_id" optional="hide" />
+                    <field name="state" optional="hide" />
                 </tree>
             </field>
         </record>

@@ -54,8 +54,8 @@ class WizardCreateContractorBook(models.TransientModel):
             #                     'message': _("Dokumen sudah ada: %s.") % other_ids.name, },
             #     }
             if self.payment_type:
-                month       = datetime.strptime(self.account_period_id.date_start, '%Y-%m-%d').strftime('%m')
-                year        = datetime.strptime(self.account_period_id.date_start, '%Y-%m-%d').strftime('%Y')
+                month       = self.account_period_id.date_start.strftime('%m')
+                year        = self.account_period_id.date_start.strftime('%Y')
                 last_day    = calendar.monthrange(int(year), int(month))[1]
                 if self.payment_type=='payment1':
                     self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '01')
