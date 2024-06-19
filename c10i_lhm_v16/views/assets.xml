@@ -1,0 +1,7 @@
+<odoo>
+    <template id="assets_backend" name="c10i_lhm_v16 assets" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/css" href="/c10i_lhm_v16/static/src/css/custom_styles.css"/>
+        </xpath>
+    </template>
+</odoo>

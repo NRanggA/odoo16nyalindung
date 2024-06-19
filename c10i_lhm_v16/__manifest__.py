@@ -87,6 +87,9 @@
         'wizard/lhm_state_views.xml',
         # 'views/data_demo_account_period.xml', # Data dummy dari account.period
 
+        # 'views/assets.xml',
+
+
         #REPORT
         # 'report/report_running_account_template.xml',
         # 'report/report_running_account_action.xml',
@@ -96,4 +99,10 @@
     'demo': [
         # 'demo/demo.xml',
     ],
+
+    # 'assets': {
+    #     'web.assets_backend': [
+    #         'c10i_lhm_v16/static/src/css/custom_styles.css',
+    #     ],
+    # },
 }

@@ -310,7 +310,9 @@ class lhm_activity(models.Model):
     def _compute_level(self):
         for record in self:
             parent_path = record.parent_id.parent_path if record.parent_id else ''
-            record.level = parent_path.count('/') + 1 if parent_path else 0
+            record.level = parent_path.count('/') + 1 if parent_path else 1
+
+            # ketika dia tidak ada parent path nya maka buat levelnya menjadi 1
     
 
     def _get_account(self):
@@ -1700,6 +1702,8 @@ class lhm_transaction(models.Model):
                     kemandoran = self.env['hr.foreman'].browse(kemandoran_id)
                 else:
                     kemandoran = record.kemandoran_id
+            else:
+                kemandoran = record.kemandoran_id
 
             date = date or record.date
             values['name'] = f"{kemandoran.code or ''}/{date}"
@@ -1710,7 +1714,8 @@ class lhm_transaction_line(models.Model):
     _description    = 'Detail Transaksi Laporan Harian Mandor'
     _order          = 'sequence'
 
-    @api.depends("location_type_id","location_id")
+    # @api.depends("location_type_id","location_id")
+    @api.onchange("location_type_id", "location_id")
     def _get_doc_activity_ids(self):
         for line in self:
             activity_list   = []
@@ -1718,17 +1723,18 @@ class lhm_transaction_line(models.Model):
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
 
-            print(f"===== DATA DOC_ID : {doc_id}")
-            print(f"===== DATA LEVEL 1 : {level_1}")
-            print(f"===== DATA AVAIL_ACT : {avail_act}")
-
+            _logger.info(f'Doc ID: {doc_id}, Level 1: {level_1}, Avail Act: {avail_act}')
 
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
+            _logger.info(f'Activity List setelah Doc ID di cek: {activity_list}')
+
             if level_1:
                 activity_list.append(level_1.id)
+            _logger.info(f'Activity List setelah Level 1 di cek: {activity_list}')
+
             if (line.location_type_id and line.location_type_id.project) and line.location_id:
                 project_ids = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
                 project_act = []
@@ -1737,10 +1743,13 @@ class lhm_transaction_line(models.Model):
                     avail.append(level_1.id)
                 for project in project_ids:
                     project_act += [x.activity_id.id for x in project.line_ids]
+                _logger.info(f'Project Act: {project_act}')
+
                 if project_act != []:
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
+                _logger.info(f'Avail: {avail}')
                 if avail:
                     line.doc_activity_ids = [(6, 0, avail)]
                 else:
@@ -1751,6 +1760,8 @@ class lhm_transaction_line(models.Model):
             # Ensure doc_activity_ids is never empty or undefined
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
+
+            _logger.info(f'Final doc_activity_ids: {line.doc_activity_ids}')
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")

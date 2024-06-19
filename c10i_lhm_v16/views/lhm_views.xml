@@ -555,14 +555,6 @@
                                 <field name="parent_right" invisible="1"/>
                             </group>
                         </group>
-                        <group>
-                            <group attrs="{'invisible': [('type_id','=',False)]}" string="Tipe Dokumen">
-                                <field name="doc_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_res_doc_type_m2m_tree'}"/>
-                            </group>
-                            <group attrs="{'invisible': [('type_id','=',False)]}" string="Default Muatan">
-                                <field name="charge_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_lhm_charge_type_tree'}"/>
-                            </group>
-                        </group>
                         <group name="accounting">
                             <group>
                                 <field name="beban_closing_account_id" />
@@ -575,6 +567,18 @@
                                 <field name="tm_plasma_counterpart_closing_account_id" />
                             </group>
                         </group>
+                        <separator attrs="{'invisible' : [('type_id','=',False)]}" string="Tipe Dokumen" />
+                        <field name="doc_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_res_doc_type_m2m_tree'}" attrs="{'invisible' : [('type_id','=',False)]}" />
+
+                        <separator attrs="{'invisible': [('type_id','=',False)]}" string="Default Muatan"/>
+                        <field name="charge_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_lhm_charge_type_tree'}" attrs="{'invisible': [('type_id','=',False)]}"/>
+
+                        <!-- <group attrs="{'invisible': [('type_id','=',False)]}" string="Tipe Dokumen">
+                            <field name="doc_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_res_doc_type_m2m_tree'}" />
+                        </group>
+                        <group attrs="{'invisible': [('type_id','=',False)]}" string="Default Muatan">
+                            <field name="charge_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_lhm_charge_type_tree'}" />
+                        </group> -->
                     </sheet>
                 </form>
             </field>
@@ -1774,7 +1778,7 @@
                         <group name="lhm_transaction">
                             <group>
                                 <field name="date" attrs="{'required':[('state','=','draft')],'readonly': [('state','!=','draft')]}"/>
-                                <field name="kemandoran_id" attrs="{'required':[('state','=','draft')],'readonly': [('state','!=','draft')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="kemandoran_id" attrs="{'required':[('state','=','draft')],'readonly': [('state','!=','draft')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':False}"/>
                                 <field name="asisten_mandor_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="mandor_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="kerani_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -1799,45 +1803,42 @@
                                     <button name="%(c10i_lhm_v16.action_wizard_add_employee)d" class="oe_stat_button" icon="fa-users" string="Tambah Karyawan" states="draft" type="action" groups="c10i_lhm_v16.group_plantation_operator"/>
                                 </group>
                                 <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
-                                    <tree editable="bottom" create="false" class="table_header_freeze">
+                                    <tree editable="bottom" create="false" class="two-line-header">
                                         <field name="sequence" string="" readonly="1" invisible="1"/>
-                                        <field name="name" readonly="1" force_save="1" optional="hide"/>
+                                        <field name="name" readonly="1" force_save="1" optional="show"/>
                                         <field name="date" invisible="1"/>
                                         <!-- pembaharuan -->
-                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
-                                        <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         
                                         <!-- diubah menjadi 0 supaya muncul activity_id nya -->
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
-                                        
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="hide"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
                                         <field name="no_line" invisible="1" />
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" optional="hide"/>
-                                        
-                                        <!-- Pembaharuan -->
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" optional="show"/>
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
-                                        ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="hide"/>
+                                        ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="show"/>
                                         
-                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="hide"/>
-                                        <field name="non_work_day" readonly="1" optional="hide"/>
-                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="hide"/>
+                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
+                                        <field name="non_work_day" readonly="1" optional="show"/>
+                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
 
                                         <!-- BEGIN : POC Nyalindung -->
-                                        <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
-                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
-                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
-                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
-                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <!-- END : POC Nyalindung -->
 
-                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
-                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="hide"/>
+                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="show"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
                                             <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
-                                        <field name="overtime_value" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="overtime_value" invisible="0" groups="base.group_no_one" optional="show"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
                                             <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
@@ -1845,27 +1846,27 @@
 
                                         <!-- Error ang sama karena groups nya -->
                                         <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/> -->
-                                        <field name="panen" invisible="0" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="panen" invisible="0" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
 
                                         <!-- error yang saya karena groups -->
                                         <!-- <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/> -->
-                                        <field name="overtime" invisible="0" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="hide"/>
+                                        <field name="overtime" invisible="0" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
 
-                                        <field name="progressive" invisible="0" string="M" groups="base.group_no_one" optional="hide"/>
+                                        <field name="progressive" invisible="0" string="M" groups="base.group_no_one" optional="show"/>
                                         
                                         <!-- Dikomen karena error groups nya -->
                                         <!-- <field name="attendance_type" invisible="0" string="A" groups="base.group_no_one"/> -->
-                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="hide"/>
+                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
                                         
-                                        <field name="valid" invisible="0" string="V" groups="base.group_no_one" optional="hide"/>
+                                        <field name="valid" invisible="0" string="V" groups="base.group_no_one" optional="show"/>
                                         <field name="kontanan" invisible="1"/>
                                         <field name="transfer_id" invisible="1"/>
-                                        <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="hide"/>
-                                        <field name="total_hke" invisible="0" groups="base.group_no_one" optional="hide"/>
-                                        <field name="total_hkne" invisible="0" groups="base.group_no_one" optional="hide"/>
-                                        <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="hide"/>
-                                        <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="hide"/>
-                                        <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="hide"/>
+                                        <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="total_hke" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="total_hkne" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/>
                                     </tree>
                                 </field>
                             </page>
@@ -1936,17 +1937,17 @@
             <field name="model">lhm.transaction</field>
             <field name="arch" type="xml">
                 <tree string="Laporan Harian Mandor">
-                    <field name="name" optional="hide"/>
-                    <field name="date" optional="hide" />
-                    <field name="date_start" invisible="0" optional="hide" />
-                    <field name="date_stop" invisible="0" optional="hide" />
-                    <field name="kemandoran_id" optional="hide" />
-                    <field name="location" optional="hide" />
-                    <field name="asisten_mandor_id" optional="hide" />
-                    <field name="mandor_id" optional="hide" />
-                    <field name="kerani_id" optional="hide" />
-                    <field name="user_id" optional="hide" />
-                    <field name="state" optional="hide" />
+                    <field name="name" optional="show"/>
+                    <field name="date" optional="show" />
+                    <field name="date_start" invisible="0" optional="show" />
+                    <field name="date_stop" invisible="0" optional="show" />
+                    <field name="kemandoran_id" optional="show" />
+                    <field name="location" optional="show" />
+                    <field name="asisten_mandor_id" optional="show" />
+                    <field name="mandor_id" optional="show" />
+                    <field name="kerani_id" optional="show" />
+                    <field name="user_id" optional="show" />
+                    <field name="state" optional="show" />
                 </tree>
             </field>
         </record>
@@ -2168,16 +2169,16 @@
                             <page string="Detail Aktivitas">
                                 <field name="line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}" options='{"always_reload": True, "highlight_first_line": True, "reload_on_button": True}'>
                                     <tree editable="bottom">
-                                        <field name="date"/>
+                                        <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
                                         <field name="doc_activity_ids" readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('machine_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="location_type_id" domain="[('machine_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
 
-                                        <field name="use_value"/>
-                                        <field name="use_hours" widget="float_time"/>
+                                        <field name="use_value" optional="show"/>
+                                        <field name="use_hours" widget="float_time" optional="show"/>
                                         <button name="copy_line" class="oe_stat_button" icon="fa-copy" string="copy" type="object"/>
                                     </tree>
                                 </field>
@@ -2332,26 +2333,26 @@
                                 <!-- error context, 'period_id': account_period_id}" -->
                                 <field name="line_ids" nolabel="1" widget="one2many_list" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}" context="{'line_ids':line_ids, 'vehicle_id':vehicle_id}">
                                     <tree editable="bottom">
-                                        <field name="date"/>
+                                        <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="use_hours" widget="time_float"/>
-                                        <field name="start_value"/>
-                                        <field name="end_value"/>
-                                        <field name="difference_value"/>
+                                        <field name="use_hours" widget="time_float" optional="show"/>
+                                        <field name="start_value" optional="show"/>
+                                        <field name="end_value" optional="show"/>
+                                        <field name="difference_value" optional="show"/>
                                         <field name="doc_activity_ids"  readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
 
-                                        <field name="performance1"/>
-                                        <field name="uom_performance1_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="performance2"/>
-                                        <field name="uom_performance2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="performance1" optional="show"/>
+                                        <field name="uom_performance1_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="performance2" optional="show"/>
+                                        <field name="uom_performance2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="filter_charge_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids)]"/>
-                                        <field name="value_charge"/>
-                                        <field name="uom_charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids)]" optional="show"/>
+                                        <field name="value_charge" optional="show"/>
+                                        <field name="uom_charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                     </tree>
                                 </field>
                             </page>
@@ -2506,14 +2507,14 @@
                             <page string="Detail Aktivitas">
                                 <field name="line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}">
                                     <tree editable="bottom">
-                                        <field name="date"/>
+                                        <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
                                         <field name="doc_activity_ids" readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('workshop_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="location_type_id" domain="[('workshop_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="use_hours" widget="float_time"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="use_hours" widget="float_time" optional="show"/>
                                     </tree>
                                 </field>
                             </page>
@@ -2680,30 +2681,30 @@
                                 <field name="line_vehicle_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
-                                        <field name="tidak_ditagihkan"/>
-                                        <field name="date"/>
-                                        <field name="vehicle_id" domain="[('ownership','=','rental')]"/>
-                                        <field name="start_value"/>
-                                        <field name="end_value"/>
-                                        <field name="difference_value"/>
-                                        <field name="distance_value"/>
+                                        <field name="tidak_ditagihkan" optional="show"/>
+                                        <field name="date" optional="show"/>
+                                        <field name="vehicle_id" domain="[('ownership','=','rental')]" optional="show"/>
+                                        <field name="start_value" optional="show"/>
+                                        <field name="end_value" optional="show"/>
+                                        <field name="difference_value" optional="show"/>
+                                        <field name="distance_value" optional="show"/>
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2]),('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                        
                                         
-                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="nilai"/>
-                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="nilai2"/>
-                                        <field name="unit_price"/>
-                                        <field name="total"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="nilai" optional="show"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="nilai2" optional="show"/>
+                                        <field name="unit_price" optional="show"/>
+                                        <field name="total" optional="show"/>
                                         <field name="filter_charge_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids[0][2])]" attrs="{'readonly':[('filter_charge_ids','=', [])]}"/>
-                                        <field name="uom_charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly':[('filter_charge_ids','=', [])]}"/>
+                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids[0][2])]" attrs="{'readonly':[('filter_charge_ids','=', [])]}" optional="show"/>
+                                        <field name="uom_charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly':[('filter_charge_ids','=', [])]}" optional="show"/>
                                         <field name="contractor_vehicle" invisible="1"/>
                                         <field name="type" invisible="1"/>
                                     </tree>
@@ -2711,18 +2712,18 @@
                                 <field name="line_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',False)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form'}">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
-                                        <field name="tidak_ditagihkan"/>
-                                        <field name="date"/>
+                                        <field name="tidak_ditagihkan" optional="show"/>
+                                        <field name="date" optional="show"/>
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id), ('id','in',doc_activity_ids[0][2]), ('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="nilai"/>
-                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="nilai2"/>
-                                        <field name="unit_price"/>
-                                        <field name="total"/>
+                                        <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id), ('id','in',doc_activity_ids[0][2]), ('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="nilai" optional="show"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="nilai2" optional="show"/>
+                                        <field name="unit_price" optional="show"/>
+                                        <field name="total" optional="show"/>
                                         <field name="contractor_vehicle" invisible="1"/>
                                         <field name="type" invisible="1"/>
                                     </tree>
