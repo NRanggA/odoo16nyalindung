@@ -1611,7 +1611,8 @@ class lhm_transaction(models.Model):
                     'deleted'           : True,
                 })
         if False in [isinstance(x.attendance_id.id, bool) for x in self.lhm_line_ids]:
-            self.name   = self.kemandoran_id.code + "/" + str(datetime.datetime.strptime(self.date, '%Y-%m-%d').strftime('%Y-%m-%d'))
+            date_str = self.date.strftime('%Y-%m-%d')
+            self.name = self.kemandoran_id.code + "/" + datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
             if self.doc_type_id.approval:
                 self.state  = 'in_progress'
             else:
