@@ -1812,7 +1812,7 @@
                                         <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         
                                         <!-- diubah menjadi 0 supaya muncul activity_id nya -->
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
                                         <field name="no_line" invisible="1" />
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" optional="show"/>
@@ -2171,7 +2171,7 @@
                                     <tree editable="bottom">
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="doc_activity_ids" readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('machine_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         
@@ -2339,7 +2339,7 @@
                                         <field name="start_value" optional="show"/>
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
-                                        <field name="doc_activity_ids"  readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
@@ -2509,7 +2509,7 @@
                                     <tree editable="bottom">
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="doc_activity_ids" readonly="0" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('workshop_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in', (doc_activity_ids and doc_activity_ids[0][2] or []))]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
@@ -2648,9 +2648,9 @@
                             <group>
                                 <label for="contractor_vehicle" string="Alat"/>
                                 <div>
-                                    <field name="contractor_vehicle" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
+                                    <field name="contractor_vehicle" force_save="1" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
                                     <label for="total_type" string="Dasar Perhitungan" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)]}"/>
-                                    <field name="total_type" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)],'required':[('contractor_vehicle','!=',False)]}"/>
+                                    <field name="total_type" class="oe_inline" nolabel="1" force_save="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)],'required':[('contractor_vehicle','!=',False)]}"/>
                                 </div>
 
                                 <field name="supplier_id" force_save="1" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -2678,7 +2678,7 @@
                             <page string="Detail Aktivitas">
 
                                 <!-- error conteks pada field ini, 'period_id':account_period_id -->
-                                <field name="line_vehicle_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
+                                <field name="line_vehicle_ids" force_save="1" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
                                         <field name="tidak_ditagihkan" optional="show"/>
@@ -2688,7 +2688,7 @@
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
                                         <field name="distance_value" optional="show"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="0" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         
@@ -2709,6 +2709,7 @@
                                         <field name="type" invisible="1"/>
                                     </tree>
                                 </field>
+                                
                                 <field name="line_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',False)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form'}">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
@@ -2717,7 +2718,9 @@
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id), ('id','in',doc_activity_ids[0][2]), ('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        
+                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="nilai" optional="show"/>
                                         <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>

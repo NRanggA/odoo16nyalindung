@@ -10,7 +10,7 @@
 
 import logging
 import time
-import datetime
+# import datetime
 import calendar
 from odoo.tools.translate import _
 from datetime import timedelta
@@ -21,6 +21,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 import base64
 import xlrd
+from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -36,8 +37,9 @@ BULAN_INDONESIA = [('1', 'Januari'),
                    ('10', 'Oktober'),
                    ('11', 'November'),
                    ('12', 'Desember')]
-TAHUN           = [(num, str(num)) for num in range((datetime.datetime.now().year) - 30, (datetime.datetime.now().year) + 1)]
+# TAHUN           = [(num, str(num)) for num in range((datetime.datetime.now().year) - 30, (datetime.datetime.now().year) + 1)]
 
+TAHUN = [(num, str(num)) for num in range(datetime.now().year - 30, datetime.now().year + 1)]
 
 
 #---------------------------------------------------------------------------------------------------------------------------#
@@ -2470,7 +2472,7 @@ class lhm_vehicle_line(models.Model):
                 line.filter_charge_ids = []
 
     name                = fields.Char("Nama", readonly=True, related="lhm_vehicle_id.name", store=True)
-    date                = fields.Date("Tanggal", )
+    date                = fields.Date("Tanggal", required=True)
     use_hours           = fields.Float("Jam Kerja")
     start_value         = fields.Float("km/hm Berangkat")
     end_value           = fields.Float("km/hm Kembali")
@@ -2512,13 +2514,24 @@ class lhm_vehicle_line(models.Model):
                 data['start_value'] = last_end_value
                 data['date'] = default_date
         elif context.get('line_ids'):
-            line_dict = lhm_vehicle_obj.resolve_2many_commands('line_ids', context.get('line_ids'))
-            last_end_value = max([x['end_value'] for x in line_dict])
-            default_date = max([x['date'] for x in line_dict])
+            line_ids = context.get('line_ids')
+            if isinstance(line_ids, list):
+                if all(isinstance(i, tuple) and len(i) == 3 for i in line_ids):
+                    lines_with_values = [x[2] for x in line_ids if x[0] == 0]
+                    last_end_value = max([x['end_value'] for x in lines_with_values if 'end_value' in x])
+                    default_date = max([x['date'] for x in lines_with_values if 'date' in x])
 
-            data['start_value'] = last_end_value
-            data['date'] = default_date
+                    data['start_value'] = last_end_value
+                    data['date'] = default_date
         return data
+        # elif context.get('line_ids'):
+        #     line_dict = lhm_vehicle_obj.resolve_2many_commands('line_ids', context.get('line_ids'))
+        #     last_end_value = max([x['end_value'] for x in line_dict])
+        #     default_date = max([x['date'] for x in line_dict])
+
+        #     data['start_value'] = last_end_value
+        #     data['date'] = default_date
+        # return data
 
     @api.onchange('activity_id')
     def _onchange_activity_id(self):
@@ -3105,7 +3118,7 @@ class lhm_contractor_material_line(models.Model):
     _description    = 'LHM Contractor Material Line'
 
     name            = fields.Char("BPB", readonly=True)
-    date            = fields.Date("Tanggal", )
+    date            = fields.Date("Tanggal", required="True")
     product_id      = fields.Many2one("product.product", string="Product", ondelete="restrict")
     activity_id     = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
     activity_name   = fields.Char(related="activity_id.name", string="Name")
@@ -3170,7 +3183,7 @@ class lhm_contractor_line(models.Model):
 
     # Field definitions
     name = fields.Char(related='activity_id.name', readonly=True)
-    date = fields.Date("Tanggal")
+    date = fields.Date("Tanggal", required=True)
     location_type_id = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     no_line = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
     location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
@@ -3290,18 +3303,48 @@ class lhm_contractor_vehicle_line(models.Model):
         lhm_contractor_obj = self.env['lhm.contractor']
         context = self._context
         if self.vehicle_id and self.date:
-            date = self.date and self.date or self.contractor_id.date_start
+            date = self.date or self.contractor_id.date_start
+            # Convert date to datetime.date if it's a string
+            if isinstance(date, str):
+                date = datetime.strptime(date, '%Y-%m-%d').date()
+
             if context.get('line_vehicle_ids'):
-                line_dict = lhm_contractor_obj.resolve_2many_commands('line_vehicle_ids', context.get('line_vehicle_ids'))
-                last_end_value = 0.0
-                for x in line_dict:
-                    if x['vehicle_id'] == self.vehicle_id.id and x['date'] <= date and x['end_value'] > last_end_value:
-                        last_end_value = max([x['end_value'] for x in line_dict])
-                self.start_value = last_end_value
+                line_vehicle_ids = context.get('line_vehicle_ids')
+                # Assuming line_vehicle_ids are a list of tuples with command (6, 0, ids) or (0, 0, values)
+                if isinstance(line_vehicle_ids, list):
+                    lines_with_values = [x[2] for x in line_vehicle_ids if x[0] == 0]
+                    last_end_value = 0.0
+                    for x in lines_with_values:
+                        # Convert x['date'] to datetime.date if it's a string
+                        x_date = x['date']
+                        if isinstance(x_date, str):
+                            x_date = datetime.strptime(x_date, '%Y-%m-%d').date()
+                        if x['vehicle_id'] == self.vehicle_id.id and x_date <= date and x['end_value'] > last_end_value:
+                            last_end_value = x['end_value']
+                    self.start_value = last_end_value
             else:
-                other_id    = self.search([('vehicle_id','=',self.vehicle_id.id),('date','<=',date),], order="date desc", limit=1)
+                other_id = self.search([('vehicle_id', '=', self.vehicle_id.id), ('date', '<=', date)], order="date desc", limit=1)
                 if other_id:
                     self.start_value = other_id.end_value
+
+
+    # @api.onchange('vehicle_id', 'date')
+    # def _onchange_vehicle_id(self):
+    #     lhm_contractor_obj = self.env['lhm.contractor']
+    #     context = self._context
+    #     if self.vehicle_id and self.date:
+    #         date = self.date and self.date or self.contractor_id.date_start
+    #         if context.get('line_vehicle_ids'):
+    #             line_dict = lhm_contractor_obj.resolve_2many_commands('line_vehicle_ids', context.get('line_vehicle_ids'))
+    #             last_end_value = 0.0
+    #             for x in line_dict:
+    #                 if x['vehicle_id'] == self.vehicle_id.id and x['date'] <= date and x['end_value'] > last_end_value:
+    #                     last_end_value = max([x['end_value'] for x in line_dict])
+    #             self.start_value = last_end_value
+    #         else:
+    #             other_id    = self.search([('vehicle_id','=',self.vehicle_id.id),('date','<=',date),], order="date desc", limit=1)
+    #             if other_id:
+    #                 self.start_value = other_id.end_value
 
 
     @api.depends('unit_price', 'nilai', 'difference_value')
