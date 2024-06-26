@@ -16,3 +16,5 @@ from . import wizard_running_account_report
 from . import wizard_create_contractor_book
 from . import lhm_state
 
+from . import wizard_hasil_lhm
+

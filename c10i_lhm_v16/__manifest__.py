@@ -85,6 +85,7 @@
         
         'wizard/wizard_create_contractor_book_views.xml',
         'wizard/lhm_state_views.xml',
+        'wizard/wizard_hasil_lhm_views.xml'
         # 'views/data_demo_account_period.xml', # Data dummy dari account.period
 
         # 'views/assets.xml',

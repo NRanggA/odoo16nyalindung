@@ -1818,20 +1818,33 @@
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" optional="show"/>
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
                                         ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="show"/>
-                                        
+
+                                        <field name="is_hasil_2"/>
+                                        <button string="Open Wizard" type="object" name="action_wizard" class="oe_highlight" attrs="{'invisible': [('is_hasil_2','!=',True)]}"/>
+
                                         <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
-                                        <field name="non_work_day" readonly="1" optional="show"/>
-                                        <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="non_work_day" readonly="1" invisible="1"/>
+                                        <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
 
                                         <!-- BEGIN : POC Nyalindung -->
-                                        <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+<!--                                         <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
+                                        <field name="hasil_1" optional="show" readonly="1"/>
+                                        <field name="satuan_1" optional="show" readonly="1"/>
+
+                                        <field name="hasil_2" readonly="1" attrs="{'invisible': [('is_hasil_2', '=', False)]}" optional="show"/>
+                                        <field name="satuan_2" readonly="1" attrs="{'invisible': [('is_hasil_2', '=', False)]}" optional="show"/>
+
+                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <!-- END : POC Nyalindung -->
 
-                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+
+                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
                                         <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="show"/>
                                         <!-- BEGIN : POC Nyalindung -->
@@ -1846,11 +1859,11 @@
 
                                         <!-- Error ang sama karena groups nya -->
                                         <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/> -->
-                                        <field name="panen" invisible="0" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="panen" invisible="1" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
 
                                         <!-- error yang saya karena groups -->
                                         <!-- <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/> -->
-                                        <field name="overtime" invisible="0" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="overtime" invisible="1" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
 
                                         <field name="progressive" invisible="0" string="M" groups="base.group_no_one" optional="show"/>
                                         
