@@ -1820,33 +1820,40 @@
                                         ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="show"/>
 
                                         <field name="is_hasil_2"/>
-                                        <button string="Open Wizard" type="object" name="action_wizard" class="oe_highlight" attrs="{'invisible': [('is_hasil_2','!=',True)]}"/>
 
+
+                                        <button icon="fa-plus" type="object" name="action_wizard" class="oe_highlight" attrs="{'invisible': [('is_hasil_2','!=',True)]}"/>
                                         <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
                                         <field name="non_work_day" readonly="1" invisible="1"/>
+                                        
                                         <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
 
                                         <!-- BEGIN : POC Nyalindung -->
-<!--                                         <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <!-- <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
-                                        <field name="hasil_1" optional="show" readonly="1"/>
-                                        <field name="satuan_1" optional="show" readonly="1"/>
+                                        
+                                        <field name="product_id" invisible="1"/>
+                                        <field name="hasil_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="satuan_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
 
-                                        <field name="hasil_2" readonly="1" attrs="{'invisible': [('is_hasil_2', '=', False)]}" optional="show"/>
-                                        <field name="satuan_2" readonly="1" attrs="{'invisible': [('is_hasil_2', '=', False)]}" optional="show"/>
+                                        <field name="product_id_2" invisible="1"/>
+                                        <field name="hasil_2" readonly="1" optional="show"/>
+                                        <field name="satuan_2" readonly="1" optional="show"/>
 
-                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <!-- END : POC Nyalindung -->
 
 
                                         <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
                                         <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="show"/>
+
+
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
                                             <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>

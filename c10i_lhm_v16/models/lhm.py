@@ -1815,18 +1815,20 @@ class lhm_transaction_line(models.Model):
     drc_lump = fields.Float('drc Lump (%)')
     target_panen = fields.Float('Target Panen')
 
+    product_id  = fields.Many2one('product.product', string="Product 1")
+    product_id_2 = fields.Many2one('product.product', string="Product 2")
 
     hasil_1  = fields.Integer(string="Hasil 1")
-    satuan_1 = fields.Char(string="Satuan 1")
+    satuan_1 = fields.Many2one('uom.uom', string='Satuan 1')
     hasil_2  = fields.Integer(string="Hasil 2")
-    satuan_2 = fields.Char(string="Satuan 2")
-
-    _logger = logging.getLogger(__name__)
+    satuan_2 = fields.Many2one('uom.uom', string='Satuan 2')
 
     is_hasil_2          = fields.Boolean("Is Hasil 2", default=False)
 
     def buka_wizard(self):
-        self._logger.info("Wizard dapat dipanggil")
+        context = {
+            'default_transaction_line_id': self.id,
+        }
         return {
             'type': 'ir.actions.act_window',
             'name': 'Wizard Hasil LHM',
@@ -1834,18 +1836,13 @@ class lhm_transaction_line(models.Model):
             'view_mode': 'form',
             'view_id': self.env.ref('c10i_lhm_v16.view_wizard_hasil_lhm_form').id,
             'target': 'new',
-            'context': self.env.context,
+            'context': context,
         }
 
-    # @api.onchange('is_hasil_2')
     def action_wizard(self):
-        self._logger.info("onchange_trigger_wizard dipanggil, is_hasil_2: %s", self.is_hasil_2)
         if self.is_hasil_2:
             wizard_action = self.buka_wizard()
-            self._logger.info("Wizard action returned: %s", wizard_action)
             return wizard_action
-        else:
-            self._logger.info("is_hasil_2 is False, Tidak dapat membuat wizard.")
 
 
     @api.onchange('hasil_latex','drc_latex', 'hasil_lump', 'drc_lump')
