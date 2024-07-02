@@ -18,7 +18,7 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.partner_id:
                 existing_move_ids = [line.move_id.id for line in rec.payment_line_ids]
-                for move in self.env['account.move'].search([('partner_id', '=', rec.partner_id.id), ('payment_state', 'in', ['in_payment', 'partial']), ('id', 'not in', existing_move_ids)]):
+                for move in self.env['account.move'].search([('partner_id', '=', rec.partner_id.id), ('payment_state', 'in', ['not_paid', 'in_payment', 'partial']), ('id', 'not in', existing_move_ids)]):
                     if move.id not in existing_move_ids:
                         self.env['account.payment.line'].create({
                             'account_payment_id': self.id,
@@ -73,7 +73,11 @@ class AccountPayment(models.Model):
                             'partner_id': self.partner_id.id,
                         }
                     
+                        amount_total += write_off_amount
                         payment_lines.append((0, 0, write_off_vals))
+
+                else:
+                    pline.unlink()
 
             if amount_total > 0:
                 credit_tot = amount_total
