@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="c10i_view_asset_acquisition_form" model="ir.ui.view">
+        <field name="name">c10i.view.asset.acquisition.form</field>
+        <field name="model">asset.acquisition</field>
+        <field name="arch" type="xml">
+            <form string="Asset Acquisition">
+                <header>
+                    <button name="action_post" attrs="{'invisible': [('asset_ids', '!=', [])]}" string="POST" type="object" class="oe_highlight"/>
+                    <button name="action_craete_bill" string="Create Bill" type="object" context="{'create_bill':True}" attrs="{'invisible': ['|', ('state', '=', 'draft'), ('invoice_id', '!=', False)]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted" statusbar_colors='{"posted":"blue"}'/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object"  name="action_view_invoice"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':['|', ('invoice_id', '=', False), ('state', '=', 'draft')]}" string="Bill">
+                            <field name='invoice_id' invisible="1"/>
+                        </button>
+                        <button type="object" name="action_view_asset" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible':['|', ('asset_count', '=', 0), ('state', 'in', ('draft'))]}">
+                            <field name="asset_count" widget="statinfo" string="Asset(s)"/>
+                            <field name="asset_ids" invisible="1"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <span class="o_form_label" attrs="{'invisible': [('state','not in',('draft'))]}">Asset Acquisition</span>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'supplier', 'show_vat': True}" attrs="{'readonly':[('state', 'not in', ['draft'])]}"
+                                placeholder="Name, TIN, Email, or Reference"
+                            />
+                            <field name="journal_id" attrs="{'readonly':[('state', 'not in', ['draft'])]}" options="{'no_create_edit':True, 'no_create':True}"/>
+                            <field name="date" attrs="{'readonly':[('state', 'not in', ['draft'])]}"/>
+                            <field name="first_depr_date" attrs="{'readonly':[('state', 'not in', ['draft'])]}"/>
+                        </group>
+                        <group>
+                            <field name="move_id" readonly="1" attrs="{'invisible': [('move_id', '=', False)]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Details" name="acquisition_line_ids">
+                            <field name="acquisition_line_ids" attrs="{'readonly': [('state','not in',['draft'])]}">
+                                <tree toolbar="0" editable="bottom">
+                                    <field name="product_id" required="1"/>
+                                    <field name="model_id" required="1" options="{'no_create_edit':True, 'no_create':True}"/>
+                                    <field name="origin"/>
+                                    <field name="name"/>
+                                    <field name="qty" required="1"/>
+                                    <field name="group"/>
+                                    <field name="purchase_value"/>
+                                    <field name="not_depr_value"/>
+                                    <field name="acquisition_value" readonly="1"/>
+                                    <field name="total_value" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" />
+                    <field name="activity_ids" widget="mail_activity" />
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="c10i_view_asset_acquisition_tree" model="ir.ui.view">
+        <field name="name">c10i.view.asset.acquisition.tree</field>
+        <field name="model">asset.acquisition</field>
+        <field name="arch" type="xml">
+            <tree string="Asset Acquisition">
+                <field name="name" />
+                <field name="date"/>
+                <field name="state" optional="show" widget="badge" decoration-info="state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="c10i_view_asset_acquisition_search" model="ir.ui.view">
+        <field name="name">c10i.view.asset.acquisition.select</field>
+        <field name="model">asset.acquisition</field>
+        <field name="arch" type="xml">
+            <search string="Search Asset Acquisition">
+                <field name="name" string="Asset Acquisition" />
+                <field name="state" />
+            </search>
+        </field>
+    </record>
+    
+    <record model="ir.actions.act_window" id="c10i_asset_acquisition_form_action">
+        <field name="name">Asset Acquisition</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">asset.acquisition</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="c10i_view_asset_acquisition_search" />
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+            Click to start a new asset acquisition process.
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="c10i_menu_asset_acquisition" name="Asset Acquisition" parent="account.menu_finance_entries_management" action="c10i_asset_acquisition_form_action" sequence="100"/>
+
+</odoo>

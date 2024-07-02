@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record model="ir.ui.view" id="c10i_view_account_asset_form">
+        <field name="name">c10i.account.asset.form</field>
+        <field name="model">account.account.asset</field>
+        <field name="inherit_id" ref="account_asset.view_account_asset_form"/>
+        <field name="arch" type="xml">
+        	<field name="acquisition_date" position="after">
+        		<field name="asset_acquisition_id" readonly="1"/>
+        	</field>
+            <page name="depreciation_board" position="after">
+                <page string="Sell / Disposal Info" attrs="{'invisible': [('disposal_id', '=', False)]}">
+                    <group>
+                        <group>
+                            <field name="disposal_id" readonly="1"/>
+                            <field name="sell_account_move_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="reason" readonly="1"/>
+                        </group>
+                    </group>                    
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>
