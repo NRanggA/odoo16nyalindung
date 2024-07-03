@@ -24,9 +24,9 @@ class AccountMove(models.Model):
             'account_id': advanced_line.account_id.id,
             'price_unit': -advanced_line.price_unit,
             'tax_ids': [(6, 0, advanced_line.tax_ids.ids)],
-            'analytic_account_id': advanced_line.analytic_account_id.id,
+            # 'analytic_account_id': advanced_line.analytic_account_id.id,
             # 'debit': advanced_line.price_unit,
-            'analytic_tag_ids': [(6, 0, advanced_line.analytic_tag_ids.ids)],
+            # 'analytic_tag_ids': [(6, 0, advanced_line.analytic_tag_ids.ids)],
         }
         if advanced_move_id:
             res.update({"advanced_move_id": advanced_move_id.move_id.id})

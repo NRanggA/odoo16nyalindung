@@ -10,7 +10,7 @@
     'depends': [
         'base',
         'account',
-        'account_asset'
+        'om_account_asset'
     ],
     'data': [
         'security/ir.model.access.csv',

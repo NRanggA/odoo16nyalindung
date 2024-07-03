@@ -30,7 +30,7 @@ class DirectPayment(models.Model):
         default=lambda s: s.env.company.currency_id.id,
         required=True, ondelete='restrict')
     journal_id = fields.Many2one('account.journal', string='Expense Journal', 
-        check_company=True, domain="[('type', '=', 'purchase'), ('company_id', '=', company_id)]",
+        check_company=True, domain="[('type', '=', 'purchase')]",
         default=_default_journal_id, help="The journal used when the expense is done.")
     
     line_ids = fields.One2many("account.direct.payment.line", "payment_id", string="Lines")
@@ -93,7 +93,7 @@ class DirectPayment(models.Model):
             amount_residual = 0.0
             if payment.account_move_id and payment.account_move_id.state=='posted':
                 new_payment_state = 'not_paid'
-                for line in payment.account_move_id.line_ids.filtered(lambda l : l.account_internal_type in ('receivable', 'payable')):
+                for line in payment.account_move_id.line_ids.filtered(lambda l : l.account_type in ('receivable', 'payable')):
                     amount_residual += line.amount_residual
                     if not line.full_reconcile_id:
                         continue
@@ -252,7 +252,7 @@ class DirectPaymentLine(models.Model):
             'partner_id': partner.id if partner else False,
             'name': self.name,
             'account_id': self.account_id.id,
-            'analytic_account_id': self.analytic_account_id.id,
+            # 'analytic_account_id': self.analytic_account_id.id,
             'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
             'credit': abs(amount) if amount < 0 else 0.0,

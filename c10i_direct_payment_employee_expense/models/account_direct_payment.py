@@ -153,3 +153,13 @@ class DirectPayment(models.Model):
             if payment.employee_expense_state!='reject':
                 raise ValidationError(_('You cannot Set Draft Expense that is not in a Rejected state'))
             payment.action_draft()
+
+    # access_account_direct_payment_buser,account.direct.payment buser,c10i_direct_payment.model_account_direct_payment,base.group_user,1,1,1,1
+    # access_account_direct_payment_line_buser,account.direct.payment.line buser,c10i_direct_payment.model_account_direct_payment_line,base.group_user,1,1,1,1
+    # access_account_move_buser,account.move buser,account.model_account_move,base.group_user,1,0,0,0
+    # access_account_move_line_buser,account.move.line buser,account.model_account_move_line,base.group_user,1,0,0,0
+    # access_account_analytic_line_buser,account.analytic.line buser,account.model_account_analytic_line,base.group_user,1,0,0,0
+    # access_account_journal_buser,account.journal buser,account.model_account_journal,base.group_user,1,0,0,0
+    # access_account_account_buser,account.account buser,account.model_account_account,base.group_user,1,0,0,0
+    # access_account_account_type_buser,account.account.type buser,account.model_account_account_type,base.group_user,1,0,0,0
+    # access_account_partial_reconcile_buser,account.partial.reconcile buser,account.model_account_partial_reconcile,base.group_user,1,0,0,0

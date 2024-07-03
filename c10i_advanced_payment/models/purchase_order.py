@@ -23,6 +23,10 @@ class PurchaseOrder(models.Model):
 
 
     def action_create_advanced_payment(self):
+        config_param = self.env['ir.config_parameter'].sudo()
+        vendor_advanced_account_id = config_param.get_param('vendor.advanced.account.id')
+        account_id = self.env['account.account'].browse(int(vendor_advanced_account_id))
+
         return {
             'name': _('Create Advanced'),
             'type': 'ir.actions.act_window',
@@ -30,8 +34,17 @@ class PurchaseOrder(models.Model):
             'res_model': 'account.move',
             # 'view_id': self.env.ref('account.view_move_form').id,
             'view_id': self.env.ref('c10i_advanced_payment.view_move_form_inherit_account_advanced_vendor').id,
-            'context': {'default_move_type': 'in_invoice','default_partner_id':self.partner_id.id,'default_is_advanced': True,'default_advanced_purchase_id':self.id,'advanced_purchase':True},
+            'context': {'default_move_type': 'in_invoice',
+                        'default_partner_id':self.partner_id.id,
+                        'default_is_advanced': True,
+                        'default_advanced_purchase_id':self.id,
+                        'advanced_purchase':True,
+                        # 'default_invoice_line_ids': [(0, 0, {
+                        #     'account_id': account_id.id if vendor_advanced_account_id else False,
+                        #     'currency_id' : self.company_id.currency_id.id
+                        #     })]
+                        },
             'domain': "[('move_type', '=', 'in_invoice')]",
             'target': 'new'
 
-        } 
+        }

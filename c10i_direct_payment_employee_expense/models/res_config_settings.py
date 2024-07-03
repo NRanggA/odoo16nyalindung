@@ -9,5 +9,7 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.employee_advance_account_id', readonly=False,
         string="Employee Advance Account",
         domain=lambda self: "[('company_id', '=', company_id), ('deprecated','=',False),\
-            ('internal_type', '=', 'other'), ('reconcile','=',True)]",
+            ('reconcile','=',True)]",
         help='Please complete the help')
+    
+    # ('internal_type', '=', 'other'),

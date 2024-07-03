@@ -52,7 +52,7 @@
                             <field name="currency_id" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="account_move_id" readonly="1" groups="account.group_account_user"/>
                             
-                            <field name="company_id" groups="base.group_multi_company" options="{'no_create_edit': True, 'no_create': True}"/>
+                            <field name="company_id" options="{'no_create_edit': True, 'no_create': True}"/>
                         </group>
                     </group>
                     <notebook>
@@ -117,7 +117,7 @@
                 <field name="requested_by"/>
                 <field name="currency_id" optional="hide"/>
                 <field name="amount_total"/>
-                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="company_id" optional="hide"/>
                 <field name="state" widget="badge" decoration-warning="state=='confirm'" decoration-success="state=='posted'"/>
                 <field name="payment_state" widget="badge" optional="show" decoration-warning="payment_state=='not_paid'" decoration-info="payment_state=='in_payment'" decoration-success="payment_state=='paid'"/>
             </tree>
