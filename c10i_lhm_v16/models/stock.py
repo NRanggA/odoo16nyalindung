@@ -92,32 +92,32 @@ class StockMove(models.Model):
         if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
             self.account_id = self.plantation_activity_id.account_id and self.plantation_activity_id.account_id.id or False
 
-    def product_price_update_before_done(self):
-        tmpl_dict = defaultdict(lambda: 0.0)
-        # adapt standard price on incomming moves if the product cost_method is 'average'
-        std_price_update = {}
-        for move in self.filtered(lambda move: move.location_id.usage in ('supplier', 'production') and move.product_id.cost_method == 'average'):
-            product_tot_qty_available = move.product_id.qty_available + tmpl_dict[move.product_id.id]
+    # def product_price_update_before_done(self):
+    #     tmpl_dict = defaultdict(lambda: 0.0)
+    #     # adapt standard price on incomming moves if the product cost_method is 'average'
+    #     std_price_update = {}
+    #     for move in self.filtered(lambda move: move.location_id.usage in ('supplier', 'production') and move.product_id.cost_method == 'average'):
+    #         product_tot_qty_available = move.product_id.qty_available + tmpl_dict[move.product_id.id]
 
-            # if the incoming move is for a purchase order with foreign currency, need to call this to get the same value that the quant will use.
-            if product_tot_qty_available <= 0:
-                new_std_price = move.get_price_unit()
-            else:
-                # Get the standard price
-                amount_unit = std_price_update.get((move.company_id.id, move.product_id.id)) or move.product_id.standard_price
-                if move.product_id.capitalized_tax_id:
-                    total_taxes = 0
-                    for taxes in move.product_id.capitalized_tax_id:
-                        if taxes:
-                            total_taxes = total_taxes + (taxes.amount * (((move.get_price_unit() * move.product_qty)) /100))
-                    new_std_price = ((amount_unit * product_tot_qty_available) + ((move.get_price_unit() + (total_taxes/move.product_qty)) * move.product_qty)) / (product_tot_qty_available + move.product_qty)
-                else:
-                    new_std_price = ((amount_unit * product_tot_qty_available) + (move.get_price_unit() * move.product_qty)) / (product_tot_qty_available + move.product_qty)
+    #         # if the incoming move is for a purchase order with foreign currency, need to call this to get the same value that the quant will use.
+    #         if product_tot_qty_available <= 0:
+    #             new_std_price = move.get_price_unit()
+    #         else:
+    #             # Get the standard price
+    #             amount_unit = std_price_update.get((move.company_id.id, move.product_id.id)) or move.product_id.standard_price
+    #             if move.product_id.capitalized_tax_id:
+    #                 total_taxes = 0
+    #                 for taxes in move.product_id.capitalized_tax_id:
+    #                     if taxes:
+    #                         total_taxes = total_taxes + (taxes.amount * (((move.get_price_unit() * move.product_qty)) /100))
+    #                 new_std_price = ((amount_unit * product_tot_qty_available) + ((move.get_price_unit() + (total_taxes/move.product_qty)) * move.product_qty)) / (product_tot_qty_available + move.product_qty)
+    #             else:
+    #                 new_std_price = ((amount_unit * product_tot_qty_available) + (move.get_price_unit() * move.product_qty)) / (product_tot_qty_available + move.product_qty)
 
-            tmpl_dict[move.product_id.id] += move.product_qty
-            # Write the standard price, as SUPERUSER_ID because a warehouse manager may not have the right to write on products
-            move.product_id.with_context(force_company=move.company_id.id).sudo().write({'standard_price': new_std_price})
-            std_price_update[move.company_id.id, move.product_id.id] = new_std_price
+    #         tmpl_dict[move.product_id.id] += move.product_qty
+    #         # Write the standard price, as SUPERUSER_ID because a warehouse manager may not have the right to write on products
+    #         move.product_id.with_context(force_company=move.company_id.id).sudo().write({'standard_price': new_std_price})
+    #         std_price_update[move.company_id.id, move.product_id.id] = new_std_price
 
     @api.model
     def _prepare_account_move_line(self, qty, cost, credit_account_id,

@@ -7,7 +7,7 @@
 	            <form string="Wizard Hasil LHM">
 	                <sheet>
 	                	<notebook>
-                            <page string="Hasil 1">
+                            <page string="Hasil 1 (Latex)">
                                 <group>
                                 	<field name="transaction_line_id" invisible="1"/>
                                 	<field name="product_id"/>
@@ -15,7 +15,7 @@
                                     <field name="satuan_1"/>
                                 </group>
                             </page>
-                            <page string="Hasil 2">
+                            <page string="Hasil 2 (Lump)">
                                 <group>
                                 	<field name="product_id_2"/>
                                     <field name="hasil_2"/>

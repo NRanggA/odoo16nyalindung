@@ -45,40 +45,35 @@ class WizardReportProduksi(models.TransientModel):
             LEFT JOIN lhm_activity la on la.id=ltpl.activity_id
             where la.is_panen is True and ltpl.date between %s and %s and state in('done','close')
         """
+        str_sql2 = ''
+        if self.afdeling_ids:
+            str_afdeling_id = ''
+            for data in self.afdeling_ids:
+                str_afdeling_id += str(data.id)+","
+            str_sql2 = ' and hf.afdeling_id in ('+str_afdeling_id[:-1]+')'
 
-       # Eksekusi query
+        str_sql = str_sql + str_sql2 + ' ORDER BY ltpl.date, lt.kemandoran_id '
         self.env.cr.execute(str_sql, (self.date_start, self.date_end))
-        
+
         # Ambil hasil query
         results = self.env.cr.fetchall()
-        
         print(f"===== HASIL QUERY ==== {results}")
 
-        # str_sql2 = ''
-        # if self.afdeling_ids:
-        #     str_afdeling_id = ''
-        #     for data in self.afdeling_ids:
-        #         str_afdeling_id += str(data.id)+","
-        #     str_sql2 = ' and hf.afdeling_id in ('+str_afdeling_id[:-1]+')'
-
-        # str_sql = str_sql + str_sql2 + ' ORDER BY ltpl.date, lt.kemandoran_id '
-        # self.env.cr.execute(str_sql, (self.date_start, self.date_end))
-
-        # for report in self.env.cr.fetchall():
-        #     new_lines = {
-        #         'hr_foreman_id' : report[0],
-        #         'date'          : report[1],
-        #         'location_id'   : report[2],
-        #         'uom_id'        : report[3],
-        #         'nilai'         : report[4],
-        #         'uom_id2'       : report[5],
-        #         'nilai2'        : report[6],
-        #         'total'         : report[7],
-        #         'hk'            : report[8],
-        #         'produksi_id': self.id,
-        #     }
-        #     if new_lines:
-        #         self.env['wizard.report.produksi.panen'].create(new_lines)
+        for report in results:
+            new_lines = {
+                'hr_foreman_id' : report[0],
+                'date'          : report[1],
+                'location_id'   : report[2],
+                'uom_id'        : report[3],
+                'nilai'         : report[4],
+                'uom_id2'       : report[5],
+                'nilai2'        : report[6],
+                'total'         : report[7],
+                'hk'            : report[8],
+                'produksi_id': self.id,
+            }
+            if new_lines:
+                produksi_panen = self.env['wizard.report.produksi.panen'].create(new_lines)
 
         #Laporan NAB Detail
         # if self.nab_detail_ids:
@@ -723,41 +718,58 @@ class WizardReportProduksiSelect(models.TransientModel):
                              ('produksi_rotasi', 'Laporan Rotasi Panen'),
                              ], string='Choose Report', default='produksi_panen')
     
-    report_type = fields.Selection([('html', 'HTML'), ('csv', 'CSV'), ('xlsx', 'XLSX'), ('rtf', 'RTF'),
-                                    ('odt', 'ODT'), ('ods', 'ODS'), ('txt', 'Text'), ('pdf', 'PDF'),
-                                    ('jrprint', 'Jasper Print')], string='Type'
-                                   , default='xlsx')
-    
+    report_type = fields.Selection([('xlsx', 'XLSX'),
+                                    ('pdf', 'PDF'),], string='Type', default='xlsx')
+
+    produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
+
     def create_report(self):
-        data = self.read()[-1]
-        name_report = False
-        if self.name == "produksi_panen":
-            name_report = "report_produksi_panen"
-        elif self.name == "produksi_panen_rekap":
-            name_report = "report_produksi_panen_rekap"
-        elif self.name == "produksi_restan":
-            name_report = "report_produksi_restan"
-        elif self.name == "produksi_nab_perblock":
-            name_report = "report_produksi_nab_perblock"
-        elif self.name == "produksi_nab_detail":
-            name_report = "report_produksi_nab_detail"
-        elif self.name == "produksi_nab_rekap":
-            name_report = "report_produksi_nab_rekap"
-        elif self.name == "produksi_nab_afkir":
-            name_report = "report_produksi_nab_afkir"
-        elif self.name == "produksi_rotasi":
-            name_report = "report_produksi_panen_rotasi"
-        else:
+        self.ensure_one()
+        data = self.read(['produksi_id'])[0]
+        # produksi_id = data['produksi_id'][0]
+        produksi_id = self.env['wizard.report.produksi'].browse(data['produksi_id'][0])
+
+        pdf_report = {
+            'produksi_panen'        : 'action_produksi_panen_report_pdf',
+            'produksi_panen_rekap'  : 'action_report_produksi_panen_rekap',
+            'produksi_restan'       : 'action_report_produksi_restan',
+            'produksi_nab_perblock' : 'action_report_produksi_nab_perblock',
+            'produksi_nab_detail'   : 'action_report_produksi_nab_detail',
+            'produksi_nab_rekap'    : 'action_report_produksi_nab_rekap',
+            'produksi_nab_afkir'    : 'action_report_produksi_nab_afkir',
+            'produksi_rotasi'       : 'action_report_produksi_panen_rotasi',
+        }.get(self.name)
+
+        excel_report = {
+            'produksi_panen'        : 'action_produksi_panen_report_xlsx',
+            'produksi_panen_rekap'  : 'action_report_produksi_panen_rekap',
+            'produksi_restan'       : 'action_report_produksi_restan',
+            'produksi_nab_perblock' : 'action_report_produksi_nab_perblock',
+            'produksi_nab_detail'   : 'action_report_produksi_nab_detail',
+            'produksi_nab_rekap'    : 'action_report_produksi_nab_rekap',
+            'produksi_nab_afkir'    : 'action_report_produksi_nab_afkir',
+            'produksi_rotasi'       : 'action_report_produksi_panen_rotasi',
+        }.get(self.name)
+
+        if not pdf_report and not excel_report:
             return True
-        return {
-            'type': 'ir.actions.report.xml',
-            'report_name': name_report,
+
+        # Mengumpulkan nama afdeling
+        afdeling_names = ", ".join([afdeling.name for afdeling in produksi_id.afdeling_ids])
+
+        # Buat data untuk laporan
+        report_data = {
+            'model': 'wizard.report.produksi',  # Ganti dengan model yang relevan
+            'ids': self.env.context.get('active_ids', []),
             'datas': {
-                'model': 'wizard.report.produksi.select',
-                'id': self._context.get('active_ids') and self._context.get('active_ids')[0] or self.id,
-                'ids': self._context.get('active_ids') and self._context.get('active_ids') or [],
-                'report_type': data['report_type'],
-                'form': data
+                'produksi_id': produksi_id.id,
+                'date_start': produksi_id.date_start.strftime('%d-%m-%Y'),
+                'date_end': produksi_id.date_end.strftime('%d-%m-%Y'),
+                'afdeling_names': afdeling_names,   
             },
-            'nodestroy': False
         }
+
+        if self.report_type == 'pdf':
+            return self.env.ref(f'c10i_lhm_v16.{pdf_report}').report_action(self, data=report_data)
+        else:
+            return self.env.ref(f'c10i_lhm_v16.{excel_report}').report_action(self, data=report_data)

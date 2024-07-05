@@ -18,11 +18,25 @@ class WizardHasilLhm(models.TransientModel):
 
 	@api.model
 	def default_get(self, fields_list):
-	    defaults = super(WizardHasilLhm, self).default_get(fields_list)
-	    if self.env.context.get('default_transaction_line_id'):
-	        transaction_line = self.env['lhm.transaction.line'].browse(self.env.context['default_transaction_line_id'])
-	        defaults['transaction_line_id'] = transaction_line.id
-	    return defaults
+		defaults = super(WizardHasilLhm, self).default_get(fields_list)
+
+		# Set default transaction_line_id if exists in context
+		if self.env.context.get('default_transaction_line_id'):
+		    transaction_line = self.env['lhm.transaction.line'].browse(self.env.context['default_transaction_line_id'])
+		    defaults['transaction_line_id'] = transaction_line.id
+
+		# Find product named 'latex'
+		product_latex = self.env['product.product'].search([('name', '=', 'Latex')], limit=1)
+		if product_latex:
+		    defaults['product_id'] = product_latex.id
+
+		# Find product named 'lump'
+		product_lump = self.env['product.product'].search([('name', '=', 'Lump')], limit=1)
+		if product_lump:
+		    defaults['product_id_2'] = product_lump.id
+
+		return defaults
+
 
 	def action_confirm(self):
 		if self.transaction_line_id:
