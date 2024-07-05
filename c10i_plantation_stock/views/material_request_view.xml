@@ -5,17 +5,40 @@
         <field name="model">material.request</field>
         <field name="inherit_id" ref="c10i_material_request.material_request_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='picking_type_id']" position="after">
+            <!-- <xpath expr="//field[@name='picking_type_id']" position="after">
                 <field name="is_kontraktor" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-            </xpath>
+            </xpath> -->
             <xpath expr="//field[@name='line_ids']/tree/field[@name='name']" position="after">
-                <field name="filtered_cost_activity_ids" invisible="1"/>
-                <field name="cost_allocation_mark" invisible="1"/>
+                <field name="doc_activity_ids" invisible="1"/>
+                <!-- <field name="cost_allocation_mark" invisible="1"/> -->
 
-                <field name="cost_allocation_id" options="{'no_create_edit': True, 'no_create': True}"/>
-                <field name="cost_center_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'required': [('cost_allocation_mark','!=','none')]}"/>
-                <field name="cost_activity_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('id','in',filtered_cost_activity_ids)]" attrs="{'required': [('cost_allocation_mark','!=','none')]}"/>
+                <field name="location_type_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                <field name="location_id" options="{'no_create_edit': True, 'no_create': True}"/> <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
+                <field name="activity_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('id','in',doc_activity_ids)]"/> <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
             </xpath>
         </field>
     </record>
+
+    <!-- <record id="lhm_material_inherit_view_form_inherit" model="ir.ui.view">
+        <field name="name">lhm.material.inherit.view.form.inherit</field>
+        <field name="model">lhm.transaction</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_transaction_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='get_material']" position="after">
+                <button string="Material 2" name="action_outstanding_material" type="object" class="oe_highlight"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Allocation Material">
+                    <field name="consumed_material_ids">
+                        <tree editable="bottom">
+                            <field name="stock_move_id" />
+                            <field name="lhm_id" />
+                            <field name="mr_id" />
+                            <field name="product_qty" />
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record> -->
 </odoo>

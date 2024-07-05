@@ -11,7 +11,7 @@ The specific and easy-to-use Purchase Order Asset module in Odoo that allow you 
     'website': "http://konsaltenindonesia.com",
     'version': '14.1.0',
     'depends': [
-        'base', 'stock'
+        'base', 'stock', 'c10i_lhm_v16'
     ],
     'data': [
                 'data/sequences.xml',

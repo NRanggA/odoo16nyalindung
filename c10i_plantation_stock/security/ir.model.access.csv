@@ -1,2 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_plantation_material_allocation,plantation_material_allocation user,model_plantation_material_allocation,,1,1,1,1
+access_lhm_material_consumption,lhm.material.consumption,model_lhm_material_consumption,,1,1,1,1
