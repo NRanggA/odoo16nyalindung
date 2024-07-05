@@ -1819,7 +1819,7 @@
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
                                         ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="show"/>
 
-                                        <field name="is_hasil_2" attrs="{'readonly': [('panen','!=',True)]}"/>
+                                        <field name="is_hasil_2"/>
 
 
                                         <button icon="fa-plus" type="object" name="action_wizard" class="oe_highlight" attrs="{'invisible': [('is_hasil_2','!=',True)]}"/>
