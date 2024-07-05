@@ -155,12 +155,6 @@
                 <xpath expr="//page[@name='personal_information']/group/group[1]" position="attributes">
                     <attribute name="string">Data Privasi</attribute>
                 </xpath>
-
-                <!-- Menghilangkan page yang tidak digunakan pada bawaan odoo -->
-                <!-- Informasi Umum / Public -->
- <!--                <xpath expr="//page[@name='public']/div/div/group[1]" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath> -->
                 <xpath expr="//page[@name='public']/div/div/group[2]" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
@@ -170,11 +164,6 @@
                 <xpath expr="//page[@name='public']/div/div/group[4]" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-
-                <!-- Data pribadi / personal information -->
-<!--                 <xpath expr="//page[@name='personal_information']/group/group[1]" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath> -->
                 <xpath expr="//page[@name='personal_information']/group/group[2]" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
@@ -184,8 +173,7 @@
                 <xpath expr="//page[@name='personal_information']/group/group[4]" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-
-
+s
                 <!-- Menambahkan group baru di dalam page -->
                 <xpath expr="//page[@name='public']/*[1]" position="before">
                     <group>

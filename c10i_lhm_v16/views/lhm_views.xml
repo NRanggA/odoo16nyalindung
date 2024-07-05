@@ -1823,6 +1823,7 @@
 
 
                                         <button icon="fa-plus" type="object" name="action_wizard" class="oe_highlight" attrs="{'invisible': [('is_hasil_2','!=',True)]}"/>
+                                        
                                         <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
                                         <field name="non_work_day" readonly="1" invisible="1"/>
                                         

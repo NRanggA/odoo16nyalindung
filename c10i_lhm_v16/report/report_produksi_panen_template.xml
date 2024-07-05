@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="produksi_panen_report">
+        <t t-call="web.html_container">
+            <div class="page">
+                <h2>PT. KONSALTEN SOLUSI INDONESIA</h2>
+                <h3>Laporan Produksi Hasil Panen</h3>
+                <t t-set="date_start" t-value="datas['date_start']"/>
+                <t t-set="date_end" t-value="datas['date_end']"/>
+                <t t-set="afdeling_names" t-value="datas['afdeling_names']"/>
+                <p>Periode: <t t-esc="date_start"/> s.d. <t t-esc="date_end"/></p>
+                <p>Afdeling: <t t-esc="afdeling_names"/></p>
+                <style>
+                    .table {
+                        width: 100%;
+                        margin-bottom: 1rem;
+                        background-color: transparent;
+                        border-collapse: collapse;
+                    }
+                    .table-sm th,
+                    .table-sm td {
+                        padding: .3rem;
+                    }
+                    .table-bordered {
+                        border: 1px solid #dee2e6;
+                    }
+                    .table-bordered th,
+                    .table-bordered td {
+                        border: 1px solid #dee2e6;
+                    }
+                    .text-right {
+                        text-align: right;
+                    }
+                </style>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Kemandoran/Kontraktor</th>
+                            <th>Tgl. Progress</th>
+                            <th>Kode</th>
+                            <th>Lokasi</th>
+                            <th>Satuan</th>
+                            <th>Hasil Kerja</th>
+                            <th>Satuan 2</th>
+                            <th>Hasil Kerja 2</th>
+                            <th>Realisasi</th>
+                            <th>HK</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="datas.get('produksi_id')">
+                            <t t-set="produksi_record" t-value="env['wizard.report.produksi'].browse(datas['produksi_id'])"/>
+                            <t t-set="index" t-value="0"/>
+                            <t t-foreach="produksi_record.panen_ids" t-as="doc" t-foreach-index="index">
+                                <tr>
+                                    <td><t t-esc="index + 1"/></td>
+                                    <t t-set="index" t-value="index + 1"/>
+                                    <td><t t-esc="doc.hr_foreman_id.name"/></td>
+                                    <td><t t-esc="doc.date"/></td>
+                                    <td><t t-esc="doc.location_code"/></td>
+                                    <td><t t-esc="doc.location_id.name"/></td>
+                                    <td><t t-esc="doc.uom_id.name"/></td>
+                                    <td><t t-esc="doc.nilai"/></td>
+                                    <td><t t-esc="doc.uom_id2.name"/></td>
+                                    <td><t t-esc="doc.nilai2"/></td>
+                                    <td><t t-esc="doc.total"/></td>
+                                    <td><t t-esc="doc.hk"/></td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <record id="paperformat_report_produksi_panen" model="report.paperformat">
+        <field name="name">Produksi Panen Report</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="page_width">0</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_right">5</field>
+        <field name="margin_left">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+</odoo>

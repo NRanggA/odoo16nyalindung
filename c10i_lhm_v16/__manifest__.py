@@ -62,7 +62,6 @@
 
         'wizard/stock_backorder_confirmation_views.xml',
         'wizard/wizard_nab_generate_invoice_views.xml',
-        'wizard/wizard_report_produksi_views.xml',      # menu report nya masih bermasalah
         'wizard/wizard_report_progres_kerja_views.xml', # tag report di komen pada halaman ini
         'wizard/wizard_report_export_data_views.xml',
         'wizard/wizard_report_monitor_views.xml',
@@ -79,9 +78,15 @@
         'wizard/wizard_contractor_bill_views.xml', 
         'wizard/wizard_plasma_bill_views.xml',
         
+
         'wizard/wizard_running_account_report_views.xml', # error sintaks
         'report/report_running_account_template.xml',
         'report/report_running_account_action.xml',
+
+        'wizard/wizard_report_produksi_views.xml',
+        'report/report_produksi_panen_template.xml',
+        'report/report_produksi_panen_action.xml',
+
         
         'wizard/wizard_create_contractor_book_views.xml',
         'wizard/lhm_state_views.xml',

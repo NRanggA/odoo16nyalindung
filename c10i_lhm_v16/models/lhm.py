@@ -1336,19 +1336,38 @@ class lhm_transaction(models.Model):
                                 'message': _("Dokumen sudah ada: %s.") % other_ids[-1].name},
                 }
         if self.date and self.kemandoran_id and not other_ids:
-            transfer_out_ids = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
-            transfer_in_ids = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'in'), ('kemandoran_from_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
-            other_out_attn = self.env['hr.attendance.type'].search([('type', '=', 'out')], limit=1)
-            other_in_attn = self.env['hr.attendance.type'].search([('type', '=', 'in')], limit=1)
+            transfer_out_ids    = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
+            transfer_in_ids     = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'in'), ('kemandoran_from_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
+            other_out_attn      = self.env['hr.attendance.type'].search([('type', '=', 'out')], limit=1)
+            other_in_attn       = self.env['hr.attendance.type'].search([('type', '=', 'in')], limit=1)
+
             emp_out_ids = [x.employee_id.id for x in transfer_out_ids]
             list_employee = []
             seq = 1
+
+            # Pencarian absensi karyawan pada tanggal yang sama
+            absensi = self.env['hr.attendance'].search([
+                ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
+                ('check_in', '>=', self.date),
+                ('check_in', '<', self.date + timedelta(days=1))
+            ])
+            absensi_employee_ids = absensi.mapped('employee_id.id')
+
             for employee in self.kemandoran_id.employee_ids:
+                # if employee.id in absensi_employee_ids:
                 min_wage = False
                 if employee and employee.basic_salary_type == 'employee':
-                    min_wage = self.env['hr.minimum.wage'].search([('employee_id', '=', employee.id), ('date_from', '<=', self.date), ('date_to', '>=', self.date)], limit=1)
+                    min_wage = self.env['hr.minimum.wage'].search([
+                        ('employee_id', '=', employee.id),
+                        ('date_from', '<=', self.date),
+                        ('date_to', '>=', self.date)
+                    ], limit=1)
                 elif employee and employee.basic_salary_type == 'employee_type':
-                    min_wage = self.env['hr.minimum.wage'].search([('employee_type_id', '=', employee.type_id.id), ('date_from', '<=', self.date), ('date_to', '>=', self.date)], limit=1)
+                    min_wage = self.env['hr.minimum.wage'].search([
+                        ('employee_type_id', '=', employee.type_id.id),
+                        ('date_from', '<=', self.date),
+                        ('date_to', '>=', self.date)
+                    ], limit=1)
                 if not min_wage:
                     return {
                         'value': {
@@ -1381,10 +1400,17 @@ class lhm_transaction(models.Model):
                 if employee.id in emp_out_ids:
                     values.update({
                         'attendance_id': other_out_attn and other_out_attn.id or False,
-                        'transfer_id': self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False), ('employee_id', '=', employee.id)], limit=1).id or False
+                        'transfer_id': self.env['hr.employee.foreman.transfer'].search([
+                            ('date', '=', self.date),
+                            ('type', '=', 'out'),
+                            ('kemandoran_to_id', '=', self.kemandoran_id.id),
+                            ('lhm_line_id', '=', False),
+                            ('employee_id', '=', employee.id)
+                        ], limit=1).id or False
                     })
                 list_employee.append((0, 0, values))
                 seq += 1
+
             if transfer_in_ids:
                 for transfer in transfer_in_ids:
                     values = {
@@ -1529,7 +1555,8 @@ class lhm_transaction(models.Model):
             ltl.location_id,
             sum(ltl.work_day) as hk,
             sum(ltl.work_day*ltl.min_wage_value)+sum(ltl.premi+ltl.overtime_value-ltl.penalty) as realisasi,
-            case when is_panen is TRUE then sum(ltl.work_result) else 0 end as nilai,
+            case when is_panen is TRUE then sum(ltl.hasil_1) else 0 end as nilai,
+            case when is_panen is TRUE then sum(ltl.hasil_2) else 0 end as nilai2,
             sum(ltl.premi+ltl.overtime_value-ltl.penalty) as premi,
             sum(ltl.non_work_day) as hkne,
             sum(ltl.min_wage_value_date)+sum(ltl.work_day*ltl.min_wage_value)+sum(ltl.premi+ltl.overtime_value-ltl.penalty)-sum(CASE WHEN ltl.min_wage_value_date > 0 THEN ltl.min_wage_value ELSE 0 END) as realisasi_date
@@ -1539,6 +1566,7 @@ class lhm_transaction(models.Model):
             """, (self.id,))
         for progres in self.env.cr.fetchall():
             activity_data = self.env['lhm.activity'].search([('id', '=', progres[0])])
+            print(f"== DATA AKTIVITAS : {activity_data.code}-{activity_data.name} UOM ID: {activity_data.uom_id.name}")
             if lhm_progress_list != []:
                 progress_line   = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
                 if progress_line and len(progress_line) > 1:
@@ -1547,16 +1575,18 @@ class lhm_transaction(models.Model):
                 if progress_line and len(progress_line) == 1:
                     if progress_line.nilai != progres[4] and progress_line.activity_id.is_panen:
                         progress_line.write({'nilai' : progres[4], 'updated': True,})
+                    if progress_line.nilai != progres[5] and progress_line.activity_id.is_panen:
+                        progress_line.write({'nilai2' : progres[5], 'updated': True,})
                     if progress_line.work_day != progres[2]:
                         progress_line.write({'work_day'  : progres[2], 'updated': True,})
-                    if progress_line.non_work_day != progres[6]:
-                        progress_line.write({'non_work_day'  : progres[6]})
+                    if progress_line.non_work_day != progres[7]:
+                        progress_line.write({'non_work_day'  : progres[7]})
                     if progress_line.realization != progres[3]:
                         progress_line.write({'realization'   : progres[3], 'updated': True,})
-                    if progress_line.realization_date != progres[7]:
-                        progress_line.write({'realization_date'   : progres[7]})
-                    if progress_line.premi != progres[5]:
-                        progress_line.write({'premi' : progres[5], 'updated': True,})
+                    if progress_line.realization_date != progres[8]:
+                        progress_line.write({'realization_date'   : progres[8]})
+                    if progress_line.premi != progres[6]:
+                        progress_line.write({'premi' : progres[6], 'updated': True,})
                     lhm_removed_list.append(progress_line.id)
                 else:
                     new_lines = {
@@ -1566,13 +1596,13 @@ class lhm_transaction(models.Model):
                         'location_id'       : progres[1],
                         'nilai'             : progres[4],
                         'uom_id'            : activity_data and activity_data.uom_id.id or False,
-                        'nilai2'            : 0,
+                        'nilai2'            : progres[5],
                         'uom2_id'           : activity_data and activity_data.uom2_id.id or False,
                         'work_day'          : progres[2],
-                        'non_work_day'      : progres[6],
+                        'non_work_day'      : progres[7],
                         'realization'       : progres[3],
-                        'realization_date'  : progres[7],
-                        'premi'             : progres[5],
+                        'realization_date'  : progres[8],
+                        'premi'             : progres[6],
                         'lhm_id'            : self.id,
                     }
                     if new_lines:
@@ -1586,13 +1616,13 @@ class lhm_transaction(models.Model):
                     'location_id'       : progres[1],
                     'nilai'             : progres[4],
                     'uom_id'            : activity_data and activity_data.uom_id.id or False,
-                    'nilai2'            : 0,
+                    'nilai2'            : progres[5],
                     'uom2_id'           : activity_data and activity_data.uom2_id.id or False,
                     'work_day'          : progres[2],
-                    'non_work_day'      : progres[6],
+                    'non_work_day'      : progres[7],
                     'realization'       : progres[3],
-                    'realization_date'  : progres[7],
-                    'premi'             : progres[5],
+                    'realization_date'  : progres[8],
+                    'premi'             : progres[6],
                     'lhm_id'            : self.id,
                 }
                 if new_lines:
@@ -1711,6 +1741,7 @@ class lhm_transaction(models.Model):
             date = date or record.date
             values['name'] = f"{kemandoran.code or ''}/{date}"
         return super(lhm_transaction, self).write(values)
+        
 
 class lhm_transaction_line(models.Model):
     _name           = 'lhm.transaction.line'
@@ -1726,17 +1757,17 @@ class lhm_transaction_line(models.Model):
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
 
-            _logger.info(f'Doc ID: {doc_id}, Level 1: {level_1}, Avail Act: {avail_act}')
+            # _logger.info(f'Doc ID: {doc_id}, Level 1: {level_1}, Avail Act: {avail_act}')
 
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
-            _logger.info(f'Activity List setelah Doc ID di cek: {activity_list}')
+            # _logger.info(f'Activity List setelah Doc ID di cek: {activity_list}')
 
             if level_1:
                 activity_list.append(level_1.id)
-            _logger.info(f'Activity List setelah Level 1 di cek: {activity_list}')
+            # _logger.info(f'Activity List setelah Level 1 di cek: {activity_list}')
 
             if (line.location_type_id and line.location_type_id.project) and line.location_id:
                 project_ids = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
@@ -1746,13 +1777,13 @@ class lhm_transaction_line(models.Model):
                     avail.append(level_1.id)
                 for project in project_ids:
                     project_act += [x.activity_id.id for x in project.line_ids]
-                _logger.info(f'Project Act: {project_act}')
+                # _logger.info(f'Project Act: {project_act}')
 
                 if project_act != []:
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                _logger.info(f'Avail: {avail}')
+                # _logger.info(f'Avail: {avail}')
                 if avail:
                     line.doc_activity_ids = [(6, 0, avail)]
                 else:
@@ -1764,7 +1795,7 @@ class lhm_transaction_line(models.Model):
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
 
-            _logger.info(f'Final doc_activity_ids: {line.doc_activity_ids}')
+            # _logger.info(f'Final doc_activity_ids: {line.doc_activity_ids}')
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
@@ -1825,6 +1856,25 @@ class lhm_transaction_line(models.Model):
 
     is_hasil_2          = fields.Boolean("Is Hasil 2", default=False)
 
+    @api.onchange('is_hasil_2')
+    def _onchange_is_hasil_2(self):
+        if self.is_hasil_2:
+            if self.lhm_id.name == '/':
+                # return {
+                #     'warning': {
+                #         'title': "Warning",
+                #         'message': "Anda harus melakukan save terlebih dahulu sebelum memasukkan nilai 1 dan nilai 2!",
+                #         'type': 'notification'
+                #     }
+                # }
+                return {
+                    'warning': {
+                        'title': _('Peringatan'),
+                        'message': _("Silahkan save terlebih dahulu sebelum memasukkan Nilai 1 dan Nilai 2 !")
+                        },
+                }
+
+    # fungsi untuk membuka wizard
     def buka_wizard(self):
         context = {
             'default_transaction_line_id': self.id,
@@ -1843,7 +1893,6 @@ class lhm_transaction_line(models.Model):
         if self.is_hasil_2:
             wizard_action = self.buka_wizard()
             return wizard_action
-
 
     @api.onchange('hasil_latex','drc_latex', 'hasil_lump', 'drc_lump')
     def onchange_hasil_karet(self):
