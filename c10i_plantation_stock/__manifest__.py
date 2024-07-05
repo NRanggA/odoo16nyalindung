@@ -16,7 +16,6 @@
     # 'c10i_plantation', 
     'c10i_lhm_v16',
     'operating_unit',
-    # 'stock_operating_unit',
 ],
 'data': [
         # 'data/data.xml',
