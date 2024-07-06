@@ -173,7 +173,7 @@
                 <xpath expr="//page[@name='personal_information']/group/group[4]" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-s
+                
                 <!-- Menambahkan group baru di dalam page -->
                 <xpath expr="//page[@name='public']/*[1]" position="before">
                     <group>
