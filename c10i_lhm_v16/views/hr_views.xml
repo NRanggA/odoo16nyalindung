@@ -236,33 +236,8 @@
                 <!-- Mengubah naama string pada beberapa field -->
                 <xpath expr="//field[@name='job_id']" position="attributes">
                     <attribute name="string">Jabatan</attribute>
-                    <attribute name="domain">[('department_id','=',department_id),('is_lhm','=',True)]</attribute>
+                    <attribute name="domain">[('department_id','=',department_id)]</attribute>
                 </xpath>
-
-
-                <!-- Invisible Fields -->
-                <!--           <xpath expr="//field[@name='category_ids']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//field[@name='work_location_id']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//field[@name='parent_id']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//field[@name='coach_id']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath> -->
-                <!-- <xpath expr="//page[@name='education_information']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
-                <xpath expr="//page[@name='license_information']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
-                <xpath expr="//page[@name='experience_information']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath> -->
-                <!-- End Of Invisible Field -->
 
                 <!-- Required Field -->
                 <xpath expr="//field[@name='department_id']" position="attributes">
@@ -294,8 +269,6 @@
             </field>
         </record>
 
-
-
         <record id="view_employee_tree" model="ir.ui.view">
             <field name="name">hr.employee.tree</field>
             <field name="model">hr.employee</field>
@@ -317,8 +290,8 @@
         <record id="action_karyawan_view" model="ir.actions.act_window">
             <field name="name">Karyawan</field>
             <field name="res_model">hr.employee</field>
-            <field name="context">{"default_is_lhm":1}</field>
-            <field name="domain">[('is_lhm','=',True)]</field>
+            <field name="context"></field>
+            <field name="domain"></field>
             <field name="search_view_id" ref="hr.view_employee_filter"/>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
@@ -353,6 +326,8 @@
  -->
         <menuitem id="menu_karyawan" name="Karyawan" action="action_karyawan_view" parent="menu_lhm_karyawan" sequence="10" groups="group_plantation_supervisor,group_plantation_operator_employee"/>
         <!--End Of Employee Form -->
+
+
 
         <!-- HR Job Form -->
         <record id="view_hr_job_lhm_form" model="ir.ui.view">
@@ -393,8 +368,8 @@
             <!-- <field name="view_type">form</field> -->
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="hr.view_job_filter"/>
-            <field name="context">{"default_is_lhm":1}</field>
-            <field name="domain">[('is_lhm','=',True)]</field>
+            <field name="context"></field>
+            <field name="domain"></field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan posisi pekerjaan baru di LHM.
@@ -424,6 +399,9 @@
 
         <menuitem id="menu_posisi_lhm_config" name="Posisi" action="action_hr_lhm_job" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="30"/>
         <!-- End Of HR Job Form -->
+
+
+
 
         <!-- HR Minimum Wage -->
         <record id="view_hr_minimum_wage_plantation_form" model="ir.ui.view">
@@ -489,6 +467,7 @@
         <menuitem id="submenu_hr_minimum_wage_plantation" name="UMR" action="action_hr_minimum_wage_plantation" parent="menu_lhm_karyawan" sequence="50" groups="group_plantation_manager"/>
         <!-- End Of HR Minimum Wage -->
 
+
         <!-- HR Department -->
         <record id="view_department_lhm_form" model="ir.ui.view">
             <field name="name">view.department.lhm.form</field>
@@ -509,8 +488,8 @@
             <!-- <field name="view_type">form</field> -->
             <field name="view_mode">kanban,tree,form</field>
             <field name="search_view_id" ref="hr.view_department_filter"/>
-            <field name="context">{"default_is_lhm":1}</field>
-            <field name="domain">[('is_lhm','=',True)]</field>
+            <field name="context"></field>
+            <field name="domain"></field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                 Klik untuk membuat departemen baru.
@@ -524,7 +503,6 @@
             <field name="view_id" ref="hr.hr_department_view_kanban"/>
             <field name="act_window_id" ref="action_departement_lhm_view"/>
         </record>
-
         <record model="ir.actions.act_window.view" id="action_departement_lhm_view_tree">
             <field name="sequence" eval="2"/>
             <field name="view_mode">tree</field>
@@ -540,6 +518,7 @@
 
         <menuitem id="menu_departemen_lhm_config" name="Departemen" action="action_departement_lhm_view" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="25"/>
         <!--End Of HR Department -->
+
 
         <!--HR Employee Sub Departement -->
         <record id="view_sub_department_form" model="ir.ui.view">
@@ -618,6 +597,7 @@
         <menuitem id="menu_sub_departemen_lhm_config" action="action_sub_department" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="30"/>
         <!--End Of HR Employee Sub Departement -->
 
+
         <!--HR Employee Division -->
         <record id="view_division_form" model="ir.ui.view">
             <field name="name">view.division.form</field>
@@ -694,6 +674,7 @@
         </record>
         <menuitem id="menu_division_lhm_config" name="Divisi" action="action_division_lhm" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="24"/>
         <!--End Of HR Employee Division -->
+
 
         <!--HR Employee Type -->
         <record id="view_employee_type_form" model="ir.ui.view">
@@ -803,6 +784,7 @@
         <menuitem id="menu_employee_type_lhm_config" name="Tipe Karyawan" action="action_employee_type_lhm" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="15"/>
         <!--End Of HR Employee Type -->
 
+
         <!--HR Employee Status -->
         <record id="view_employee_status_form" model="ir.ui.view">
             <field name="name">view.employee.status.form</field>
@@ -878,6 +860,7 @@
         </record>
         <menuitem id="menu_employee_status_lhm_config" action="action_employee_status_lhm" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="40"/>
         <!--End Of HR Employee Status -->
+
 
         <!-- Kemandoran Form -->
         <record id="view_hr_foreman_form" model="ir.ui.view">
@@ -1002,6 +985,7 @@
         <menuitem id="menu_hr_foreman_lhm" name="Kemandoran" action="action_hr_foreman_lhm" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="20"/>
         <!--End Of LHM Kemandoran -->
 
+
         <!--HR Attendance Type -->
         <record id="view_attendance_type_form" model="ir.ui.view">
             <field name="name">view.attendance.type.form</field>
@@ -1085,6 +1069,7 @@
         </record>
         <menuitem id="menu_hr_attendance_type_config" action="action_hr_attendance_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>
         <!--End Of HR Attendance Type -->
+
 
         <!-- Daftar Transfer Kemandoran-->
         <record id="view_hr_employee_foreman_transfer_tree" model="ir.ui.view">
