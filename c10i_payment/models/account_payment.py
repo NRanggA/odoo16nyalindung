@@ -14,20 +14,30 @@ class AccountPayment(models.Model):
             amnt_total_to_pay = sum([line.amount_to_pay for line in rec.payment_line_ids])
             rec.amount = amnt_total_to_pay
 
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        self.payment_line_ids = [(5, 0, 0)]        
+
     def get_bills(self):
         for rec in self:
             if rec.partner_id:
-                existing_move_ids = [line.move_id.id for line in rec.payment_line_ids]
-                for move in self.env['account.move'].search([('partner_id', '=', rec.partner_id.id), ('payment_state', 'in', ['not_paid', 'in_payment', 'partial']), ('id', 'not in', existing_move_ids)]):
-                    if move.id not in existing_move_ids:
-                        self.env['account.payment.line'].create({
-                            'account_payment_id': self.id,
+                existing = rec.payment_line_ids.mapped('move_id')
+                moves = self.env['account.move'].search([
+                    ('partner_id', '=', rec.partner_id.id),
+                    ('payment_state', 'in', ['not_paid', 'in_payment', 'partial']),
+                    ('move_type', '=', 'in_invoice')
+                ])
+                for move in moves:
+                    if move not in existing:
+                        rec.payment_line_ids = [(0, 0, {
+                            'account_payment_id': rec.id,
                             'move_id': move.id,
                             'amount_residual': move.amount_residual,
-                            'origin': ''
-                        })
+                            'origin': move.name
+                        })]                
+                rec.payment_line_ids = rec.payment_line_ids.filtered(lambda line: line.move_id.partner_id == rec.partner_id)
             else:
-                raise ValidationError("Partner or Vendor must be filled")
+                raise ValidationError("Partner atau Vendor harus diisi")
             
     def action_post(self):
         ''' draft -> posted '''

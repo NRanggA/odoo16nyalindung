@@ -16,7 +16,7 @@ class DirectPayment(models.Model):
     def _default_journal_id(self):
         """ The journal is determining the company of the accounting entries generated from expense. We need to force journal company and expense sheet company to be the same. """
         default_company_id = self.default_get(['company_id'])['company_id']
-        journal = self.env['account.journal'].search([('type', '=', 'purchase'), ('company_id', '=', default_company_id)], limit=1)
+        journal = self.env['account.journal'].search([('type', 'in', ('bank', 'cash')), ('company_id', '=', default_company_id)], limit=1)
         return journal.id
 
     name = fields.Char(string="Number", default="New")
@@ -30,7 +30,7 @@ class DirectPayment(models.Model):
         default=lambda s: s.env.company.currency_id.id,
         required=True, ondelete='restrict')
     journal_id = fields.Many2one('account.journal', string='Expense Journal', 
-        check_company=True, domain="[('type', '=', 'purchase')]",
+        check_company=True, domain="[('type', '=', ['bank','cash'])]",
         default=_default_journal_id, help="The journal used when the expense is done.")
     
     line_ids = fields.One2many("account.direct.payment.line", "payment_id", string="Lines")
@@ -44,7 +44,7 @@ class DirectPayment(models.Model):
         ('cancel', 'Cancel')], default="draft", tracking=True)
     
     account_move_id = fields.Many2one('account.move', string='Journal Entry', ondelete='restrict', 
-        copy=False, readonly=True)
+        copy=False, readonly=True)    
     
     amount_residual = fields.Monetary(compute='_payment_state', string='Amount to Pay', store=True, compute_sudo=True)
     payment_state = fields.Selection([('no', 'Nothing To Pay'), 
@@ -191,6 +191,8 @@ class DirectPayment(models.Model):
         for payment in self:
             if payment.state!='draft':
                 raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
+            if payment.name == 'New':
+                payment.name = self.env['ir.sequence'].next_by_code('account.direct.payment')
             payment.state="confirm"
 
     def action_post(self):
@@ -222,10 +224,17 @@ class DirectPayment(models.Model):
             'context': {
                 'active_model': 'account.move',
                 'active_ids': self.mapped('account_move_id').ids,
+                'default_payment_line_ids' : [(0,0,{ 
+                    'move_id' : self.account_move_id.id,
+                    'origin' : self.name,
+                    'invoice_date' : self.date,
+                    'amount_to_pay' : self.amount_total
+                })]
             },
             'target': 'new',
             'type': 'ir.actions.act_window',
         }
+        
 
 class DirectPaymentLine(models.Model):
     _name = "account.direct.payment.line"
@@ -233,11 +242,34 @@ class DirectPaymentLine(models.Model):
 
     payment_id = fields.Many2one("account.direct.payment", string="Direct Payment", ondelete="cascade")
     currency_id = fields.Many2one("res.currency", related="payment_id.currency_id", string="Currency", store=True)
-    product_id = fields.Many2one("product.product", string="Product", ondelete="restrict")
+    product_id = fields.Many2one("product.product", string="Product", ondelete="restrict", domain=[('detailed_type','!=','product')])
     account_id = fields.Many2one("account.account", "Account", ondelete="restrict", required=True)
     analytic_account_id = fields.Many2one("account.analytic.account", "Analytic Account", ondelete="restrict")
     name = fields.Char(string="Description", required=True)
     amount = fields.Monetary('Amount')
+    plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
+    plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
+    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
+
+    @api.onchange('plantation_location_type_id')
+    def _onchange_plantation_location_type_id(self):
+        if self.plantation_location_type_id:
+            self.plantation_location_id = False
+            self.plantation_activity_id = False
+            if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+                self.account_id = False
+            else:
+                self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
+
+    @api.onchange('plantation_location_id')
+    def _onchange_plantation_location_id(self):
+        if self.plantation_location_id:
+            self.plantation_activity_id = False
+
+    @api.onchange('plantation_activity_id')
+    def _onchange_plantation_activity_id(self):
+        if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+            self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
 
     @api.onchange('product_id')
     def onchange_product(self):

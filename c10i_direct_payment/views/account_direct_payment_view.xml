@@ -43,12 +43,13 @@
                     </div>
                     <group>
                         <group>
+                            <field name="partner_id" attrs="{'readonly': [('state','!=','draft')]}"/>
                             <field name="date" required="1" attrs="{'readonly': [('state','!=','draft')]}"/>
                             <field name="requested_by" required="1" attrs="{'readonly': [('state','!=','draft')]}" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="description" attrs="{'readonly': [('state','!=','draft')]}"/>
                         </group>
                         <group>
-                            <field name="journal_id" options="{'no_create_edit': True, 'no_create': True}" invisible="1"/>
+                            <field name="journal_id" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="currency_id" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="account_move_id" readonly="1" groups="account.group_account_user"/>
                             
@@ -64,13 +65,24 @@
                                         options="{'no_create_edit': True, 'no_create': True}" 
                                         attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="name" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="plantation_location_type_id" 
+                                        options="{'no_create_edit':True, 'no_create':True}" 
+                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="plantation_location_id" 
+                                        domain="[('type_id','=',plantation_location_type_id)]" 
+                                        options="{'no_create_edit':True, 'no_create':True}" 
+                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="plantation_activity_id" 
+                                        domain="[('type_id','=',plantation_location_type_id)]" 
+                                        options="{'no_create_edit':True, 'no_create':True}" 
+                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="account_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
                                         attrs="{'readonly': [('parent.state', 'not in', ['draft','confirm'])]}"/>
-                                    <field name="analytic_account_id" 
+                                    <!-- <field name="analytic_account_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
                                         attrs="{'readonly': [('parent.state', 'not in', ['draft','confirm'])]}"
-                                        groups="analytic.group_analytic_accounting"/>
+                                        groups="analytic.group_analytic_accounting"/> -->
                                     <field name="amount" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                 </tree>
                                 <form>
@@ -161,6 +173,17 @@
         <field name="domain"></field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="account_direct_payment_search" />
+    </record>
+
+    <record id="direct_payment_sequence" model="ir.sequence">
+        <field name="name">Direct Payment</field>
+        <field name="code">account.direct.payment</field>
+        <field name="prefix">DRP/%(year)s/%(month)s/</field>
+        <field eval="1" name="number_next"/>
+        <field eval="1" name="number_increment"/>
+        <field eval="True" name="use_date_range"/>
+        <field eval="False" name="company_id"/>
+        <field name="padding">4</field>
     </record>
 
     <menuitem action="account_direct_payment_action" id="menu_account_direct_payment" parent="account.menu_finance_payables" sequence="25"/>
