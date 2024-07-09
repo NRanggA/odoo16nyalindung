@@ -23,9 +23,9 @@ class PurchaseOrder(models.Model):
 
 
     def action_create_advanced_payment(self):
-        config_param = self.env['ir.config_parameter'].sudo()
-        vendor_advanced_account_id = config_param.get_param('vendor.advanced.account.id')
-        account_id = self.env['account.account'].browse(int(vendor_advanced_account_id))
+        # config_param = self.env['ir.config_parameter'].sudo()
+        # vendor_advanced_account_id = config_param.get_param('vendor.advanced.account.id')
+        # account_id = self.env['account.account'].browse(int(vendor_advanced_account_id))
 
         return {
             'name': _('Create Advanced'),
