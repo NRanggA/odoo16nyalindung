@@ -2015,7 +2015,7 @@
             <field name="context">{'readonly_by_pass': True, 'search_default_date_monthly':1}</field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
-                Klik untuk menambahkan Laporan Harian Mandor.
+                Klik new untuk menambahkan Laporan Harian Mandor.
               </p>
             </field>
         </record>
