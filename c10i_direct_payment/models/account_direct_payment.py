@@ -224,6 +224,8 @@ class DirectPayment(models.Model):
             'context': {
                 'active_model': 'account.move',
                 'active_ids': self.mapped('account_move_id').ids,
+                'default_partner_id' : self.partner_id.id,
+                'default_journal_id' : self.journal_id.id,
                 'default_payment_line_ids' : [(0,0,{ 
                     'move_id' : self.account_move_id.id,
                     'origin' : self.name,
