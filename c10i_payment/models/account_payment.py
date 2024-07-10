@@ -6,13 +6,14 @@ class AccountPayment(models.Model):
     _inherit = 'account.payment'
 
     payment_line_ids = fields.One2many('account.payment.line', 'account_payment_id', string='Payment Line')
-    amount = fields.Monetary(compute='_compute_amount', store=True)
-    
-    @api.depends('payment_line_ids.amount_to_pay')
-    def _compute_amount(self):
+
+    @api.onchange('payment_line_ids')
+    def _onchange_amount(self):
         for rec in self:
-            amnt_total_to_pay = sum([line.amount_to_pay for line in rec.payment_line_ids])
-            rec.amount = amnt_total_to_pay
+            amount = 0
+            if rec.payment_line_ids:
+                amount = sum([line.amount_to_pay for line in rec.payment_line_ids])
+                rec.amount = amount
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
@@ -47,6 +48,7 @@ class AccountPayment(models.Model):
             payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
             debit_tot = credit_tot = 0
             amount_total = 0.0
+            payment_amount = 0
             
             for pline in self.payment_line_ids:
                 if pline.amount_to_pay > 0:
