@@ -40,7 +40,7 @@ class AccountPayment(models.Model):
             else:
                 raise ValidationError("Partner atau Vendor harus diisi")
             
-    def _prepare_payment_line(self):
+    def _prepare_move_lines(self):
         payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
         debit_tot = credit_tot = 0
         amount_total = 0.0
