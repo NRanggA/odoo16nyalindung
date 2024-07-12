@@ -58,20 +58,20 @@ class AccountMoveLine(models.Model):
         if self.plantation_location_type_id:
             self.plantation_location_id = False
             self.plantation_activity_id = False
-            if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-                self.account_id = False
-            else:
-                self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
+            # if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+            #     self.account_id = False
+            # else:
+            #     self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
 
     @api.onchange('plantation_location_id')
     def _onchange_plantation_location_id(self):
         if self.plantation_location_id:
             self.plantation_activity_id = False
 
-    @api.onchange('plantation_activity_id')
-    def _onchange_plantation_activity_id(self):
-        if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-            self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
+    # @api.onchange('plantation_activity_id')
+    # def _onchange_plantation_activity_id(self):
+    #     if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+    #         self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
 
 
 # class AccountInvoice(models.Model):

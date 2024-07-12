@@ -25,6 +25,7 @@ class AccountPayment(models.Model):
                 existing = rec.payment_line_ids.mapped('move_id')
                 moves = self.env['account.move'].search([
                     ('partner_id', '=', rec.partner_id.id),
+                    ('state', '=', 'posted'),
                     ('payment_state', 'in', ['not_paid', 'in_payment', 'partial']),
                     ('move_type', '=', 'in_invoice')
                 ])
@@ -38,13 +39,13 @@ class AccountPayment(models.Model):
                         })]                
                 rec.payment_line_ids = rec.payment_line_ids.filtered(lambda line: line.move_id.partner_id == rec.partner_id)
             else:
-                raise ValidationError("Partner atau Vendor harus diisi")    
+                raise ValidationError("Partner atau Vendor harus diisi")
             
     def action_post(self):
-        ''' draft -> posted '''
-        if self.payment_type != 'outbound':
+        ''' draft -> posted '''        
+        if self.payment_type != 'outbound':            
             super().action_post()
-        else:
+        else:            
             payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
             debit_tot = credit_tot = 0
             amount_total = 0.0
@@ -71,6 +72,7 @@ class AccountPayment(models.Model):
 
                     if pline.write_off_amount != 0 and pline.write_off_account_id:
                         write_off_amount = self.currency_id._convert(pline.write_off_amount, self.move_id.company_currency_id, self.company_id, self.date)
+                        wo_debit = wo_kredit = 0
                         if write_off_amount > 0:
                             wo_debit = write_off_amount
                         else:
@@ -103,7 +105,7 @@ class AccountPayment(models.Model):
             }
             payment_lines.append((0, 0, bank_line_vals))
 
-            self.move_id.write({'line_ids': payment_lines})
+            self.move_id.write({'line_ids': payment_lines})            
             
             self.move_id._post(soft=False)
 

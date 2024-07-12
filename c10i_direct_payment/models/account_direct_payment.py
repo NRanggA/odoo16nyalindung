@@ -191,6 +191,9 @@ class DirectPayment(models.Model):
         for payment in self:
             if payment.state!='draft':
                 raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
+            for line in payment.line_ids:
+                if line.amount is not None and line.amount <= 0:
+                    raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
             if payment.name == 'New':
                 payment.name = self.env['ir.sequence'].next_by_code('account.direct.payment')
             payment.state="confirm"
@@ -251,27 +254,27 @@ class DirectPaymentLine(models.Model):
     amount = fields.Monetary('Amount')
     plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
-    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
+    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")    
 
     @api.onchange('plantation_location_type_id')
     def _onchange_plantation_location_type_id(self):
         if self.plantation_location_type_id:
             self.plantation_location_id = False
             self.plantation_activity_id = False
-            if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-                self.account_id = False
-            else:
-                self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
+            # if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+            #     self.account_id = False
+            # else:
+            #     self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
 
     @api.onchange('plantation_location_id')
     def _onchange_plantation_location_id(self):
         if self.plantation_location_id:
             self.plantation_activity_id = False
 
-    @api.onchange('plantation_activity_id')
-    def _onchange_plantation_activity_id(self):
-        if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-            self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
+    # @api.onchange('plantation_activity_id')
+    # def _onchange_plantation_activity_id(self):
+    #     if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+    #         self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
 
     @api.onchange('product_id')
     def onchange_product(self):

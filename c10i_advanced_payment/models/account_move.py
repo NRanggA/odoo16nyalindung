@@ -7,9 +7,16 @@ class AccountMove(models.Model):
     is_advanced = fields.Boolean('Is Advanced')
 
     has_advanced = fields.Boolean('Has Advanced')
-    advanced_purchase_id = fields.Many2one('purchase.order', string='Advance Vendor')
+    advanced_purchase_id = fields.Many2one('purchase.order', string='Advance PO')
     advanced_sales_id = fields.Many2one('sale.order', string='Advance Customer')
     sale_order_id = fields.Many2one('sale.order', string='Sale Order')
+    is_po_advanced = fields.Boolean('is PO Advanced', compute='get_po_advanced', store=True)
+
+    def get_count_po_advanced(self):
+        for move in self:
+            account = move.env['purchase.order'].search([('id', '=', move.id)])
+            move.advanced_vendor_move_ids = [(6,0,account.ids)]
+            move.count_advanced_purchase = len(account)
 
 
     def _prepare_advanced_lines(self,advanced_line,advanced_move_id=False,move_id=False):
@@ -51,31 +58,31 @@ class AccountMove(models.Model):
 
         return res
     
-    @api.depends(
-        'line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
-        'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual',
-        'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual_currency',
-        'line_ids.matched_credit_ids.credit_move_id.move_id.payment_id.is_matched',
-        'line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual',
-        'line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual_currency',
-        'line_ids.debit',
-        'line_ids.credit',
-        'line_ids.currency_id',
-        'line_ids.amount_currency',
-        'line_ids.amount_residual',
-        'line_ids.amount_residual_currency',
-        'line_ids.payment_id.state',
-        'line_ids.full_reconcile_id')
-    def _compute_amount(self):
-        res = super(AccountMove,self)._compute_amount()
-        for move in self:        
-            amount = 0
-            for this in move.invoice_line_ids:
-                if not this.advanced_move_id:
-                    amount += this.price_subtotal
-                    move.amount_residual = amount
-                    move.amount_total = amount            
-        return res
+    # @api.depends(
+    #     'line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
+    #     'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual',
+    #     'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual_currency',
+    #     'line_ids.matched_credit_ids.credit_move_id.move_id.payment_id.is_matched',
+    #     'line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual',
+    #     'line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual_currency',
+    #     'line_ids.debit',
+    #     'line_ids.credit',
+    #     'line_ids.currency_id',
+    #     'line_ids.amount_currency',
+    #     'line_ids.amount_residual',
+    #     'line_ids.amount_residual_currency',
+    #     'line_ids.payment_id.state',
+    #     'line_ids.full_reconcile_id')
+    # def _compute_amount(self):
+    #     res = super(AccountMove,self)._compute_amount()
+    #     for move in self:        
+    #         amount = 0
+    #         for this in move.invoice_line_ids:
+    #             if not this.advanced_move_id:
+    #                 amount += this.price_subtotal
+    #                 move.amount_residual = amount
+    #                 move.amount_total = amount            
+    #     return res
 
     
 
@@ -113,8 +120,54 @@ class AccountMove(models.Model):
         if advanced_ids:
             for advanced_id in advanced_ids:
                 self.write({'invoice_line_ids':[(2,advanced_id.id,0)]})
+
+    def action_register_payment(self):
+        ''' Open the account.payment.register wizard to pay the selected journal entries.
+        :return: An action opening the account.payment.register wizard.
+        '''
+        return {
+            'name': _('Register Payment'),
+            'res_model': 'account.payment.register',
+            'view_mode': 'form',
+            'context': {
+                'active_model': 'account.move',
+                'active_ids': self.ids,
+                'default_payment_line_ids' : [(0,0,{ 
+                    'move_id' : self.id,
+                    'origin' : self.name,
+                    'invoice_date' : self.date,
+                    'amount_to_pay' : self.amount_residual
+                })]
+            },
+            'target': 'new',
+            'type': 'ir.actions.act_window',
+        }
             
 
+    # @api.onchange('advanced_purchase_id')
+    # def _onchange_line_move_lines(self):
+    #     if self.advanced_purchase_id:
+    #         self.invoice_line_ids = [(5, 0, 0)]
+    #         line_vals = []
+    #         for line in self.advanced_purchase_id.order_line:
+    #             if line not in line_vals:
+    #                 line_vals.append((0, 0, {
+    #                     'order_line_id' : line.id,
+    #                     'product_id': line.product_id.id,
+    #                     'purchase_order_id': line.order_id.id,
+    #                     'quantity': line.product_qty,
+    #                     'price_unit': line.price_unit,
+    #                     'tax_ids': [(6, 0, line.taxes_id.ids)],
+    #                 }))
+    #         self.invoice_line_ids = line_vals
+
+    @api.depends('invoice_line_ids')
+    def get_po_advanced(self):
+        for record in self:
+            record.is_po_advanced = False
+            for line in record.invoice_line_ids:
+                if any(line and line.purchase_order_id) and line.purchase_order_id.count_advanced_purchase > 0:
+                    record.is_po_advanced = True
 
 
     # @api.onchange('has_advanced')
@@ -158,6 +211,7 @@ class AccountMoveLine(models.Model):
     advanced_move_id = fields.Many2one('account.move', string='Advanced Move')
     advanced_move_line_id = fields.Many2one('account.move.line', string='Advanced Move Line')
     is_advanced = fields.Boolean('Is Advanced')
+    order_line_id = fields.Many2one('purchase.order.line', string='Order Line')
     
     # order_id = fields.Many2one('purchase.order', string='Order Advanced')
 

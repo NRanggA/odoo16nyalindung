@@ -13,6 +13,7 @@
                 # 'data/sequences.xml',
                 # 'security/payment_security.xml',
                 # 'security/ir.model.access.csv',
+                'views/views.xml',
                 'views/purchase_order_views.xml',
                 'views/sale_order_views.xml',
                 'views/res_config_settings_views.xml',
