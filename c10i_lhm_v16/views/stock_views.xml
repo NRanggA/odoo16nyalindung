@@ -25,10 +25,22 @@
                     <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" options="{'no_create_edit':True, 'no_create':True}"/>
                     <field name="bpb_number"/>
                 </field>
+                <xpath expr="//div[label[@for='partner_id']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="nolabel"/>
+                </xpath>
+                
                 <field name="partner_id" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
-
+                
+                <xpath expr="//label[@for='scheduled_date']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
                 <field name="scheduled_date" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
