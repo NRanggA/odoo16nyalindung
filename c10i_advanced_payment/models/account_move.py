@@ -12,12 +12,6 @@ class AccountMove(models.Model):
     sale_order_id = fields.Many2one('sale.order', string='Sale Order')
     is_po_advanced = fields.Boolean('is PO Advanced', compute='get_po_advanced', store=True)
 
-    def get_count_po_advanced(self):
-        for move in self:
-            account = move.env['purchase.order'].search([('id', '=', move.id)])
-            move.advanced_vendor_move_ids = [(6,0,account.ids)]
-            move.count_advanced_purchase = len(account)
-
 
     def _prepare_advanced_lines(self,advanced_line,advanced_move_id=False,move_id=False):
         self.ensure_one()
