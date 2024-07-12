@@ -52,12 +52,12 @@
                 <field name="location_dest_id" position="attributes">
                     <attribute name="attrs">{'invisible': [('picking_type_code', '=', 'incoming')], 'readonly': [('picking_type_code', '=', 'plantation')]}</attribute>
                 </field>
-                <field name="scheduled_date" position="before">
+                <xpath expr="//label[@for='scheduled_date']" position="before">
                     <field name="skb" invisible="1"/>
                     <field name="organization_type" required="1"/>
                     <field name="afdeling_id" attrs="{'invisible': [('organization_type','!=','afdeling')]}"/>
                     <field name="division_id" attrs="{'invisible': [('organization_type','!=','division')]}"/>
-                </field>
+                </xpath>
                 <xpath expr="//field[@name='move_line_ids_without_package']" position="replace">
                     <field name="move_ids" attrs="{'readonly': [('state', 'in', ('cancel', 'partially_available', 'assigned', 'done'))]}" options="{'reload_on_button': True}" mode="tree,kanban" context="{'address_in_id': partner_id, 'form_view_ref':'stock.view_move_picking_form', 'tree_view_ref':'stock.view_move_picking_tree', 'default_picking_type_id': picking_type_id, 'default_location_id': location_id, 'default_location_dest_id': location_dest_id}">
                         <kanban class="o_kanban_mobile">
