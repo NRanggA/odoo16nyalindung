@@ -115,33 +115,32 @@ class AccountMove(models.Model):
             for advanced_id in advanced_ids:
                 self.write({'invoice_line_ids':[(2,advanced_id.id,0)]})
 
-    def action_register_payment(self):
-        ''' Open the account.payment.register wizard to pay the selected journal entries.
-        :return: An action opening the account.payment.register wizard.
-        '''
-        return {
-            'name': _('Register Payment'),
-            'res_model': 'account.payment.register',
-            'view_mode': 'form',
-            'context': {
-                'active_model': 'account.move',
-                'active_ids': self.ids,
-                'default_payment_line_ids' : [(0,0,{ 
-                    'move_id' : self.id,
-                    'origin' : self.name,
-                    'invoice_date' : self.date,
-                    'amount_to_pay' : self.amount_residual
-                })]
-            },
-            'target': 'new',
-            'type': 'ir.actions.act_window',
-        }
-            
+    # def action_register_payment(self):
+    #     ''' Open the account.payment.register wizard to pay the selected journal entries.
+    #     :return: An action opening the account.payment.register wizard.
+    #     '''
+    #     return {
+    #         'name': _('Register Payment'),
+    #         'res_model': 'account.payment.register',
+    #         'view_mode': 'form',
+    #         'context': {
+    #             'active_model': 'account.move',
+    #             'active_ids': self.ids,
+    #             'default_payment_line_ids' : [(0,0,{ 
+    #                 'move_id' : self.id,
+    #                 'origin' : self.name,
+    #                 'invoice_date' : self.date,
+    #                 'amount_to_pay' : self.amount_residual
+    #             })]
+    #         },
+    #         'target': 'new',
+    #         'type': 'ir.actions.act_window',
+    #     }
 
     # @api.onchange('advanced_purchase_id')
     # def _onchange_line_move_lines(self):
     #     if self.advanced_purchase_id:
-    #         self.invoice_line_ids = [(5, 0, 0)]
+    #         # self.invoice_line_ids = [(5, 0, 0)]
     #         line_vals = []
     #         for line in self.advanced_purchase_id.order_line:
     #             if line not in line_vals:
@@ -205,7 +204,7 @@ class AccountMoveLine(models.Model):
     advanced_move_id = fields.Many2one('account.move', string='Advanced Move')
     advanced_move_line_id = fields.Many2one('account.move.line', string='Advanced Move Line')
     is_advanced = fields.Boolean('Is Advanced')
-    order_line_id = fields.Many2one('purchase.order.line', string='Order Line')
+    # order_line_id = fields.Many2one('purchase.order.line', string='Order Line')
     
     # order_id = fields.Many2one('purchase.order', string='Order Advanced')
 
