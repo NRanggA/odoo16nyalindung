@@ -18,7 +18,7 @@ class AssetAcquisition(models.Model):
 	state = fields.Selection([('draft', 'Draft'), ('posted', 'Posted')], 'Status', readonly=True, copy=False,
 							 default='draft')
 	acquisition_line_ids = fields.One2many("asset.acquisition.line", "asset_acquisition_id", string="Details")
-	asset_ids = fields.One2many("account.asset", 'asset_acquisition_id', string="Assets")
+	asset_ids = fields.One2many("account.asset.asset", 'asset_acquisition_id', string="Assets")
 	move_id = fields.Many2one("account.move", string="Journal Entries")
 	invoice_id = fields.Many2one("account.move", string="Vendor Bill")
 	asset_count = fields.Integer(compute="_asset_count")
@@ -31,20 +31,20 @@ class AssetAcquisition(models.Model):
 			res.asset_count = len(res.asset_ids)
 
 	def action_view_asset(self):
-		assets = self.env['account.asset'].search([('id','in',self.asset_ids.ids)])
+		assets = self.env['account.asset.asset'].search([('id','in',self.asset_ids.ids)])
 
 		return {
 			'name': 'Asset',
 			'view_type': 'form',
 			'view_mode': 'tree,form',
-			'res_model': 'account.asset',
+			'res_model': 'account.asset.asset',
 			'view_id': False,
 			'type': 'ir.actions.act_window',
 			'domain': [('id','in',assets.ids)],
 		} if len(assets.ids) > 1 else {
 			'name': 'Asset',
 			'view_mode': 'form',
-			'res_model': 'account.asset',
+			'res_model': 'account.asset.asset',
 			'views': [(False,'form')],
 			'type': 'ir.actions.act_window',
 			'res_id': assets.ids[0],
@@ -304,7 +304,7 @@ class AssetAcquisitionLine(models.Model):
 
 	asset_acquisition_id = fields.Many2one("asset.acquisition", string="Asset Acquisition")
 	product_id = fields.Many2one("product.product", string="Product")
-	model_id = fields.Many2one("account.asset", string="Asset Model", domain=[('state', '=', 'model')])
+	model_id = fields.Many2one("account.asset.asset", string="Asset Model", domain=[('state', '=', 'model')])
 	origin = fields.Char(string="Source Document")
 	name = fields.Char(string="Description")
 	acquisition_value = fields.Float(string="Acquisition Value", compute="_compute_acquisition", store=True)

@@ -2,13 +2,15 @@
 <odoo>
     <record model="ir.ui.view" id="c10i_view_account_asset_form">
         <field name="name">c10i.account.asset.form</field>
-        <field name="model">account.account.asset</field>
-        <field name="inherit_id" ref="account_asset.view_account_asset_form"/>
+        <field name="model">account.asset.asset</field>
+        <!-- <field name="model">account.account.asset</field> -->
+        <field name="inherit_id" ref="om_account_asset.view_account_asset_asset_form"/>
+        <!-- <field name="inherit_id" ref="account_asset.view_account_asset_form"/> -->
         <field name="arch" type="xml">
-        	<field name="acquisition_date" position="after">
+        	<field name="date" position="after">
         		<field name="asset_acquisition_id" readonly="1"/>
         	</field>
-            <page name="depreciation_board" position="after">
+            <xpath expr="//page[child::field[@name='depreciation_line_ids']]" position="after">
                 <page string="Sell / Disposal Info" attrs="{'invisible': [('disposal_id', '=', False)]}">
                     <group>
                         <group>
@@ -20,7 +22,7 @@
                         </group>
                     </group>                    
                 </page>
-            </page>
+            </xpath>
         </field>
     </record>
 </odoo>
