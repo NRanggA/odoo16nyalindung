@@ -41,7 +41,7 @@
                             <p style="line-height: 28px">Kepada Yth <br/>
                             <span><t t-esc="o.partner_id.name"/></span> <br/>
                             <span>PT Sinar Multinaga Sejahtera</span> <br/>
-                            <span>Hal : PenawaranProdukKaret</span>
+                            <span style="text-decoration : underline">Hal : PenawaranProdukKaret</span>
                             </p>
                         </div>
                         <div>
