@@ -24,8 +24,8 @@
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
-        'report/sales_quatation_karet.xml',
-        'report/sales_quatation_karet_action.xml'
+        'report/sales_quotation_karet.xml',
+        'report/sales_quotation_karet_action.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -1,7 +1,7 @@
 <odoo>
     <data>
 
-        <template id="sales_quatation_karet_template">
+        <template id="sales_quotation_karet_template">
             <t t-call="web.html_container"> 
                 <t t-foreach="docs" t-as="o">      
                     <div class="header" style="margin: 0; padding: 0">
@@ -97,7 +97,7 @@
             </t>
         </template>
 
-        <record id="paperformat_sales_quatation_karet" model="report.paperformat">
+        <record id="paperformat_sales_quotation_karet" model="report.paperformat">
             <field name="name">Sales Quatation Karet</field>
             <field name="default" eval="True"/>
             <field name="format">A4</field>
