@@ -1,0 +1,116 @@
+<odoo>
+    <data>
+
+        <template id="sales_quatation_karet_template">
+            <t t-call="web.html_container"> 
+                <t t-foreach="docs" t-as="o">      
+                    <div class="header" style="margin: 0; padding: 0">
+                        <img src="/nyalindung_report/static/img/logo.jpg" width="340px" height="80px"/>
+                    </div>
+                    <div class="page" style="font-family: 'Arial', sans-serif;">
+                        <t t-set="months" t-value="{
+                            '01': 'Januari',
+                            '02': 'Februari',
+                            '03': 'Maret',
+                            '04': 'April',
+                            '05': 'Mei',
+                            '06': 'Juni',
+                            '07': 'Juli',
+                            '08': 'Agustus',
+                            '09': 'September',
+                            '10': 'Oktober',
+                            '11': 'November',
+                            '12': 'Desember'
+                        }"/>
+
+                        <t t-set="day" t-value="o.date_order.strftime('%d')"/>
+                        <t t-set="month" t-value="months[o.date_order.strftime('%m')]"/>
+                        <t t-set="year" t-value="o.date_order.strftime('%Y')"/>
+                        <t t-set="formatted_date" t-value="day + '  ' + month + '  ' + year"/>
+
+
+                        <table width="100%">
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: left; width: 50%;">No: 004/MKT-SP/VII/23</td>
+                                    <td style="text-align: right; width: 50%;">Nyalindung, <span t-esc="formatted_date"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div>
+                            <p style="line-height: 28px">Kepada Yth <br/>
+                            <span><t t-esc="o.partner_id.name"/></span> <br/>
+                            <span>PT Sinar Multinaga Sejahtera</span> <br/>
+                            <span>Hal : PenawaranProdukKaret</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p>Dengan Hormat,</p>
+                            <p style="text-align: justify">Sebelumnya kami mengucapkan terima kasih atas kesempatan dan kepercayaan yang telah diberikan
+                            kepada perusahaan kami untuk memberikan penawaran karet.</p>
+                            <p>Melalui surat ini kami ajukan penawaran produk kami sebagai berikut :</p>
+                        </div>
+                        <table width="100%" style="border-collapse: collapse;" border="1">
+                            <tbody>
+                                <tr style="text-align : center" height="34px">
+                                    <td>JENIS PRODUK</td>
+                                    <td>Satuan</td>
+                                    <td>Harga (Rp/Kg)*</td>
+                                    <td>Volume</td>
+                                </tr>
+                                <tr height="34px" t-foreach="o.order_line" t-as="item">
+                                    <td style="padding-left: 8px"><t t-esc="item.product_template_id.name"/></td>
+                                    <td style="text-align: center"><t t-esc="item.product_uom.name"/></td>
+                                    <td style="text-align: center"><t t-esc="item.price_unit" t-options='{"widget": "float", "precision": 0}'/></td>
+                                    <td style="text-align: center"><t t-esc="item.product_uom_qty" t-options='{"widget": "float", "precision": 0}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p style="margin-top : 24px">*) Harga belum termasuk PPN 11%</p>
+                        <p style="margin-top : 14px; text-align: justify">Demikian penawaran ini dibuat, semoga menjadi pertimbangan bapak untuk membeli produk kami. Terima kasih.</p>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <p>Hormat Kami <br/>
+                                        PT.Nyalindung
+                                        </p>
+                                    </td>
+                                    <tr height="80px"></tr>
+                                    <tr>
+                                        <td><span style="text-decoration: underline;">Ilmiano Swara</span><br/>
+                                            Marketing<br/>
+                                            0852 2130 6440
+                                        </td>
+                                    </tr>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer">
+                        <div style="text-align: center; font-size: 8px">
+                            <span class="page"/>
+                        </div>
+                    </div>   
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_sales_quatation_karet" model="report.paperformat">
+            <field name="name">Sales Quatation Karet</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="page_width">0</field>
+            <field name="page_width">0</field>
+            <field name="margin_top">24</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_right">24</field>
+            <field name="margin_left">24</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">18</field>
+            <field name="dpi">90</field>
+        </record>
+    </data>
+</odoo>

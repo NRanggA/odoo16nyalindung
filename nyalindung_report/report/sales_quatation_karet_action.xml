@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="sales_quatation_karet_action" model="ir.actions.report">
+            <field name="name">Sales Quatation Karet</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">nyalindung_report.sales_quatation_karet_template</field>
+            <field name="report_file">nyalindung_report.sales_quatation_karet_template</field>
+            <field name="print_report_name">'Sales Quatation Karet'</field>
+            <field name="paperformat_id" ref="paperformat_sales_quatation_karet"/>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+        </record>
+    
+    </data>
+    
+
+</odoo>
