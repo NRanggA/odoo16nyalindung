@@ -1,0 +1,94 @@
+<odoo>
+    <data>
+
+        <template id="form_pengeluaran_barang_template">
+            <t t-call="web.html_container"> 
+                <t t-foreach="docs" t-as="o">      
+                    <div class="header" style="font-family: 'Arial', sans-serif;">
+                    </div>
+                    <div class="page" style="font-family: 'Arial', sans-serif;">
+                        <table width="100%">
+                            <tr>
+                                <td style="width : 40%">
+                                    <p style="text-align: center; font-size: 12px">PERKEBUNAN TEH DAN KARET <br/>
+                                    <span style="font-size: 18px; font-weight: bold">PT.NYALINDUNG</span><br/>
+                                    <span style="text-decoration : underline">POST ADDRESS PADALARANG BANDUNG</span>
+                                    </p>
+                                </td>
+                                <td style="width : 60%; padding-top: 40px; text-align: right">
+                                    <p style="font-size: 18px; font-weight: bold; padding-right: 40px">BON PERMINTAAN / PENGELUARAN BARANG</p>
+                                    <p style="padding-right: 128px">Bagian : ........................................... No. ............</p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table width="89%" style="margin-top: 14px; margin-left: 58px; border-collapse: collapse;" border="1">
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: center; border-left: 1px solid white" rowspan="2">No.</td>
+                                    <td style="text-align: center;" rowspan="2">Nama Barang</td>
+                                    <td style="text-align: center;" colspan="2">Banyaknya</td>
+                                    <td style="text-align: center;" rowspan="2">Satuan</td>
+                                    <td style="text-align: center; border-right: 1px solid white" rowspan="2">Keterangan</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: center;">Diminta</td>
+                                    <td style="text-align: center;">Dikeluarkan</td>
+                                </tr>
+                                <tr>
+                                    <td height="280px;" style="border-left: 1px solid white"></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td style="border-right: 1px solid white"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p style="margin-top: 18px; text-align: right; padding-right: 40px">Nyalindung, ................................20....</p>
+
+                        <table width="89%" style="margin-top: 20px; text-align: center; margin-left: 58px;">
+                            <tbody>
+                                <tr>
+                                    <td>Menyetujui,</td>
+                                    <td>Kepala Gudang,</td>
+                                    <td>Penerima,</td>
+                                    <td>Pemohon,</td>
+                                </tr>
+                                <tr height="100px"></tr>
+                                <tr>
+                                    <td>( ........................................... )</td>
+                                    <td>( ........................................... )</td>
+                                    <td>( ........................................... )</td>
+                                    <td>( ........................................... )</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer">
+                        <div style="text-align: center; font-size: 8px">
+                            <span class="page"/>
+                        </div>
+                    </div>   
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_form_pengeluaran_barang" model="report.paperformat">
+            <field name="name">Sales Quatation Karet</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="page_width">0</field>
+            <field name="page_width">0</field>
+            <field name="margin_top">24</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_right">10</field>
+            <field name="margin_left">10</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">18</field>
+            <field name="dpi">90</field>
+        </record>
+    </data>
+</odoo>
