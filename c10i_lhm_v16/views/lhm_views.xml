@@ -1807,6 +1807,8 @@
                                         <field name="sequence" string="" readonly="1" invisible="1"/>
                                         <field name="name" readonly="1" force_save="1" optional="show"/>
                                         <field name="date" invisible="1"/>
+                                        <field name="state" invisible="1"/>
+
                                         <!-- pembaharuan -->
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
@@ -1819,10 +1821,10 @@
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
                                         ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="show"/>
 
-                                        <field name="is_hasil_2"/>
 
+                                        <field name="is_hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
 
-                                        <button icon="fa-plus" type="object" name="action_wizard" class="oe_highlight" attrs="{'invisible': [('is_hasil_2','!=',True)]}"/>
+                                        <button icon="fa-plus" type="object" title="Tambah Hasil" name="tambah_hasil_2" class="oe_highlight" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('is_hasil_2', '!=', True)]}"/>
                                         
                                         <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
                                         <field name="non_work_day" readonly="1" invisible="1"/>
@@ -1853,7 +1855,6 @@
                                         <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
                                         <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="show"/>
-
 
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->

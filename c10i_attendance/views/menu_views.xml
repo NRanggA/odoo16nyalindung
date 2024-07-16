@@ -1,0 +1,8 @@
+<odoo>
+	<menuitem id="menu_root_absensi" name="Absensi" parent="hr_attendance.menu_hr_attendance_root"/>
+
+	<menuitem id="menu_import_excel" name="Import Absensi" parent="menu_root_absensi" action="action_hr_attendance_batch"/>
+
+	<menuitem id="menu_absensi_sheet" name="Sheet Absensi" parent="menu_root_absensi" action="action_attendance_sheet"/>
+
+</odoo>

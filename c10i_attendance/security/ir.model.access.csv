@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_c10i_attendance_hr_attendance_sheet,c10i_attendance.hr_attendance_sheet,model_hr_attendance_sheet,base.group_user,1,1,1,1
+access_c10i_attendance_hr_attendance_batch,c10i_attendance.hr_attendance_batch,model_hr_attendance_batch,base.group_user,1,1,1,1

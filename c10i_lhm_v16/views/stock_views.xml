@@ -97,7 +97,7 @@
                             <field name="product_uom_category_id" invisible="1"/>
                             
                             <field name="product_uom_qty"/>
-                            <field name="product_uom" options="{'no_open': True, 'no_create': True}" string="Unit of Measure" groups="product.group_uom"/>
+                            <field name="product_uom" options="{'no_open': True, 'no_create': True}" string="Unit of Measure"/>
                             <field name="location_id" invisible="1"/>
                             <field name="create_date" invisible="1" />
                             <field name="date" invisible="1" />

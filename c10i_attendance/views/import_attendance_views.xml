@@ -1,0 +1,47 @@
+<odoo>
+    <data>
+        <record id="view_hr_attendance_batch_form" model="ir.ui.view">
+            <field name="name">import.attendance</field>
+            <field name="model">hr.attendance.batch</field>
+            <field name="arch" type="xml">
+                <form string="Import Data Absensi">
+                    <sheet>
+                        <group>
+                            <field name="date"/>
+                            <field name="file" filename="file_name"/>
+                            <button string="Process" type="object" name="do_import" class="oe_highlight"/>
+                            <button string="Confirm" type="object" name="action_confirm" class="oe_highlight"/>
+                        </group>
+                        <notebook>
+                            <page string="Attendance">
+                                <field name="attendance_ids">
+                                    <tree string="Attendance">
+                                        <field name="employee_id"/>
+                                        <field name="check_in"/>
+                                        <field name="check_out"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Sheet">
+                                <field name="attendance_sheet_ids">
+                                    <tree string="Attendance Sheet">
+                                        <field name="date"/>
+                                        <field name="employee_id"/>
+                                        <field name="type_id"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_hr_attendance_batch" model="ir.actions.act_window">
+            <field name="name">Import Excel</field>
+            <field name="res_model">hr.attendance.batch</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_hr_attendance_batch_form"/>
+        </record>
+    </data>
+</odoo>

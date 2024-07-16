@@ -1836,6 +1836,7 @@ class lhm_transaction_line(models.Model):
 
     # Field yang bermasalah 
     lhm_id              = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
+    state               = fields.Selection(related='lhm_id.state', string='Status', store=True)
     
     # POC Nyalindung
     # Penyadap
@@ -1889,7 +1890,7 @@ class lhm_transaction_line(models.Model):
             'context': context,
         }
 
-    def action_wizard(self):
+    def tambah_hasil_2(self):
         if self.is_hasil_2:
             wizard_action = self.buka_wizard()
             return wizard_action
