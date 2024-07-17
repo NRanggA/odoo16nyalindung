@@ -474,12 +474,12 @@
                                 groups="base.group_multi_company"
                                 options="{'no_create': True}"
                             />
-                            <field
+                            <!-- <field
                                 name="account_analytic_id"
                                 attrs="{'readonly': True}"
                                 colspan="4"
                                 groups="analytic.group_analytic_accounting"
-                            />
+                            /> -->
                         </group>
                     </group>
                     <field name="name" attrs="{'readonly': True}" />
