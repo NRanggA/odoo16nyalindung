@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    	<record id="c10i_move_line_form" model="ir.ui.view">
+            <field name="name">c10i.account.move.line.form</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_move_line_form" />
+            <field name="arch" type="xml">
+            	<field name="date" position="after">
+            		<field name="period_id" string="Accounting Period" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+       	<record id="c10i_account_move_line_filter" model="ir.ui.view">
+            <field name="name">c10i.account.move.line.search</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_account_move_line_filter" />
+            <field name="arch" type="xml">
+            	<field name="date" position="after">
+            		<field name="period_id" />
+            	</field>
+            	<filter name="groupby_date" position="after">
+            		<filter string="Period" name="period" domain="[]" context="{'group_by': 'period_id'}"/>
+            	</filter>
+            </field>
+        </record>
+
+        <record id="c10i_move_form" model="ir.ui.view">
+            <field name="name">c10i.account.move.form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//group[@id='header_right_group']/field[@name='date']" position="after">
+                	<field name="period_id" string="Accounting Period"
+                       attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('move_type','!=','entry')]}"/>
+                </xpath>
+                <group name="accounting_info_group" position="inside">
+                    <field name="closing_period"/>
+                    <field name="closing_period_journal"/>
+                </group>
+                <group name="misc_group" position="inside">
+                    <field name="closing_period"/>
+                    <field name="closing_period_journal"/>
+                </group>
+
+                <!-- <xpath expr="//page[@id='invoice_tab']" position="after"> -->
+                    <!-- <page id="allocated_advance_tab" -->
+                          <!-- string="Advance Lines" -->
+                          <!-- attrs="{'invisible': [('move_type', 'not in', ('out_invoice','in_invoice'))]}"> -->
+                        <!-- <group> -->
+                            <!-- <group> -->
+                                <!-- <field name="add_advance_to_move_line" invisible="1"/> -->
+                            <!-- </group> -->
+                            <!-- <group> -->
+                            <!-- </group> -->
+                        <!-- </group> -->
+                        <!-- <button name="get_outstanding_advance" string="Get Outstanding Advance" type="object" states="draft"/> -->
+                        <!-- <field name="invoice_advance_allocate_ids"> -->
+                            <!-- <tree create="false" editable="bottom"> -->
+                                <!-- <field name="advance_id" readonly="1"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="residual_amount" readonly="1"/>
+                                <field name="update_to_line" invisible="0" readonly="1"/>
+                                <field name="allocated" invisible="0" readonly="1"/>
+                                <field name="amount"/> -->
+                                <!-- <field name="exclude_from_advance_tab" readonly="1"/> -->
+                                <!-- <field name="source_advance_id" readonly="1"/> -->
+                                <!-- <field name="account_id" readonly="1"/> -->
+                                <!-- <field name="advance_residual_amount" readonly="1" string="Outstanding Amount"/> -->
+                                <!-- <field name="price_unit" /> -->
+                            <!-- </tree> -->
+                        <!-- </field> -->
+                        <!-- <button name="do_add_advance_to_move_line" string="Add Advance to Invoice" type="object" states="draft"/> -->
+                    <!-- </page> -->
+                <!-- </xpath> -->
+            </field>
+        </record>
+
+        <record id="c10i_view_account_move_filter" model="ir.ui.view">
+            <field name="name">c10i.account.move.select</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_account_move_filter" />
+            <field name="arch" type="xml">
+            	<field name="date" position="after">
+            		<field name="period_id" />
+            	</field>
+            	<filter name="by_date" position="after">
+            		<filter string="Period" name="period" domain="[]" context="{'group_by': 'period_id'}"/>
+            	</filter>
+            </field>
+        </record>
+    
+</odoo>
