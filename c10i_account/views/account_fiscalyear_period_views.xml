@@ -170,8 +170,9 @@
                                 <span attrs="{'invisible': [('journal_entries_count','&lt;=', 1)]}">Journal Entries</span> -->
                             </button>
                         </div>
-                        <div class="oe_title" attrs="{'invisible': [('state', '=', 'draft')]}">
-                            <h1><field name="name" attrs="{'readonly': [('state', '!=', 'draft')]}"/></h1>
+                        <div class="oe_title">
+                            <lable for="name">Name</lable>
+                            <h1><field name="name" attrs="{'readonly': [('state', '!=', 'draft')]}" placeholder="Period Name"/></h1>
                         </div>
 
                         <group>
