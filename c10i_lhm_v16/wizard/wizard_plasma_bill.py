@@ -43,12 +43,12 @@ class LhmBillPlasma(models.TransientModel):
     date_invoice    = fields.Date('Invoice Date', required=True)
     date_from       = fields.Date('Dari Tanggal', required=True)
     date_to         = fields.Date('Sampai Tanggal', required=True)
-    product_id      = fields.Many2one('product.template', 'Product', required=True, domain="[('is_nab','=',True)]")
+    product_id      = fields.Many2one('product.template', 'Product', required=True, domain="[('is_nap','=',True)]")
     company_id      = fields.Many2one('res.company', 'Company', index=True, default=lambda self: self.env.user.company_id)
     sharing_profit_id = fields.Many2one('lhm.plasma.profit.sharing', 'Formula Sharing Profit')
     
-    header_nab_ids  = fields.One2many('wizard.lhm.bill.plasma.header', 'wizard_id', 'Header NAB')
-    line_nab_ids    = fields.One2many('wizard.lhm.bill.plasma.detail', 'wizard_id', 'Detail NAB')
+    header_nap_ids  = fields.One2many('wizard.lhm.bill.plasma.header', 'wizard_id', 'Header NAP')
+    line_nap_ids    = fields.One2many('wizard.lhm.bill.plasma.detail', 'wizard_id', 'Detail NAP')
 
     @api.onchange('period_id')
     def onchange_period(self):
@@ -74,22 +74,22 @@ class LhmBillPlasma(models.TransientModel):
 
     # @api.multi
     def generate_detail(self):
-        if self.header_nab_ids:
-            for delete in self.header_nab_ids:
+        if self.header_nap_ids:
+            for delete in self.header_nap_ids:
                 delete.unlink()
-        if self.line_nab_ids:
-            for delete in self.line_nab_ids:
+        if self.line_nap_ids:
+            for delete in self.line_nap_ids:
                 delete.unlink()
 
-        data_nab = self.env['lhm.nab.line'].search([ \
-            ('lhm_nab_id.date_pks','>=',self.date_from), \
-            ('lhm_nab_id.date_pks','<=',self.date_to), \
+        data_nap = self.env['lhm.nap.line'].search([ \
+            ('lhm_nap_id.date_pks','>=',self.date_from), \
+            ('lhm_nap_id.date_pks','<=',self.date_to), \
             ('block_id.owner_type','=','plasma'), \
-            ('lhm_nab_id.plasma_invoice_id','=',False), \
-            ('lhm_nab_id.state','in',['confirmed', 'done'])])
+            ('lhm_nap_id.plasma_invoice_id','=',False), \
+            ('lhm_nap_id.state','in',['confirmed', 'done'])])
         line_grouped = {}
-        for x in data_nab:
-            price = self.with_context({'date_pks': x.lhm_nab_id.date_pks})._get_price(x.block_id)
+        for x in data_nap:
+            price = self.with_context({'date_pks': x.lhm_nap_id.date_pks})._get_price(x.block_id)
             key = (x.block_id.year, price)
             if key not in line_grouped.keys():
                 line_grouped.update({key: []})
@@ -98,13 +98,13 @@ class LhmBillPlasma(models.TransientModel):
         for tahun_tanam, price in line_grouped.keys():
             for line in line_grouped[(tahun_tanam, price)]:
                 vals = {
-                    'lhm_nab_line_id': line.id,
-                    'date_pks': line.lhm_nab_id.date_pks,
+                    'lhm_nap_line_id': line.id,
+                    'date_pks': line.lhm_nap_id.date_pks,
                     'block_id': line.block_id.id,
-                    'qty_nab': line.qty_nab,
-                    'janjang_jml': line.lhm_nab_id.janjang_jml,
-                    'nilai_bjr': line.block_id.with_context({'date': line.lhm_nab_id.date_pks})._get_rate_bjr(),
-                    'netto': line.lhm_nab_id.netto,
+                    'qty_nap': line.qty_nap,
+                    'janjang_jml': line.lhm_nap_id.janjang_jml,
+                    'nilai_bjr': line.block_id.with_context({'date': line.lhm_nap_id.date_pks})._get_rate_bjr(),
+                    'netto': line.lhm_nap_id.netto,
                     'wizard_id': self.id,
                 }
                 self.env['wizard.lhm.bill.plasma.detail'].create(vals)
@@ -124,11 +124,11 @@ class LhmBillPlasma(models.TransientModel):
                         'wizard_id': self.id,
                         }})
                 line_header[key]['line_ids'].append(line)
-                line_header[key]['qty'] += ((vals['qty_nab']*vals['nilai_bjr'])/sum([(x.qty_nab*x.block_id.with_context({'date': line.lhm_nab_id.date_pks})._get_rate_bjr()) for x in line.lhm_nab_id.line_ids]) * vals['netto'])
+                line_header[key]['qty'] += ((vals['qty_nap']*vals['nilai_bjr'])/sum([(x.qty_nap*x.block_id.with_context({'date': line.lhm_nap_id.date_pks})._get_rate_bjr()) for x in line.lhm_nap_id.line_ids]) * vals['netto'])
         total_value = 0.0
         for values in line_header.values():
-            first_date = min([x.lhm_nab_id.date_pks for x in values['line_ids']])
-            last_date = max([x.lhm_nab_id.date_pks for x in values['line_ids']])
+            first_date = min([x.lhm_nap_id.date_pks for x in values['line_ids']])
+            last_date = max([x.lhm_nap_id.date_pks for x in values['line_ids']])
             date_start = datetime.strptime(first_date, '%Y-%m-%d').strftime('%d %B %Y')
             date_end = datetime.strptime(last_date, '%Y-%m-%d').strftime('%d %B %Y')
             values.update({
@@ -164,7 +164,7 @@ class LhmBillPlasma(models.TransientModel):
         invoice_vals = {
             'name': '',
             'type': 'in_invoice',
-            'reference': 'NAB %s'%(datetime.strptime(self.date_invoice, '%Y-%m-%d').strftime('%d/%m/%Y')),
+            'reference': 'NAP %s'%(datetime.strptime(self.date_invoice, '%Y-%m-%d').strftime('%d/%m/%Y')),
             'date_invoice': self.date_invoice,
             # 'force_period_id': self.period_id.id,
             'account_id': self.partner_id.property_account_payable_id.id,
@@ -176,7 +176,7 @@ class LhmBillPlasma(models.TransientModel):
             'company_id': self.company_id.id,
         }
         invoice = Invoice.create(invoice_vals)
-        for line in self.header_nab_ids:
+        for line in self.header_nap_ids:
             invoice_line_vals = {
                 'invoice_id': invoice.id,
                 'plantation_location_type_id': type_lokasi_null and type_lokasi_null[0].id or False,
@@ -210,9 +210,9 @@ class LhmBillPlasma(models.TransientModel):
         invoice.message_post('This invoice has been created from \
             Generate Bill TBS Plasma')
 
-        # Update all related NAB
-        for nab in list(set([x.lhm_nab_line_id.lhm_nab_id for x in self.line_nab_ids])):
-            nab.write({'plasma_invoice_id': invoice.id})
+        # Update all related NAP
+        for nap in list(set([x.lhm_nap_line_id.lhm_nap_id for x in self.line_nap_ids])):
+            nap.write({'plasma_invoice_id': invoice.id})
         
         # Redirect to show Invoice
         action = self.env.ref('account.action_invoice_tree1').read()[0]
@@ -222,9 +222,9 @@ class LhmBillPlasma(models.TransientModel):
 
 TAHUN = [(num, str(num)) for num in range((datetime.now().year) - 20, (datetime.now().year) + 1)]
 
-class LhmGenNabHeaderWizard(models.TransientModel):
+class LhmGenNapHeaderWizard(models.TransientModel):
     _name           = "wizard.lhm.bill.plasma.header"
-    _description    = "Total Keseluruhan NAB Plasma"
+    _description    = "Total Keseluruhan NAP Plasma"
 
     # @api.multi
     @api.depends('qty', 'price_unit')
@@ -244,15 +244,15 @@ class LhmGenNabHeaderWizard(models.TransientModel):
     name            = fields.Char('Description', required=True)
     subtotal        = fields.Float('Subtotal', compute='_compute_subtotal')
 
-class LhmGenNabLineWizard(models.TransientModel):
+class LhmGenNapLineWizard(models.TransientModel):
     _name            = "wizard.lhm.bill.plasma.detail"
-    _description     = "Detail NAB Plasma"
+    _description     = "Detail NAP Plasma"
 
     wizard_id       = fields.Many2one('wizard.lhm.bill.plasma', 'Wizard', required=True, ondelete='cascade')
-    lhm_nab_line_id = fields.Many2one('lhm.nab.line', 'Reference')
+    lhm_nap_line_id = fields.Many2one('lhm.nap.line', 'Reference')
     date_pks        = fields.Date('Tanggal PKS')
     block_id        = fields.Many2one('lhm.plant.block', 'Block Tanam')
     nilai_bjr       = fields.Float('BJR (kg)')
-    qty_nab         = fields.Float('Total Nab')
+    qty_nap         = fields.Float('Total Nap')
     janjang_jml     = fields.Float('Total Janjang')
     netto           = fields.Float('Berat Bersih di PKS')

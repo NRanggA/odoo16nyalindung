@@ -56,36 +56,36 @@
                 id      = "report_produksi_restan"
         />
 
-        <report string  = "Laporan NAB Per Blok"
+        <report string  = "Laporan NAP Per Blok"
                 model   = "wizard.report.produksi.select"
                 auto    = "True"
-                name    = "report_produksi_nab_perblock"
-                rml     = "c10i_lhm/report/report_produksi_nab_perblock.jrxml"
-                id      = "report_produksi_nab_perblock"
+                name    = "report_produksi_nap_perblock"
+                rml     = "c10i_lhm/report/report_produksi_nap_perblock.jrxml"
+                id      = "report_produksi_nap_perblock"
         />
 
-        <report string  = "Laporan NAB Detail"
+        <report string  = "Laporan NAP Detail"
                 model   = "wizard.report.produksi.select"
                 auto    = "True"
-                name    = "report_produksi_nab_detail"
-                rml     = "c10i_lhm/report/report_produksi_nab_detail.jrxml"
-                id      = "report_produksi_nab_detail"
+                name    = "report_produksi_nap_detail"
+                rml     = "c10i_lhm/report/report_produksi_nap_detail.jrxml"
+                id      = "report_produksi_nap_detail"
         />
 
-        <report string  = "Laporan NAB Rekap"
+        <report string  = "Laporan NAP Rekap"
                 model   = "wizard.report.produksi.select"
                 auto    = "True"
-                name    = "report_produksi_nab_rekap"
-                rml     = "c10i_lhm/report/report_produksi_nab_rekap.jrxml"
-                id      = "report_produksi_nab_rekap"
+                name    = "report_produksi_nap_rekap"
+                rml     = "c10i_lhm/report/report_produksi_nap_rekap.jrxml"
+                id      = "report_produksi_nap_rekap"
         />
 
         <report string  = "Laporan BA TBS Afkir"
                 model   = "wizard.report.produksi.select"
                 auto    = "True"
-                name    = "report_produksi_nab_afkir"
-                rml     = "c10i_lhm/report/report_produksi_nab_afkir.jrxml"
-                id      = "report_produksi_nab_afkir"
+                name    = "report_produksi_nap_afkir"
+                rml     = "c10i_lhm/report/report_produksi_nap_afkir.jrxml"
+                id      = "report_produksi_nap_afkir"
         />
 
         <report string  = "Laporan Rotasi Panen"
@@ -118,32 +118,32 @@
             <field name="report_name">c10i_lhm_v16.report_report_produksi_restan</field>
         </record>
 
-        <record id="report_produksi_nab_perblock" model="ir.actions.report">
-            <field name="name">Laporan NAB Per Blok</field>
+        <record id="report_produksi_nap_perblock" model="ir.actions.report">
+            <field name="name">Laporan NAP Per Blok</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_perblock</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_perblock</field>
         </record>
 
-        <record id="report_produksi_nab_detail" model="ir.actions.report">
-            <field name="name">Laporan NAB Detail</field>
+        <record id="report_produksi_nap_detail" model="ir.actions.report">
+            <field name="name">Laporan NAP Detail</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_detail</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_detail</field>
         </record>
 
-        <record id="report_produksi_nab_rekap" model="ir.actions.report">
-            <field name="name">Laporan NAB Rekap</field>
+        <record id="report_produksi_nap_rekap" model="ir.actions.report">
+            <field name="name">Laporan NAP Rekap</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_rekap</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_rekap</field>
         </record>
 
-        <record id="report_produksi_nab_afkir" model="ir.actions.report">
+        <record id="report_produksi_nap_afkir" model="ir.actions.report">
             <field name="name">Laporan BA TBS Afkir</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_afkir</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_afkir</field>
         </record>
 
         <record id="report_produksi_panen_rotasi" model="ir.actions.report">
@@ -212,18 +212,18 @@
                                         <field name="tgl_panen"/>
                                         <field name="qty_saw" sum="qty_saw"/>
                                         <field name="qty_panen" sum="qty_panen"/>
-                                        <field name="qty_nab" sum="qty_nab"/>
+                                        <field name="qty_nap" sum="qty_nap"/>
                                         <field name="qty_naf" sum="qty_naf"/>
                                         <field name="qty_restan"/>
                                         <field name="umur_restan"/>
                                         <field name="tgl_trans"/>
-                                        <field name="qty_nab2" sum="qty_nab2"/>
+                                        <field name="qty_nap2" sum="qty_nap2"/>
                                         <field name="qty_naf2" sum="qty_naf2"/>
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Laporan NAB Per Blok">
-                                <field name="nab_perblock_ids" mode="tree" >
+                            <page string="Laporan NAP Per Blok">
+                                <field name="nap_perblock_ids" mode="tree" >
                                     <tree editable="bottom" create="false">
                                         <field name="afdeling_id"/>
                                         <field name="block_id"/>
@@ -244,11 +244,11 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Laporan NAB Detail">
-                                <field name="nab_detail_ids" mode="tree" >
+                            <page string="Laporan NAP Detail">
+                                <field name="nap_detail_ids" mode="tree" >
                                     <tree editable="bottom" create="false">
-                                        <field name="tgl_nab"/>
-                                        <field name="no_nab"/>
+                                        <field name="tgl_nap"/>
+                                        <field name="no_nap"/>
                                         <field name="afdeling_id"/>
                                         <field name="block_id"/>
                                         <field name="kbn_qty_jjg" sum="kbn_qty_jjg"/>
@@ -263,16 +263,16 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Laporan NAB Rekap">
-                                <field name="nab_rekap_ids" mode="tree" >
+                            <page string="Laporan NAP Rekap">
+                                <field name="nap_rekap_ids" mode="tree" >
                                     <tree editable="bottom" create="false">
-                                        <field name="tgl_nab"/>
-                                        <field name="no_nab"/>
+                                        <field name="tgl_nap"/>
+                                        <field name="no_nap"/>
                                         <field name="afdeling_id"/>
                                         <field name="vehicle_id"/>
                                         <field name="driver"/>
                                         <field name="ownership"/>
-                                        <field name="tgl_nab2"/>
+                                        <field name="tgl_nap2"/>
                                         <field name="kbn_qty_jjg" sum="kbn_qty_jjg"/>
                                         <field name="kbn_qty_kg" sum="kbn_qty_kg"/>
                                         <field name="pks_id"/>

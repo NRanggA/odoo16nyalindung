@@ -74,36 +74,36 @@
             <field name="report_file">c10i_lhm_v16/report/report_produksi_restan.jrxml</field>
         </record>
 
-        <record id="report_produksi_nab_perblock" model="ir.actions.report">
-            <field name="name">Laporan NAB Per Blok</field>
+        <record id="report_produksi_nap_perblock" model="ir.actions.report">
+            <field name="name">Laporan NAP Per Blok</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_perblock</field>
-            <field name="report_file">c10i_lhm_v16/report/report_produksi_nab_perblock.jrxml</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_perblock</field>
+            <field name="report_file">c10i_lhm_v16/report/report_produksi_nap_perblock.jrxml</field>
         </record>
 
-        <record id="report_produksi_nab_detail" model="ir.actions.report">
-            <field name="name">Laporan NAB Detail</field>
+        <record id="report_produksi_nap_detail" model="ir.actions.report">
+            <field name="name">Laporan NAP Detail</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_detail</field>
-            <field name="report_file">c10i_lhm_v16/report/report_produksi_nab_detail.jrxml</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_detail</field>
+            <field name="report_file">c10i_lhm_v16/report/report_produksi_nap_detail.jrxml</field>
         </record>
 
-        <record id="report_produksi_nab_rekap" model="ir.actions.report">
-            <field name="name">Laporan NAB Rekap</field>
+        <record id="report_produksi_nap_rekap" model="ir.actions.report">
+            <field name="name">Laporan NAP Rekap</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_rekap</field>
-            <field name="report_file">c10i_lhm_v16/report/report_produksi_nab_rekap.jrxml</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_rekap</field>
+            <field name="report_file">c10i_lhm_v16/report/report_produksi_nap_rekap.jrxml</field>
         </record>
 
-        <record id="report_produksi_nab_afkir" model="ir.actions.report">
+        <record id="report_produksi_nap_afkir" model="ir.actions.report">
             <field name="name">Laporan BA TBS Afkir</field>
             <field name="model">wizard.report.produksi.select</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">c10i_lhm_v16.report_report_produksi_nab_afkir</field>
-            <field name="report_file">c10i_lhm_v16/report/report_produksi_nab_afkir.jrxml</field>
+            <field name="report_name">c10i_lhm_v16.report_report_produksi_nap_afkir</field>
+            <field name="report_file">c10i_lhm_v16/report/report_produksi_nap_afkir.jrxml</field>
         </record>
 
         <record id="report_produksi_panen_rotasi" model="ir.actions.report">
