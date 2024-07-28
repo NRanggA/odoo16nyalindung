@@ -1345,97 +1345,118 @@ class lhm_transaction(models.Model):
             list_employee = []
             seq = 1
 
+            # Mencari Absensi karyawan berdasarkan tanggal yang sama di masukkan di form lhm
+            start_date  = datetime.combine(self.date, datetime.min.time())
+            end_date    = start_date + timedelta(days=1)
+
             # Pencarian absensi karyawan pada tanggal yang sama
-            absensi = self.env['hr.attendance'].search([
+            absensi = self.env['hr.attendance.sheet'].search([
                 ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
-                ('check_in', '>=', self.date),
-                ('check_in', '<', self.date + timedelta(days=1))
+                ('check_in', '>=', start_date),
+                ('check_in', '<', end_date)
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
 
+            ####### Validasi tanggal yang di input di form dengan tanggal absen employee di kemandoran 
+            # list_employee = []  # Initialize the list_employee to store employee details
+            # seq = 1  # Initialize sequence number
+            # missing_attendance_employees = []
+
+            # for employee in self.kemandoran_id.employee_ids:
+            #     if employee.id not in absensi_employee_ids:
+            #         missing_attendance_employees.append(employee.name)
+
+            # if missing_attendance_employees:
+            #     return {
+            #         'warning': {
+            #             'title': _('Peringatan'),
+            #             'message': _("Karyawan berikut belum ada absen pada tanggal %s: %s") % (self.date, ', '.join(missing_attendance_employees))
+            #             },
+            #     }
+
             for employee in self.kemandoran_id.employee_ids:
-                # if employee.id in absensi_employee_ids:
-                min_wage = False
-                if employee and employee.basic_salary_type == 'employee':
-                    min_wage = self.env['hr.minimum.wage'].search([
-                        ('employee_id', '=', employee.id),
-                        ('date_from', '<=', self.date),
-                        ('date_to', '>=', self.date)
-                    ], limit=1)
-                elif employee and employee.basic_salary_type == 'employee_type':
-                    min_wage = self.env['hr.minimum.wage'].search([
-                        ('employee_type_id', '=', employee.type_id.id),
-                        ('date_from', '<=', self.date),
-                        ('date_to', '>=', self.date)
-                    ], limit=1)
-                if not min_wage:
-                    return {
-                        'value': {
-                            'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
-                            'date': False,
-                            'kemandoran_id': False,
-                        },
-                        'warning': {
-                            'title': _('Kesalahan Input Data'),
-                            'message': _("UMR tidak ditemukan untuk range tanggal: %s.") % (self.date)
-                        },
+                if employee.id in absensi_employee_ids:
+                    min_wage = False
+                    if employee and employee.basic_salary_type == 'employee':
+                        min_wage = self.env['hr.minimum.wage'].search([
+                            ('employee_id', '=', employee.id),
+                            ('date_from', '<=', self.date),
+                            ('date_to', '>=', self.date)
+                        ], limit=1)
+                    elif employee and employee.basic_salary_type == 'employee_type':
+                        min_wage = self.env['hr.minimum.wage'].search([
+                            ('employee_type_id', '=', employee.type_id.id),
+                            ('date_from', '<=', self.date),
+                            ('date_to', '>=', self.date)
+                        ], limit=1)
+                    if not min_wage:
+                        return {
+                            'value': {
+                                'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
+                                'date': False,
+                                'kemandoran_id': False,
+                            },
+                            'warning': {
+                                'title': _('Kesalahan Input Data'),
+                                'message': _(f"UMR pada Karyawan : { employee.name } dengan Tipe Karyawan : {employee.type_id.name}, tidak ditemukan !"),
+                            },
+                        }
+                    values = {
+                        'sequence'              : seq,
+                        'date'                  : self.date or False,
+                        'work_day'              : 0.0,
+                        'non_work_day'          : 0.0,
+                        'total_hke'             : 0.0,
+                        'total_hkne'            : 0.0,
+                        'min_wage_value_date'   : 0.0,
+                        'work_result'           : 0.0,
+                        'premi'                 : 0.0,
+                        'overtime_value'        : 0.0,
+                        'penalty'               : 0.0,
+                        'name'                  : employee and employee.no_induk or False,
+                        'employee_id'           : employee and employee.id or False,
+                        # 'attendance_id'         : absensi.type_id.id, #memasukkan tipe absensi setelah memasukkan kemandoran
+                        'min_wage_id'           : min_wage and min_wage.id or False,
+                        'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
                     }
-                values = {
-                    'sequence': seq,
-                    'date': self.date or False,
-                    'work_day': 0.0,
-                    'non_work_day': 0.0,
-                    'total_hke': 0.0,
-                    'total_hkne': 0.0,
-                    'min_wage_value_date': 0.0,
-                    'work_result': 0.0,
-                    'premi': 0.0,
-                    'overtime_value': 0.0,
-                    'penalty': 0.0,
-                    'name': employee and employee.no_induk or False,
-                    'employee_id': employee and employee.id or False,
-                    'min_wage_id': min_wage and min_wage.id or False,
-                    'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
-                }
-                if employee.id in emp_out_ids:
-                    values.update({
-                        'attendance_id': other_out_attn and other_out_attn.id or False,
-                        'transfer_id': self.env['hr.employee.foreman.transfer'].search([
-                            ('date', '=', self.date),
-                            ('type', '=', 'out'),
-                            ('kemandoran_to_id', '=', self.kemandoran_id.id),
-                            ('lhm_line_id', '=', False),
-                            ('employee_id', '=', employee.id)
-                        ], limit=1).id or False
-                    })
-                list_employee.append((0, 0, values))
-                seq += 1
+                    if employee.id in emp_out_ids:
+                        values.update({
+                            'attendance_id': other_out_attn and other_out_attn.id or False,
+                            'transfer_id': self.env['hr.employee.foreman.transfer'].search([
+                                ('date', '=', self.date),
+                                ('type', '=', 'out'),
+                                ('kemandoran_to_id', '=', self.kemandoran_id.id),
+                                ('lhm_line_id', '=', False),
+                                ('employee_id', '=', employee.id)
+                            ], limit=1).id or False
+                        })
+                    list_employee.append((0, 0, values))
+                    seq += 1
 
             if transfer_in_ids:
                 for transfer in transfer_in_ids:
                     values = {
-                        'sequence': seq,
-                        'date': self.date or False,
-                        'work_day': 0.0,
-                        'non_work_day': 0.0,
-                        'total_hke': 0.0,
-                        'total_hkne': 0.0,
-                        'min_wage_value_date': 0.0,
-                        'work_result': 0.0,
-                        'premi': 0.0,
-                        'overtime_value': 0.0,
-                        'penalty': 0.0,
-                        'name': transfer and transfer.employee_id and transfer.employee_id.no_induk or False,
-                        'employee_id': transfer and transfer.employee_id and transfer.employee_id.id or False,
-                        'min_wage_id': min_wage and min_wage.id or False,
-                        'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
-                        'attendance_id': other_in_attn and other_in_attn.id or False,
-                        'transfer_id': transfer and transfer.id or False
+                        'sequence'              : seq,
+                        'date'                  : self.date or False,
+                        'work_day'              : 0.0,
+                        'non_work_day'          : 0.0,
+                        'total_hke'             : 0.0,
+                        'total_hkne'            : 0.0,
+                        'min_wage_value_date'   : 0.0,
+                        'work_result'           : 0.0,
+                        'premi'                 : 0.0,
+                        'overtime_value'        : 0.0,
+                        'penalty'               : 0.0,
+                        'name'                  : transfer and transfer.employee_id and transfer.employee_id.no_induk or False,
+                        'employee_id'           : transfer and transfer.employee_id and transfer.employee_id.id or False,
+                        'min_wage_id'           : min_wage and min_wage.id or False,
+                        'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
+                        'attendance_id'         : other_in_attn and other_in_attn.id or False,
+                        'transfer_id'           : transfer and transfer.id or False
                     }
                     list_employee.append((0, 0, values))
                     seq += 1
             self.lhm_line_ids = list_employee
-
 
     def button_draft(self):
         if self.state in ['close']:
@@ -1469,7 +1490,25 @@ class lhm_transaction(models.Model):
         self.state = 'confirmed'
 
     def button_approve(self):
-        self.state = 'done'
+        # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
+        mismatch_names = []
+        for line in self.lhm_line_ids:
+            # Cari sheet absensi yang sesuai untuk setiap karyawan
+            attendance_sheet = self.env['hr.attendance.sheet'].search([('employee_id', '=', line.employee_id.id)], limit=1)
+            # Jika tidak ada catatan absensi yang ditemukan, lanjutkan ke karyawan berikutnya
+            if not attendance_sheet:
+                continue
+
+            # Cek apakah kode tipe absensi tidak sesuai
+            if line.attendance_id.code != attendance_sheet.type_id.code:
+                mismatch_names.append(line.employee_id.name)
+
+        # Jika ada ketidakcocokan, tampilkan pesan kesalahan dengan semua nama karyawan
+        if mismatch_names:
+            mismatch_names_str = ", ".join(mismatch_names)
+            raise UserError(_("Tipe absensi pada form LHM tidak sama dengan yang di Attendance untuk karyawan: [%s]") % mismatch_names_str)
+        else:
+            self.state = 'done'
 
     def button_reject(self):
         self.state = 'in_progress'
@@ -1547,6 +1586,15 @@ class lhm_transaction(models.Model):
         lhm_removed_list    = []
         sequence_number     = 1
         progress_line_obj   = self.env['lhm.transaction.process.line']
+
+        # for line in self.lhm_line_ids:
+        #     attendance_sheet = self.env['hr.attendance.sheet'].search([('employee_id', '=', line.employee_id.id)])
+        #     print(f"==== Data employee di attendance : {attendance_sheet.type_id.code}")
+        #     # Memeriksa jika attendance_id tidak sama dengan tipe KJ
+        #     if line.attendance_id.code != attendance_sheet.type_id.code:
+        #         raise UserError(_("Tipe absensi pada form LHM tidak sama dengan yang di Attendance: %s") % (line.employee_id.name))
+        
+
         if self.process_line_ids:
             for data in self.process_line_ids:
                 lhm_progress_list.append(data.id)
