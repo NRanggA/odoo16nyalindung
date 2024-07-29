@@ -1349,6 +1349,80 @@
         <menuitem id="menu_master_lhm_plant_block" action="action_lhm_plant_block" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="60"/>
         <!--End Of LHM Master Blok Tanam-->
 
+        <!-- LHM Quality Pabrik (Ambil dari LHM Blok Tanah)-->
+        <record id="view_lhm_quality_pabrik_form" model="ir.ui.view">
+            <field name="name">view.lhm.quality.pabrik.form</field>
+            <field name="model">lhm.quality.pabrik</field>
+            <field name="arch" type="xml">
+                <form string="Quality" >
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                                <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+                            </button>
+                        </div>
+                        <div class="oe_button_box" name="button_box"/>
+                        <div class="oe_title">
+                            <label for="name" string="Quality" class="oe_edit_only"/>
+                            <h1><field name="name" placeholder="Q001" required="1"/></h1>
+                        </div>
+                        <group name="quality_pabrik">
+                            <group>
+                                <field name="code" string="Kode Quality" required="1"/>
+                            </group>
+                            <group>
+                                <field name="company_id" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_quality_pabrik_tree" model="ir.ui.view">
+            <field name="name">view.lhm.quality.pabrik.tree</field>
+            <field name="model">lhm.quality.pabrik</field>
+            <field name="arch" type="xml">
+                <tree string="Quality">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="company_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_quality_pabrik_filter" model="ir.ui.view">
+            <field name="name">view.lhm.quality.pabrik.filter</field>
+            <field name="model">lhm.quality.pabrik</field>
+            <field name="arch" type="xml">
+                <search string="Quality">
+                    <field name="name" string="Quality" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <separator/>
+                    <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                    <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
+                    <group expand="0" string="Group By">
+                        <!-- <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/> -->
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_lhm_quality_pabrik" model="ir.actions.act_window">
+            <field name="name">Quality</field>
+            <field name="res_model">lhm.quality.pabrik</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_quality_pabrik_filter"/>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Quality.
+              </p>
+            </field>
+        </record>
+        <menuitem id="menu_lhm_quality_pabrik_config" action="action_lhm_quality_pabrik" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="61"/>
+        <!-- End Of LHM Quality Pabrik-->
 
         <!-- Master LHM Nursery-->
         <record id="view_lhm_nursery_form" model="ir.ui.view">
@@ -3169,28 +3243,33 @@
                        </group>
 
                         <notebook>
+                            <page string="TIMBANGAN KEBUN">
+                                <field name="kebun_line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <!-- <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="lokasi_tk"/>
+                                        <field name="tgl_panen"/>
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="uom_id"/>
+                                    </tree>
+                                </field>
+                            </page>                         
                             <page string="TIMBANGAN PABRIK">
                                 <field name="pabrik_line_ids" nolabel="1">
                                     <tree editable="bottom">
+                                        <field name="lokasi_tp"/>
+                                        <field name="tgl_pabrik"/>
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
                                         <field name="drclatex"/>
                                         <field name="drclump"/>
-                                        <field name="quality"/>
+                                        <field name="quality_pabrik"/>
                                     </tree>
                                 </field>
-                            </page>                        
-                            <page string="TIMBANGAN KEBUN">
-                                <field name="kebun_line_ids" nolabel="1">
-                                    <tree editable="bottom">
-                                        <field name="product_id"/>
-                                        <field name="product_qty"/>
-                                        <field name="uom_id"/>
-                                    </tree>
-                                </field>
-                            </page>                        
-                            <page string="Detail Nota Angkut Panen">
+                            </page>                                               
+                            <page string="DETAIL NOTA ANGKUT PANEN">
                                 <field name="line_ids" nolabel="1">
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>

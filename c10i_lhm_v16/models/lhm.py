@@ -611,7 +611,46 @@ class lhm_land_block(models.Model):
         lhm_location_type = self.search(domain + args, limit=limit)
         return lhm_location_type._name_get()
 ############################################### End Of Master Blok Tanah ####################################################
-################################################### Master Blok Tanam #######################################################
+################################################# Master Quality Pabrik #####################################################
+class lhm_quality_pabrik(models.Model):
+    _name = 'lhm.quality.pabrik'
+    _description = 'Quality Pabrik'
+
+    name = fields.Char("Quality", required=True)
+    code = fields.Char("Kode Quality", required=True)
+    active = fields.Boolean("Active", default=True)
+    company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
+
+    def name_get(self):
+        result = []
+        for record in self:
+            name = record.name or ''
+            code = record.code or ''
+            name_display = code if code else name
+            result.append((record.id, name_display))
+        return result
+
+    def _name_get(self):
+        result = []
+        for record in self:
+            name = record.name or ''
+            code = record.code or ''
+            name_display = f"{code} - {name}" if code else name
+            result.append((record.id, name_display))
+        return result
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        args = args or []
+        domain = []
+        if name:
+            domain = ['|', ('code', operator, name + '%'), ('name', operator, name)]
+            if operator in expression.NEGATIVE_TERM_OPERATORS:
+                domain = ['&', '!'] + domain[1:]
+        lhm_quality_pabrik = self.search(domain + args, limit=limit)
+        return lhm_quality_pabrik.name_get()
+############################################# End Of Master Quality Pabrik ####################################################
+################################################## Master Blok Tanam ##########################################################
 class lhm_plant_block(models.Model):
     _name           = 'lhm.plant.block'
     _description    = 'LHM Planting Block'
@@ -3704,19 +3743,24 @@ class TimbanganKebun(models.Model):
     lhm_nap_id  = fields.Many2one('lhm.nap', string='LHM NAP')
     product_id  = fields.Many2one('product.product', string='Product')
     product_qty = fields.Float(string='Product Quantity')
-    uom_id      = fields.Many2one('uom.uom', string='UOM')
+    uom_id      = fields.Many2one('uom.uom', string='UoM')
+    # block_id    = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
+    tgl_panen   = fields.Date(string='Tanggal Panen')
+    lokasi_tk   = fields.Char(string='Lokasi Timbangan Kebun')
 
 class TimbanganPabrik(models.Model):
     _name = 'timbangan.pabrik'
     _description = 'Timbangan Pabrik'
 
-    lhm_nap_id  = fields.Many2one('lhm.nap', string='LHM NAP')
-    product_id  = fields.Many2one('product.product', string='Product')
-    product_qty = fields.Float(string='Product Quantity')
-    uom_id      = fields.Many2one('uom.uom', string='UOM')
-    drclatex    = fields.Char(string='DRC Latex')
-    drclump     = fields.Char(string='DRC Lump')
-    quality     = fields.Integer(string="Quality")
+    lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
+    product_id         = fields.Many2one('product.product', string='Product')
+    product_qty        = fields.Integer(string='Product Quantity')
+    uom_id             = fields.Many2one('uom.uom', string='UoM')
+    drclatex           = fields.Char(string='DRC Latex')
+    drclump            = fields.Char(string='DRC Lump')
+    quality_pabrik     = fields.Many2one('lhm.quality.pabrik', string='Quality')
+    lokasi_tp          = fields.Char(string='Lokasi Timbangan Pabrik')
+    tgl_pabrik         = fields.Date(string='Tanggal Terima Pabrik')
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
@@ -3965,10 +4009,10 @@ class lhm_nap_afkir_line(models.Model):
     _name = 'lhm.nap.afkir.line'
     _description = 'LHM Nota Angkut Panen Line'
 
-    block_id = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
-    tgl_panen = fields.Date(" Tanggal Panen")
-    qty = fields.Float('Jumlah Janjang')
-    lhm_nap_afkir_id = fields.Many2one("lhm.nap.afkir", string="Afkir Nota Buah Angkut", ondelete="cascade")
+    block_id            = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
+    tgl_panen           = fields.Date(" Tanggal Panen")
+    qty                 = fields.Float('Jumlah Janjang')
+    lhm_nap_afkir_id    = fields.Many2one("lhm.nap.afkir", string="Afkir Nota Buah Angkut", ondelete="cascade")
     lhm_progress_ids    = fields.Many2many('lhm.transaction.process.line', 'lhm_process_nap_afkir_line_rel', 'nap_afkir_line_id', 'progress_id', 'LHM Progress Ref')
 
     def link_to_lhm_progress(self):
