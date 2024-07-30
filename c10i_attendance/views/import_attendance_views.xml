@@ -19,12 +19,15 @@
             <field name="arch" type="xml">
                 <header>
                     <button string="Process" type="object" name="push_to_sheet" class="btn-secondary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
-                    <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'processed')]}"/>
                     <button string="Set To Draft" type="object" name="set_to_draft" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,valid"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,processed,valid"/>
                 </header>
                 <form string="Import Data Absensi">
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button string="Attendance Sheeet" type="object" name="action_show_sheet" class="btn-secondary" icon="fa-users" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                        </div>
                         <group>
                             <field name="date" attrs="{'readonly': [('state', '=', 'valid')]}"/>
                             <field name="file" filename="file_name" attrs="{'readonly': [('state', '=', 'valid')]}"/>
@@ -40,7 +43,7 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Sheet">
+                            <!-- <page string="Sheet">
                                 <field name="attendance_sheet_ids" attrs="{'readonly': [('state', '=', 'valid')]}">
                                     <tree string="Attendance Sheet">
                                         <field name="employee_id"/>
@@ -49,7 +52,7 @@
                                         <field name="check_out"/>
                                     </tree>
                                 </field>
-                            </page>
+                            </page> -->
                         </notebook>
                     </sheet>
                 </form>
