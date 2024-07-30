@@ -21,6 +21,11 @@
             <field name="arch" type="xml">
                 <form string="Perbaikan Absensi">
                     <header>
+                        <button string="Request Approval" name="request_approval" type="object" class="oe_highlight"/>
+                        <button string="Approve" name="button_approve" type="object" class="oe_highlight"/>
+                        <button string="Reject" name="button_reject" type="object" class="oe_highlight"/>
+                        <button string="Cancel" name="button_cancel" type="object" class="oe_highlight"/>
+                        <button string="Set to draft" name="set_to_draft" type="object" class="oe_highlight"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>

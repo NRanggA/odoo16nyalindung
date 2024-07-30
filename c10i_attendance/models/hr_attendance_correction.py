@@ -12,84 +12,49 @@ class HrAttendanceCorrection(models.Model):
     kemandoran_id   = fields.Many2one('hr.foreman', string="Kemandoran", required=True)
     date_attendance = fields.Date('Tanggal Absensi', required=True)
     state = fields.Selection([
-        ('draft', 'New'),
-        ('done', 'Approve'),
-        ('close', 'close')
-    ], string='state', default="draft")
+        ('new', 'New'),
+        ('aprrove', 'Approve'),
+        ('reject', 'Reject'),
+        ('cancel', 'Cancel'),
+        ('draft', 'Set to draft')
+    ], string='state', default="new")
     line_ids = fields.One2many('hr.attendance.correction.line', 'correction_id', string="Correction Lines")
     
-    @api.constrains('date_attendance')
-    def _check_date_attendance(self):
-        for record in self:
-            if record.date_attendance:
-                attendance_batches = self.env['hr.attendance.batch'].search([
-                    ('date', '=', record.date_attendance)
-                ])
-                if not attendance_batches:
-                    raise ValidationError("Tanggal absensi yang Anda masukkan tidak ada dalam daftar batch absensi.")
+    def button_approve(self):
+        for rec in self:
+            rec.state = 'approve'
 
-
-    # @api.depends('date_attendance', 'kemandoran_id')
-    # def _compute_employee_attendance(self):
-    #     for record in self:
-
-    #         if record.date_attendance and record.kemandoran_id:
-    #             # Mencari batch absensi berdasarkan tanggal absensi
-    #             attendance_batches = self.env['hr.attendance.batch'].search([
-    #                 ('date', '=', record.date_attendance)
-    #             ])
-    #             print("Attendance Batches:", attendance_batches)
-
-    #             # Mengumpulkan attendance_ids dari batch yang ditemukan
-    #             attendance_records = self.env['hr.attendance.sheet']
-    #             for batch in attendance_batches:
-    #                 attendance_records |= batch.attendance_sheet_ids
-
-    #             print("Attendance Records Before Filtering:", attendance_records)
-
-    #             # filter attendance_records berdasarkan employee_ids di kemandoran_id
-    #             filtered_records = attendance_records.filtered(
-    #                 lambda rec: rec.employee_id in record.kemandoran_id.employee_ids and rec.type_id.code == 'M'
-    #                 # lambda rec: rec.employee_id in record.kemandoran_id.employee_ids
-    #             )
-
-    #             print("Filtered Attendance Records:", filtered_records)
-
-    #             # Kosongkan line sebelumnya
-    #             record.line_ids = [(5, 0, 0)]
-
-    #             # Tambahkan line baru berdasarkan filtered_records
-    #             record.line_ids = [(0, 0, {
-    #                 'employee_id': rec.employee_id.id,
-    #                 'attendance_sheet_id': rec.id,
-    #             }) for rec in filtered_records]
-    #         else:
-    #             # Kosongkan line jika kondisi tidak terpenuhi
-    #             record.line_ids = [(5, 0, 0)]
+    def set_to_draft(self):
+        for rec in self:
+            rec.state = 'draft'
     
+    def button_reject(self):
+        for rec in self:
+            rec.state = 'reject'
+
+    def button_cancel(self):
+        for rec in self:
+            rec.state = 'cancel'
+    
+    def request_approval(self):
+        print(f"==== Sending Request Aprroval ====")
+
     @api.onchange('date_attendance', 'kemandoran_id')
     def _onchange_date_attendance_kemandoran(self):
-        
         if self.date_attendance and self.kemandoran_id:
-            # Mencari batch absensi berdasarkan tanggal absensi
-            attendance_batches = self.env['hr.attendance.batch'].search([
-                ('date', '=', self.date_attendance)
+            # Cari absensi dari hr.attendance.sheet berdasarkan tanggal absensi
+            attendance_records = self.env['hr.attendance.sheet'].search([
+                ('date', '=', self.date_attendance),
+                ('employee_id', 'in', self.kemandoran_id.employee_ids.ids)
             ])
-            print("Attendance Batches : %s", attendance_batches)
-
-            # Mengumpulkan attendance_ids dari batch yang ditemukan
-            attendance_records = self.env['hr.attendance.sheet']
-            for batch in attendance_batches:
-                attendance_records |= batch.attendance_sheet_ids
             
             print("Attendance Records: %s", attendance_records)
 
-            # Menyaring attendance_records berdasarkan employee_ids di kemandoran_id
+            # Filter absensi berdasarkan tipe absensi M
             filtered_records = attendance_records.filtered(
-                # lambda rec: rec.employee_id in self.kemandoran_id.employee_ids
-                lambda rec: rec.employee_id in self.kemandoran_id.employee_ids and rec.type_id.code == 'M'
+                lambda rec: rec.type_id.code == 'M'
             )
-            print("Memfilter Attendance Records: %s", filtered_records)
+            print("Filtered Attendance Records: %s", filtered_records)
 
             # Kosongkan line sebelumnya
             self.line_ids = [(5, 0, 0)]
@@ -98,20 +63,62 @@ class HrAttendanceCorrection(models.Model):
             self.line_ids = [(0, 0, {
                 'employee_id': rec.employee_id.id,
                 'attendance_sheet_id': rec.id,
-                'check_in' : filtered_records.check_in,
-                'check_out' : filtered_records.check_out,
+                'check_in': rec.check_in,
+                'check_out': rec.check_out,
             }) for rec in filtered_records]
         else:
             # Kosongkan line jika kondisi tidak terpenuhi
+            print("==== DATA KOSONG ====")
             self.line_ids = [(5, 0, 0)]
+
+        # if self.date_attendance and self.kemandoran_id:
+        #     # Mencari batch absensi berdasarkan tanggal absensi
+        #     attendance_batches = self.env['hr.attendance.batch'].search([
+        #         ('date', '=', self.date_attendance)
+        #     ])
+        #     print("Attendance Batches : %s", attendance_batches)
+        #     if not attendance_batches:
+        #             raise ValidationError("Tanggal absensi yang Anda masukkan tidak ada dalam daftar batch absensi.")
+
+        #     # Mengumpulkan attendance_ids dari batch yang ditemukan
+        #     attendance_records = self.env['hr.attendance.sheet']
+        #     for batch in attendance_batches:
+        #         attendance_records |= batch.attendance_sheet_ids
+            
+        #     print("Attendance Records: %s", attendance_records)
+
+        #     # Menyaring attendance_records berdasarkan employee_ids di kemandoran_id
+        #     filtered_records = attendance_records.filtered(
+        #         # lambda rec: rec.employee_id in self.kemandoran_id.employee_ids
+        #         lambda rec: rec.employee_id in self.kemandoran_id.employee_ids and rec.type_id.code == 'M'
+        #     )
+        #     print("Memfilter Attendance Records: %s", filtered_records)
+
+        #     # Kosongkan line sebelumnya
+        #     self.line_ids = [(5, 0, 0)]
+
+        #     # Tambahkan line baru berdasarkan filtered_records
+        #     self.line_ids = [(0, 0, {
+        #         'employee_id': rec.employee_id.id,
+        #         'attendance_sheet_id': rec.id,
+        #         'check_in': rec.check_in,  
+        #         'check_out': rec.check_out,
+        #     }) for rec in filtered_records]
+        # else:
+        #     # Kosongkan line jika kondisi tidak terpenuhi
+        #     print("==== DATA KOSONG ====")
+        #     self.line_ids = [(5, 0, 0)]
 
     @api.model
     def create(self, vals):
-        # Mendapatkan tahun saat ini
-        year = datetime.now().year
-        # Membuat sequence
         if 'name' not in vals or not vals.get('name'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('hr.attendance.correction') or '/'
+            # Mendapatkan sequence number
+            sequence = self.env['ir.sequence'].next_by_code('hr.attendance.correction') or '001'
+            # Mendapatkan tahun dan format tanggal
+            now = datetime.now()
+            year_suffix = now.strftime('%y')  # 2 digit terakhir tahun
+            date_str = now.strftime('%m%d')   # Bulan dan tanggal
+            vals['name'] = f"ATC/{year_suffix}/{date_str}/{sequence}"
         return super(HrAttendanceCorrection, self).create(vals)
 
 
@@ -148,24 +155,38 @@ class HrAttendanceCorrectionLine(models.Model):
     @api.model
     def create(self, vals):
         record = super(HrAttendanceCorrectionLine, self).create(vals)
-        attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
         if record.attendance_sheet_id:
-            record.attendance_sheet_id.write({
-                'check_in': record.check_in,
-                'check_out': record.check_out,
-                'type_id' : attendance_type.id
-            })
+            # Hanya perbarui type_id jika check_in dan check_out ada
+            if record.check_in and record.check_out:
+                attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+                record.attendance_sheet_id.write({
+                    'check_in': record.check_in,
+                    'check_out': record.check_out,
+                    'type_id': attendance_type.id
+                })
+            else:
+                record.attendance_sheet_id.write({
+                    'check_in': record.check_in,
+                    'check_out': record.check_out
+                })
         return record
 
     def write(self, vals):
         res = super(HrAttendanceCorrectionLine, self).write(vals)
-        attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
         for record in self:
             if 'check_in' in vals or 'check_out' in vals:
                 if record.attendance_sheet_id:
-                    record.attendance_sheet_id.write({
-                        'check_in': record.check_in,
-                        'check_out': record.check_out,
-                        'type_id' : attendance_type.id
-                    })
+                    # Hanya perbarui type_id jika check_in dan check_out ada
+                    if record.check_in and record.check_out:
+                        attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+                        record.attendance_sheet_id.write({
+                            'check_in': record.check_in,
+                            'check_out': record.check_out,
+                            'type_id': attendance_type.id
+                        })
+                    else:
+                        record.attendance_sheet_id.write({
+                            'check_in': record.check_in,
+                            'check_out': record.check_out
+                        })
         return res
