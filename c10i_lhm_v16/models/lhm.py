@@ -1241,86 +1241,90 @@ class lhm_transaction(models.Model):
     invoice_id          = fields.Many2one('account.move', 'Payroll Invoice')
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
 
+    def button_regenerate(self):
+        print(f"=== GET KEMANDORAN ===")
+        self._onchange_kemandoran()
 
-    @api.depends('process_line_ids.nab_line_ids', 'process_line_ids.nab_afkir_line_ids')
-    def _check_pending_nab_link(self):
-        for lhm in self:
-            check = True
-            for line in lhm.process_line_ids:
-                if line.activity_id.is_panen:
-                    nab_nilai = sum([x.qty_nab for x in line.nab_line_ids if x.lhm_nab_id.state!='draft']) \
-                            + sum([x.qty for x in line.nab_afkir_line_ids if x.lhm_nab_afkir_id.state!='draft'])
-                    if nab_nilai>=line.nilai:
-                        check = False
-            lhm.pending_nab_link = check
+        # Definisikan list_employee sesuai dengan data yang valid
+        existing_employee_ids = [line.employee_id.id for line in self.lhm_line_ids]
+        
+        # Mengambil daftar karyawan yang sudah check-in pada tanggal yang ditentukan
+        start_date = datetime.combine(self.date, datetime.min.time())
+        end_date = start_date + timedelta(days=1)
 
-    def get_material(self):
-        move_obj            = self.env['stock.move']
-        material_line_obj   = self.env['lhm.transaction.material.line']
-        if self.material_line_ids:
-            for material in self.material_line_ids:
-                material.unlink()
-        for progress in self.process_line_ids:
-            if progress.activity_id and progress.location_id and progress.location_id.type_id.skb_declare == True:
-                domain = [
-                    ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
-                    ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
-                    ('skb', '=', True), ('state', '=', 'done'), 
-                    ('plantation_location_id', '=', progress.location_id.id), 
-                    ('plantation_activity_id', '=', progress.activity_id.id), 
-                    ('origin_returned_move_id', '=', False),
-                    ('pending_material_allocation', '>', 0.0),
-                    ]
-                skb_ids     = move_obj.search(domain)
-                for skb in skb_ids:
-                    values_skb  = {
-                        'name'              : skb.picking_id.bpb_number or '',
-                        'date'              : self.date,
-                        'product_id'        : skb.product_id.id,
-                        'location_id'       : skb.plantation_location_id.id,
-                        'activity_id'       : skb.plantation_activity_id.id,
-                        'real_stock_qty'    : skb.product_uom_qty,
-                        'stock_qty'         : skb.plantation_material_allocation,
-                        'product_uom_id'    : skb.product_uom.id,
-                        'move_id'           : skb.id,
-                        'picking_id'        : skb.picking_id and skb.picking_id.id or False,
-                        'lhm_id'            : self.id,
-                        'progress_id'       : progress.id,
+        absensi = self.env['hr.attendance.sheet'].search([
+            ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
+            ('check_in', '>=', start_date),
+            ('check_in', '<', end_date)
+        ])
+        absensi_employee_ids = absensi.mapped('employee_id.id')
+
+        list_employee = []
+        seq = 1
+
+        for employee in self.kemandoran_id.employee_ids:
+            if employee.id in absensi_employee_ids and employee.id not in existing_employee_ids:
+                min_wage = False
+                if employee and employee.basic_salary_type == 'employee':
+                    min_wage = self.env['hr.minimum.wage'].search([
+                        ('employee_id', '=', employee.id),
+                        ('date_from', '<=', self.date),
+                        ('date_to', '>=', self.date)
+                    ], limit=1)
+                elif employee and employee.basic_salary_type == 'employee_type':
+                    min_wage = self.env['hr.minimum.wage'].search([
+                        ('employee_type_id', '=', employee.type_id.id),
+                        ('date_from', '<=', self.date),
+                        ('date_to', '>=', self.date)
+                    ], limit=1)
+                if not min_wage:
+                    return {
+                        'value': {
+                            'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
+                            'date': False,
+                            'kemandoran_id': False,
+                        },
+                        'warning': {
+                            'title': _('Kesalahan Input Data'),
+                            'message': _(f"UMR pada Karyawan : { employee.name } dengan Tipe Karyawan : {employee.type_id.name}, tidak ditemukan !"),
+                        },
                     }
-                    material_line_obj.create(values_skb)
+                values = {
+                    'sequence': seq,
+                    'date': self.date or False,
+                    'work_day': 0.0,
+                    'non_work_day': 0.0,
+                    'total_hke': 0.0,
+                    'total_hkne': 0.0,
+                    'min_wage_value_date': 0.0,
+                    'work_result': 0.0,
+                    'premi': 0.0,
+                    'overtime_value': 0.0,
+                    'penalty': 0.0,
+                    'name': employee and employee.no_induk or False,
+                    'employee_id': employee and employee.id or False,
+                    'min_wage_id': min_wage and min_wage.id or False,
+                    'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
+                }
+                list_employee.append((0, 0, values))
+                seq += 1
 
-    def recalculate_plantation(self):
-        all_plantation_ids  = self.env['lhm.transaction'].search([('account_period_id', '=', self.account_period_id.id)])
-        for plantation in all_plantation_ids:
-            for line in plantation.lhm_line_ids:
-                if line.attendance_id and line.employee_id and line.min_wage_id:
-                    if line.attendance_id:
-                        line.valid      = True
-                    if line.overtime_hour and line.overtime_hour > 0:
-                        holiday         = False
-                        overtime_data   = self.env['hr.overtime'].search([('hours', '=', line.overtime_hour)], limit=1)
-                        holiday_data    = self.env['hr.holidays.public.line'].search([('date', '=', line.date)])
-                        if holiday_data:
-                            holiday     = True
-                        if overtime_data and line.employee_id.type_id and line.employee_id.type_id.overtime_calc:
-                            if holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-                                line.overtime_value = (line.min_wage_id.umr_month / 173) * overtime_data.holiday
-                            elif not holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-                                line.overtime_value = (line.min_wage_id.umr_month / 173) * overtime_data.normal_day
-                            else:
-                                line.overtime_value = 0
-                        if overtime_data and line.employee_id.type_id and not line.employee_id.type_id.overtime_calc:
-                            if holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-                                line.overtime_value = (line.min_wage_id.umr_month / 25) * float(float(3) / float(20)) * overtime_data.holiday
-                            elif not holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-                                line.overtime_value = (line.min_wage_id.umr_month / 25) * float(float(3) / float(20)) * overtime_data.normal_day
-                            else:
-                                line.overtime_value = 0
+        # Update lhm_line_ids dengan data yang baru
+        self.lhm_line_ids = [(0, 0, values) for values in list_employee] + [(1, line.id, {}) for line in self.lhm_line_ids if line.employee_id.id in existing_employee_ids]
 
-    def reprogress_plantation(self):
-        all_plantation_ids = self.env['lhm.transaction'].search([('state', 'in', ['in_progress','done']), ('account_period_id', '=', self.account_period_id.id)])
-        for plantation in all_plantation_ids:
-            plantation.run_progress()
+
+    def _get_min_wage_id(self, employee):
+        # Implementasikan logika untuk mendapatkan min_wage_id
+        return self.env['hr.minimum.wage'].search([('employee_id', '=', employee.id)], limit=1).id
+
+    def _get_min_wage_value(self, employee):
+        # Implementasikan logika untuk mendapatkan min_wage_value
+        min_wage = self._get_min_wage_id(employee)
+        return min_wage.umr_month / (min_wage.work_day or 25) if min_wage else 0.0
+
+    def _get_attendance_id(self):
+        # Implementasikan logika untuk mendapatkan attendance_id
+        return self.env['hr.attendance.type'].search([('type', '=', 'kj')], limit=1).id
 
     @api.onchange('date', 'kemandoran_id')
     def _onchange_kemandoran(self):
@@ -1356,23 +1360,6 @@ class lhm_transaction(models.Model):
                 ('check_in', '<', end_date)
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
-
-            ####### Validasi tanggal yang di input di form dengan tanggal absen employee di kemandoran 
-            # list_employee = []  # Initialize the list_employee to store employee details
-            # seq = 1  # Initialize sequence number
-            # missing_attendance_employees = []
-
-            # for employee in self.kemandoran_id.employee_ids:
-            #     if employee.id not in absensi_employee_ids:
-            #         missing_attendance_employees.append(employee.name)
-
-            # if missing_attendance_employees:
-            #     return {
-            #         'warning': {
-            #             'title': _('Peringatan'),
-            #             'message': _("Karyawan berikut belum ada absen pada tanggal %s: %s") % (self.date, ', '.join(missing_attendance_employees))
-            #             },
-            #     }
 
             for employee in self.kemandoran_id.employee_ids:
                 if employee.id in absensi_employee_ids:
@@ -1457,6 +1444,86 @@ class lhm_transaction(models.Model):
                     list_employee.append((0, 0, values))
                     seq += 1
             self.lhm_line_ids = list_employee
+
+    @api.depends('process_line_ids.nab_line_ids', 'process_line_ids.nab_afkir_line_ids')
+    def _check_pending_nab_link(self):
+        for lhm in self:
+            check = True
+            for line in lhm.process_line_ids:
+                if line.activity_id.is_panen:
+                    nab_nilai = sum([x.qty_nab for x in line.nab_line_ids if x.lhm_nab_id.state!='draft']) \
+                            + sum([x.qty for x in line.nab_afkir_line_ids if x.lhm_nab_afkir_id.state!='draft'])
+                    if nab_nilai>=line.nilai:
+                        check = False
+            lhm.pending_nab_link = check
+
+    def get_material(self):
+        move_obj            = self.env['stock.move']
+        material_line_obj   = self.env['lhm.transaction.material.line']
+        if self.material_line_ids:
+            for material in self.material_line_ids:
+                material.unlink()
+        for progress in self.process_line_ids:
+            if progress.activity_id and progress.location_id and progress.location_id.type_id.skb_declare == True:
+                domain = [
+                    ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
+                    ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
+                    ('skb', '=', True), ('state', '=', 'done'), 
+                    ('plantation_location_id', '=', progress.location_id.id), 
+                    ('plantation_activity_id', '=', progress.activity_id.id), 
+                    ('origin_returned_move_id', '=', False),
+                    ('pending_material_allocation', '>', 0.0),
+                    ]
+                skb_ids     = move_obj.search(domain)
+                for skb in skb_ids:
+                    values_skb  = {
+                        'name'              : skb.picking_id.bpb_number or '',
+                        'date'              : self.date,
+                        'product_id'        : skb.product_id.id,
+                        'location_id'       : skb.plantation_location_id.id,
+                        'activity_id'       : skb.plantation_activity_id.id,
+                        'real_stock_qty'    : skb.product_uom_qty,
+                        'stock_qty'         : skb.plantation_material_allocation,
+                        'product_uom_id'    : skb.product_uom.id,
+                        'move_id'           : skb.id,
+                        'picking_id'        : skb.picking_id and skb.picking_id.id or False,
+                        'lhm_id'            : self.id,
+                        'progress_id'       : progress.id,
+                    }
+                    material_line_obj.create(values_skb)
+
+    def recalculate_plantation(self):
+        all_plantation_ids  = self.env['lhm.transaction'].search([('account_period_id', '=', self.account_period_id.id)])
+        for plantation in all_plantation_ids:
+            for line in plantation.lhm_line_ids:
+                if line.attendance_id and line.employee_id and line.min_wage_id:
+                    if line.attendance_id:
+                        line.valid      = True
+                    if line.overtime_hour and line.overtime_hour > 0:
+                        holiday         = False
+                        overtime_data   = self.env['hr.overtime'].search([('hours', '=', line.overtime_hour)], limit=1)
+                        holiday_data    = self.env['hr.holidays.public.line'].search([('date', '=', line.date)])
+                        if holiday_data:
+                            holiday     = True
+                        if overtime_data and line.employee_id.type_id and line.employee_id.type_id.overtime_calc:
+                            if holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
+                                line.overtime_value = (line.min_wage_id.umr_month / 173) * overtime_data.holiday
+                            elif not holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
+                                line.overtime_value = (line.min_wage_id.umr_month / 173) * overtime_data.normal_day
+                            else:
+                                line.overtime_value = 0
+                        if overtime_data and line.employee_id.type_id and not line.employee_id.type_id.overtime_calc:
+                            if holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
+                                line.overtime_value = (line.min_wage_id.umr_month / 25) * float(float(3) / float(20)) * overtime_data.holiday
+                            elif not holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
+                                line.overtime_value = (line.min_wage_id.umr_month / 25) * float(float(3) / float(20)) * overtime_data.normal_day
+                            else:
+                                line.overtime_value = 0
+
+    def reprogress_plantation(self):
+        all_plantation_ids = self.env['lhm.transaction'].search([('state', 'in', ['in_progress','done']), ('account_period_id', '=', self.account_period_id.id)])
+        for plantation in all_plantation_ids:
+            plantation.run_progress()
 
     def button_draft(self):
         if self.state in ['close']:
