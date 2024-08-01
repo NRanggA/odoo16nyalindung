@@ -8,7 +8,7 @@
                 <tree string="Perbaikan Absensi">
                     <field name="name"/>
                     <field name="date"/>
-                    <field name="kemandoran_id"/>
+                    <!-- <field name="kemandoran_id"/> -->
                     <field name="date_attendance"/>
                     <field name="state" widget="badge"/>
                 </tree>
@@ -35,7 +35,7 @@
                         </div>
                         <group>
                             <field name="date"/>
-                            <field name="kemandoran_id"/>
+                            <!-- <field name="kemandoran_id"/> -->
                             <field name="date_attendance"/>
                         </group>
                         <notebook>

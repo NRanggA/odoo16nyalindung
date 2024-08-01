@@ -17,13 +17,13 @@
             <field name="name">import.attendance</field>
             <field name="model">hr.attendance.batch</field>
             <field name="arch" type="xml">
-                <header>
-                    <button string="Process" type="object" name="push_to_sheet" class="btn-secondary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
-                    <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'processed')]}"/>
-                    <button string="Set To Draft" type="object" name="set_to_draft" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,processed,valid"/>
-                </header>
                 <form string="Import Data Absensi">
+                    <header>
+                        <button string="Process" type="object" name="push_to_sheet" class="btn-secondary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                        <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'processed')]}"/>
+                        <button string="Set To Draft" type="object" name="set_to_draft" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,processed,valid"/>
+                    </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
                             <button string="Attendance Sheeet" type="object" name="action_show_sheet" class="btn-secondary" icon="fa-users" attrs="{'invisible': [('state', '=', 'draft')]}"/>
