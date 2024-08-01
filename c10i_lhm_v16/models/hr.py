@@ -182,6 +182,7 @@ class hr_attendance_type(models.Model):
     type_hk         = fields.Selection([('hke', 'HKE'), ('hkne', 'HKNE')], string='HK Type')
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     active          = fields.Boolean("Active", default=True)
+    leave_type_id   = fields.Many2one('hr.leave.type', string="Time off type")
 
     @api.onchange('special')
     def _onchange_special(self):
@@ -218,6 +219,26 @@ class hr_attendance_type(models.Model):
                 domain = ['&', '!'] + domain[1:]
         hr_attendance_type = self.search(domain + args, limit=limit)
         return hr_attendance_type._name_get()
+
+    def button_time_off(self):
+        if self.leave_type_id:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': 'Time Off Type',
+                'res_model': 'hr.leave.type',
+                'view_mode': 'form',
+                'res_id': self.leave_type_id.id,
+                'target': 'current',
+            }
+        else:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': 'Time Off Type',
+                'res_model': 'hr.leave.type',
+                'view_mode': 'form',
+                'target': 'current',
+                'context': {'default_attendance_type_id': self.id},
+            }
 
 
 class hr_employee_type(models.Model):
