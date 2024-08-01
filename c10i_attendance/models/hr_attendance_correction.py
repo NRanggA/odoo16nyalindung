@@ -8,7 +8,7 @@ class HrAttendanceCorrection(models.Model):
     _description    = 'Attendance Correction'
 
     name            = fields.Char('Name', readonly=True)
-    date            = fields.Date('Tanggal', required=True)
+    date            = fields.Date('Tanggal', required=True, default=lambda self: fields.Date.context_today(self))
     kemandoran_id   = fields.Many2one('hr.foreman', string="Kemandoran", required=True)
     date_attendance = fields.Date('Tanggal Absensi', required=True)
     state = fields.Selection([
