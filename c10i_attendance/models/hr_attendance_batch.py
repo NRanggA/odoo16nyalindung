@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from datetime import datetime
 import base64
 import io
@@ -57,6 +57,9 @@ class HrAttendanceBatch(models.Model):
         }
 
     def do_import(self):
+        if not self.file:
+            raise UserError(_("Upload File Terlebih Dahulu"))
+        
         data = base64.b64decode(self.file)
         excel_file = io.BytesIO(data)
 
