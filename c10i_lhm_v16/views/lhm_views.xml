@@ -1801,6 +1801,7 @@
                             <page string="Daftar Karyawan">
                                 <group>
                                     <button name="%(c10i_lhm_v16.action_wizard_add_employee)d" class="oe_stat_button" icon="fa-users" string="Tambah Karyawan" states="draft" type="action" groups="c10i_lhm_v16.group_plantation_operator"/>
+                                    <!-- <button name="button_regenerate" string="Regenerate Employee" type="object" class="oe_stat_button" icon="fa-spinner"/> -->
                                 </group>
                                 <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
                                     <tree editable="bottom" create="false" class="two-line-header">

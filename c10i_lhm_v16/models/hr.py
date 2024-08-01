@@ -316,7 +316,7 @@ class HrEmployee(models.Model):
     ketenagakerjaan     = fields.Boolean("Ketenagakerjaan", help="Have BPJS Ketenagakerjaan")
     bpjs_tk_date_start  = fields.Date("Tanggal Daftar", help="Tanggal Daftar dan mulai dikenakan BPJS Ketenagakerjaan")
     sub_department_id   = fields.Many2one(comodel_name="hr.sub.department", string="Pangkat", ondelete="restrict")
-    type_id             = fields.Many2one(comodel_name="hr.employee.type", string='Tipe Karyawan', ondelete="restrict")
+    type_id             = fields.Many2one(comodel_name="hr.employee.type", string='Tipe Karyawan', ondelete="restrict", required=True)
     afdeling_id         = fields.Many2one(comodel_name="res.afdeling", string="Afdeling", ondelete="restrict")
     cost_center_id      = fields.Many2one(comodel_name="account.cost.center", string="Cost Center", ondelete="restrict")
     division_id         = fields.Many2one(comodel_name="hr.division", string="Divisi", ondelete="restrict")

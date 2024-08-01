@@ -8,6 +8,7 @@ from odoo.exceptions import UserError
 
 class account_period(models.Model):
     _inherit      = 'account.period'
+    # _name      = 'account.period'
 
     # name            = fields.Char('Period Name', required=True)
     # code            = fields.Char('Code', size=12)
@@ -22,13 +23,13 @@ class account_period(models.Model):
     # company_id      = fields.Many2one('res.company', string='Company')
 
 
-    # def close_period(self):
-    #     for record in self:
-    #         record.state = "done"
+    def close_period(self):
+        for record in self:
+            record.state = "done"
     
-    # def reopen_period(self):
-    #     for record in self:
-    #         record.state = "draft"
+    def reopen_period(self):
+        for record in self:
+            record.state = "draft"
     
 
 class AccountMove(models.Model):
