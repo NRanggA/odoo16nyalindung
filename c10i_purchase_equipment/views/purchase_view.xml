@@ -1,0 +1,35 @@
+<odoo>
+    <record id="equipment_purchase_order_form" model="ir.ui.view">
+        <field name="name">equipment.purchase.order.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <field name="invoice_status" position="after" >
+                <field name="equipment_registered_status" invisible="1"/>
+            </field>
+            <button name="action_create_invoice" position="after">
+                <button name="action_create_equipment_register" string="Create Equipment Register" type="object" class="oe_highlight" attrs="{'invisible': [('equipment_registered_status', 'in', ('no', 'equipment_registered'))]}"/>
+            </button>
+            <div name="button_box" position="inside">
+                <button type="object"  name="action_view_equipment_register"
+                    class="oe_stat_button"
+                    icon="fa-pencil-square-o" attrs="{'invisible':['|', ('equipment_register_count', '=', 0), ('state', 'not in', ('purchase','done'))]}">
+                    <field name="equipment_register_count" widget="statinfo" />
+                </button>
+            </div>
+        </field>
+    </record>
+
+
+    <record id="equipment_purchase_order_view_tree" model="ir.ui.view">
+        <field name="name">equipment.purchase.order.tree</field>
+        <field name="model">purchase.order</field>
+        <field name="priority" eval="1"/>
+        <field name="inherit_id" ref="purchase.purchase_order_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="invoice_status" position="after">
+                <field name="equipment_registered_status" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>

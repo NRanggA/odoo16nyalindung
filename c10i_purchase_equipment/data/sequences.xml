@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="equipment_register_seq" model="ir.sequence">
+        <field name="name">Equipment Register</field>
+        <field name="code">equipment.register</field>
+        <field name="prefix">R/%(month)s/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="equipment_serial_seq" model="ir.sequence">
+        <field name="name">Equipment Serial</field>
+        <field name="code">maintenance.equipment</field>
+        <field name="prefix">A/%(month)s/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

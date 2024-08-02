@@ -1,0 +1,148 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="equipment_register_form" model="ir.ui.view">
+        <field name="name">equipment.register.form</field>
+        <field name="model">equipment.register</field>
+        <field name="arch" type="xml">
+            <form string="Equipment Register">
+                <header>
+                    <button name="action_confirm" string="Confirm" states="draft" type="object" class="oe_highlight"/>
+                    <button name="action_done" string="Done" states="confirm" type="object" class="oe_highlight"/>
+                    <button name="action_cancel" string="Cancel" states="draft,confirm" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object"  name="action_open_equipment"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':[('equipment_count', '=', 0)]}">
+                            <field name="equipment_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" nolabel="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="origin"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Product Received">
+                            <field name="register_line_ids" readonly="1">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="product_qty"/>
+                                    <field name="product_uom"/>
+                                </tree>
+                                <form>
+                                    <header>
+                                        <field name="state" widget="statusbar" statusbar_visible="draft, confirm, done"/>
+                                    </header>
+                                    <group>
+                                        <group>
+                                            <field name="product_id"/>
+                                            <field name="product_qty"/>
+                                            <field name="product_uom"/>
+                                        </group>
+                                        <group>
+                                            <field name="purchase_line_id" attrs="{'invisible': [('purchase_line_id','=',False)]}"/>
+                                            <field name="purchase_id" attrs="{'invisible': [('purchase_id','=',False)]}"/>
+                                        </group>
+                                    </group>
+                                    <fields name="equipment_ids"/>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="equipment_register_tree" model="ir.ui.view">
+        <field name="name">equipment.register.tree</field>
+        <field name="model">equipment.register</field>
+        <field name="arch" type="xml">
+            <tree string="Equipment Register">
+                <field name="name" />
+                <field name="date" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="equipment_register_search" model="ir.ui.view">
+        <field name="name">equipment.register.select</field>
+        <field name="model">equipment.register</field>
+        <field name="arch" type="xml">
+            <search string="Search Equipment Register">
+                <field name="name"/>
+             </search>
+        </field>
+    </record>
+    
+    <record model="ir.actions.act_window" id="equipment_register_action">
+        <field name="name">Equipment Registers</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">equipment.register</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain"></field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="equipment_register_search" />
+    </record>
+
+    <record model="ir.actions.act_window" id="action_equipment_register_purchase">
+        <field name="name">Equipment Register</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">equipment.register</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain"></field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="equipment_register_search" />
+    </record>
+
+
+    <menuitem
+        id="maintenance.menu_maintenance_title"
+        name="Equipments"
+        web_icon="maintenance,static/description/icon.png"
+        sequence="110"/>
+
+    <menuitem
+        id="menu_equipment_main"
+        name="Equipments"
+        parent="maintenance.menu_maintenance_title"
+        groups="maintenance.group_equipment_manager,base.group_user"
+        sequence="2"/>
+    
+    <menuitem 
+        action="equipment_register_action" 
+        id="menu_equipment_register" 
+        parent="menu_equipment_main" 
+        groups="maintenance.group_equipment_manager,base.group_user"
+        sequence="1"/>
+
+    <menuitem
+        id="maintenance.menu_equipment_form"
+        name="Equipments"
+        parent="menu_equipment_main"
+        action="maintenance.hr_equipment_action"
+        groups="maintenance.group_equipment_manager,base.group_user"
+        sequence="2"/>
+
+</odoo>
