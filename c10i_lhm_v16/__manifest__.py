@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'stock', 'hr', 'account', 'c10i_hr_16', 'operating_unit', 'om_account_asset', 'report_xlsx'],
+    'depends': ['base', 'stock', 'hr', 'account', 'c10i_hr_16', 'operating_unit', 'om_account_asset', 'report_xlsx', 'c10i_attendance'],
 
     # always loaded
     'data': [
@@ -90,10 +90,10 @@
         
         'wizard/wizard_create_contractor_book_views.xml',
         'wizard/lhm_state_views.xml',
-        'wizard/wizard_hasil_lhm_views.xml'
+        'wizard/wizard_hasil_lhm_views.xml',
         # 'views/data_demo_account_period.xml', # Data dummy dari account.period
 
-        # 'views/assets.xml',
+        'views/hr_attendance_correction_views.xml',
 
 
         #REPORT
@@ -106,9 +106,4 @@
         # 'demo/demo.xml',
     ],
 
-    # 'assets': {
-    #     'web.assets_backend': [
-    #         'c10i_lhm_v16/static/src/css/custom_styles.css',
-    #     ],
-    # },
 }

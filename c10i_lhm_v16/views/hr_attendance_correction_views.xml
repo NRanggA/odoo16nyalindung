@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="inherit_view_hr_attendance_correctiond_tree" model="ir.ui.view">
+        <field name="name">hr.attendance.correction.tree.inherit.view</field>
+        <field name="model">hr.attendance.correction</field>
+        <field name="inherit_id" ref="c10i_attendance.hr_attendance_correction_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="kemandoran_id" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="inherit_view_hr_attendance_correctiond_form" model="ir.ui.view">
+        <field name="name">hr.attendance.correction.form.inherit.view</field>
+        <field name="model">hr.attendance.correction</field>
+        <field name="inherit_id" ref="c10i_attendance.hr_attendance_correction_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="kemandoran_id" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

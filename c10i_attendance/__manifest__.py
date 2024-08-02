@@ -20,14 +20,18 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'hr_attendance'],
+    'depends': ['base', 'hr_attendance', 'hr_holidays'],
 
     # always loaded
     'data': [
+        # 'security/group_definitions.xml',
         'security/ir.model.access.csv',
         'views/import_attendance_views.xml',
         'views/attendance_sheet_views.xml',
+        'views/attendance_correction_views.xml',
+        'views/hr_attendance_type.xml',
         'views/menu_views.xml',
+        'data/sequence_data.xml',
         'data/cron_attendance.xml',
 
  

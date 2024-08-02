@@ -5,7 +5,7 @@
             <field name="name">Update Attendance Type</field>
             <field name="model_id" ref="c10i_attendance.model_hr_attendance_sheet"/>
             <field name="state">code</field>
-            <field name="code">model.update_attendance_type()</field>
+            <field name="code">model.create_attendance_sheets()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
@@ -13,17 +13,5 @@
             <field name="active" eval="True"/>
             <field name="user_id" ref="base.user_admin"/>
         </record>
-
-        <!-- <record id="ir_cron_update_attendance_type" model="ir.cron">
-            <field name="name">Update Attendance Type</field>
-            <field name="model_id" ref="model_hr_attendance_sheet"/>
-            <field name="state">code</field>
-            <field name="code">model.update_attendance_type()</field>
-            <field name="interval_type">days</field>
-            <field name="interval_number">1</field>
-            <field name="numbercall">-1</field>
-            <field name="doall" eval="False"/>
-        </record> -->
-
     </data>
 </odoo>

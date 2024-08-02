@@ -84,8 +84,6 @@
         </record>
         <!-- End Of HR Employee Movement Form -->
 
-
-
         <!-- inherit ke employee melalui field inherit yang ada di modul c10i_hr -->
         <record id="view_employee_form_inherit_lhm" model="ir.ui.view">
             <field name="name">view.employee.form.inherit.lhm</field>
@@ -113,7 +111,6 @@
                     <field name="master"/>
                     <field name="kerani"/>
                     <field name="auto_generate" groups="base.group_no_one"/>
-/>
                     <field name="noedit_foreman" groups="base.group_no_one"/>
                 </xpath>
 
@@ -122,7 +119,7 @@
                     <label for="contract_type" string="Periode Kontrak" invisible="1"/>
                     <div invisible="1">
                         <field name="start_date_contract" class="oe_inline" nolabel="1" invisible="1"/>
- s/d
+                        s/d
                         <field name="end_date_contract" nolabel="1" class="oe_inline" invisible="1"/>
                     </div>
                     <!-- Error pada attrs="{'readonly':[('noedit_foreman','=',True)]}" pada field kemandoran_id -->
@@ -338,7 +335,6 @@
             <field name="mode">primary</field>
             <field name="arch" type="xml">
                 <!-- Error karena parent tidak ditemukan -->
-
                 <!-- <xpath expr="//button[@name='set_recruit']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath> -->
@@ -366,21 +362,10 @@
             <field name="name">Posisi</field>
             <field name="res_model">hr.job</field>
             <!-- <field name="view_type">form</field> -->
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree</field>
             <field name="search_view_id" ref="hr.view_job_filter"/>
-            <field name="context"></field>
+            <field name="context">{'create': False}</field>
             <field name="domain"></field>
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">
-                Klik untuk menambahkan posisi pekerjaan baru di LHM.
-                </p>
-                <p>
-                Digunakan untuk mendefinisikan pekerjaan dan kebutuhan mereka. Anda dapat melacak jumlah karyawan yang Anda miliki per posisi pekerjaan dan ikuti perubahan sesuai dengan apa yang anda rencanakan untuk kedepannya.
-                </p>
-                <p>
-                Anda dapat melampirkan survei ke posisi pekerjaan. Ini akan digunakan diproses rekrutmen untuk mengevaluasi pelamar untuk posisi pekerjaan.
-                </p>
-            </field>
         </record>
 
         <record model="ir.actions.act_window.view" id="action_hr_lhm_job_tree">
@@ -390,18 +375,15 @@
             <field name="act_window_id" ref="action_hr_lhm_job"/>
         </record>
 
-        <record model="ir.actions.act_window.view" id="action_hr_lhm_job_form">
+        <!-- <record model="ir.actions.act_window.view" id="action_hr_lhm_job_form">
             <field name="sequence" eval="2"/>
             <field name="view_mode">form</field>
             <field name="view_id" ref="view_hr_job_lhm_form"/>
             <field name="act_window_id" ref="action_hr_lhm_job"/>
-        </record>
+        </record> -->
 
         <menuitem id="menu_posisi_lhm_config" name="Posisi" action="action_hr_lhm_job" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="30"/>
         <!-- End Of HR Job Form -->
-
-
-
 
         <!-- HR Minimum Wage -->
         <record id="view_hr_minimum_wage_plantation_form" model="ir.ui.view">
@@ -439,6 +421,7 @@
                 </xpath>
             </field>
         </record>
+        
         <record id="action_hr_minimum_wage_plantation" model="ir.actions.act_window">
             <field name="name">UMR</field>
             <field name="res_model">hr.minimum.wage</field>
@@ -452,6 +435,7 @@
                 </p>
             </field>
         </record>
+        
         <record model="ir.actions.act_window.view" id="action_hr_minimum_wage_plantation_tree">
             <field name="sequence" eval="1"/>
             <field name="view_mode">tree</field>
@@ -583,7 +567,6 @@
         <record id="action_sub_department" model="ir.actions.act_window">
             <field name="name">Pangkat</field>
             <field name="res_model">hr.sub.department</field>
-            <!-- <field name="view_type">form</field> -->
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_sub_department_filter"/>
             <field name="context">{}</field>
@@ -594,7 +577,21 @@
                 </p>
             </field>
         </record>
-        <menuitem id="menu_sub_departemen_lhm_config" action="action_sub_department" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="30"/>
+
+        <record id="action_sub_department2" model="ir.actions.act_window">
+            <field name="name">Pangkat</field>
+            <field name="res_model">hr.sub.department</field>
+            <field name="view_mode">tree</field>
+            <field name="context">{'create': False}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan pangkat.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_sub_departemen" action="action_sub_department" parent="hr.menu_config_recruitment" sequence="1" groups="hr.group_hr_user"/>
+        <menuitem id="menu_sub_departemen_lhm_config" action="action_sub_department2" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="30"/>
         <!--End Of HR Employee Sub Departement -->
 
 
@@ -986,9 +983,10 @@
         <!--End Of LHM Kemandoran -->
 
 
+
         <!--HR Attendance Type -->
-        <record id="view_attendance_type_form" model="ir.ui.view">
-            <field name="name">view.attendance.type.form</field>
+        <record id="view_attendance_type_plantation_form" model="ir.ui.view">   
+            <field name="name">view.attendance.type.plantation.form</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <form string="Tipe Absensi">
@@ -1021,8 +1019,8 @@
             </field>
         </record>
 
-        <record id="view_attendance_type_tree" model="ir.ui.view">
-            <field name="name">view.attendance.type.tree</field>
+        <record id="view_attendance_type_plantation_tree" model="ir.ui.view">
+            <field name="name">view.attendance.type.plantation.tree</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <tree string="Tipe Absensi">
@@ -1035,8 +1033,8 @@
             </field>
         </record>
 
-        <record id="view_attendance_type_filter" model="ir.ui.view">
-            <field name="name">view.attendance.type.filter</field>
+        <record id="view_attendance_type_plantation_filter" model="ir.ui.view">
+            <field name="name">view.attendance.type.plantation.filter</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <search string="Tipe Absensi">
@@ -1053,12 +1051,11 @@
             </field>
         </record>
 
-        <record id="action_hr_attendance_type" model="ir.actions.act_window">
-            <field name="name">Absensi</field>
+        <record id="action_hr_attendance_plantation_type" model="ir.actions.act_window">
+            <field name="name">Absensi Plantation</field>
             <field name="res_model">hr.attendance.type</field>
-            <!-- <field name="view_type">form</field> -->
             <field name="view_mode">tree,form</field>
-            <field name="search_view_id" ref="view_attendance_type_filter"/>
+            <field name="search_view_id" ref="view_attendance_type_plantation_filter"/>
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
@@ -1067,8 +1064,11 @@
                 </p>
             </field>
         </record>
-        <menuitem id="menu_hr_attendance_type_config" action="action_hr_attendance_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>
+        
+        <!-- Menu tipe absensi ambil dari modul c10i_attendance -->
+        <menuitem id="menu_hr_attendance_type_plantation" action="action_hr_attendance_plantation_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>
         <!--End Of HR Attendance Type -->
+
 
 
         <!-- Daftar Transfer Kemandoran-->
