@@ -146,10 +146,10 @@ class AssetAcquisition(models.Model):
 					'acquisition_line_ids': asset_vals['acquisition_line_ids'],
 				}
 
-				# `asset_category = self.env['account.asset.category'].browse(asset_vals['category_id'])
+				asset_category = self.env['account.asset.category'].browse(asset_vals['category_id'])
 				# debit_lines
 				move_line_vals_asset = {
-					'account_id': asset_vals['category_id'],
+					'account_id': asset_category.account_asset_id.id,
 					'name': 'Reclass Asset to SPM',
 					'debit': sum(purchase_account_dict.values()),
 					'credit': 0.0,
