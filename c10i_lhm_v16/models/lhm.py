@@ -3591,12 +3591,26 @@ class lhm_nap(models.Model):
     product_id          = fields.Many2one('product.product', string="Product")
     product_qty         = fields.Integer(string="Quantity")
     uom_id              = fields.Many2one('uom.uom', string="Unit of Measure")
-    drc_latex           = fields.Char(string="DRC Latex")
-    drc_lump            = fields.Char(string="DRC Lump")
     quality             = fields.Integer(string="Quality")
     kebun_line_ids      = fields.One2many('timbangan.kebun', inverse_name='lhm_nap_id', string="Penamaan")
     pabrik_line_ids     = fields.One2many('timbangan.pabrik', inverse_name='lhm_nap_id', string="Penamaan")
+    partner_id          = fields.Many2one('res.partner', string="Partner")
     _order = "date_nap desc"
+
+    @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'force_edit')
+    def _get_state(self):
+        for record in self:
+            if record.confirmed:
+                if record.sudo().invoice_id and record.sudo().invoice_id.state not in ('draft', 'cancel'):
+                    record.state = 'done'
+                else:
+                    record.state = 'confirmed'
+            elif record.cancelled:
+                record.state = 'cancel'
+            elif record.force_edit:
+                record.state = 'revision'
+            else:
+                record.state = 'draft'
 
     # def init(self):
     #     tools.drop_view_if_exists(self._cr, 'vdata_panen_nap_naf')
@@ -3681,20 +3695,48 @@ class lhm_nap(models.Model):
                                   'Hubungi Administrator untuk info lebih lanjut') % (nap.name, nap.state.title()))
         nap = super(lhm_nap, self).unlink()
         return nap
+    
+        
+    def create_material_receipt(self):
+        for record in self:
+            for line in record.pabrik_line_ids:
+                if not line.stock_picking_id:
+                    picking_vals = {
+                        'partner_id': record.partner_id.id if record.partner_id else False,
+                        'location_id': line.env.ref('stock.stock_location_suppliers').id,
+                        'location_dest_id': line.env.ref('stock.stock_location_stock').id,
+                        'move_ids_without_package': [(0, 0, {
+                            'product_id': line.product_id.id,
+                            'name': line.product_id.name,
+                            'product_uom_qty': line.product_qty,
+                            'product_uom': line.uom_id.id,
+                            'location_id': line.env.ref('stock.stock_location_suppliers').id,
+                            'location_dest_id': line.env.ref('stock.stock_location_stock').id,
+                        })],
+                        'picking_type_id': line.env.ref('stock.picking_type_in').id,  # Receipts picking type
+                    }
+                    picking = line.env['stock.picking'].create(picking_vals)
+                    line.stock_picking_id = picking.id
+                else:
+                    line.stock_picking_id.write({
+                        'move_ids_without_package': [(1, line.stock_picking_id.move_ids_without_package.id, {
+                            'product_uom_qty': line.product_qty,
+                        })]
+                    })
 
     def button_confirm(self):
-        if not self.pks_id:
-            raise UserError(_('Nama PKS masih Kosong.\n'
-                                'Silahkan isi Nama PKS tersebut terlebih dahulu'))
-        if self.line_ids:
-            for line in self.line_ids:
-                if line.qty_nap <= 0 :
-                    raise UserError(_('Total NAP harus lebih dari 0.\n'
-                                'Perbaiki data pada lokasi %s sebelum diconfirm!!')%(line.block_id.code or '-'))
-        else:
-            raise UserError(_('Detail Nota Angkut Panen Kosong.\n'
-                                'Silahkan isi Detail Nota Angkut Panen terlebih dahulu'))
         self.state = 'confirmed'
+        # if not self.pks_id:
+        #     raise UserError(_('Nama PKS masih Kosong.\n'
+        #                         'Silahkan isi Nama PKS tersebut terlebih dahulu'))
+        # if self.line_ids:
+        #     for line in self.line_ids:
+        #         if line.qty_nap <= 0 :
+        #             raise UserError(_('Total NAP harus lebih dari 0.\n'
+        #                         'Perbaiki data pada lokasi %s sebelum diconfirm!!')%(line.block_id.code or '-'))
+        # else:
+        #     raise UserError(_('Detail Nota Angkut Panen Kosong.\n'
+        #                         'Silahkan isi Detail Nota Angkut Panen terlebih dahulu'))
         self.confirmed = True
         self.line_ids.link_to_lhm_progress()
         self.line_ids.allocate_nap_line_to_lhm_line()
@@ -3742,11 +3784,11 @@ class TimbanganKebun(models.Model):
 
     lhm_nap_id  = fields.Many2one('lhm.nap', string='LHM NAP')
     product_id  = fields.Many2one('product.product', string='Product')
-    product_qty = fields.Float(string='Product Quantity')
+    product_qty = fields.Integer(string='Product Quantity')
     uom_id      = fields.Many2one('uom.uom', string='UoM')
-    # block_id    = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
+    block_id    = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
     tgl_panen   = fields.Date(string='Tanggal Panen')
-    lokasi_tk   = fields.Char(string='Lokasi Timbangan Kebun')
+    # lokasi_tk   = fields.Char(string='Lokasi Timbangan Kebun')
 
 class TimbanganPabrik(models.Model):
     _name = 'timbangan.pabrik'
@@ -3756,11 +3798,48 @@ class TimbanganPabrik(models.Model):
     product_id         = fields.Many2one('product.product', string='Product')
     product_qty        = fields.Integer(string='Product Quantity')
     uom_id             = fields.Many2one('uom.uom', string='UoM')
-    drclatex           = fields.Char(string='DRC Latex')
-    drclump            = fields.Char(string='DRC Lump')
+    drc                = fields.Float(string='DRC')
     quality_pabrik     = fields.Many2one('lhm.quality.pabrik', string='Quality')
-    lokasi_tp          = fields.Char(string='Lokasi Timbangan Pabrik')
-    tgl_pabrik         = fields.Date(string='Tanggal Terima Pabrik')
+    tgl_terima         = fields.Date(string='Tanggal Terima')
+    block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
+    # lokasi_tp          = fields.Char(string='Lokasi Timbangan Pabrik')
+    stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
+
+    @api.model
+    def create(self, vals):
+        record = super(TimbanganPabrik, self).create(vals)
+        record._create_or_update_stock_picking()
+        return record
+
+    def write(self, vals):
+        res = super(TimbanganPabrik, self).write(vals)
+        self._create_or_update_stock_picking()
+        return res
+
+    def _create_or_update_stock_picking(self):
+        for record in self:
+            if not record.stock_picking_id:
+                picking_vals = {
+                    'partner_id': record.lhm_nap_id.partner_id.id if record.lhm_nap_id else False,
+                    'location_id': record.block_id.location_id.id if record.block_id else False,
+                    'location_dest_id': record.env.ref('stock.stock_location_stock').id,
+                    'move_ids_without_package': [(0, 0, {
+                        'product_id': record.product_id.id,
+                        'name': record.product_id.name,
+                        'product_uom_qty': record.product_qty,
+                        'product_uom': record.uom_id.id,
+                        'location_id': record.env.ref('stock.stock_location_suppliers').id,  # Lokasi supplier
+                        'location_dest_id': record.env.ref('stock.stock_location_stock').id,  # Lokasi internal
+                    })],
+                    'picking_type_id': record.env.ref('stock.picking_type_in').id,  # Receipts picking type
+                }
+                picking = self.env['stock.picking'].create(picking_vals)
+                record.stock_picking_id = picking.id
+            else:
+                # Update the existing picking
+                record.stock_picking_id.move_ids_without_package[0].write({
+                    'product_uom_qty': record.product_qty,
+                })
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
@@ -3828,6 +3907,7 @@ class lhm_nap_line(models.Model):
     product_id          = fields.Many2one('product.product', string="Product")
     product_qty         = fields.Integer(string="Quantity")
     uom_id              = fields.Many2one('uom.uom', string="Unit of Measure")
+    pemanen             = fields.Char(string='Pemanen')
 
     def compute_weight(self):
         self.ensure_one()

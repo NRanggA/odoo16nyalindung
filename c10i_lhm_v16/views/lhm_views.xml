@@ -3169,6 +3169,7 @@
                     <header>
                         <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
                         <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="create_material_receipt" string="Create Material Receipt" type="object" class="oe_highlight" />
                         <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
                         <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
@@ -3246,26 +3247,27 @@
                             <page string="TIMBANGAN KEBUN">
                                 <field name="kebun_line_ids" nolabel="1">
                                     <tree editable="bottom">
-                                        <!-- <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="lokasi_tk"/>
-                                        <field name="tgl_panen"/>
+                                        <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="lokasi_tk"/> -->
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
+                                        <field name="tgl_panen"/>
                                     </tree>
                                 </field>
                             </page>                         
                             <page string="TIMBANGAN PABRIK">
                                 <field name="pabrik_line_ids" nolabel="1">
                                     <tree editable="bottom">
-                                        <field name="lokasi_tp"/>
-                                        <field name="tgl_pabrik"/>
+                                        <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="lokasi_tp"/> -->
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
-                                        <field name="drclatex"/>
-                                        <field name="drclump"/>
+                                        <field name="tgl_terima"/>
+                                        <field name="drc"/>
                                         <field name="quality_pabrik"/>
+                                        <field name="stock_picking_id"/>
                                     </tree>
                                 </field>
                             </page>                                               
@@ -3273,6 +3275,8 @@
                                 <field name="line_ids" nolabel="1">
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="pemanen"/>
+                                        <field name="product_id"/>
                                         <field name="tgl_panen"/>
                                         <field name="qty_nap" sum="qty_nap"/>
                                         <field name="qty_panen_lhm"/>
