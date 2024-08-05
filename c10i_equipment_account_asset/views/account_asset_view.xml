@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <record id="equipment_account_asset_form_inherit" model="ir.ui.view">
+            <field name="name">equipment_account_asset_form_inherit</field>
+            <field name="model">account.asset.asset</field>
+            <field name="inherit_id" ref="om_account_asset.view_account_asset_asset_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page name="acquisition" string="Acquisition Lines">
+                        <field name="acquisition_line_ids" readonly="1">
+                            <tree>
+                                <field name="product_id"/>
+                                <field name="name"/>
+                                <field name="product_qty"/>
+                                <field name="product_uom"/>
+                                <field name="price_unit"/>
+                                <field name="price_subtotal"/>
+                                <field name="creation_mode"/>
+                                <field name="equipment_register_line_id" invisible="1"/>
+                                <field name="purchase_line_id" invisible="1"/>
+                                <field name="purchase_id" invisible="1"/>
+                                <field name="group_mark"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

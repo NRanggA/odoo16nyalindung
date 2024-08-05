@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="hr_attendance_correction_view_tree" model="ir.ui.view">
+            <field name="name">hr.attendance.correction.view.tree</field>
+            <field name="model">hr.attendance.correction</field>
+            <field name="arch" type="xml">
+                <tree string="Perbaikan Absensi">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <!-- <field name="kemandoran_id"/> -->
+                    <field name="date_attendance"/>
+                    <field name="state" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_attendance_correction_view_form" model="ir.ui.view">
+            <field name="name">hr.attendance.correction.view.form</field>
+            <field name="model">hr.attendance.correction</field>
+            <field name="arch" type="xml">
+                <form string="Perbaikan Absensi">
+                    <header>
+                        <button string="Request Approval" name="request_approval" type="object" class="oe_highlight"/>
+                        <button string="Approve" name="button_approve" type="object" class="oe_highlight"/>
+                        <button string="Reject" name="button_reject" type="object" class="oe_highlight"/>
+                        <button string="Cancel" name="button_cancel" type="object" class="oe_highlight"/>
+                        <button string="Set to draft" name="set_to_draft" type="object" class="oe_highlight"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group>
+                            <field name="date"/>
+                            <!-- <field name="kemandoran_id"/> -->
+                            <field name="date_attendance"/>
+                        </group>
+                        <notebook>
+                            <page string="Karyawan">
+                                <field name="line_ids">
+                                    <tree editable="bottom">
+                                        <field name="employee_id"/>
+                                        <field name="nik"/>
+                                        <field name="attendance_sheet_id" invisible="1" required="0" />
+                                        <field name="attendance_type"/>
+                                        <field name="check_in" readonly="0"/>
+                                        <field name="check_out" readonly="0"/>
+                                        <field name="reason"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_hr_attendance_correction" model="ir.actions.act_window">
+            <field name="name">Perbaikan Absensi</field>
+            <field name="res_model">hr.attendance.correction</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--HR Attendance Type -->
+    <record id="view_attendance_type_form" model="ir.ui.view">
+        <field name="name">view.attendance.type.form</field>
+        <field name="model">hr.attendance.type</field>
+        <field name="arch" type="xml">
+            <form string="Tipe Absensi">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+                        </button>
+                        <button string="Time Off Type" name="button_time_off" icon="fa-clock" type="object" class="oe_highlight"/>
+                    </div>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title">
+                        <label for="name" string="Nama" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="Cuti Tahunan" required="1"/>
+                        </h1>
+                    </div>
+                    <group name="attendance_type">
+                        <group>
+                            <field name="code" string="Kode" required="1"/>
+                            <field name="type_hk"/>
+                            <field name="special"/>
+                            <field name="type" attrs="{'invisible': [('special','!=',True)]}"/>
+                        </group>
+                        <group>
+                            <field name="company_id" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_attendance_type_tree" model="ir.ui.view">
+        <field name="name">view.attendance.type.tree</field>
+        <field name="model">hr.attendance.type</field>
+        <field name="arch" type="xml">
+            <tree string="Tipe Absensi">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="type_hk"/>
+                <field name="special"/>
+                <field name="company_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_attendance_type_filter" model="ir.ui.view">
+        <field name="name">view.attendance.type.filter</field>
+        <field name="model">hr.attendance.type</field>
+        <field name="arch" type="xml">
+            <search string="Tipe Absensi">
+                <!-- <field name="name" string="Tipe Absensi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
+                <filter name="special" string="Spesial" domain="[('special','=',True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Type" domain="[]" context="{'group_by':'type'}"/>
+                    <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
+                </group> -->
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_attendance_type" model="ir.actions.act_window">
+        <field name="name">Absensi</field>
+        <field name="res_model">hr.attendance.type</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_attendance_type_filter"/>
+        <field name="context">{}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+            Klik untuk menambahkan Tipe Absensi.
+            </p>
+        </field>
+    </record>
+
+    <!--End Of HR Attendance Type -->
+
+</odoo>

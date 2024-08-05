@@ -1,20 +1,41 @@
 <odoo>
     <data>
+        
+        <record id="hr_attendance_batch_view_tree" model="ir.ui.view">
+            <field name="name">hr.attendance.batch.view.tree</field>
+            <field name="model">hr.attendance.batch</field>
+            <field name="arch" type="xml">
+                <tree string="Data Import Karyawan">
+                    <field name="date" />
+                    <field name="state" widget="badge" decoration-success="state == 'valid'" decoration-danger="state == 'draft'" />
+                </tree>
+            </field>
+        </record>
+
+        
         <record id="view_hr_attendance_batch_form" model="ir.ui.view">
             <field name="name">import.attendance</field>
             <field name="model">hr.attendance.batch</field>
             <field name="arch" type="xml">
                 <form string="Import Data Absensi">
+                    <header>
+                        <button string="Process" type="object" name="push_to_sheet" class="btn-secondary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                        <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'processed')]}"/>
+                        <button string="Set To Draft" type="object" name="set_to_draft" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,processed,valid"/>
+                    </header>
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button string="Attendance Sheeet" type="object" name="action_show_sheet" class="btn-secondary" icon="fa-users" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                        </div>
                         <group>
-                            <field name="date"/>
-                            <field name="file" filename="file_name"/>
-                            <button string="Process" type="object" name="do_import" class="oe_highlight"/>
-                            <button string="Confirm" type="object" name="action_confirm" class="oe_highlight"/>
+                            <field name="date" attrs="{'readonly': [('state', '=', 'valid')]}"/>
+                            <field name="file" filename="file_name" attrs="{'readonly': [('state', '=', 'valid')]}"/>
+                            <button string="Import" type="object" name="do_import" class="oe_highlight" attrs="{'invisible': [('state', '=', 'valid')]}"/>
                         </group>
                         <notebook>
                             <page string="Attendance">
-                                <field name="attendance_ids">
+                                <field name="attendance_ids" attrs="{'readonly': [('state', '=', 'valid')]}">
                                     <tree string="Attendance">
                                         <field name="employee_id"/>
                                         <field name="check_in"/>
@@ -22,15 +43,16 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Sheet">
-                                <field name="attendance_sheet_ids">
+                            <!-- <page string="Sheet">
+                                <field name="attendance_sheet_ids" attrs="{'readonly': [('state', '=', 'valid')]}">
                                     <tree string="Attendance Sheet">
-                                        <field name="date"/>
                                         <field name="employee_id"/>
                                         <field name="type_id"/>
+                                        <field name="check_in"/>
+                                        <field name="check_out"/>
                                     </tree>
                                 </field>
-                            </page>
+                            </page> -->
                         </notebook>
                     </sheet>
                 </form>
@@ -40,8 +62,9 @@
         <record id="action_hr_attendance_batch" model="ir.actions.act_window">
             <field name="name">Import Excel</field>
             <field name="res_model">hr.attendance.batch</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_hr_attendance_batch_form"/>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="hr_attendance_batch_view_tree"/>
         </record>
+
     </data>
 </odoo>

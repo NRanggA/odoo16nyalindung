@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<odoo>  
+    <record id="material_request_form" model="ir.ui.view">
+        <field name="name">material.request.equipment.allocation.form.</field>
+        <field name="model">material.request</field>
+        <field name="inherit_id" ref="c10i_material_request.material_request_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object" name="account_view_allocation_request" icon="fa-pie-chart" sequance='1' attrs="{'invisible': [('equip_allocation_count','=',0)]}">
+                    <field name="equip_allocation_count" widget="statinfo"/>
+                </button>
+            </div>
+
+            <xpath expr="//field[@name='line_ids']/tree/field[@name='product_id']" position="after">
+                <field name="product_asset" readonly="1" string="Equipment" />
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/tree/field[@name='qty_done']" position="after">
+                <button
+                    attrs="{'invisible': [('qty_to_issue', '=', 0)]}"
+                    name="create_equipment_allocation"
+                    type="object"
+                    icon="fa-folder-open-o"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>

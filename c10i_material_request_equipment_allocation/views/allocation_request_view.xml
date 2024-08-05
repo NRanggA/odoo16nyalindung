@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="allocation_request_form_view" model="ir.ui.view">
+		<field name="name">material.request.allocation.request.from</field>
+		<field name="model">allocation.request</field>
+		<field name="inherit_id" ref="c10i_equipment_allocation.allocation_request_form_view"/>
+		<field name="arch" type="xml">
+			<field name="product" position="attributes">
+				<attribute name="force_save">1</attribute>
+			</field>
+		</field>
+	</record>
+
+	<record id="material_request_allocation_request_tree" model="ir.ui.view">
+		<field name="name">allocation.request.from.material.request.tree</field>
+		<field name="model">allocation.request</field>
+		<field name="arch" type="xml">
+			<tree decoration-danger="state == 'cancel'" decoration-success="state == 'returned'" decoration-info="state == 'new'" decoration-warning="state in ['allocated','approved']" create="false" delete="false">
+				<field name="name"/>
+				<field name="equipment_id"/>
+				<field name="scheduled_date" string="Request Date"/>
+				<field name="assigned_id" string="Allocated to"/>
+				<field name="approved_by" readonly='1' attrs="{'invisible':[('state','=','new')]}"/>
+				<field name="category_id"/>
+				<field name="allocation_type"/>
+				<field name="state" string="Stage"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="material_request_allocation_request_form" model="ir.ui.view">
+		<field name="name">allocation.request.from.material.request.form</field>
+		<field name="model">allocation.request</field>
+		<field name="arch" type="xml">
+			<form>
+				<header>
+					<button name="action_submit" string="Submit" class="oe_highlight" type="object" states="new"/>
+					<button name="action_approve" string="Approve" class="oe_highlight" type="object" states="submitted" confirm="Are you sure you want to approve this request?"/>
+					<button name="action_allocate" string="Allocate" class="oe_highlight" type="object" states="approved" confirm="Are you sure you want to allocate this request?" groups="maintenance.group_equipment_manager"/>
+					<button name="confirm_return" string="Return" class="oe_highlight" type="object" states="allocated" confirm="Are you sure you want to return this request?"/>
+					<button name="set_to_new" string="Set to New" type="object" states="cancel,rejected" />
+					<button name="%(c10i_equipment_allocation.action_reject_wizard_reason)d" type="action" string="Reject" states="submitted" confirm="Are you sure you want to reject this request?" groups="maintenance.group_equipment_manager"/>
+					<button string="Cancel" name="%(c10i_equipment_allocation.action_wizard_reason)d" type="action" states="new,submitted,approved"/>
+					<field name="state" widget="statusbar" statusbar_visible="new,submitted,approved,allocated,returned"/>
+				</header>
+				<sheet>
+					<field name="mr_line_id" invisible='1'/>
+					<field name="mr_id" invisible='1'/>
+					<div class="oe_title">
+						<label for="name" class="oe_edit_only"/>
+						<h1>
+							<field name="name" string="Subject" placeholder="Request for laptop"/>
+						</h1>
+					</div>
+					<group>
+						<group string="Equipment Details" name="equipment_details">
+							<field name="allocation_type" widget="radio" attrs="{'readonly':[('state','!=','new')]}"/>
+							<field name="mr_product_id" />
+							<field name="equipment_id" required='1' domain="[('main_product_id','=',mr_product_id), ('state','=','available')]" attrs="{'readonly':[('state','!=','new')]}" options="{'no_create': True}" />
+							<field name="category_id" required='1' attrs="{'readonly':[('state','!=','new')]}" options="{'no_create': True}"/>
+							<field name="scheduled_date" required='1' attrs="{'readonly':[('state','!=','new')]}"/>
+							<field name="return_date" readonly='1' attrs="{'invisible':[('state','!=','returned')]}"/>
+							<field name="priority" widget="priority"/>
+						</group>
+						<group string="Employee Information" name="employee_information">
+							<field name="assigned_id" required='1' attrs="{'readonly':[('state','!=','new')]}"/>
+							<field name="approved_by" readonly='1' attrs="{'invisible':[('state','=','new')]}"/>
+							<field name="cancelled_by" readonly='1' attrs="{'invisible':[('state','!=','cancel')]}"/>
+							<field name="return_to" readonly='1' attrs="{'invisible':[('state','!=','returned')]}"/>
+							<field name="created_by" readonly='1'/>
+							<field name="created_date" readonly='1'/>
+						</group>
+					</group>
+					<field name="note" placeholder="Internal Note ......"/>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids" widget="mail_followers"/>
+					<field name="message_ids" widget="mail_thread"/>
+				</div>
+			</form>
+		</field>
+	</record>
+
+	<record id="material_request_allocation_request_form_readonly" model="ir.ui.view">
+		<field name="name">allocation.request.from.material.request.form.readonly</field>
+		<field name="model">allocation.request</field>
+		<field name="arch" type="xml">
+			<form create="false" edit="false" delete="false">
+				<header>
+					<button name="action_submit" string="Submit" class="oe_highlight" type="object" states="new"/>
+					<button name="action_approve" string="Approve" class="oe_highlight" type="object" states="submitted" confirm="Are you sure you want to approve this request?"/>
+					<button name="action_allocate" string="Allocate" class="oe_highlight" type="object" states="approved" confirm="Are you sure you want to allocate this request?" groups="maintenance.group_equipment_manager"/>
+					<button name="confirm_return" string="Return" class="oe_highlight" type="object" states="allocated" confirm="Are you sure you want to return this request?"/>
+					<button name="set_to_new" string="Set to New" type="object" states="cancel,rejected" />
+					<button name="%(c10i_equipment_allocation.action_reject_wizard_reason)d" type="action" string="Reject" states="submitted" confirm="Are you sure you want to reject this request?" groups="maintenance.group_equipment_manager"/>
+					<button string="Cancel" name="%(c10i_equipment_allocation.action_wizard_reason)d" type="action" states="new,submitted,approved"/>
+					<field name="state" widget="statusbar" statusbar_visible="new,submitted,approved,allocated,returned"/>
+				</header>
+				<sheet>
+					<field name="mr_line_id" invisible='1'/>
+					<field name="mr_id" invisible='1'/>
+					<div class="oe_title">
+						<label for="name" class="oe_edit_only"/>
+						<h1>
+							<field name="name" string="Subject" placeholder="Request for laptop"/>
+						</h1>
+					</div>
+					<group>
+						<group string="Equipment Details" name="equipment_details">
+							<field name="allocation_type" widget="radio" attrs="{'readonly':[('state','!=','new')]}"/>
+							<field name="mr_product_id" />
+							<field name="equipment_id" required='1' domain="[('main_product_id','=',mr_product_id), ('state','=','available')]" attrs="{'readonly':[('state','!=','new')]}" options="{'no_create': True}" />
+							<field name="category_id" required='1' attrs="{'readonly':[('state','!=','new')]}" options="{'no_create': True}"/>
+							<field name="scheduled_date" required='1' attrs="{'readonly':[('state','!=','new')]}"/>
+							<field name="return_date" readonly='1' attrs="{'invisible':[('state','!=','returned')]}"/>
+							<field name="priority" widget="priority"/>
+						</group>
+						<group string="Employee Information" name="employee_information">
+							<field name="assigned_id" required='1' attrs="{'readonly':[('state','!=','new')]}"/>
+							<field name="approved_by" readonly='1' attrs="{'invisible':[('state','=','new')]}"/>
+							<field name="cancelled_by" readonly='1' attrs="{'invisible':[('state','!=','cancel')]}"/>
+							<field name="return_to" readonly='1' attrs="{'invisible':[('state','!=','returned')]}"/>
+							<field name="created_by" readonly='1'/>
+							<field name="created_date" readonly='1'/>
+						</group>
+					</group>
+					<field name="note" placeholder="Internal Note ......"/>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids" widget="mail_followers"/>
+					<field name="message_ids" widget="mail_thread"/>
+				</div>
+			</form>
+		</field>
+	</record>
+</odoo>

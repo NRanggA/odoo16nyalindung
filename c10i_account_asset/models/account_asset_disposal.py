@@ -47,7 +47,7 @@ class AccountAssetDisposal(models.Model):
     @api.depends('invoice_id', 'action')
     def _compute_select_invoice_line_id(self):
         for record in self:
-            record.select_invoice_line_id = record.action == 'sell' and len(record.invoice_id.invoice_line_ids) > 1
+            record.select_invoice_line_id = record.action == 'sell' and len(record.invoice_id.invoice_line_ids) == 1
 
     @api.onchange('action')
     def _onchange_action(self):
@@ -90,10 +90,11 @@ class AccountAssetDisposal(models.Model):
                 'account_id': account.id,
                 'debit': 0.0 if float_compare(amount, 0.0, precision_digits=prec) > 0 else -amount,
                 'credit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
-                'analytic_account_id': account_analytic_id.id if asset.asset_type == 'sale' else False,
+                # 'analytic_account_id': account_analytic_id.id if asset.category_id.type == 'sale' else False,
                 # 'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if asset.asset_type == 'sale' else False,
                 'currency_id': current_currency.id,
-                'amount_currency': -asset.value_residual,
+                # 'amount_currency': -asset.value_residual,
+                'amount_currency': -amount,
             })
 
         move_ids = []
@@ -104,7 +105,7 @@ class AccountAssetDisposal(models.Model):
                 x.move_posted_check == True
                 # x.move_posted_check == 'posted'
             ))
-            if posted_moves and disposal_date < max(posted_moves.mapped('date')):
+            if posted_moves and disposal_date < max(posted_moves.mapped('depreciation_date')):
                 if invoice_line_id:
                     raise UserError('There are depreciation posted after the invoice date (%s).\nPlease revert them or change the date of the invoice.' % disposal_date)
                 else:
@@ -114,7 +115,7 @@ class AccountAssetDisposal(models.Model):
             company_currency = asset.company_id.currency_id
             current_currency = asset.currency_id
             prec = company_currency.decimal_places
-            unposted_depreciation_move_ids = asset.depreciation_line_ids.filtered(lambda x: x.parent_state == 'draft')
+            unposted_depreciation_move_ids = asset.depreciation_line_ids.filtered(lambda x: not x.move_posted_check)
             # unposted_depreciation_move_ids = asset.depreciation_line_ids.filtered(lambda x: x.state == 'draft')
 
             old_values = {
@@ -129,13 +130,13 @@ class AccountAssetDisposal(models.Model):
 
             initial_amount = asset.value
             # initial_amount = asset.original_value
-            initial_account = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.account_asset_id
+            initial_account = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.category_id.account_asset_id
             # initial_account = asset.original_move_line_ids.account_id if len(asset.original_move_line_ids.account_id) == 1 else asset.account_asset_id
-            depreciation_moves = asset.depreciation_line_ids.filtered(lambda r: r.move_posted_check == True) # and not (r.reversal_move_id and r.reversal_move_id[0].state == 'posted')
+            depreciation_moves = asset.depreciation_line_ids.filtered(lambda r: r.move_posted_check) # and not (r.reversal_move_id and r.reversal_move_id[0].state == 'posted')
             depreciated_amount = copysign(sum(depreciation_moves.mapped('amount')), -initial_amount)
-            depreciation_account = asset.account_depreciation_id
+            depreciation_account = asset.category_id.account_depreciation_id
             invoice_amount = copysign(invoice_line_id.price_subtotal, -initial_amount) if self.invoice_id else copysign(self.sell_value, -initial_amount)
-            invoice_account = invoice_line_id.account_id if self.invoice_id else self.asset_id.account_asset_id
+            invoice_account = invoice_line_id.account_id if self.invoice_id else self.asset_id.category_id.account_asset_id
             difference = -initial_amount - depreciated_amount - invoice_amount
             difference_account = asset.company_id.account_journal_early_pay_discount_gain_account_id if difference > 0 else asset.company_id.account_journal_early_pay_discount_loss_account_id	
             line_datas = [(initial_amount, initial_account), (depreciated_amount, depreciation_account), (invoice_amount, invoice_account), (difference, difference_account)]
@@ -143,29 +144,41 @@ class AccountAssetDisposal(models.Model):
                 del line_datas[2]
             vals = {
                 'asset_id': asset.id,
-                'ref': asset.name + ': ' + (_('Disposal') if not invoice_line_id and self.action != 'sell' else _('Sale')),
-                'asset_remaining_value': 0,
-                'asset_depreciated_value': max(asset.depreciation_line_ids.filtered(lambda x: x.move_posted_check == True), key=lambda x: x.date, default=self.env['account.move']).asset_depreciated_value,
+                'name': asset.name + ': ' + (_('Disposal') if not invoice_line_id and self.action != 'sell' else _('Sale')),
+                'sequence' : asset_sequence,
+                'remaining_value': 0,
+                'depreciated_value': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check == True).depreciated_value,
+                'amount': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check == True).amount,
                 # 'asset_depreciated_value': max(asset.depreciation_line_ids.filtered(lambda x: x.state == 'posted'), key=lambda x: x.date, default=self.env['account.move']).asset_depreciated_value,
-                'date': disposal_date,
-                'journal_id': asset.journal_id.id,
-                'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
+                'depreciation_date': disposal_date,
+                # 'journal_id': asset.category_id.journal_id.id,
+                # 'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
             }
             commands.append((0, 0, vals))
             asset.write({'depreciation_line_ids': commands, 'method_number': asset_sequence})
-            tracked_fields = self.env['account.asset.asset'].fields_get(['method_number'])
-            changes, tracking_value_ids = asset._message_track(tracked_fields, old_values)
+            # tracked_fields = self.env['account.asset.asset'].fields_get(['method_number'])
+            # changes, tracking_value_ids = asset._message_track(tracked_fields, old_values)
+            # if changes:
+            #     asset.message_post(body=_('Asset sold or disposed. Accounting entry awaiting for validation.'), tracking_value_ids=tracking_value_ids)
+            # move_ids += self.env['account.move'].search([('asset_id', '=', asset.id), ('state', '=', 'draft')]).ids
+            tracked_fields = self.env['account.asset.asset'].fields_get(['method_number', 'method_end'])
+            changes, tracking_value_ids = asset._mail_track(tracked_fields, old_values)
             if changes:
-                asset.message_post(body=_('Asset sold or disposed. Accounting entry awaiting for validation.'), tracking_value_ids=tracking_value_ids)
-            move_ids += self.env['account.move'].search([('asset_id', '=', asset.id), ('state', '=', 'draft')]).ids
-        
+                asset.message_post(subject=_('Asset sold or disposed. Accounting entry awaiting for validation.'), tracking_value_ids=tracking_value_ids)
+            # move_ids += asset.depreciation_line_ids[-1].create_move(post_move=False)
+            move = self.env['account.move'].create({
+                'date': disposal_date,
+                'journal_id': asset.category_id.journal_id.id,
+                'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
+            })
+            move_ids += [move.id]
         return move_ids
 
     def set_to_close(self, invoice_line_id, date=None):
         self.ensure_one()
         disposal_date = date or fields.Date.today()
-        if invoice_line_id and self.asset_id.filtered(lambda a: a.state in ('draft', 'open') or a.value_residual > 0):
-            raise UserError(_("You cannot automate the journal entry for an asset that has a running gross increase. Please use 'Dispose' on the increase(s)."))
+        # if invoice_line_id and self.asset_id.filtered(lambda a: a.state in ('draft', 'open') or a.value_residual > 0):
+            # raise UserError(_("You cannot automate the journal entry for an asset that has a running gross increase. Please use 'Dispose' on the increase(s)."))
         full_asset = self.asset_id
         # full_asset = self.asset_id + self.asset_id.children_ids
         move_ids = self._get_disposal_moves([invoice_line_id] * len(full_asset), disposal_date)

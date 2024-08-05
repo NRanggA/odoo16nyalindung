@@ -1,4 +1,4 @@
-from odoo import models, fields, api, exceptions
+from odoo import models, fields, api, _
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -6,34 +6,45 @@ _logger = logging.getLogger(__name__)
 class HrAttendanceSheet(models.Model):
     _name = 'hr.attendance.sheet'
     _description = 'Attendance Sheet'
+    _rec_name = 'date'
 
-    employee_id = fields.Many2one('hr.employee', string='Karyawan')
-    date 		= fields.Date(string='Tanggal')
-    type_id 	= fields.Many2one('hr.attendance.type', string='Tipe Absensi')
+    employee_id  = fields.Many2one('hr.employee', string='Karyawan', ondelete="cascade")
+    check_in     = fields.Datetime('Check-In')
+    check_out    = fields.Datetime('Check-Out')
+    type_id 	 = fields.Many2one('hr.attendance.type', string='Tipe Absensi', ondelete="cascade")
+    date         = fields.Date('Tanggal')
 
-    # @api.model
-    def update_attendance_type(self):
+    @api.model
+    def create_attendance_sheets(self):
+        
         attendance_type_m = self.env['hr.attendance.type'].search([('code', '=', 'M')], limit=1)
-
+        
         if not attendance_type_m:
-            _logger.error("Attendance type 'M' tidak ditemukan")
-            raise ValueError("Attendance type 'M' tidak ditemukan")
+            _logger.error("Tipe absensi dengan kode 'M' tidak ditemukan.")
+            return False
 
-        attendance_sheets = self.search([])
+        employees = self.env['hr.employee'].search([])
+        today_date = fields.Date.context_today(self)
 
-        if not attendance_sheets:
-            _logger.info(" attendance sheets Tidak ditemukan")
-            return True
+        attendance_sheets_to_create = []
 
-        invalid_records = attendance_sheets.filtered(lambda sheet: not sheet.type_id)
-        if invalid_records:
-            _logger.error(f"Invalid type_id ditemukan di attendance sheets: {invalid_records.ids}")
+        for employee in employees:
+            # Check if there's already an attendance sheet for the current date
+            existing_sheet = self.env['hr.attendance.sheet'].search([
+                ('employee_id', '=', employee.id),
+                ('date', '=', today_date)
+            ], limit=1)
 
-        valid_records = attendance_sheets.filtered(lambda sheet: sheet.type_id)
-        valid_records.write({'type_id': attendance_type_m.id})
-        _logger.info(f"Sukses updated type_id untuk {len(valid_records)} baris attendance sheets")
+            if not existing_sheet:
+                vals = {
+                    'employee_id': employee.id,
+                    'type_id': attendance_type_m.id,
+                    'date': today_date
+                }
+                attendance_sheets_to_create.append(vals)
 
-        invalid_records.write({'type_id': attendance_type_m.id})
-        _logger.info(f"Gagal update type_id di attendance sheets: {invalid_records.ids}")
+        if attendance_sheets_to_create:
+            self.env['hr.attendance.sheet'].create(attendance_sheets_to_create)
+            _logger.info(f"=== Created {len(attendance_sheets_to_create)} new attendance sheets for today ({today_date}).")
 
         return True

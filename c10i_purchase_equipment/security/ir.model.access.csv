@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_equipment_register_m_user,equipment.register equipment manager,model_equipment_register,maintenance.group_equipment_manager,1,1,1,1
+access_equipment_register_line_m_user,equipment_register_line equipment manager,model_equipment_register_line,maintenance.group_equipment_manager,1,1,1,1
+access_equipment_register_purchase_user,equipment.register purchase user,model_equipment_register,purchase.group_purchase_user,1,0,1,0
+access_equipment_register_line_purchase_user,equipment_register_line purchase user,model_equipment_register_line,purchase.group_purchase_user,1,0,1,0

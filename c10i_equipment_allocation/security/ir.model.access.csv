@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_allocation_request,allocation.request,model_allocation_request,,1,1,1,1
+access_equipment_button_cancel,button.cancel,model_button_cancel,,1,1,1,1
+access_equipment_button_reject,button.reject,model_button_reject,,1,1,1,1
+access_equipment_replace_button,replace.button,model_replace_button,,1,1,1,1
+access_equipment_button_approve,button.approve,model_button_approve,,1,1,1,1
+
+
+

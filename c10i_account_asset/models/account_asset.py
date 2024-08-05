@@ -11,3 +11,17 @@ class AccountAsset(models.Model):
     disposal_id = fields.Many2one('account.asset.disposal', string="Sell / Disposal")
     sell_account_move_id = fields.Many2one('account.move', 'Sell Account Move', related="disposal_id.sell_account_move_id")
     reason = fields.Text(string="Sell/Dispose Reason", related="disposal_id.reason")
+    acquisition_date = fields.Date('Acquisition Date')
+    
+    def validate(self):
+        res = super(AccountAsset, self).validate()
+        for record in self:
+            if not record.category_id:
+                raise UserError("Asset Category must be filled")
+        return res
+
+class AccountAssetDepreciationLine(models.Model):
+    _inherit = 'account.asset.depreciation.line'
+    _description = 'Asset depreciation line'
+
+    ref = fields.Char('ref')
