@@ -1,0 +1,19 @@
+<odoo>
+    <record id="equipment_product_template_form" model="ir.ui.view">
+        <field name="name">equipment.product.template.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <field name="detailed_type" position="after" >
+                <field name="product_asset" />
+            </field>
+            <!-- <div name="button_box" position="inside">
+                <button type="object"  name="action_view_equipment"
+                    class="oe_stat_button"
+                    icon="fa-pencil-square-o" attrs="{'invisible':['|', ('equipment_register_count', '=', 0), ('state', 'not in', ('purchase','done'))]}">
+                    <field name="equipment_register_count" widget="statinfo" />
+                </button>
+            </div> -->
+        </field>
+    </record>
+</odoo>

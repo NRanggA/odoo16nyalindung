@@ -1,0 +1,136 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="asset_acquisition_form" model="ir.ui.view">
+        <field name="name">account.asset.acquisition.form</field>
+        <field name="model">account.asset.acquisition</field>
+        <field name="arch" type="xml">
+            <form string="Asset Acquisition">
+                <header>
+                    <button name="action_submit" string="Submit" states="draft" type="object" class="oe_highlight"/>
+                    <button name="action_done" string="Add to Asset" states="submit" type="object" class="oe_highlight"/>
+                    <button name="action_cancel" string="Cancel" states="draft,submit,done" type="object"/>
+                    <button name="action_set_draft" string="Set to Draft" states="cancel" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submit,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object"  name="action_open_asset"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':[('asset_count', '=', 0)]}">
+                            <field name="asset_count" widget="statinfo"/>
+                        </button>
+                        <button type="object"  name="action_open_move"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':[('move_count', '=', 0)]}">
+                            <field name="move_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" nolabel="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="origin"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines">
+                            <field name="line_ids">
+                                <tree editable="bottom" create="false" delete="false">
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="product_qty" readonly="1"/>
+                                    <field name="product_uom" readonly="1"/>
+                                    <field name="price_unit" readonly="1"/>
+                                    <field name="price_subtotal" />
+                                    <field name="asset_category_id" required="1"/>
+                                    <field name="creation_mode" required="1"/>
+                                    <field name="group_mark" attrs="{'required': [('creation_mode','=','code_group')]}"/>
+                                    <field name="equipment_register_line_id" invisible="1"/>
+                                    <field name="purchase_line_id" invisible="1"/>
+                                    <field name="purchase_id" invisible="1"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="product_id"/>
+                                            <field name="product_qty"/>
+                                            <field name="product_uom"/>
+                                            <field name="price_unit"/>
+                                            <field name="price_subtotal"/>
+                                            <field name="creation_mode"/>
+                                            <field name="group_mark"/>
+                                        </group>
+                                        <group>
+                                            <field name="equipment_register_line_id" attrs="{'invisible': [('equipment_register_line_id','=',False)]}"/>
+                                            <field name="purchase_line_id" attrs="{'invisible': [('purchase_line_id','=',False)]}"/>
+                                            <field name="purchase_id" attrs="{'invisible': [('purchase_id','=',False)]}"/>
+                                        </group>
+                                    </group>
+                                    <field name="asset_ids"/>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="asset_acquisition_tree" model="ir.ui.view">
+        <field name="name">account.asset.acquisition.tree</field>
+        <field name="model">account.asset.acquisition</field>
+        <field name="arch" type="xml">
+            <tree string="Asset Acquisition">
+                <field name="name" />
+                <field name="date" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="asset_acquisition_search" model="ir.ui.view">
+        <field name="name">account.asset.acquisition.select</field>
+        <field name="model">account.asset.acquisition</field>
+        <field name="arch" type="xml">
+            <search string="Search Asset Acquisition">
+                <field name="name"/>
+             </search>
+        </field>
+    </record>
+    
+    <record model="ir.actions.act_window" id="asset_acquisition_action">
+        <field name="name">Asset Acquisition</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.asset.acquisition</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain"></field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="asset_acquisition_search" />
+    </record>
+
+    <!-- <record model="ir.actions.act_window" id="action_asset_acquisition_purchase">
+        <field name="name">Asset Acquisition</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.asset.acquisition</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain"></field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="asset_acquisition_search" />
+    </record> -->
+
+    <menuitem parent="account.menu_finance_entries_management" id="menu_asset_acquisition" action="asset_acquisition_action" sequence="100" groups="account.group_account_manager"/>
+
+</odoo>

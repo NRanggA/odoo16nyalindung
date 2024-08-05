@@ -83,20 +83,20 @@ class AssetAcquisition(models.Model):
 				name = group+": %s"%(", ".join(datas.mapped('product_id').mapped('name')))
 				self.asset_ids = [(0,0,{
 						'name': name,
-						'original_value' : original_value,
+						'value' : original_value,
 						'acquisition_date': self.date,
 						'salvage_value': salvage_value,
-						'model_id': datas[-1].model_id.id,
+						# 'model_id': datas[-1].model_id.id,
 						'method': model.method,
 						'method_number': model.method_number,
 						'method_period': model.method_period,
 						'prorata': model.prorata,
-						'first_depreciation_date': self.first_depr_date,
-						'account_asset_id': model.account_asset_id.id,
-						'account_depreciation_id': model.account_depreciation_id.id,
-						'account_depreciation_expense_id': model.account_depreciation_expense_id.id,
-						'journal_id': model.journal_id.id,
-						'asset_type': 'purchase',
+						'first_depreciation_manual_date': self.first_depr_date,
+						# 'account_asset_id': model.category_id.account_asset_id.id,
+						# 'account_depreciation_id': model.account_depreciation_id.id,
+						# 'account_depreciation_expense_id': model.account_depreciation_expense_id.id,
+						# 'journal_id': model.journal_id.id,
+						# 'asset_type': 'purchase',
 					})]
 
 				account_asset_id = model.account_asset_id
@@ -130,20 +130,20 @@ class AssetAcquisition(models.Model):
 					for i in range(1,int(line.qty)+1):
 						self.asset_ids = [(0,0,{
 								'name': line.product_id.name+" "+str(i),
-								'original_value' : line.purchase_value,
+								'value' : line.purchase_value,
 								'acquisition_date': self.date,
 								'salvage_value': line.not_depr_value,
-								'model_id': line.model_id.id,
+								# 'model_id': line.model_id.id,
 								'method': line.model_id.method,
 								'method_number': line.model_id.method_number,
 								'method_period': line.model_id.method_period,
 								'prorata': line.model_id.prorata,
-								'first_depreciation_date': self.first_depr_date,
-								'account_asset_id': line.model_id.account_asset_id.id,
-								'account_depreciation_id': line.model_id.account_depreciation_id.id,
-								'account_depreciation_expense_id': line.model_id.account_depreciation_expense_id.id,
-								'journal_id': line.model_id.journal_id.id,
-								'asset_type': 'purchase',
+								'first_depreciation_manual_date': self.first_depr_date,
+								# 'account_asset_id': line.model_id.account_asset_id.id,
+								# 'account_depreciation_id': line.model_id.account_depreciation_id.id,
+								# 'account_depreciation_expense_id': line.model_id.account_depreciation_expense_id.id,
+								# 'journal_id': line.model_id.journal_id.id,
+								# 'asset_type': 'purchase',
 							})]
 
 						account_asset_id = line.model_id.account_asset_id
@@ -176,7 +176,7 @@ class AssetAcquisition(models.Model):
 					'date' : self.date,
 					'line_ids': move_lines,
 				})
-			move.post()
+			move._post()
 			self.write({
 				'state': 'posted',
 				'move_id': move.id})
@@ -219,7 +219,6 @@ class AssetAcquisition(models.Model):
 			# cache.
 			self.sudo()._read(['invoice_id'])
 			invoices = self.invoice_id
-		print("...............", invoices, len(invoices ))
 
 		result = self.env['ir.actions.act_window']._for_xml_id('account.action_move_in_invoice_type')
 		# choose the view_mode accordingly
@@ -304,7 +303,7 @@ class AssetAcquisitionLine(models.Model):
 
 	asset_acquisition_id = fields.Many2one("asset.acquisition", string="Asset Acquisition")
 	product_id = fields.Many2one("product.product", string="Product")
-	model_id = fields.Many2one("account.asset.asset", string="Asset Model", domain=[('state', '=', 'model')])
+	model_id = fields.Many2one("account.asset.asset", string="Asset Model")
 	origin = fields.Char(string="Source Document")
 	name = fields.Char(string="Description")
 	acquisition_value = fields.Float(string="Acquisition Value", compute="_compute_acquisition", store=True)

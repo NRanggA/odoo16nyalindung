@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="hr_equipment_view_form_inherited" model="ir.ui.view">
+			<field name="name">equipment.form</field>
+			<field name="model">maintenance.equipment</field>
+			<field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+			<field name="arch" type="xml">
+				<div name="button_box" position="inside">
+					<button class="oe_stat_button" type="object" name="open_allocation_count" icon="fa-pie-chart" sequance='1'>
+						<field string="Allocation" name="allocation_count" widget="statinfo"/>
+					</button>
+				</div>
+
+				<field name="employee_id" position="replace">
+					<field name="employee_id" invisible='1'/>
+				</field>
+
+				<field name="serial_no" position="replace">
+					<field name="serial_no" required='1'/>
+				</field>
+
+				<field name="department_id" position="before">
+					<field name="partner_id" options="{'no_create_edit': True, 'no_open':True,'no_create':True}" readonly="1"/>
+					<field name="employee_id" options="{'no_create_edit': True, 'no_open':True,'no_create':True}" readonly="1"/>
+				</field>
+				
+				<xpath expr="//field[@name='warranty_date']" position="replace">
+					<field name="warranty_date" invisible='1'/>
+				</xpath>
+
+				<xpath expr="//field[@name='cost']" position="after">
+					<field name="warranty_expires_on"/>
+				</xpath>
+
+				<xpath expr="//field[@name='location']" position="after">
+					<field name="purchase_date"/>
+				</xpath>
+
+				<xpath expr="//field[@name='purchase_date']" position="after">
+				   <label for="warranty_period"/>
+					<div class="o_row">
+						<field name="warranty_period" class="oe_inline"/>
+					</div>
+				</xpath>
+
+				<xpath expr="//field[@name='warranty_period']" position="after">
+					<field name="unit_of_time"/>
+					<field name="count" invisible='1'/>
+				</xpath>
+
+				<xpath expr="/form/*" position="before">
+					<header>
+						<field name="state" widget="statusbar"/>
+					</header>
+				</xpath>
+
+				<xpath expr="//field[@name='partner_id']" position="before">
+					<field name="main_product_id" required='1'/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="hr_equipment_tree_view" model="ir.ui.view">
+			<field name="name">equipment.tree</field>
+			<field name="model">maintenance.equipment</field>
+			<field name="inherit_id" ref="maintenance.hr_equipment_view_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='employee_id']" position="after">
+					<field name="partner_id"/>
+				</xpath>
+
+				<xpath expr="//field[@name='category_id']" position="after">
+					<field name="purchase_date"/>
+				</xpath>
+
+				<xpath expr="//field[@name='purchase_date']" position="after">
+					<field name="warranty_expires_on" string="Expired on"/>
+				</xpath>
+
+				<xpath expr="//field[@name='technician_user_id']" position="replace">
+					<field name="state" widget="badge" decoration-warning="state=='not_available'" decoration-info="state=='available'"/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="hr_equipment_view_kanban_inherited" model="ir.ui.view">
+			<field name="inherit_id" ref="maintenance.hr_equipment_view_kanban" /> 
+			<field name="model">maintenance.equipment</field> 
+			<field name="arch" type="xml">
+				 <xpath expr="//div[hasclass('oe_kanban_bottom_left')]" position="replace">
+					<div class="oe_kanban_bottom_left">
+						 <div class="badge badge-info" t-if="record.allocation_open_count and !record.owner_user_id">
+							Allocated
+						</div>
+						<div class="badge badge-danger" t-if="record.maintenance_open_count.raw_value">
+							<t t-raw="record.maintenance_open_count.raw_value"/> Request
+						</div>
+						<div class="badge badge-secondary" t-if="record.next_action_date.raw_value">
+							<t t-raw="moment(record.next_action_date.raw_value).format('MMMM Do')"/>
+						</div>
+					</div>
+				</xpath>
+
+				<xpath expr="//div[hasclass('o_kanban_record_bottom')]" position="after">
+					<t t-if="record.warranty_expires_on.raw_value and record.warranty_expires_on.raw_value lt (new Date())">
+						<div class="oe_kanban_footer_left mt4 badge badge-danger" style="margin: 2px;">
+							Warranty Expired</div>
+					</t>
+					<t t-if="record.warranty_expires_on.raw_value and record.warranty_expires_on.raw_value gt (new Date())">
+						<div class="oe_kanban_footer_left mt4 badge badge-success" style="margin: 2px;">
+							<i>Warranty Expires on: <field name="warranty_expires_on"/>
+							</i>
+						</div>
+					</t>
+					<t t-if="record.partner_id.raw_value">
+						<div class="oe_kanban_footer_left mt4 badge badge-primary" style="margin: 2px;">
+							<i>Currently Allocated to  <field name="partner_id"/>
+							</i>
+						</div>
+					</t>
+					<t t-elif="record.employee_id.raw_value">
+						<div class="oe_kanban_footer_left mt4 badge badge-primary" style="margin: 2px;">
+							<i>Currently Allocated to  <field name="employee_id"/>
+							</i>
+						</div>
+					</t>
+				</xpath>
+			</field>
+		</record>
+
+		<!-- equiment : views -->
+		<record id="maintenance_equipment_view_search_extended" model='ir.ui.view'>
+			<field name="name">maintenance.equipment.view.search.extended.hr</field>
+			<field name="model">maintenance.equipment</field>
+			<field name="inherit_id" ref="maintenance.hr_equipment_view_search"/>
+			<field name="arch" type="xml">
+				<field name="owner_user_id" position="after">
+					<field name="employee_id"/>
+				</field>
+			</field>
+		</record>
+
+		
+	</data>
+</odoo>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<odoo>
+	<data>
+		<record id="wizard_form_button_approve" model="ir.ui.view">
+        <field name="name">button.approve.wizard</field>
+        <field name="model">button.approve</field>
+        <field name="arch" type="xml">
+           <form string="Message">
+                    <separator string="Message"/>
+                    <field name="note" readonly="1" widget="html"/>
+                    <newline/>
+                    <separator/>
+                    <field name="prev_request_ids" readonly="1"/>
+                    <footer>
+                        <button name="update_equipment" string="Update Now" type="object" class="oe_highlight"/>
+                        <button special="cancel" class="oe_highlight" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+            
+          <record id="action_wizard_button_approve" model="ir.actions.act_window">
+          	<field name="name">Message</field>
+        	<field name="type">ir.actions.act_window</field>
+        	<field name="res_model">button.approve</field>
+        	<field name="view_mode">form</field>
+        	<field name="view_id" ref="wizard_form_button_approve"/>
+        	<field name="target">new</field>
+        </record>
+    </data>
+</odoo>

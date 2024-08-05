@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="hr_equipment_view_form_inherited" model="ir.ui.view">
+        <field name="name">equipment.form</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="register_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="equipment_view_tree_from_register" model="ir.ui.view">
+        <field name="name">equipment.tree</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="arch" type="xml">
+            <tree string="Equipments" create="false" edit="false" delete="false">
+                <field name="message_needaction" invisible="1"/>
+                <field name="name"/>
+                <field name="serial_no"/>
+                <field name="category_id"/>
+                <field name="partner_id" />
+                <field name="purchase_date" />
+                <field name="company_id" groups="base.group_multi_company"/>
+                <!-- <field name="activity_exception_decoration" widget="activity_exception"/> -->
+            </tree>
+        </field>
+    </record>
+
+    <record id="equipment_action_from_register" model="ir.actions.act_window">
+        <field name="name">Equipments</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="equipment_view_tree_from_register"/>
+    </record>
+</odoo>

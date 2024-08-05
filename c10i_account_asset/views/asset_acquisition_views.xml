@@ -106,6 +106,6 @@
         </field>
     </record>
 
-    <menuitem id="c10i_menu_asset_acquisition" name="Asset Acquisition" parent="account.menu_finance_entries_management" action="c10i_asset_acquisition_form_action" sequence="100"/>
+    <!-- <menuitem id="c10i_menu_asset_acquisition" name="Asset Acquisition" parent="account.menu_finance_entries_management" action="c10i_asset_acquisition_form_action" sequence="100"/> -->
 
 </odoo>
