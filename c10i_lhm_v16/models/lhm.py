@@ -1559,12 +1559,21 @@ class lhm_transaction(models.Model):
     def button_approve(self):
         # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
         mismatch_names = []
+
         for line in self.lhm_line_ids:
+            
+
             # Cari sheet absensi yang sesuai untuk setiap karyawan
-            attendance_sheet = self.env['hr.attendance.sheet'].search([('employee_id', '=', line.employee_id.id)], limit=1)
+            attendance_sheet = self.env['hr.attendance.sheet'].search([
+                ('employee_id', '=', line.employee_id.id),
+                ('date', '=', self.date)
+            ], limit=1)
             # Jika tidak ada catatan absensi yang ditemukan, lanjutkan ke karyawan berikutnya
             if not attendance_sheet:
                 continue
+
+            print(f"=== attendance lhm : {line.attendance_id.code}")
+            print(f"=== attendance di sheet : {attendance_sheet.type_id.code}")
 
             # Cek apakah kode tipe absensi tidak sesuai
             if line.attendance_id.code != attendance_sheet.type_id.code:
