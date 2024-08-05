@@ -983,9 +983,10 @@
         <!--End Of LHM Kemandoran -->
 
 
+
         <!--HR Attendance Type -->
-        <record id="view_attendance_type_form" model="ir.ui.view">
-            <field name="name">view.attendance.type.form</field>
+        <record id="view_attendance_type_plantation_form" model="ir.ui.view">   
+            <field name="name">view.attendance.type.plantation.form</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <form string="Tipe Absensi">
@@ -1018,8 +1019,8 @@
             </field>
         </record>
 
-        <record id="view_attendance_type_tree" model="ir.ui.view">
-            <field name="name">view.attendance.type.tree</field>
+        <record id="view_attendance_type_plantation_tree" model="ir.ui.view">
+            <field name="name">view.attendance.type.plantation.tree</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <tree string="Tipe Absensi">
@@ -1032,8 +1033,8 @@
             </field>
         </record>
 
-        <record id="view_attendance_type_filter" model="ir.ui.view">
-            <field name="name">view.attendance.type.filter</field>
+        <record id="view_attendance_type_plantation_filter" model="ir.ui.view">
+            <field name="name">view.attendance.type.plantation.filter</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <search string="Tipe Absensi">
@@ -1050,12 +1051,11 @@
             </field>
         </record>
 
-        <record id="action_hr_attendance_type" model="ir.actions.act_window">
-            <field name="name">Absensi</field>
+        <record id="action_hr_attendance_plantation_type" model="ir.actions.act_window">
+            <field name="name">Absensi Plantation</field>
             <field name="res_model">hr.attendance.type</field>
-            <!-- <field name="view_type">form</field> -->
             <field name="view_mode">tree,form</field>
-            <field name="search_view_id" ref="view_attendance_type_filter"/>
+            <field name="search_view_id" ref="view_attendance_type_plantation_filter"/>
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
@@ -1064,8 +1064,11 @@
                 </p>
             </field>
         </record>
-        <menuitem id="menu_hr_attendance_type_config" action="action_hr_attendance_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>
+        
+        <!-- Menu tipe absensi ambil dari modul c10i_attendance -->
+        <menuitem id="menu_hr_attendance_type_plantation" action="action_hr_attendance_plantation_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>
         <!--End Of HR Attendance Type -->
+
 
 
         <!-- Daftar Transfer Kemandoran-->

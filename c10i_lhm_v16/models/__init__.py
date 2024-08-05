@@ -11,3 +11,4 @@ from . import stock
 from . import plantation_salary
 from . import report_costing
 from . import running_account
+from . import hr_attendance_correction

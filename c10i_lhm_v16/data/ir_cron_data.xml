@@ -21,24 +21,24 @@
             <field name="function" eval="'_cron_update_tahun_tanam'"/>
             <field name="args" eval="'()'" />
         </record>
-        <record model="ir.cron" id="lhm_nap_cron">
-            <field name="name">Automatic Update Link between NAP and LHM</field>
+        <record model="ir.cron" id="lhm_nab_cron">
+            <field name="name">Automatic Update Link between NAB and LHM</field>
             <field name="interval_number">1</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
             <field name="doall" eval="True"/>
-            <field name="model" eval="'lhm.nap.line'"/>
-            <field name="function" eval="'_cron_linked_to_nap'"/>
+            <field name="model" eval="'lhm.nab.line'"/>
+            <field name="function" eval="'_cron_linked_to_nab'"/>
             <field name="args" eval="'()'" />
         </record>
-        <record model="ir.cron" id="lhm_nap_afkir_cron">
-            <field name="name">Automatic Update Link between NAP Afkir and LHM</field>
+        <record model="ir.cron" id="lhm_nab_afkir_cron">
+            <field name="name">Automatic Update Link between NAB Afkir and LHM</field>
             <field name="interval_number">1</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
             <field name="doall" eval="True"/>
-            <field name="model" eval="'lhm.nap.afkir.line'"/>
-            <field name="function" eval="'_cron_linked_to_nap'"/>
+            <field name="model" eval="'lhm.nab.afkir.line'"/>
+            <field name="function" eval="'_cron_linked_to_nab'"/>
             <field name="args" eval="'()'" />
         </record>
     </data>

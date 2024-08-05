@@ -94,8 +94,8 @@
                         </group>
                     </group>
                     <separator string="Total Penghitungan" colspan="4"/>
-                    <field name="header_nap_ids" mode="tree" readonly="1">
-                        <tree string="Header NAP" editable="bottom" create="false">
+                    <field name="header_nab_ids" mode="tree" readonly="1">
+                        <tree string="Header NAB" editable="bottom" create="false">
                             <field name="name"/>
                             <field name="year"/>
                             <field name="afdeling_id"/>
@@ -106,11 +106,11 @@
                     </field>
 
                     <separator string="Detail Nota Angkut Buah" colspan="4"/>
-                    <field name="line_nap_ids" mode="tree" readonly="1">
-                        <tree string="Detail NAP" editable="bottom" create="false">
+                    <field name="line_nab_ids" mode="tree" readonly="1">
+                        <tree string="Detail NAB" editable="bottom" create="false">
                             <field name="date_pks"/>
                             <field name="block_id"/>
-                            <field name="qty_nap"/>
+                            <field name="qty_nab"/>
                             <field name="janjang_jml" />
                             <field name="nilai_bjr"/>
                             <field name="netto" invisible="1"/>
@@ -131,7 +131,7 @@
 
         <menuitem id="menu_lhm_bill_plasma" 
                   action="action_lhm_bill_plasma" 
-                  parent="submenu_lhm_nap" 
+                  parent="submenu_lhm_nab" 
                   groups="group_plantation_operator" 
                   name="Generate Bill TBS Plasma"
                   sequence="31"/>

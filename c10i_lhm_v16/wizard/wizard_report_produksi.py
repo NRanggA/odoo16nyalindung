@@ -17,9 +17,9 @@ class WizardReportProduksi(models.TransientModel):
     company_id     = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     panen_ids      = fields.One2many(comodel_name='wizard.report.produksi.panen', inverse_name='produksi_id', string='Laporan Panen', copy=False)
     restan_ids     = fields.One2many(comodel_name='wizard.report.produksi.restan', inverse_name='produksi_id', string='Laporan Restan', copy=False)
-    nap_perblock_ids= fields.One2many(comodel_name='wizard.report.produksi.nap.perblock', inverse_name='produksi_id', string='Laporan NAP Per Blok', copy=False)
-    nap_detail_ids = fields.One2many(comodel_name='wizard.report.produksi.nap.detail', inverse_name='produksi_id', string='Laporan NAP Detail', copy=False)
-    nap_rekap_ids  = fields.One2many(comodel_name='wizard.report.produksi.nap.rekap', inverse_name='produksi_id', string='Laporan NAP Rekap', copy=False)
+    nab_perblock_ids= fields.One2many(comodel_name='wizard.report.produksi.nab.perblock', inverse_name='produksi_id', string='Laporan NAB Per Blok', copy=False)
+    nab_detail_ids = fields.One2many(comodel_name='wizard.report.produksi.nab.detail', inverse_name='produksi_id', string='Laporan NAB Detail', copy=False)
+    nab_rekap_ids  = fields.One2many(comodel_name='wizard.report.produksi.nab.rekap', inverse_name='produksi_id', string='Laporan NAB Rekap', copy=False)
     rotasi_ids     = fields.One2many(comodel_name='wizard.report.produksi.rotasi.panen', inverse_name='produksi_id', string='Laporan Rotasi Panen', copy=False)
 
     def create_report(self):
@@ -75,30 +75,30 @@ class WizardReportProduksi(models.TransientModel):
             if new_lines:
                 produksi_panen = self.env['wizard.report.produksi.panen'].create(new_lines)
 
-        #Laporan NAP Detail
-        # if self.nap_detail_ids:
-        #     for data in self.nap_detail_ids:
+        #Laporan NAB Detail
+        # if self.nab_detail_ids:
+        #     for data in self.nab_detail_ids:
         #         data.unlink()
 
         # str_sql = """
         #     SELECT
-        #     date_nap,
-        #     no_nap,
+        #     date_nab,
+        #     no_nab,
         #     ln.afdeling_id,
         #     lnl.block_id,
-        #     lnl.qty_nap,
+        #     lnl.qty_nab,
         #     lnl.tgl_panen,
-        #     ((lnl.qty_nap*lb.value)/(sum(lnl.qty_nap*lb.value) over (partition by ln.id))*ln.timbang_tara_kbn) as kbn_kg,
-        #     ((lnl.qty_nap*lb.value)/(sum(lnl.qty_nap*lb.value) over (partition by ln.id))*timbang_tara_kbn)/lnl.qty_nap as kbn_bjr,
+        #     ((lnl.qty_nab*lb.value)/(sum(lnl.qty_nab*lb.value) over (partition by ln.id))*ln.timbang_tara_kbn) as kbn_kg,
+        #     ((lnl.qty_nab*lb.value)/(sum(lnl.qty_nab*lb.value) over (partition by ln.id))*timbang_tara_kbn)/lnl.qty_nab as kbn_bjr,
         #     date_pks,
-        #     ((lnl.qty_nap*lb.value)/(sum(lnl.qty_nap*lb.value) over (partition by ln.id))*timbang_tara_pks) as pks_kg,
-        #     ((lnl.qty_nap*lb.value)/(sum(lnl.qty_nap*lb.value) over (partition by ln.id))*grading) as pks_grading,
-        #     ((lnl.qty_nap*lb.value)/(sum(lnl.qty_nap*lb.value) over (partition by ln.id))*netto) as netto,
-        #     ((lnl.qty_nap*lb.value)/(sum(lnl.qty_nap*lb.value) over (partition by ln.id))*netto /lnl.qty_nap) as pks_bjr,
-        #     ln.id as nap_id,
+        #     ((lnl.qty_nab*lb.value)/(sum(lnl.qty_nab*lb.value) over (partition by ln.id))*timbang_tara_pks) as pks_kg,
+        #     ((lnl.qty_nab*lb.value)/(sum(lnl.qty_nab*lb.value) over (partition by ln.id))*grading) as pks_grading,
+        #     ((lnl.qty_nab*lb.value)/(sum(lnl.qty_nab*lb.value) over (partition by ln.id))*netto) as netto,
+        #     ((lnl.qty_nab*lb.value)/(sum(lnl.qty_nab*lb.value) over (partition by ln.id))*netto /lnl.qty_nab) as pks_bjr,
+        #     ln.id as nab_id,
         #     lb.id as bjr_id
-        #     from lhm_nap ln
-        #     LEFT JOIN lhm_nap_line lnl ON lnl.lhm_nap_id=ln."id"
+        #     from lhm_nab ln
+        #     LEFT JOIN lhm_nab_line lnl ON lnl.lhm_nab_id=ln."id"
         #     LEFT JOIN lhm_bjr lb ON lb.id=(select id from lhm_bjr where date <= lnl.tgl_panen and block_id = lnl.block_id ORDER BY date desc limit 1)
         #     where date_pks between %s and %s and state in('confirmed','done') and lnl.block_id is not null
         # """
@@ -114,8 +114,8 @@ class WizardReportProduksi(models.TransientModel):
 
         # for report in self.env.cr.fetchall():
         #     new_lines = {
-        #         'tgl_nap'       : report[0] ,
-        #         'no_nap'        : report[1],
+        #         'tgl_nab'       : report[0] ,
+        #         'no_nab'        : report[1],
         #         'afdeling_id'   : report[2],
         #         'block_id'      : report[3],
         #         'kbn_qty_jjg'   : report[4],
@@ -127,27 +127,27 @@ class WizardReportProduksi(models.TransientModel):
         #         'pks_grading'   : report[10],
         #         'pks_netto'     : report[11],
         #         'pks_bjr'       : report[12],
-        #         'nap_id'        : report[13],
+        #         'nab_id'        : report[13],
         #         'bjr_id'        : report[14],
         #         'produksi_id'     : self.id,
         #     }
         #     if new_lines:
-        #         self.env['wizard.report.produksi.nap.detail'].create(new_lines)
+        #         self.env['wizard.report.produksi.nab.detail'].create(new_lines)
 
-        # Laporan NAP Rekap
-        # if self.nap_rekap_ids:
-        #     for data in self.nap_rekap_ids:
+        # Laporan NAB Rekap
+        # if self.nab_rekap_ids:
+        #     for data in self.nab_rekap_ids:
         #         data.unlink()
 
         # str_sql = """
         #     SELECT
-        #     date_nap as tgl_nap,
-        #     no_nap,
+        #     date_nab as tgl_nab,
+        #     no_nab,
         #     afdeling_id,
         #     vehicle_id,
         #     driver,
         #     ownership,
-        #     date_nap as tgl_nap2,
+        #     date_nab as tgl_nab2,
         #     janjang_jml as kbn_qty_jjg,
         #     timbang_tara_kbn as kbn_qty_kg,
         #     pks_id,
@@ -155,8 +155,8 @@ class WizardReportProduksi(models.TransientModel):
         #     timbang_tara_pks as pks_bruto,
         #     grading as pks_grading,
         #     netto as pks_netto,
-        #     id as nap_id
-        #     from lhm_nap
+        #     id as nab_id
+        #     from lhm_nab
         #     where date_pks between %s and %s and state in('confirmed','done')
         # """
 
@@ -167,18 +167,18 @@ class WizardReportProduksi(models.TransientModel):
         #         str_afdeling_id += str(data.id) + ","
         #     str_sql2 = ' and afdeling_id in (' + str_afdeling_id[:-1] + ')'
 
-        # str_sql = str_sql + str_sql2 + ' order by date_pks,no_nap '
+        # str_sql = str_sql + str_sql2 + ' order by date_pks,no_nab '
         # self.env.cr.execute(str_sql, (self.date_start, self.date_end))
 
         # for report in self.env.cr.fetchall():
         #     new_lines = {
-        #         'tgl_nap'       : report[0],
-        #         'no_nap'        : report[1],
+        #         'tgl_nab'       : report[0],
+        #         'no_nab'        : report[1],
         #         'afdeling_id'   : report[2],
         #         'vehicle_id'    : report[3],
         #         'driver'        : report[4],
         #         'ownership'     : report[5],
-        #         'tgl_nap2'      : report[6],
+        #         'tgl_nab2'      : report[6],
         #         'kbn_qty_jjg'   : report[7],
         #         'kbn_qty_kg'    : report[8],
         #         'pks_id'        : report[9],
@@ -186,15 +186,15 @@ class WizardReportProduksi(models.TransientModel):
         #         'pks_bruto'     : report[11],
         #         'pks_grading'   : report[12],
         #         'pks_netto'     : report[13],
-        #         'nap_id'        : report[14],
+        #         'nab_id'        : report[14],
         #         'produksi_id'   : self.id,
         #     }
         #     if new_lines:
-        #         self.env['wizard.report.produksi.nap.rekap'].create(new_lines)
+        #         self.env['wizard.report.produksi.nab.rekap'].create(new_lines)
 
-        # Laporan NAP PerBlock
-        # if self.nap_perblock_ids:
-        #     for data in self.nap_perblock_ids:
+        # Laporan NAB PerBlock
+        # if self.nab_perblock_ids:
+        #     for data in self.nab_perblock_ids:
         #         data.unlink()
 
         # str_sql = """
@@ -210,7 +210,7 @@ class WizardReportProduksi(models.TransientModel):
         #         sum(case when pks_tgl between wrp.date_start and wrp.date_end then pks_grading else 0 end) pks_shi_grading,
         #         sum(case when pks_tgl = wrp.date_end then pks_netto else 0 end) pks_hi_netto,
         #         sum(case when pks_tgl between wrp.date_start and wrp.date_end then pks_netto else 0 end) pks_shi_netto
-        #         from wizard_report_produksi_nap_detail wrpnd
+        #         from wizard_report_produksi_nab_detail wrpnd
         #         left join wizard_report_produksi wrp on wrp.id=wrpnd.produksi_id
         #         left join lhm_plant_block lpb on lpb.id=wrpnd.block_id
         #         left join res_afdeling ra on ra.id=lpb.afdeling_id
@@ -255,7 +255,7 @@ class WizardReportProduksi(models.TransientModel):
         #         'produksi_id'   : self.id,
         #     }
         #     if new_lines:
-        #         self.env['wizard.report.produksi.nap.perblock'].create(new_lines)
+        #         self.env['wizard.report.produksi.nab.perblock'].create(new_lines)
 
         #Laporan Restan
         # if self.restan_ids:
@@ -267,38 +267,38 @@ class WizardReportProduksi(models.TransientModel):
         #     ,header.block_id
         #     ,header.qty_saw
         #     ,header.qty_panen
-        #     ,header.qty_nap
+        #     ,header.qty_nab
         #     ,header.qty_naf
         #     ,header.qty_restan
         #     ,case when header.qty_restan = 0 then 0 else header.umur_restan end as umur_restan
         #     ,detail.tgl_trans
-        #     ,detail.qty_nap2
+        #     ,detail.qty_nab2
         #     ,detail.qty_naf2
         #     from
-        #     (select tgl_panen,block_id,sum(qty_saw) as qty_saw,sum(qty_panen)qty_panen,sum(qty_nap)qty_nap,sum(qty_naf)qty_naf,
-        #     sum(qty_saw+qty_panen-qty_nap-qty_naf)qty_restan,
+        #     (select tgl_panen,block_id,sum(qty_saw) as qty_saw,sum(qty_panen)qty_panen,sum(qty_nab)qty_nab,sum(qty_naf)qty_naf,
+        #     sum(qty_saw+qty_panen-qty_nab-qty_naf)qty_restan,
         #     date_part('day',%s::timestamp - tgl_panen::timestamp) umur_restan
         #     from
-        #     (select tgl_panen,block_id,sum(jjg_qty) as qty_saw,(0)qty_panen,(0)qty_nap,(0)qty_naf
-        #     from vdata_panen_nap_naf vpnn
+        #     (select tgl_panen,block_id,sum(jjg_qty) as qty_saw,(0)qty_panen,(0)qty_nab,(0)qty_naf
+        #     from vdata_panen_nab_naf vpnn
         #     where tgl_trans < %s and jjg_qty <>0
         #     group by tgl_panen,block_id
         #     having sum(jjg_qty)<>0
         #     union all
         #     select tgl_panen,block_id,(0)qty_saw
         #     ,sum(case when grp='panen' and tgl_trans between %s and %s then jjg_qty else 0 end) as qty_panen
-        #     ,sum(case when grp='nap' and tgl_trans between %s and %s then -jjg_qty else 0 end) as qty_nap
+        #     ,sum(case when grp='nab' and tgl_trans between %s and %s then -jjg_qty else 0 end) as qty_nab
         #     ,sum(case when grp='naf' and tgl_trans between %s and %s then -jjg_qty else 0 end) as qty_naf
-        #     from vdata_panen_nap_naf vpnn
+        #     from vdata_panen_nab_naf vpnn
         #     where tgl_trans between %s and %s and jjg_qty <>0
         #     group by tgl_panen,block_id
         #     having sum(jjg_qty)<>0) dat_saw_trans
         #     group by tgl_panen,block_id) header
         #     left join
         #     (select tgl_panen,block_id,tgl_trans
-        #     ,sum(case when grp='nap' and tgl_trans between %s and %s then -jjg_qty else 0 end) as qty_nap2
+        #     ,sum(case when grp='nab' and tgl_trans between %s and %s then -jjg_qty else 0 end) as qty_nab2
         #     ,sum(case when grp='naf' and tgl_trans between %s and %s then -jjg_qty else 0 end) as qty_naf2
-        #     from vdata_panen_nap_naf
+        #     from vdata_panen_nab_naf
         #     where grp<>'panen' and tgl_trans between %s and %s and jjg_qty <>0
         #     group by tgl_panen,block_id,tgl_trans,grp) detail
         #     on header.tgl_panen=detail.tgl_panen and header.block_id=detail.block_id
@@ -332,12 +332,12 @@ class WizardReportProduksi(models.TransientModel):
         #         'block_id'      : xblock_id or False,
         #         'qty_saw'       : report[2] or False,
         #         'qty_panen'     : report[3] or False,
-        #         'qty_nap'       : report[4] or False,
+        #         'qty_nab'       : report[4] or False,
         #         'qty_naf'       : report[5] or False,
         #         'qty_restan'    : report[6] or False,
         #         'umur_restan'   : report[7] or False,
         #         'tgl_trans'     : report[8] or False,
-        #         'qty_nap2'      : report[9] or False,
+        #         'qty_nab2'      : report[9] or False,
         #         'qty_naf2'      : report[10] or False,
         #         'no_urut'       : no_urut,
         #         'produksi_id'   : self.id,
@@ -553,18 +553,18 @@ class WizardReportProduksiRestan(models.TransientModel):
     tgl_panen   = fields.Date(string="TGL PANEN", readonly=True)
     qty_saw     = fields.Float(digits=(16,0), string="QTY SAW", readonly=True)
     qty_panen   = fields.Float(digits=(16,0), string="QTY PANEN", readonly=True)
-    qty_nap     = fields.Float(digits=(16,0), string="QTY NAP", readonly=True)
+    qty_nab     = fields.Float(digits=(16,0), string="QTY NAB", readonly=True)
     qty_naf     = fields.Float(digits=(16,0), string="QTY AFKIR", readonly=True)
     qty_restan  = fields.Float(digits=(16,0), string="QTY RESTAN", readonly=True)
     umur_restan = fields.Float(digits=(16,0), string="UMUR RESTAN (Hari)", readonly=True)
     tgl_trans   = fields.Date(string="TGL TRANS", readonly=True)
-    qty_nap2    = fields.Float(digits=(16,0), string="QTY NAP2", readonly=True)
+    qty_nab2    = fields.Float(digits=(16,0), string="QTY NAB2", readonly=True)
     qty_naf2    = fields.Float(digits=(16,0), string="QTY AFKIR2", readonly=True)
     produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
-class WizardReportProduksiNapPerblock(models.TransientModel):
-    _name            = 'wizard.report.produksi.nap.perblock'
-    _description     = 'Laporan NAP Detail PerBlok'
+class WizardReportProduksiNabPerblock(models.TransientModel):
+    _name            = 'wizard.report.produksi.nab.perblock'
+    _description     = 'Laporan NAB Detail PerBlok'
 
     afdeling_id = fields.Many2one(comodel_name="res.afdeling", string="Afdeling",  ondelete="restrict", readonly=True)
     block_id    = fields.Many2one(comodel_name="lhm.plant.block", string="Lokasi",  ondelete="restrict", readonly=True)
@@ -584,12 +584,12 @@ class WizardReportProduksiNapPerblock(models.TransientModel):
     pks_shi_bjr = fields.Float(digits=(16,2), string="PKS SHI BJR", readonly=True)
     produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
-class WizardReportProduksiNapDetail(models.TransientModel):
-    _name           = 'wizard.report.produksi.nap.detail'
-    _description    = 'Laporan NAP Detail'
+class WizardReportProduksiNabDetail(models.TransientModel):
+    _name           = 'wizard.report.produksi.nab.detail'
+    _description    = 'Laporan NAB Detail'
 
-    tgl_nap         = fields.Date(string="TGL. NAP", readonly=True)
-    no_nap          = fields.Char(string="REF. NAP", readonly=True)
+    tgl_nab         = fields.Date(string="TGL. NAB", readonly=True)
+    no_nab          = fields.Char(string="REF. NAB", readonly=True)
     afdeling_id     = fields.Many2one(comodel_name="res.afdeling", string="AFDELING", ondelete="restrict", readonly=True)
     block_id        = fields.Many2one(comodel_name="lhm.plant.block", string="LOKASI", ondelete="restrict", readonly=True)
     kbn_qty_jjg     = fields.Float(digits=(16,0), string="KBN QTY JJG", readonly=True)
@@ -602,21 +602,21 @@ class WizardReportProduksiNapDetail(models.TransientModel):
     pks_grading     = fields.Float(digits=(16,2), string="PKS GRADING", readonly=True)
     pks_netto       = fields.Float(digits=(16,2), string="PKS NETTO", readonly=True)
     pks_bjr         = fields.Float(digits=(16,2), string="PKS BJR", readonly=True)
-    nap_id          = fields.Many2one(comodel_name="lhm.nap", string="NAP", ondelete="restrict")
+    nab_id          = fields.Many2one(comodel_name="lhm.nab", string="NAB", ondelete="restrict")
     produksi_id     = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
-class WizardReportProduksiNapRekap(models.TransientModel):
-    _name           = 'wizard.report.produksi.nap.rekap'
-    _description    = 'Laporan NAP Rekap'
+class WizardReportProduksiNabRekap(models.TransientModel):
+    _name           = 'wizard.report.produksi.nab.rekap'
+    _description    = 'Laporan NAB Rekap'
 
-    tgl_nap         = fields.Date(string="DOC. TGL", readonly=True)
-    no_nap          = fields.Char(string="REF. NAP", readonly=True)
+    tgl_nab         = fields.Date(string="DOC. TGL", readonly=True)
+    no_nab          = fields.Char(string="REF. NAB", readonly=True)
     afdeling_id     = fields.Many2one(comodel_name="res.afdeling", string="AFDELING", ondelete="restrict", readonly=True)
     vehicle_id     = fields.Many2one(comodel_name="lhm.utility", string="KENDARAAN",
                                      ondelete="restrict", readonly=True, domain=[('type', '=', 'vh')])
     driver          = fields.Char(string="SUPIR", readonly=True)
     ownership       = fields.Selection('KEPEMILIKAN', readonly=True, related="vehicle_id.ownership", store=True)
-    tgl_nap2        = fields.Date(string="TGL NAP", readonly=True)
+    tgl_nab2        = fields.Date(string="TGL NAB", readonly=True)
     kbn_qty_jjg     = fields.Float(digits=(16,0), string="KBN QTY JJG", readonly=True)
     kbn_qty_kg      = fields.Float(digits=(16,2), string="KBN QTY KG", readonly=True)
     kbn_bjr         = fields.Float(digits=(16,2), string="KBN BJR", readonly=True)
@@ -625,7 +625,7 @@ class WizardReportProduksiNapRekap(models.TransientModel):
     pks_bruto       = fields.Float(digits=(16,2), string="PKS BRUTO", readonly=True)
     pks_grading     = fields.Float(digits=(16,2), string="PKS GRADING", readonly=True)
     pks_netto       = fields.Float(digits=(16,2), string="PKS NETTO", readonly=True)
-    nap_id          = fields.Many2one(comodel_name="lhm.nap", string="NAP", ondelete="restrict")
+    nab_id          = fields.Many2one(comodel_name="lhm.nab", string="NAB", ondelete="restrict")
     produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
 class WizardReportProduksiRotasi(models.TransientModel):
@@ -711,10 +711,10 @@ class WizardReportProduksiSelect(models.TransientModel):
     name = fields.Selection([('produksi_panen', 'Laporan Panen'),
                              ('produksi_panen_rekap', 'Laporan Rekap Panen'),
                              ('produksi_restan', 'Laporan Restan'),
-                             ('produksi_nap_perblock', 'Laporan NAP Per Blok'),
-                             ('produksi_nap_detail', 'Laporan NAP Detail'),
-                             ('produksi_nap_rekap', 'Laporan NAP Rekap'),
-                             ('produksi_nap_afkir', 'Laporan BA TBS Afkir'),
+                             ('produksi_nab_perblock', 'Laporan NAB Per Blok'),
+                             ('produksi_nab_detail', 'Laporan NAB Detail'),
+                             ('produksi_nab_rekap', 'Laporan NAB Rekap'),
+                             ('produksi_nab_afkir', 'Laporan BA TBS Afkir'),
                              ('produksi_rotasi', 'Laporan Rotasi Panen'),
                              ], string='Choose Report', default='produksi_panen')
     
@@ -733,10 +733,10 @@ class WizardReportProduksiSelect(models.TransientModel):
             'produksi_panen'        : 'action_produksi_panen_report_pdf',
             'produksi_panen_rekap'  : 'action_report_produksi_panen_rekap',
             'produksi_restan'       : 'action_report_produksi_restan',
-            'produksi_nap_perblock' : 'action_report_produksi_nap_perblock',
-            'produksi_nap_detail'   : 'action_report_produksi_nap_detail',
-            'produksi_nap_rekap'    : 'action_report_produksi_nap_rekap',
-            'produksi_nap_afkir'    : 'action_report_produksi_nap_afkir',
+            'produksi_nab_perblock' : 'action_report_produksi_nab_perblock',
+            'produksi_nab_detail'   : 'action_report_produksi_nab_detail',
+            'produksi_nab_rekap'    : 'action_report_produksi_nab_rekap',
+            'produksi_nab_afkir'    : 'action_report_produksi_nab_afkir',
             'produksi_rotasi'       : 'action_report_produksi_panen_rotasi',
         }.get(self.name)
 
@@ -744,10 +744,10 @@ class WizardReportProduksiSelect(models.TransientModel):
             'produksi_panen'        : 'action_produksi_panen_report_xlsx',
             'produksi_panen_rekap'  : 'action_report_produksi_panen_rekap',
             'produksi_restan'       : 'action_report_produksi_restan',
-            'produksi_nap_perblock' : 'action_report_produksi_nap_perblock',
-            'produksi_nap_detail'   : 'action_report_produksi_nap_detail',
-            'produksi_nap_rekap'    : 'action_report_produksi_nap_rekap',
-            'produksi_nap_afkir'    : 'action_report_produksi_nap_afkir',
+            'produksi_nab_perblock' : 'action_report_produksi_nab_perblock',
+            'produksi_nab_detail'   : 'action_report_produksi_nab_detail',
+            'produksi_nab_rekap'    : 'action_report_produksi_nab_rekap',
+            'produksi_nab_afkir'    : 'action_report_produksi_nab_afkir',
             'produksi_rotasi'       : 'action_report_produksi_panen_rotasi',
         }.get(self.name)
 
