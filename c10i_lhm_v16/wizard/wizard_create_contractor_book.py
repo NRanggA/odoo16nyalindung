@@ -17,6 +17,7 @@ class WizardCreateContractorBook(models.TransientModel):
     date_start      = fields.Date("Tanggal Pembayaran Mulai")
     date_end        = fields.Date("Tanggal Pembayaran Selesai")
     product_id      = fields.Many2one('product.template', string='Product', change_default=True, ondelete='restrict', required=True, domain="[('is_nab','=',True)]")
+    product_id      = fields.Many2one('product.template', string='Product', change_default=True, ondelete='restrict', required=True, domain="[('is_nap','=',True)]")
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     default_lines   = fields.One2many('create.contractor.book.default.line', 'wizard_id', string='Defailt Lines', copy=False)
     contractor_lines    = fields.One2many('create.contractor.book.line', 'wizard_id', string='Contractor Book Lines', copy=False)
@@ -122,6 +123,62 @@ class WizardCreateContractorBook(models.TransientModel):
                                     'pricelist_id': False, 'price_unit': 0.0})})
                     self.default_lines = grouped_pks.values()
 
+            if self.date_start and self.date_end:
+                if self.transaction=='angkut':
+                    nap_datas = self.env['lhm.nap'].search([('date_pks', '>=', self.date_start),
+                                                  ('date_pks', '<=', self.date_end), 
+                                                  ('contractor_id', '=', self.contractor_id.id), 
+                                                  ('state', 'in', ('confirmed','done'))],  order='date_pks')
+                    grouped_pks = {}
+                    for nap in nap_datas:
+                        if nap.pks_id.id not in grouped_pks.keys():
+                            grouped_pks.update({nap.pks_id.id:
+                                [(0, 0, {'name': 'Biaya Angkut', 'location_type_id': False, 'pks_id': nap.pks_id.id, 
+                                    'activity_id': False, 'pricelist_id': False, 'price_unit': 0.0}),
+                                (0, 0, {'name': 'Transport TBS', 'location_type_id': False, 'pks_id': nap.pks_id.id, 
+                                    'activity_id': False, 'pricelist_id': False, 'price_unit': 0.0})]
+                                })
+                    lines = []
+                    for x in grouped_pks.values():
+                        lines.append(x[0])
+                        lines.append(x[1])
+                    self.default_lines = lines
+                    # buku_kontraktor_old = self.env['lhm.contractor'].search([
+                    #         # ('account_period_id', '<=', self.account_period_id.id),
+                    #         ('supplier_id','=',self.contractor_id.id), ('state','in',('confirmed','done')),
+                    #         ('contractor_vehicle','=',True), 
+                    #         ('total_type','=','result')
+                    #         ], order='id desc', limit=1)
+                    # if buku_kontraktor_old:
+                    #     activities = [x.activity_id for x in buku_kontraktor_old[-1].mapped('line_vehicle_ids')]
+                    #     if len(set(activities))==2:
+                    #         activities = list(set(activities))
+                    #         self.default_lines = [
+                    #                 (0, 0, {'name': activities[0].name, 'activity_id': activities[0].id, 
+                    #                     'location_type_id': activities[0].type_id.id, 'pricelist_id': False}),
+                    #                 (0, 0, {'name': activities[1].name, 'activity_id': activities[1].id, 
+                    #                     'location_type_id': activities[1].type_id.id, 'pricelist_id': False}),
+                    #         ]
+                    #     else:
+                    #         self.default_lines = [
+                    #             (0, 0, {'name': 'Biaya Angkut', 'location_type_id': False, 
+                    #                 'activity_id': False, 'pricelist_id': False}),
+                    #             (0, 0, {'name': 'Transport TBS', 'location_type_id': False, 
+                    #                 'activity_id': False, 'pricelist_id': False}),
+                    #         ]
+                elif self.transaction=='uang_jalan':
+                    nap_datas = self.env['lhm.nap'].search([('date_pks', '>=', self.date_start),
+                                                  ('date_pks', '<=', self.date_end), 
+                                                  ('contractor_id', '=', self.contractor_id.id), 
+                                                  ('state', 'in', ('confirmed','done'))],  order='date_pks')
+                    grouped_pks = {}
+                    for nap in nap_datas:
+                        if nap.pks_id.id not in grouped_pks.keys():
+                            grouped_pks.update({nap.pks_id.id:(0, 0, {'name': 'Uang Jalan', 'location_type_id': False, 
+                                    'pks_id': nap.pks_id.id, 'activity_id': False, 
+                                    'pricelist_id': False, 'price_unit': 0.0})})
+                    self.default_lines = grouped_pks.values()
+
     # @api.multi  
     def _get_price(self, pricelist):
         final_price, rule_id = pricelist.get_product_price_rule(self.product_id, 1.0, self.contractor_id, date=self._context.get('date_pks'))
@@ -222,6 +279,101 @@ class WizardCreateContractorBook(models.TransientModel):
                             }
                         self.env['create.contractor.book.line'].create(vals)
         return True
+    
+    def generate_line(self):
+        if self.contractor_lines:
+            self.contractor_lines = [(5, None, None)]
+        date_from   = self.date_start
+        date_to     = self.date_end
+        nap_datas = []
+        if self.transaction == 'angkut':
+            nap_datas = self.env['lhm.nap'].search([('date_pks', '>=', date_from),
+                                                  ('date_pks', '<=', date_to), 
+                                                  ('contractor_id', '=', self.contractor_id.id), 
+                                                  ('state', 'in', ('confirmed','done')), 
+                                                  '|',('lhm_contractor_id.state','=','cancel'),
+                                                  ('lhm_contractor_id','=',False)],  order='date_pks')
+        elif self.transaction == 'uang_jalan':
+            nap_datas = self.env['lhm.nap'].search([('date_pks', '>=', date_from),
+                                                  ('date_pks', '<=', date_to), 
+                                                  ('contractor_id', '=', self.contractor_id.id), 
+                                                  ('state', 'in', ('confirmed','done'))],  order='date_pks')
+        to_write = {}
+        for nap in nap_datas.sorted(key= lambda x: x.vehicle_id.code):
+            if self.transaction=='angkut':
+                for block in list(set([x.block_id for x in nap.line_ids])):
+                    total_napxbjr = sum([xx.qty_nap*xx.block_id.with_context({'date': nap.date_pks})._get_rate_bjr() for xx in nap.line_ids])
+                    if not total_napxbjr:
+                        continue
+                    
+                    nap_lines = nap.line_ids.filtered(lambda x:x.block_id.id==block.id)
+                    qty = 0.0
+                    for line in nap_lines:
+                        qty += ((line.qty_nap*block.with_context({'date': nap.date_pks})._get_rate_bjr())/total_napxbjr) * nap.timbang_tara_pks
+                    
+                    if not qty:
+                        continue
+                    for default in self.default_lines.filtered(lambda x: x.location_type_id.oil_palm and x.pks_id.id==nap.pks_id.id):
+                        vals = {
+                            'wizard_id': self.id,
+                            'location_type_id': default.location_type_id.id,
+                            'location_id': block.location_id.id,
+                            'activity_id': default.activity_id.id,
+                            'pks_id': default.pks_id and default.pks_id.id or False,
+                            'qty': qty,
+                            'uom_id': self.product_id.uom_id.id,
+                            # 'price_unit': default.price_unit,
+                            'price_unit': self.with_context({'date_pks': nap.date_pks})._get_price(default.pricelist_id),
+                            'vehicle_id': nap.vehicle_id.id,
+                            'date': nap.date_pks,
+                            'nap_id': nap.id,
+                            }
+                        self.env['create.contractor.book.line'].create(vals)
+                for default in self.default_lines.filtered(lambda x: x.location_type_id.general_charge and x.pks_id.id==nap.pks_id.id):
+                    cost_center = self.env['account.cost.center'].search([('group_progress_id','=',nap.afdeling_id.group_progress_id.id)])
+                    vals = {
+                        'wizard_id': self.id,
+                        'location_type_id': default.location_type_id.id,
+                        'location_id': cost_center and cost_center[-1].location_id.id or nap.afdeling_id.location_id.id,
+                        'activity_id': default.activity_id.id,
+                        'pks_id': default.pks_id and default.pks_id.id or False,
+                        'qty': nap.timbang_tara_pks,
+                        'uom_id': self.product_id.uom_id.id,
+                        # 'price_unit': default.price_unit,
+                        'price_unit': self.with_context({'date_pks': nap.date_pks})._get_price(default.pricelist_id),
+                        'vehicle_id': nap.vehicle_id.id,
+                        'date': nap.date_pks,
+                        'nap_id': nap.id,
+                        }
+                    self.env['create.contractor.book.line'].create(vals)
+            elif self.transaction=='uang_jalan':
+                total_napxbjr = sum([xx.qty_nap*xx.block_id.with_context({'date': nap.date_pks})._get_rate_bjr() for xx in nap.line_ids])
+                for block in nap.line_ids.mapped('block_id'):
+                    if not total_napxbjr:
+                        continue
+                    nap_lines = nap.line_ids.filtered(lambda x:x.block_id.id==block.id)
+                    qty = 0.0
+                    for line in nap_lines:
+                        qty += ((line.qty_nap*block.with_context({'date': nap.date_pks})._get_rate_bjr())/total_napxbjr) * nap.netto
+                    
+                    if not qty:
+                        continue
+                    for default in self.default_lines.filtered(lambda x: x.location_type_id.oil_palm and x.pks_id.id==nap.pks_id.id):
+                        vals = {
+                            'wizard_id': self.id,
+                            'location_type_id': default.location_type_id.id,
+                            'location_id': block.location_id.id,
+                            'activity_id': default.activity_id.id,
+                            'pks_id': default.pks_id and default.pks_id.id or False,
+                            'qty': 1,
+                            # 'uom_id': self.product_id.uom_id.id,
+                            'price_unit': (qty/nap.netto)*default.price_unit,
+                            'vehicle_id': nap.vehicle_id.id,
+                            'date': nap.date_pks,
+                            'nap_id': nap.id,
+                            }
+                        self.env['create.contractor.book.line'].create(vals)
+        return True
 
     # @api.multi
     def create_contractor_book(self):
@@ -276,6 +428,59 @@ class WizardCreateContractorBook(models.TransientModel):
         action['views'] = [(self.env.ref('c10i_lhm.view_lhm_contractor_form').id, 'form')]
         action['res_id'] = header_id.id
         return action
+    
+    def create_contractor_book(self):
+        ContractorBook = self.env['lhm.contractor']
+        ContractorBookLine = self.env['lhm.contractor.vehicle.line']
+        nap_datas = list(set([x.nap_id for x in self.contractor_lines]))
+        for nap in nap_datas:
+            if nap.lhm_contractor_id:
+                if nap.lhm_contractor_id.state=='cancel':
+                    nap.lhm_contractor_id.sudo().unlink()
+                    continue
+                else:
+                    raise UserError(_('nap %s ini sudah digunakan di Buku Kontraktor %s')%(nap.name, nap.lhm_contractor_id.name))
+        if not self.contractor_lines:
+            raise UserError(_('Tidak memiliki Detail nap yg akan dibuatkan ke Buku Kontraktor'))
+        header_vals = {
+            'name': '',
+            'contractor_vehicle': True,
+            'payment_type': self.payment_type,
+            'total_type': 'result',
+            'type': 'vendor',
+            'supplier_id': self.contractor_id.id,
+            'account_period_id': self.account_period_id.id,
+            'date_start': self.date_start,
+            'date_end': self.date_end,
+            'company_id': self.company_id.id,
+        }
+        header_id = ContractorBook.create(header_vals)
+
+        for line in self.contractor_lines:
+            line_vals = {
+                'skip_constraint': True,
+                'contractor_id': header_id.id,
+                'location_type_id': line.location_type_id.id,
+                'location_id': line.location_id.id,
+                'activity_id': line.activity_id.id,
+                'date': line.date,
+                'vehicle_id': line.vehicle_id.id,
+                'uom_id': line.uom_id.id,
+                'nilai': line.qty,
+                'unit_price': line.price_unit,
+            }
+            line_id = ContractorBookLine.create(line_vals)
+
+        # Update all related Buku Kontraktor
+        # for nap in nap_datas:
+            # nap.write({'lhm_contractor_id': header_id.id})
+
+        # Redirect to show ContractorBook
+        # action = self.env.ref('account.ContractorBook_supplier_tree').read()[0]
+        action = self.env.ref('c10i_lhm.action_lhm_contractor').read()[0]
+        action['views'] = [(self.env.ref('c10i_lhm.view_lhm_contractor_form').id, 'form')]
+        action['res_id'] = header_id.id
+        return action
 
 
 class CreateContractorBookDefaultLine(models.TransientModel):
@@ -297,13 +502,14 @@ class CreateContractorBookLine(models.TransientModel):
 
     wizard_id           = fields.Many2one('wizard.create.contractor.book', 'Wizard', required=True, ondelete="cascade", copy=False)
     nab_id              = fields.Many2one("lhm.nab", "Source NAB")
+    nap_id              = fields.Many2one("lhm.nap", "Source NAP")
     date                = fields.Date("Tanggal")
     vehicle_id          = fields.Many2one("lhm.utility", "Alat")
     pks_id              = fields.Many2one("res.partner", "PKS")
     location_type_id    = fields.Many2one("lhm.location.type", "Tipe")
     location_id         = fields.Many2one("lhm.location", "Lokasi")
     activity_id         = fields.Many2one("lhm.activity", "Aktivitas")
-    qty                 = fields.Float('Hasil NAB')
+    qty                 = fields.Float('Hasil NAP')
     uom_id              = fields.Many2one("uom.uom", "Satuan")
     price_unit          = fields.Float('Tarif Satuan')
     amount              = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)

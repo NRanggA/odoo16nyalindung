@@ -15,6 +15,7 @@ class Product(models.Model):
     _description    = 'Product Inherit'
 
     is_nab              = fields.Boolean('Is NAB')
+    is_nap              = fields.Boolean('Is NAP')
     capitalized_tax_id  = fields.Many2many('account.tax', 'product_capitalized_tax_rel', 'prod_id', 'tax_id', string='Capitalized Taxes', domain=[('type_tax_use', '=', 'purchase')])
 
 class ProductProduct(models.Model):

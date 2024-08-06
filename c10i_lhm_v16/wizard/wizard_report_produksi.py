@@ -20,6 +20,9 @@ class WizardReportProduksi(models.TransientModel):
     nab_perblock_ids= fields.One2many(comodel_name='wizard.report.produksi.nab.perblock', inverse_name='produksi_id', string='Laporan NAB Per Blok', copy=False)
     nab_detail_ids = fields.One2many(comodel_name='wizard.report.produksi.nab.detail', inverse_name='produksi_id', string='Laporan NAB Detail', copy=False)
     nab_rekap_ids  = fields.One2many(comodel_name='wizard.report.produksi.nab.rekap', inverse_name='produksi_id', string='Laporan NAB Rekap', copy=False)
+    nap_perblock_ids= fields.One2many(comodel_name='wizard.report.produksi.nap.perblock', inverse_name='produksi_id', string='Laporan nap Per Blok', copy=False)
+    nap_detail_ids = fields.One2many(comodel_name='wizard.report.produksi.nap.detail', inverse_name='produksi_id', string='Laporan nap Detail', copy=False)
+    nap_rekap_ids  = fields.One2many(comodel_name='wizard.report.produksi.nap.rekap', inverse_name='produksi_id', string='Laporan nap Rekap', copy=False)
     rotasi_ids     = fields.One2many(comodel_name='wizard.report.produksi.rotasi.panen', inverse_name='produksi_id', string='Laporan Rotasi Panen', copy=False)
 
     def create_report(self):
@@ -554,17 +557,41 @@ class WizardReportProduksiRestan(models.TransientModel):
     qty_saw     = fields.Float(digits=(16,0), string="QTY SAW", readonly=True)
     qty_panen   = fields.Float(digits=(16,0), string="QTY PANEN", readonly=True)
     qty_nab     = fields.Float(digits=(16,0), string="QTY NAB", readonly=True)
+    qty_nap     = fields.Float(digits=(16,0), string="QTY NAP", readonly=True)
     qty_naf     = fields.Float(digits=(16,0), string="QTY AFKIR", readonly=True)
     qty_restan  = fields.Float(digits=(16,0), string="QTY RESTAN", readonly=True)
     umur_restan = fields.Float(digits=(16,0), string="UMUR RESTAN (Hari)", readonly=True)
     tgl_trans   = fields.Date(string="TGL TRANS", readonly=True)
     qty_nab2    = fields.Float(digits=(16,0), string="QTY NAB2", readonly=True)
+    qty_nap2    = fields.Float(digits=(16,0), string="QTY NAP2", readonly=True)
     qty_naf2    = fields.Float(digits=(16,0), string="QTY AFKIR2", readonly=True)
     produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
 class WizardReportProduksiNabPerblock(models.TransientModel):
     _name            = 'wizard.report.produksi.nab.perblock'
     _description     = 'Laporan NAB Detail PerBlok'
+
+    afdeling_id = fields.Many2one(comodel_name="res.afdeling", string="Afdeling",  ondelete="restrict", readonly=True)
+    block_id    = fields.Many2one(comodel_name="lhm.plant.block", string="Lokasi",  ondelete="restrict", readonly=True)
+    kbn_hi_kg = fields.Float(digits=(16,2), string="KBN HI KG", readonly=True)
+    kbn_hi_jjg = fields.Float(digits=(16,0), string="KBN HI JJG", readonly=True)
+    kbn_hi_bjr = fields.Float(digits=(16,2), string="KBN HI BJR", readonly=True)
+    kbn_shi_kg = fields.Float(digits=(16,2), string="KBN SHI KG", readonly=True)
+    kbn_shi_jjg = fields.Float(digits=(16,2), string="KBN SHI JJG", readonly=True)
+    kbn_shi_bjr = fields.Float(digits=(16,2), string="KBN SHI BJR", readonly=True)
+    pks_hi_bruto = fields.Float(digits=(16,2), string="PKS HI BRUTO", readonly=True)
+    pks_hi_grading = fields.Float(digits=(16,2), string="PKS HI GRADING", readonly=True)
+    pks_hi_netto = fields.Float(digits=(16,2), string="PKS HI NETTO", readonly=True)
+    pks_hi_bjr = fields.Float(digits=(16,2), string="PKS HI BJR", readonly=True)
+    pks_shi_bruto = fields.Float(digits=(16,2), string="PKS SHI BRUTO", readonly=True)
+    pks_shi_grading = fields.Float(digits=(16,2), string="PKS SHI GRADING", readonly=True)
+    pks_shi_netto = fields.Float(digits=(16,2), string="PKS SHI NETTO", readonly=True)
+    pks_shi_bjr = fields.Float(digits=(16,2), string="PKS SHI BJR", readonly=True)
+    produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
+
+class WizardReportProduksiNapPerblock(models.TransientModel):
+    _name            = 'wizard.report.produksi.nap.perblock'
+    _description     = 'Laporan NAP Detail PerBlok'
 
     afdeling_id = fields.Many2one(comodel_name="res.afdeling", string="Afdeling",  ondelete="restrict", readonly=True)
     block_id    = fields.Many2one(comodel_name="lhm.plant.block", string="Lokasi",  ondelete="restrict", readonly=True)
@@ -605,6 +632,27 @@ class WizardReportProduksiNabDetail(models.TransientModel):
     nab_id          = fields.Many2one(comodel_name="lhm.nab", string="NAB", ondelete="restrict")
     produksi_id     = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
+class WizardReportProduksiNapDetail(models.TransientModel):
+    _name           = 'wizard.report.produksi.nap.detail'
+    _description    = 'Laporan nap Detail'
+
+    tgl_nap         = fields.Date(string="TGL. nap", readonly=True)
+    no_nap          = fields.Char(string="REF. nap", readonly=True)
+    afdeling_id     = fields.Many2one(comodel_name="res.afdeling", string="AFDELING", ondelete="restrict", readonly=True)
+    block_id        = fields.Many2one(comodel_name="lhm.plant.block", string="LOKASI", ondelete="restrict", readonly=True)
+    kbn_qty_jjg     = fields.Float(digits=(16,0), string="KBN QTY JJG", readonly=True)
+    tgl_panen       = fields.Date(string="TGL PANEN", readonly=True)
+    kbn_qty_kg      = fields.Float(digits=(16,2), string="KBN QTY KG", readonly=True)
+    kbn_bjr         = fields.Float(digits=(16,2), string="KBN BJR", readonly=True)
+    bjr_id          = fields.Many2one(comodel_name="lhm.bjr", string="BJR", ondelete="restrict")
+    pks_tgl         = fields.Date("PKS TGL", readonly=True)
+    pks_bruto       = fields.Float(digits=(16,2), string="PKS BRUTO", readonly=True)
+    pks_grading     = fields.Float(digits=(16,2), string="PKS GRADING", readonly=True)
+    pks_netto       = fields.Float(digits=(16,2), string="PKS NETTO", readonly=True)
+    pks_bjr         = fields.Float(digits=(16,2), string="PKS BJR", readonly=True)
+    nap_id          = fields.Many2one(comodel_name="lhm.nap", string="nap", ondelete="restrict")
+    produksi_id     = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
+
 class WizardReportProduksiNabRekap(models.TransientModel):
     _name           = 'wizard.report.produksi.nab.rekap'
     _description    = 'Laporan NAB Rekap'
@@ -626,6 +674,29 @@ class WizardReportProduksiNabRekap(models.TransientModel):
     pks_grading     = fields.Float(digits=(16,2), string="PKS GRADING", readonly=True)
     pks_netto       = fields.Float(digits=(16,2), string="PKS NETTO", readonly=True)
     nab_id          = fields.Many2one(comodel_name="lhm.nab", string="NAB", ondelete="restrict")
+    produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
+
+class WizardReportProduksiNapRekap(models.TransientModel):
+    _name           = 'wizard.report.produksi.nap.rekap'
+    _description    = 'Laporan nap Rekap'
+
+    tgl_nap         = fields.Date(string="DOC. TGL", readonly=True)
+    no_nap          = fields.Char(string="REF. nap", readonly=True)
+    afdeling_id     = fields.Many2one(comodel_name="res.afdeling", string="AFDELING", ondelete="restrict", readonly=True)
+    vehicle_id     = fields.Many2one(comodel_name="lhm.utility", string="KENDARAAN",
+                                     ondelete="restrict", readonly=True, domain=[('type', '=', 'vh')])
+    driver          = fields.Char(string="SUPIR", readonly=True)
+    ownership       = fields.Selection('KEPEMILIKAN', readonly=True, related="vehicle_id.ownership", store=True)
+    tgl_nap2        = fields.Date(string="TGL nap", readonly=True)
+    kbn_qty_jjg     = fields.Float(digits=(16,0), string="KBN QTY JJG", readonly=True)
+    kbn_qty_kg      = fields.Float(digits=(16,2), string="KBN QTY KG", readonly=True)
+    kbn_bjr         = fields.Float(digits=(16,2), string="KBN BJR", readonly=True)
+    pks_id          = fields.Many2one(comodel_name="res.partner", string="PKS NAMA", ondelete="restrict")
+    pks_tgl         = fields.Date("PKS TGL", readonly=True)
+    pks_bruto       = fields.Float(digits=(16,2), string="PKS BRUTO", readonly=True)
+    pks_grading     = fields.Float(digits=(16,2), string="PKS GRADING", readonly=True)
+    pks_netto       = fields.Float(digits=(16,2), string="PKS NETTO", readonly=True)
+    nap_id          = fields.Many2one(comodel_name="lhm.nap", string="nap", ondelete="restrict")
     produksi_id = fields.Many2one(comodel_name='wizard.report.produksi', string='Laporan Produksi', required=True, ondelete="cascade", copy=False)
 
 class WizardReportProduksiRotasi(models.TransientModel):
@@ -715,6 +786,10 @@ class WizardReportProduksiSelect(models.TransientModel):
                              ('produksi_nab_detail', 'Laporan NAB Detail'),
                              ('produksi_nab_rekap', 'Laporan NAB Rekap'),
                              ('produksi_nab_afkir', 'Laporan BA TBS Afkir'),
+                             ('produksi_nap_perblock', 'Laporan NAP Per Blok'),
+                             ('produksi_nap_detail', 'Laporan NAP Detail'),
+                             ('produksi_nap_rekap', 'Laporan NAP Rekap'),
+                             ('produksi_nap_afkir', 'Laporan BA TBS Afkir'),
                              ('produksi_rotasi', 'Laporan Rotasi Panen'),
                              ], string='Choose Report', default='produksi_panen')
     
@@ -737,6 +812,10 @@ class WizardReportProduksiSelect(models.TransientModel):
             'produksi_nab_detail'   : 'action_report_produksi_nab_detail',
             'produksi_nab_rekap'    : 'action_report_produksi_nab_rekap',
             'produksi_nab_afkir'    : 'action_report_produksi_nab_afkir',
+            'produksi_nap_perblock' : 'action_report_produksi_nap_perblock',
+            'produksi_nap_detail'   : 'action_report_produksi_nap_detail',
+            'produksi_nap_rekap'    : 'action_report_produksi_nap_rekap',
+            'produksi_nap_afkir'    : 'action_report_produksi_nap_afkir',
             'produksi_rotasi'       : 'action_report_produksi_panen_rotasi',
         }.get(self.name)
 
@@ -748,6 +827,10 @@ class WizardReportProduksiSelect(models.TransientModel):
             'produksi_nab_detail'   : 'action_report_produksi_nab_detail',
             'produksi_nab_rekap'    : 'action_report_produksi_nab_rekap',
             'produksi_nab_afkir'    : 'action_report_produksi_nab_afkir',
+            'produksi_nap_perblock' : 'action_report_produksi_nap_perblock',
+            'produksi_nap_detail'   : 'action_report_produksi_nap_detail',
+            'produksi_nap_rekap'    : 'action_report_produksi_nap_rekap',
+            'produksi_nap_afkir'    : 'action_report_produksi_nap_afkir',
             'produksi_rotasi'       : 'action_report_produksi_panen_rotasi',
         }.get(self.name)
 
