@@ -2164,6 +2164,19 @@
                                     </tree>
                                 </field>
                             </group>
+                            <group string="Detail NAP" attrs="{'invisible':[('panen','=',False)]}">
+                                <field name='lhm_nap_ids' nolabel="1" readonly="1" >
+                                    <tree string="Link NAP Line" >
+                                        <field name="nap_id" />
+                                        <field name="nap_date" />
+                                        <field name="nap_date_pks" />
+                                        <field name="nilai" sum="nilai"/>
+                                        <field name="uom_id" />
+                                        <field name="nilai2" sum="nilai2"/>
+                                        <field name="uom_id2" />
+                                    </tree>
+                                </field>
+                            </group>
                         </group>
                     </sheet>
                 </form>
@@ -2215,6 +2228,22 @@
                         <field name="nab_afkir_line_ids" nolabel="1" readonly="1">
                             <tree editable="bottom">
                                 <field name="lhm_nab_afkir_id"/>
+                                <field name="tgl_panen"/>
+                                <field name="block_id" />
+                                <field name="qty" sum="qty"/>
+                            </tree>
+                        </field>
+                        <field name="nap_line_ids" nolabel="1" readonly="1">
+                            <tree editable="bottom">
+                                <field name="lhm_nap_id"/>
+                                <field name="tgl_panen"/>
+                                <field name="block_id" />
+                                <field name="qty_nap" sum="qty_nap"/>
+                            </tree>
+                        </field>
+                        <field name="nap_afkir_line_ids" nolabel="1" readonly="1">
+                            <tree editable="bottom">
+                                <field name="lhm_nap_afkir_id"/>
                                 <field name="tgl_panen"/>
                                 <field name="block_id" />
                                 <field name="qty" sum="qty"/>
@@ -3327,6 +3356,171 @@
             </field>
         </record>
 
+        <record id="view_lhm_nap_form" model="ir.ui.view">
+            <field name="name">view.lhm.nap.form</field>
+            <field name="model">lhm.nap</field>
+            <field name="arch" type="xml">
+                <form string="Nota Angkut Panen">
+                    <header>
+                        <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="create_material_receipt" string="Create Material Receipt" type="object" class="oe_highlight" />
+                        <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
+                        <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
+                        <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="No. Dok" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+
+                        <group>
+                            <group name="data_umum" string="Data Umum">
+                                <field name="date_nap" />
+                                <field name="account_period_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="no_nap" />
+                                <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+
+                            <!-- <field name="timbangan_kebun">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="product_qty"/>
+                                    <field name="product_uom"/>
+                                </tree>
+                            </field> Masih Error-->
+
+                            <!-- <group  name="timbangan_kebun" string="Timbangan Kebun">
+                                <field name="product_id"/>
+                                <field name="product_qty"/>
+                                <field name="uom_id"/>
+                                <field name="timbang_ksg_kbn" />
+                                <field name="timbang_isi_kbn" />
+                                <field name="timbang_tara_kbn" />
+                                <field name="janjang_jml" />
+                            </group> -->
+
+                            <group  name="kendaraan" string="Unit Kendaraan">
+                                <field name="driver" />
+                                <field name="vehicle_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="vehicle_subtitute_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="reg_number" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','!=',False)]}"/>
+                                <field name="reg_number_subtitue" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','=',False)]}"/>
+                                <field name="ownership" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','!=',False)]}"/>
+                                <field name="ownership_subtitute" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','=',False)]}"/>
+
+                                <!-- error domain pada field ini, domain="[('supplier','=',True)]" -->
+                                <field name="contractor_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': ['|', ('ownership','=','rental'), ('ownership_subtitute','=','rental')], 'invisible': [('ownership','!=','rental'), ('ownership_subtitute','!=','rental')]}"/>
+                                <field name="lhm_contractor_id" invisible="1"/>
+                                <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+
+                            <!-- <group name="timbangan_pks" string="Timbangan Pabrik">
+                                <field name="product_id"/>
+                                <field name="product_qty"/>
+                                <field name="uom_id"/>
+                                <field name="drc_latex"/>
+                                <field name="drc_lump"/>
+                                <field name="quality"/>
+                            </group> -->
+
+                            <!-- <group name="timbangan_pks" string="Timbangan PKS">
+                                <field name="pks_id" domain="[('is_pks','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="date_pks" />
+                                <field name="timbang_isi_pks" />
+                                <field name="timbang_ksg_pks" />
+                                <field name="timbang_tara_pks" />
+                                <field name="afkir" />
+                                <field name="grading" />
+                                <field name="netto" />
+                            </group> -->
+                       </group>
+
+                        <notebook>
+                            <page string="TIMBANGAN KEBUN">
+                                <field name="kebun_line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="lokasi_tk"/> -->
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="tgl_panen"/>
+                                    </tree>
+                                </field>
+                            </page>                         
+                            <page string="TIMBANGAN PABRIK">
+                                <field name="pabrik_line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="lokasi_tp"/> -->
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="tgl_terima"/>
+                                        <field name="drc"/>
+                                        <field name="quality_pabrik"/>
+                                        <field name="stock_picking_id"/>
+                                    </tree>
+                                </field>
+                            </page>                                               
+                            <page string="DETAIL NOTA ANGKUT PANEN">
+                                <field name="line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="pemanen"/>
+                                        <field name="product_id"/>
+                                        <field name="tgl_panen"/>
+                                        <field name="qty_nap" sum="qty_nap"/>
+                                        <field name="qty_panen_lhm"/>
+                                        <field name="qty_akum_nap"/>
+                                        <field name="qty_sisa_panen"/>
+                                    </tree>
+                                    <form string="Detail nap">
+                                        <group>
+                                            <group>
+                                                <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                                <field name="tgl_panen"/>
+                                            </group>
+                                            <group>
+                                                <field name="qty_nap"/>
+                                            </group>
+                                        </group>
+                                        <label for="lhm_progress_ids"/>
+                                        <field name="lhm_progress_ids" nolabel="1" readonly="1">
+                                            <tree editable="bottom" create="false" delete="false">
+                                                <field name="lhm_id" readonly="1"/>
+                                                <field name="date" readonly="1"/>
+                                                <field name="activity_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                                <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                                <field name="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
+                                                <field name="uom_id" attrs="{'readonly': [('uom_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                                <field name="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
+                                                <field name="uom2_id" attrs="{'readonly': [('uom2_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                            </tree>
+                                        </field>
+                                        <label for="lhm_line_ids"/>
+                                        <field name="lhm_line_ids" nolabel="1" readonly="1">
+                                            <tree string="Link LHM Line">
+                                                <field name="lhm_id"/>
+                                                <field name="employee_id"/>
+                                                <field name="nilai" sum="nilai"/>
+                                                <field name="uom_id"/>
+                                                <field name="nilai2" sum="nilai2"/>
+                                                <field name="uom_id2"/>
+                                            </tree>
+                                        </field>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
         <record id="view_lhm_nab_tree" model="ir.ui.view">
             <field name="name">view.lhm.nab.tree</field>
             <field name="model">lhm.nab</field>
@@ -3335,6 +3529,23 @@
                     <field name="name"/>
                     <field name="date_pks"/>
                     <field name="no_nab"/>
+                    <field name="afdeling_id"/>
+                    <field name="reg_number"/>
+                    <field name="vehicle_id"/>
+                    <field name="ownership"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_nap_tree" model="ir.ui.view">
+            <field name="name">view.lhm.nap.tree</field>
+            <field name="model">lhm.nap</field>
+            <field name="arch" type="xml">
+                <tree string="Nota Angkut Panen">
+                    <field name="name"/>
+                    <field name="date_pks"/>
+                    <field name="no_nap"/>
                     <field name="afdeling_id"/>
                     <field name="reg_number"/>
                     <field name="vehicle_id"/>
@@ -3362,6 +3573,24 @@
             </field>
         </record>
 
+        <record id="view_lhm_nap_filter" model="ir.ui.view">
+            <field name="name">view.lhm.nap.filter</field>
+            <field name="model">lhm.nap</field>
+            <field name="arch" type="xml">
+                <search string="Nota Angkut Panen">
+                    <field name="name" string="Nota Angkut Panen"/>
+                    <separator/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date_nap', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <!-- <filter string="Kepemilikan" domain="[]" context="{'group_by':'ownership'}"/> -->
+                        <!-- <filter string="No Polisi" domain="[]" context="{'group_by':'reg_number'}"/> -->
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <record id="action_lhm_nab_input" model="ir.actions.act_window">
             <field name="name">Nota Angkut Panen</field>
             <field name="res_model">lhm.nab</field>
@@ -3376,6 +3605,22 @@
               </p>
             </field>
         </record>
+
+        <record id="action_lhm_nap_input" model="ir.actions.act_window">
+            <field name="name">Nota Angkut Panen</field>
+            <field name="res_model">lhm.nap</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_nap_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'readonly_by_pass': ['ownership','reg_number'], 'search_default_date_monthly':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Nota Angkut Panen.
+              </p>
+            </field>
+        </record>
+
         <record id="action_lhm_nab_input_all" model="ir.actions.act_window">
             <field name="name">Nota Angkut Panen</field>
             <field name="res_model">lhm.nab</field>
@@ -3391,10 +3636,31 @@
             </field>
         </record>
 
+        <record id="action_lhm_nap_input_all" model="ir.actions.act_window">
+            <field name="name">Nota Angkut Panen</field>
+            <field name="res_model">lhm.nap</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_nap_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'readonly_by_pass': ['ownership','reg_number']}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Nota Angkut Panen.
+              </p>
+            </field>
+        </record>
+
         <menuitem id="submenu_lhm_nab" name="Nota Angkut Panen" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/>
         <!-- <menuitem id="submenu_lhm_nab_all" name="Nota Angkut Panen" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
         <menuitem id="submenu_lhm_nab_input" name="Nota Angkut Panen - Input" action="action_lhm_nab_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="10"/>
         <!-- <menuitem id="submenu_lhm_nab_input_all" name="Nota Angkut Panen - Input" action="action_lhm_nab_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="10"/> -->
+        <!-- End of Transaksi Nota Angkut Panen Input-->
+
+        <menuitem id="submenu_lhm_nap" name="Nota Angkut Panen" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nap_all" name="Nota Angkut Panen" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
+        <menuitem id="submenu_lhm_nap_input" name="Nota Angkut Panen - Input" action="action_lhm_nap_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="submenu_lhm_nap_input_all" name="Nota Angkut Panen - Input" action="action_lhm_nap_input_all" parent="submenu_lhm_nap_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End of Transaksi Nota Angkut Panen Input-->
 
 
@@ -3402,6 +3668,49 @@
         <record id="view_lhm_nab_afkir_form" model="ir.ui.view">
             <field name="name">view.lhm.nab.afkir.form</field>
             <field name="model">lhm.nab.afkir</field>
+            <field name="arch" type="xml">
+                <form string="Nota Afkir Buah">
+                    <header>
+                        <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary" groups="c10i_lhm_v16.group_plantation_approve_afkir"/>
+                        <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_approve_afkir"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="No. Dok" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+
+                        <group>
+                            <group  name="data_umum" string="Data Umum">
+                                <field name="date_naf" />
+                                <field name="account_period_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="no_naf" />
+                                <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="janjang_jml" />
+                            </group>
+                       </group>
+
+                        <notebook>
+                            <page string="Detail Nota Afkir Buah">
+                                <field name="line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}">
+                                    <tree editable="bottom">
+                                        <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="tgl_panen"/>
+                                        <field name="qty" sum="qty"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_nap_afkir_form" model="ir.ui.view">
+            <field name="name">view.lhm.nap.afkir.form</field>
+            <field name="model">lhm.nap.afkir</field>
             <field name="arch" type="xml">
                 <form string="Nota Afkir Buah">
                     <header>
@@ -3457,9 +3766,38 @@
             </field>
         </record>
 
+        <record id="view_lhm_nap_afkir_tree" model="ir.ui.view">
+            <field name="name">view.lhm.nap.afkir.tree</field>
+            <field name="model">lhm.nap.afkir</field>
+            <field name="arch" type="xml">
+                <tree string="Nota Afkir Buah">
+                    <field name="name"/>
+                    <field name="date_naf"/>
+                    <field name="no_naf"/>
+                    <field name="afdeling_id" />
+                    <field name="janjang_jml" />
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
         <record id="view_lhm_nab_afkir_filter" model="ir.ui.view">
             <field name="name">view.lhm.nab.afkir.filter</field>
             <field name="model">lhm.nab.afkir</field>
+            <field name="arch" type="xml">
+                <search string="Nota Afkir Buah">
+                    <field name="name" string="Nota Afkir Buah"/>
+                    <separator/>
+                    <filter name="date_today" string="Today" domain="[('date_naf', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_lhm_nap_afkir_filter" model="ir.ui.view">
+            <field name="name">view.lhm.nap.afkir.filter</field>
+            <field name="model">lhm.nap.afkir</field>
             <field name="arch" type="xml">
                 <search string="Nota Afkir Buah">
                     <field name="name" string="Nota Afkir Buah"/>
@@ -3485,6 +3823,22 @@
               </p>
             </field>
         </record>
+
+        <record id="action_lhm_nap_afkir_input" model="ir.actions.act_window">
+            <field name="name">Nota Afkir Buah</field>
+            <field name="res_model">lhm.nap.afkir</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_nap_afkir_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_date_monthly':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Nota Afkir Buah.
+              </p>
+            </field>
+        </record>
+
         <record id="action_lhm_nab_afkir_input_all" model="ir.actions.act_window">
             <field name="name">Nota Afkir Buah</field>
             <field name="res_model">lhm.nab.afkir</field>
@@ -3499,8 +3853,26 @@
             </field>
         </record>
 
+        <record id="action_lhm_nap_afkir_input_all" model="ir.actions.act_window">
+            <field name="name">Nota Afkir Buah</field>
+            <field name="res_model">lhm.nap.afkir</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_nap_afkir_filter"/>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Nota Afkir Buah.
+              </p>
+            </field>
+        </record>
+
         <menuitem id="submenu_lhm_nab_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/>
         <!-- <menuitem id="submenu_lhm_nab_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="30"/> -->
+        <!-- End of Transaksi Nota Afkir Buah Input-->
+
+        <menuitem id="submenu_lhm_nap_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nap_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input_all" parent="submenu_lhm_nap_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Nota Afkir Buah Input-->
 
 
