@@ -1241,77 +1241,24 @@ class lhm_transaction(models.Model):
     invoice_id          = fields.Many2one('account.move', 'Payroll Invoice')
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
 
-    def button_regenerate(self):
-        print(f"=== GET KEMANDORAN ===")
-        self._onchange_kemandoran()
-
-        # Definisikan list_employee sesuai dengan data yang valid
+    def check_missing_employees(self):
+        # Ambil employee yang sudah ada di lhm_line_ids
         existing_employee_ids = [line.employee_id.id for line in self.lhm_line_ids]
-        
-        # Mengambil daftar karyawan yang sudah check-in pada tanggal yang ditentukan
-        start_date = datetime.combine(self.date, datetime.min.time())
-        end_date = start_date + timedelta(days=1)
 
-        absensi = self.env['hr.attendance.sheet'].search([
-            ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
-            ('check_in', '>=', start_date),
-            ('check_in', '<', end_date)
-        ])
-        absensi_employee_ids = absensi.mapped('employee_id.id')
+        # Ambil semua employee dari kemandoran yang dipilih
+        kemandoran_employee_ids = self.kemandoran_id.employee_ids.ids
 
-        list_employee = []
-        seq = 1
+        # Cek employee yang tertinggal
+        missing_employees = set(kemandoran_employee_ids) - set(existing_employee_ids)
 
-        for employee in self.kemandoran_id.employee_ids:
-            if employee.id in absensi_employee_ids and employee.id not in existing_employee_ids:
-                min_wage = False
-                if employee and employee.basic_salary_type == 'employee':
-                    min_wage = self.env['hr.minimum.wage'].search([
-                        ('employee_id', '=', employee.id),
-                        ('date_from', '<=', self.date),
-                        ('date_to', '>=', self.date)
-                    ], limit=1)
-                elif employee and employee.basic_salary_type == 'employee_type':
-                    min_wage = self.env['hr.minimum.wage'].search([
-                        ('employee_type_id', '=', employee.type_id.id),
-                        ('date_from', '<=', self.date),
-                        ('date_to', '>=', self.date)
-                    ], limit=1)
-                if not min_wage:
-                    return {
-                        'value': {
-                            'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
-                            'date': False,
-                            'kemandoran_id': False,
-                        },
-                        'warning': {
-                            'title': _('Kesalahan Input Data'),
-                            'message': _(f"UMR pada Karyawan : { employee.name } dengan Tipe Karyawan : {employee.type_id.name}, tidak ditemukan !"),
-                        },
-                    }
-                values = {
-                    'sequence': seq,
-                    'date': self.date or False,
-                    'work_day': 0.0,
-                    'non_work_day': 0.0,
-                    'total_hke': 0.0,
-                    'total_hkne': 0.0,
-                    'min_wage_value_date': 0.0,
-                    'work_result': 0.0,
-                    'premi': 0.0,
-                    'overtime_value': 0.0,
-                    'penalty': 0.0,
-                    'name': employee and employee.no_induk or False,
-                    'employee_id': employee and employee.id or False,
-                    'min_wage_id': min_wage and min_wage.id or False,
-                    'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
-                }
-                list_employee.append((0, 0, values))
-                seq += 1
+        if missing_employees:
+            print("=== Missing Employees ===")
+            for emp_id in missing_employees:
+                employee = self.env['hr.employee'].browse(emp_id)
+                print(f"Employee ID: {employee.id}, Name: {employee.name}")
 
-        # Update lhm_line_ids dengan data yang baru
-        self.lhm_line_ids = [(0, 0, values) for values in list_employee] + [(1, line.id, {}) for line in self.lhm_line_ids if line.employee_id.id in existing_employee_ids]
-
+    def button_regenerate(self):
+        self.check_missing_employees()
 
     def _get_min_wage_id(self, employee):
         # Implementasikan logika untuk mendapatkan min_wage_id
@@ -1560,9 +1507,9 @@ class lhm_transaction(models.Model):
         # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
         mismatch_names = []
 
-        for line in self.lhm_line_ids:
-            
+        print(f"==== Fungsi approve dijalankan !")
 
+        for line in self.lhm_line_ids:
             # Cari sheet absensi yang sesuai untuk setiap karyawan
             attendance_sheet = self.env['hr.attendance.sheet'].search([
                 ('employee_id', '=', line.employee_id.id),
@@ -1657,135 +1604,288 @@ class lhm_transaction(models.Model):
                                 progress_line.write(new_lines)
         return True
 
-    def run_progress(self):
-        lhm_progress_list   = []
-        lhm_removed_list    = []
-        sequence_number     = 1
-        progress_line_obj   = self.env['lhm.transaction.process.line']
+    # def run_progress(self):
+    #     lhm_progress_list   = []
+    #     lhm_removed_list    = []
+    #     sequence_number     = 1
+    #     progress_line_obj   = self.env['lhm.transaction.process.line']
 
-        # for line in self.lhm_line_ids:
-        #     attendance_sheet = self.env['hr.attendance.sheet'].search([('employee_id', '=', line.employee_id.id)])
-        #     print(f"==== Data employee di attendance : {attendance_sheet.type_id.code}")
-        #     # Memeriksa jika attendance_id tidak sama dengan tipe KJ
-        #     if line.attendance_id.code != attendance_sheet.type_id.code:
-        #         raise UserError(_("Tipe absensi pada form LHM tidak sama dengan yang di Attendance: %s") % (line.employee_id.name))
-        
+    #     if self.process_line_ids:
+    #         for data in self.process_line_ids:
+    #             lhm_progress_list.append(data.id)
+    #     self.env.cr.execute("""
+    #         select ltl.activity_id,
+    #         ltl.location_id,
+    #         ltl.product_id,
+    #         ltl.product_id_2,
+    #         sum(ltl.work_day) as hk,
+    #         sum(ltl.work_day*ltl.min_wage_value)+sum(ltl.premi+ltl.overtime_value-ltl.penalty) as realisasi,
+    #         sum(ltl.hasil_1) as nilai,
+    #         case when is_panen is TRUE then sum(ltl.hasil_2) else 0 end as nilai2,
+    #         sum(ltl.premi+ltl.overtime_value-ltl.penalty) as premi,
+    #         sum(ltl.non_work_day) as hkne,
+    #         sum(ltl.min_wage_value_date)+sum(ltl.work_day*ltl.min_wage_value)+sum(ltl.premi+ltl.overtime_value-ltl.penalty)-sum(CASE WHEN ltl.min_wage_value_date > 0 THEN ltl.min_wage_value ELSE 0 END) as realisasi_date
+    #         from lhm_transaction_line ltl
+    #         left join lhm_activity la on ltl.activity_id = la.id
+    #         where ltl.activity_id is not NULL and lhm_id = %s 
+    #         group by ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, la.is_panen;
+    #         """, (self.id,))
+    #     for progres in self.env.cr.fetchall():
+    #         activity_data = self.env['lhm.activity'].search([('id', '=', progres[0])])
+
+    #         # print(f"== DATA AKTIVITAS : {activity_data.code}-{activity_data.name} UOM ID: {activity_data.uom_id.name} = {activity_data.uom2_id.name}")
+    #         print(f"=== Data product : {progres[2]} - {progres[3]}")
+
+    #         if lhm_progress_list != []:
+    #             progress_line   = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
+    #             if progress_line and len(progress_line) > 1:
+    #                 raise ValidationError(_("Terjadi kesalahan (T.T), Error Code %s. \n"
+    #                                         "Hubungi administrator untuk informasi lebih lanjut!"))
+    #             if progress_line and len(progress_line) == 1:
+    #                 if progress_line.nilai != progres[4] and progress_line.activity_id:
+    #                     progress_line.write({'nilai' : progres[4], 'updated': True,})
+    #                 if progress_line.nilai != progres[5] and progress_line.activity_id.is_panen:
+    #                     progress_line.write({'nilai2' : progres[5], 'updated': True,})
+    #                 if progress_line.work_day != progres[2]:
+    #                     progress_line.write({'work_day'  : progres[2], 'updated': True,})
+    #                 if progress_line.non_work_day != progres[7]:
+    #                     progress_line.write({'non_work_day'  : progres[7]})
+    #                 if progress_line.realization != progres[3]:
+    #                     progress_line.write({'realization'   : progres[3], 'updated': True,})
+    #                 if progress_line.realization_date != progres[8]:
+    #                     progress_line.write({'realization_date'   : progres[8]})
+    #                 if progress_line.premi != progres[6]:
+    #                     progress_line.write({'premi' : progres[6], 'updated': True,})
+    #                 lhm_removed_list.append(progress_line.id)
+    #             else:
+    #                 new_lines = {
+    #                     'sequence'          : sequence_number,
+    #                     'date'              : self.date,
+    #                     'activity_id'       : progres[0],
+    #                     'location_id'       : progres[1],
+    #                     'nilai'             : progres[4],
+    #                     'uom_id'            : activity_data.uom_id.id if activity_data else False,
+    #                     'nilai2'            : progres[5],
+    #                     'uom2_id'           : activity_data.uom2_id.id if activity_data else False,
+    #                     'work_day'          : progres[2],
+    #                     'non_work_day'      : progres[7],
+    #                     'realization'       : progres[3],
+    #                     'realization_date'  : progres[8],
+    #                     'premi'             : progres[6],
+    #                     'lhm_id'            : self.id,
+    #                 }
+
+    #                 if new_lines:
+    #                     self.env['lhm.transaction.process.line'].create(new_lines)
+    #                     sequence_number += 1
+    #         elif lhm_progress_list == []:
+    #             new_lines = {
+    #                 'sequence'          : sequence_number,
+    #                 'date'              : self.date,
+    #                 'activity_id'       : progres[0],
+    #                 'location_id'       : progres[1],
+    #                 'nilai'             : progres[4],
+    #                 'uom_id'            : activity_data.uom_id.id if activity_data else False,
+    #                 'nilai2'            : progres[5],
+    #                 'uom2_id'           : activity_data.uom2_id.id if activity_data else False,
+    #                 'work_day'          : progres[2],
+    #                 'non_work_day'      : progres[7],
+    #                 'realization'       : progres[3],
+    #                 'realization_date'  : progres[8],
+    #                 'premi'             : progres[6],
+    #                 'lhm_id'            : self.id,
+    #             }
+    #             if new_lines:
+    #                 self.env['lhm.transaction.process.line'].create(new_lines)
+    #                 sequence_number += 1
+    #     if len(lhm_removed_list) != len(lhm_progress_list):
+    #         to_remove_list = []
+    #         if len(lhm_progress_list) > len(lhm_removed_list):
+    #             to_remove_list = list(set(lhm_progress_list)^set(lhm_removed_list))
+    #         for removed_progress in progress_line_obj.search([('id', 'in', to_remove_list)]):
+    #             removed_progress.write({
+    #                 'realization'       : 0.0,
+    #                 'realization_date'  : 0.0,
+    #                 'work_day'          : 0.0,
+    #                 'premi'             : 0.0,
+    #                 'deleted'           : True,
+    #             })
+    #     if False in [isinstance(x.attendance_id.id, bool) for x in self.lhm_line_ids]:
+    #         date_str = self.date.strftime('%Y-%m-%d')
+    #         self.name = self.kemandoran_id.code + "/" + datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+    #         if self.doc_type_id.approval:
+    #             self.state  = 'in_progress'
+    #         else:
+    #             self.state  = 'done'
+    #     else:
+    #         raise ValidationError(_("Minimal salah satu absensi di daftar karyawan harus terisi!"))
+    #     for lhm_line in self.lhm_line_ids:
+    #         if lhm_line.transfer_id:
+    #             lhm_line.transfer_id.write({'name': self.name})
+
+    #     employee_ids    = []
+    #     for line in self.lhm_line_ids:
+    #         if line.attendance_id and line.employee_id and \
+    #                 line.employee_id.type_id and line.employee_id.type_id.monthly_employee and line.employee_id.id not in employee_ids \
+    #                 and line.valid and (line.work_day > 0 or line.non_work_day > 0):
+    #             employee_ids.append(line.employee_id.id)
+    #     if employee_ids != []:
+    #         self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
+
+
+    def run_progress(self):
+        lhm_progress_list = []
+        lhm_removed_list = []
+        sequence_number = 1
+        progress_line_obj = self.env['lhm.transaction.process.line']
 
         if self.process_line_ids:
             for data in self.process_line_ids:
                 lhm_progress_list.append(data.id)
+
         self.env.cr.execute("""
-            select ltl.activity_id,
-            ltl.location_id,
-            sum(ltl.work_day) as hk,
-            sum(ltl.work_day*ltl.min_wage_value)+sum(ltl.premi+ltl.overtime_value-ltl.penalty) as realisasi,
-            case when is_panen is TRUE then sum(ltl.hasil_1) else 0 end as nilai,
-            case when is_panen is TRUE then sum(ltl.hasil_2) else 0 end as nilai2,
-            sum(ltl.premi+ltl.overtime_value-ltl.penalty) as premi,
-            sum(ltl.non_work_day) as hkne,
-            sum(ltl.min_wage_value_date)+sum(ltl.work_day*ltl.min_wage_value)+sum(ltl.premi+ltl.overtime_value-ltl.penalty)-sum(CASE WHEN ltl.min_wage_value_date > 0 THEN ltl.min_wage_value ELSE 0 END) as realisasi_date
-            from lhm_transaction_line ltl
-            left join lhm_activity la on ltl.activity_id = la.id
-            where ltl.activity_id is not NULL and lhm_id = %s group by ltl.activity_id, ltl.location_id, la.is_panen;
-            """, (self.id,))
+            SELECT 
+                ltl.activity_id,
+                ltl.location_id,
+                ltl.product_id,
+                ltl.product_id_2,
+                SUM(ltl.work_day) AS hk,
+                SUM(ltl.work_day * ltl.min_wage_value) + SUM(ltl.premi + ltl.overtime_value - ltl.penalty) AS realisasi,
+                SUM(ltl.hasil_1) AS nilai,
+                CASE WHEN la.is_panen IS TRUE THEN SUM(ltl.hasil_2) ELSE 0 END AS nilai2,
+                SUM(ltl.premi + ltl.overtime_value - ltl.penalty) AS premi,
+                SUM(ltl.non_work_day) AS hkne,
+                SUM(ltl.min_wage_value_date) + SUM(ltl.work_day * ltl.min_wage_value) + SUM(ltl.premi + ltl.overtime_value - ltl.penalty) - SUM(CASE WHEN ltl.min_wage_value_date > 0 THEN ltl.min_wage_value ELSE 0 END) AS realisasi_date,
+                ltl.satuan_1,
+                CASE WHEN la.is_panen IS TRUE THEN ltl.satuan_2 ELSE NULL END AS satuan_2
+            FROM 
+                lhm_transaction_line ltl
+            LEFT JOIN 
+                lhm_activity la ON ltl.activity_id = la.id
+            WHERE 
+                ltl.activity_id IS NOT NULL AND ltl.lhm_id = %s 
+            GROUP BY 
+                ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, la.is_panen, ltl.satuan_1, ltl.satuan_2;
+        """, (self.id,))
+
         for progres in self.env.cr.fetchall():
             activity_data = self.env['lhm.activity'].search([('id', '=', progres[0])])
-            print(f"== DATA AKTIVITAS : {activity_data.code}-{activity_data.name} UOM ID: {activity_data.uom_id.name}")
-            if lhm_progress_list != []:
-                progress_line   = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
+
+            if lhm_progress_list:
+                progress_line = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
                 if progress_line and len(progress_line) > 1:
                     raise ValidationError(_("Terjadi kesalahan (T.T), Error Code %s. \n"
                                             "Hubungi administrator untuk informasi lebih lanjut!"))
                 if progress_line and len(progress_line) == 1:
-                    if progress_line.nilai != progres[4] and progress_line.activity_id.is_panen:
-                        progress_line.write({'nilai' : progres[4], 'updated': True,})
-                    if progress_line.nilai != progres[5] and progress_line.activity_id.is_panen:
-                        progress_line.write({'nilai2' : progres[5], 'updated': True,})
-                    if progress_line.work_day != progres[2]:
-                        progress_line.write({'work_day'  : progres[2], 'updated': True,})
-                    if progress_line.non_work_day != progres[7]:
-                        progress_line.write({'non_work_day'  : progres[7]})
-                    if progress_line.realization != progres[3]:
-                        progress_line.write({'realization'   : progres[3], 'updated': True,})
-                    if progress_line.realization_date != progres[8]:
-                        progress_line.write({'realization_date'   : progres[8]})
-                    if progress_line.premi != progres[6]:
-                        progress_line.write({'premi' : progres[6], 'updated': True,})
+                    if progress_line.nilai != progres[6] and progress_line.activity_id:
+                        progress_line.write({'nilai': progres[6], 'updated': True})
+                    if progress_line.nilai2 != progres[7] and progress_line.activity_id.is_panen:
+                        progress_line.write({'nilai2': progres[7], 'updated': True})
+                    if progress_line.work_day != progres[4]:
+                        progress_line.write({'work_day': progres[4], 'updated': True})
+                    if progress_line.non_work_day != progres[9]:
+                        progress_line.write({'non_work_day': progres[9]})
+                    if progress_line.realization != progres[5]:
+                        progress_line.write({'realization': progres[5], 'updated': True})
+                    if progress_line.realization_date != progres[10]:
+                        progress_line.write({'realization_date': progres[10]})
+                    if progress_line.premi != progres[8]:
+                        progress_line.write({'premi': progres[8], 'updated': True})
+                    if progress_line.product_id.id != progres[2]:
+                        progress_line.write({'product_id': progres[2]})
+                    if progress_line.product_id_2.id != progres[3]:
+                        progress_line.write({'product_id_2': progres[3]})
+                    if progres[7] > 0:  # Jika ada hasil_2
+                        if progress_line.uom_id.id != progres[11]:
+                            progress_line.write({'uom_id': progres[11]})
+                        if progress_line.uom2_id.id != progres[12]:
+                            progress_line.write({'uom2_id': progres[12]})
+                    else:  # Jika tidak ada hasil_2
+                        if progress_line.uom_id.id != activity_data.uom_id.id:
+                            progress_line.write({'uom_id': activity_data.uom_id.id})
+                        if progress_line.uom2_id.id != activity_data.uom2_id.id:
+                            progress_line.write({'uom2_id': activity_data.uom2_id.id})
                     lhm_removed_list.append(progress_line.id)
                 else:
                     new_lines = {
-                        'sequence'          : sequence_number,
-                        'date'              : self.date,
-                        'activity_id'       : progres[0],
-                        'location_id'       : progres[1],
-                        'nilai'             : progres[4],
-                        'uom_id'            : activity_data and activity_data.uom_id.id or False,
-                        'nilai2'            : progres[5],
-                        'uom2_id'           : activity_data and activity_data.uom2_id.id or False,
-                        'work_day'          : progres[2],
-                        'non_work_day'      : progres[7],
-                        'realization'       : progres[3],
-                        'realization_date'  : progres[8],
-                        'premi'             : progres[6],
-                        'lhm_id'            : self.id,
+                        'sequence': sequence_number,
+                        'date': self.date,
+                        'activity_id': progres[0],
+                        'location_id': progres[1],
+                        'product_id': progres[2],
+                        'product_id_2': progres[3],
+                        'nilai': progres[6],
+                        'uom_id': progres[11] if progres[11] else (activity_data.uom_id.id if activity_data else False),
+                        'nilai2': progres[7],
+                        'uom2_id': progres[12] if progres[12] else (activity_data.uom2_id.id if activity_data else False),
+                        'work_day': progres[4],
+                        'non_work_day': progres[9],
+                        'realization': progres[5],
+                        'realization_date': progres[10],
+                        'premi': progres[8],
+                        'lhm_id': self.id,
                     }
                     if new_lines:
                         self.env['lhm.transaction.process.line'].create(new_lines)
-                        sequence_number     += 1
-            elif lhm_progress_list == []:
+                        sequence_number += 1
+            else:
                 new_lines = {
-                    'sequence'          : sequence_number,
-                    'date'              : self.date,
-                    'activity_id'       : progres[0],
-                    'location_id'       : progres[1],
-                    'nilai'             : progres[4],
-                    'uom_id'            : activity_data and activity_data.uom_id.id or False,
-                    'nilai2'            : progres[5],
-                    'uom2_id'           : activity_data and activity_data.uom2_id.id or False,
-                    'work_day'          : progres[2],
-                    'non_work_day'      : progres[7],
-                    'realization'       : progres[3],
-                    'realization_date'  : progres[8],
-                    'premi'             : progres[6],
-                    'lhm_id'            : self.id,
+                    'sequence': sequence_number,
+                    'date': self.date,
+                    'activity_id': progres[0],
+                    'location_id': progres[1],
+                    'product_id': progres[2],
+                    'product_id_2': progres[3],
+                    'nilai': progres[6],
+                    'uom_id': progres[11] if progres[11] else (activity_data.uom_id.id if activity_data else False),
+                    'nilai2': progres[7],
+                    'uom2_id': progres[12] if progres[12] else (activity_data.uom2_id.id if activity_data else False),
+                    'work_day': progres[4],
+                    'non_work_day': progres[9],
+                    'realization': progres[5],
+                    'realization_date': progres[10],
+                    'premi': progres[8],
+                    'lhm_id': self.id,
                 }
                 if new_lines:
                     self.env['lhm.transaction.process.line'].create(new_lines)
                     sequence_number += 1
+
         if len(lhm_removed_list) != len(lhm_progress_list):
             to_remove_list = []
             if len(lhm_progress_list) > len(lhm_removed_list):
-                to_remove_list = list(set(lhm_progress_list)^set(lhm_removed_list))
+                to_remove_list = list(set(lhm_progress_list) ^ set(lhm_removed_list))
             for removed_progress in progress_line_obj.search([('id', 'in', to_remove_list)]):
                 removed_progress.write({
-                    'realization'       : 0.0,
-                    'realization_date'  : 0.0,
-                    'work_day'          : 0.0,
-                    'premi'             : 0.0,
-                    'deleted'           : True,
+                    'realization': 0.0,
+                    'realization_date': 0.0,
+                    'work_day': 0.0,
+                    'premi': 0.0,
+                    'deleted': True,
                 })
         if False in [isinstance(x.attendance_id.id, bool) for x in self.lhm_line_ids]:
             date_str = self.date.strftime('%Y-%m-%d')
             self.name = self.kemandoran_id.code + "/" + datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
             if self.doc_type_id.approval:
-                self.state  = 'in_progress'
+                self.state = 'in_progress'
             else:
-                self.state  = 'done'
+                self.state = 'done'
         else:
             raise ValidationError(_("Minimal salah satu absensi di daftar karyawan harus terisi!"))
         for lhm_line in self.lhm_line_ids:
             if lhm_line.transfer_id:
                 lhm_line.transfer_id.write({'name': self.name})
 
-        employee_ids    = []
+        employee_ids = []
         for line in self.lhm_line_ids:
             if line.attendance_id and line.employee_id and \
                     line.employee_id.type_id and line.employee_id.type_id.monthly_employee and line.employee_id.id not in employee_ids \
                     and line.valid and (line.work_day > 0 or line.non_work_day > 0):
                 employee_ids.append(line.employee_id.id)
-        if employee_ids != []:
+        if employee_ids:
             self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
 
+    
     def unlink(self):
         for transaction in self:
             if transaction.state != 'draft':
@@ -1971,13 +2071,13 @@ class lhm_transaction_line(models.Model):
     drc_lump = fields.Float('drc Lump (%)')
     target_panen = fields.Float('Target Panen')
 
-    product_id  = fields.Many2one('product.product', string="Product 1")
-    product_id_2 = fields.Many2one('product.product', string="Product 2")
+    product_id  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product_id_2 = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
 
     hasil_1  = fields.Integer(string="Hasil 1")
-    satuan_1 = fields.Many2one('uom.uom', string='Satuan 1')
+    satuan_1 = fields.Many2one('uom.uom', string='Satuan 1', ondelete="restrict")
     hasil_2  = fields.Integer(string="Hasil 2")
-    satuan_2 = fields.Many2one('uom.uom', string='Satuan 2')
+    satuan_2 = fields.Many2one('uom.uom', string='Satuan 2', ondelete="restrict")
 
     is_hasil_2          = fields.Boolean("Is Hasil 2", default=False)
 
@@ -2267,6 +2367,9 @@ class lhm_transaction_process_line(models.Model):
     nab_line_ids        = fields.Many2many('lhm.nab.line', 'lhm_process_nab_line_rel', 'progress_id', 'nab_line_id', 'Nab Ref')
     nab_afkir_line_ids  = fields.Many2many('lhm.nab.afkir.line', 'lhm_process_nab_afkir_line_rel', 'progress_id', 'nab_afkir_line_id', 'Nab Afkir Ref')
     nab_nilai           = fields.Float('Nilai NAB', compute='_compute_qty_nab', store=True)
+
+    product_id  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product_id_2 = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
 
     @api.depends('nab_line_ids', 'nab_afkir_line_ids')
     def _compute_qty_nab(self):

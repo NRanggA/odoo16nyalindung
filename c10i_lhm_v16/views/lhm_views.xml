@@ -1801,7 +1801,7 @@
                             <page string="Daftar Karyawan">
                                 <group>
                                     <button name="%(c10i_lhm_v16.action_wizard_add_employee)d" class="oe_stat_button" icon="fa-users" string="Tambah Karyawan" states="draft" type="action" groups="c10i_lhm_v16.group_plantation_operator"/>
-                                    <!-- <button name="button_regenerate" string="Regenerate Employee" type="object" class="oe_stat_button" icon="fa-spinner"/> -->
+                                    <!-- <button name="button_regenerate" string="Regenerate Employee" type="object" class="oe_stat_button" icon="fa-spinner" states="draft"/> -->
                                 </group>
                                 <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
                                     <tree editable="bottom" create="false" class="two-line-header">
@@ -1824,14 +1824,11 @@
 
 
                                         <field name="is_hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-
                                         <button icon="fa-plus" type="object" title="Tambah Hasil" name="tambah_hasil_2" class="oe_highlight" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('is_hasil_2', '!=', True)]}"/>
-                                        
                                         <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
                                         <field name="non_work_day" readonly="1" invisible="1"/>
                                         
                                         <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
-
                                         <!-- BEGIN : POC Nyalindung -->
                                         <!-- <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
@@ -1839,19 +1836,18 @@
                                         <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
                                         
-                                        <field name="product_id" invisible="1"/>
+                                        <field name="product_id" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
                                         <field name="hasil_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
                                         <field name="satuan_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
 
-                                        <field name="product_id_2" invisible="1"/>
-                                        <field name="hasil_2" readonly="1" optional="show"/>
-                                        <field name="satuan_2" readonly="1" optional="show"/>
+                                        <field name="product_id_2" attrs="{'readonly': [('is_hasil_2', '!=', True)]}"/>
+                                        <field name="hasil_2" optional="show"/>
+                                        <field name="satuan_2" optional="show"/>
 
                                         <field name="drc_latex" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="drc_lump" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="target_panen" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <!-- END : POC Nyalindung -->
-
 
                                         <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
@@ -1901,10 +1897,15 @@
                                         <field name="activity_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="name" readonly="1"/>
                                         <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        
+                                        <field name="product_id" attrs="{'readonly': [('uom_id','=',False)]}"/>
                                         <field name="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
                                         <field name="uom_id" attrs="{'readonly': [('uom_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        
+                                        <field name="product_id_2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
                                         <field name="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
                                         <field name="uom2_id" attrs="{'readonly': [('uom2_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        
                                         <field name="work_day" readonly="1"/>
                                         <field name="non_work_day" readonly="1"/>
                                         <field name="premi" readonly="1" groups="base.group_no_one"/>
