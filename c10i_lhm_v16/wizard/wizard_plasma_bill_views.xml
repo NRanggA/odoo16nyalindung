@@ -149,7 +149,7 @@
             <field name="target">current</field>
         </record>
 
-        <menuitem id="menu_lhm_bill_plasma" 
+        <!-- <menuitem id="menu_lhm_bill_plasma" 
                   action="action_lhm_bill_plasma" 
                   parent="submenu_lhm_nab" 
                   groups="group_plantation_operator" 
@@ -160,6 +160,6 @@
                   parent="submenu_lhm_nap" 
                   groups="group_plantation_operator" 
                   name="Generate Bill TBS Plasma"
-                  sequence="31"/>
+                  sequence="31"/> -->
     </data>
 </odoo>

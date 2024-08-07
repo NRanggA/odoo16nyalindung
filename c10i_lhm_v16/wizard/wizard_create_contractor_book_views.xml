@@ -58,7 +58,7 @@
         </record>
 
         <record model='ir.actions.act_window' id='action_create_contractor_book'>
-            <field name="name">Input Buku Kontraktor atas NAB</field>
+            <field name="name">Input Buku Kontraktor atas NAP</field>
             <field name="res_model">wizard.create.contractor.book</field>
             <!-- <field name="view_type">form</field> -->
             <field name="view_mode">form</field>
@@ -71,7 +71,7 @@
                   action="action_create_contractor_book" 
                   parent="menu_plantation_transaction" 
                   groups="group_plantation_operator" 
-                  name="Input Buku Kontraktor atas NAB"
+                  name="Input Buku Kontraktor atas NAP"
                   sequence="50"/>
         
     </data>

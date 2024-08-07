@@ -3652,9 +3652,9 @@
             </field>
         </record>
 
-        <menuitem id="submenu_lhm_nab" name="Nota Angkut Panen" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nab" name="Nota Angkut Panen" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/> -->
         <!-- <menuitem id="submenu_lhm_nab_all" name="Nota Angkut Panen" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
-        <menuitem id="submenu_lhm_nab_input" name="Nota Angkut Panen - Input" action="action_lhm_nab_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="submenu_lhm_nab_input" name="Nota Angkut Panen - Input" action="action_lhm_nab_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="10"/> -->
         <!-- <menuitem id="submenu_lhm_nab_input_all" name="Nota Angkut Panen - Input" action="action_lhm_nab_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End of Transaksi Nota Angkut Panen Input-->
 
@@ -3868,11 +3868,11 @@
             </field>
         </record>
 
-        <menuitem id="submenu_lhm_nab_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nab_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/> -->
         <!-- <menuitem id="submenu_lhm_nab_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Nota Afkir Buah Input-->
 
-        <menuitem id="submenu_lhm_nap_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nap_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="30"/> -->
         <!-- <menuitem id="submenu_lhm_nap_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input_all" parent="submenu_lhm_nap_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Nota Afkir Buah Input-->
 
