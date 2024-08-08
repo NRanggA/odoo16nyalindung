@@ -45,6 +45,7 @@ class HrAttendanceBatch(models.Model):
                                 ('processed', 'Processed'),
                                 ('valid', 'Valid'),
                             ], string='Status', default="draft")
+                            
 
     def action_show_sheet(self):
         return {
@@ -172,7 +173,7 @@ class HrAttendanceBatch(models.Model):
             for index, row in df.iterrows():
                 employee = self.env['hr.employee'].search([('no_induk', '=', row['Nik']), ('name', '=', row['Nama'])], limit=1)
                 if not employee:
-                    raise ValidationError(f"Karyawan dengan nip {row['Nik']} tidak ditemukan!")
+                    raise ValidationError(f"Karyawan dengan nik {row['Nik']} dan nama {row['Nama']} tidak ditemukan!")
 
                 try:
                     check_in_str = None
@@ -191,6 +192,22 @@ class HrAttendanceBatch(models.Model):
 
                 except ValueError as e:
                     raise ValueError(f"Kesalahan format tanggal: {e}")
+
+                # Ambil semua leave records
+                all_leaves = self.env['hr.leave'].search([])
+
+                # Pastikan leave.date_from dan leave.date_to memiliki timezone UTC
+                employee_time_off = all_leaves.filtered(
+                    lambda leave: employee.id in leave.all_employee_ids.ids and 
+                                leave.date_from.replace(tzinfo=pytz.utc) <= check_in_utc <= leave.date_to.replace(tzinfo=pytz.utc)
+                )
+
+                if employee_time_off:
+                    # print(f"=== Tipe Absensi pada employee time off : {employee_time_off.holiday_status_id.attendance_type_id.code}")
+                    raise ValidationError(f"Employee {employee.name} masih terdaftar di dalam time off hingga tgl: {employee_time_off.date_to.strftime('%Y-%m-%d')}, silahkan ubah time off jika ingin tetap hadir !")
+                #     attendance_type_code = employee_time_off.holiday_status_id.attendance_type_id.code
+                # else:
+                #     attendance_type_code = 'KJ' if check_out_str else 'M'
 
                 # Tentukan kode jenis absensi
                 attendance_type_code = 'KJ' if check_out_str else 'M'
@@ -227,9 +244,9 @@ class HrAttendanceBatch(models.Model):
 
         print(f"==== Data Attendance : {attendance_data}")
 
+
         for attendance, data in zip(self.attendance_ids, attendance_data):
             employee_id = data.get('employee_id')
-            type_id = data.get('type_id')
             date    = data.get('date')
 
             # Tentukan jenis kehadiran berdasarkan kehadiran Check-in dan Check-out
@@ -253,7 +270,8 @@ class HrAttendanceBatch(models.Model):
                 })
                 attendance_sheets.append(existing_attendance_sheet.id)
             else:
-                raise ValidationError(f"Data absensi pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
+                employee = self.env['hr.employee'].search([('id', '=', employee_id)], limit=1)
+                raise ValidationError(f"Data absensi untuk user {employee.name} pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
         
         self.write({'state': 'processed'})
         self.attendance_sheet_ids = [(6, 0, attendance_sheets)]

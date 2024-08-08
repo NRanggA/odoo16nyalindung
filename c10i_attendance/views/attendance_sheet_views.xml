@@ -14,6 +14,24 @@
 	    </field>
 	</record>
 
+    <record id="attendance_sheet_view_form" model="ir.ui.view">
+        <field name="name">attendance.sheet.view.form</field>
+        <field name="model">hr.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <form string="Form Sheet Absensi">
+                <sheet>
+                    <group>
+                        <field name="employee_id" />
+                        <field name="date" />
+                        <field name="type_id"/>
+                        <field name="check_in" />
+                        <field name="check_out" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
 	<record id="attendance_sheet_search" model="ir.ui.view">
         <field name="name">attendance.sheet.search</field>
         <field name="model">hr.attendance.sheet</field>
