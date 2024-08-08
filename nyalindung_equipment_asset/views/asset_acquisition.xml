@@ -34,6 +34,17 @@
                 </xpath>
             </field>
         </record>
+
+        <record id="nyalindung_asset_acquisition_inherit_tree" model="ir.ui.view">
+            <field name="name">nyalindung.asset.acquisition.inherit.tree</field>
+            <field name="model">account.asset.acquisition</field>
+            <field name="inherit_id" ref="c10i_equipment_account_asset.asset_acquisition_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="default_order">id desc</attribute>
+                </xpath>
+            </field>
+        </record>
     
     </data>
     
