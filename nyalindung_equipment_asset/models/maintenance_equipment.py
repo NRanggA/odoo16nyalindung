@@ -12,7 +12,7 @@ class EquipmentAsset(models.Model):
         ('good', 'Good'),
         ('broken', 'Broken'),
         ('lost', 'Lost'),
-    ], string='condition', default="good")
+    ], string='condition', default="good") 
     asset_type = fields.Selection([
         ('lva', 'LVA'),
         ('fa', 'FA'),
