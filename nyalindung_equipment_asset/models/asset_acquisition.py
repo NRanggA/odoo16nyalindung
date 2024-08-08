@@ -170,7 +170,7 @@ class AssetAcquisition(models.Model):
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': product_expense or product_categ_expense,
-					'name': 'Test',
+					'name': 'Reclass Asset to SPM',
 					'debit': amount,
 					'credit': 0.0,
 				}
