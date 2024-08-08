@@ -72,8 +72,8 @@
             <field name="target">current</field>
         </record>
 
-        <menuitem id="submenu_lhm_nab_gen" name="Generate Customer Invoice - NAB "
-                  action="menu_lhm_gen_nab_action" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/>
+        <!-- <menuitem id="submenu_lhm_nab_gen" name="Generate Customer Invoice - NAB "
+                  action="menu_lhm_gen_nab_action" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/> -->
         
     </data>
 </odoo>

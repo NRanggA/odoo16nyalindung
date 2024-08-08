@@ -104,6 +104,16 @@
                             <field name="subtotal" sum="qty"/>
                         </tree>
                     </field>
+                    <field name="header_nap_ids" mode="tree" readonly="1">
+                        <tree string="Header nap" editable="bottom" create="false">
+                            <field name="name"/>
+                            <field name="year"/>
+                            <field name="afdeling_id"/>
+                            <field name="qty" sum="qty"/>
+                            <field name="price_unit" />
+                            <field name="subtotal" sum="qty"/>
+                        </tree>
+                    </field>
 
                     <separator string="Detail Nota Angkut Buah" colspan="4"/>
                     <field name="line_nab_ids" mode="tree" readonly="1">
@@ -111,6 +121,16 @@
                             <field name="date_pks"/>
                             <field name="block_id"/>
                             <field name="qty_nab"/>
+                            <field name="janjang_jml" />
+                            <field name="nilai_bjr"/>
+                            <field name="netto" invisible="1"/>
+                        </tree>
+                    </field>
+                    <field name="line_nap_ids" mode="tree" readonly="1">
+                        <tree string="Detail nap" editable="bottom" create="false">
+                            <field name="date_pks"/>
+                            <field name="block_id"/>
+                            <field name="qty_nap"/>
                             <field name="janjang_jml" />
                             <field name="nilai_bjr"/>
                             <field name="netto" invisible="1"/>
@@ -129,11 +149,17 @@
             <field name="target">current</field>
         </record>
 
-        <menuitem id="menu_lhm_bill_plasma" 
+        <!-- <menuitem id="menu_lhm_bill_plasma" 
                   action="action_lhm_bill_plasma" 
                   parent="submenu_lhm_nab" 
                   groups="group_plantation_operator" 
                   name="Generate Bill TBS Plasma"
                   sequence="31"/>
+        <menuitem id="menu_lhm_bill_plasma" 
+                  action="action_lhm_bill_plasma" 
+                  parent="submenu_lhm_nap" 
+                  groups="group_plantation_operator" 
+                  name="Generate Bill TBS Plasma"
+                  sequence="31"/> -->
     </data>
 </odoo>
