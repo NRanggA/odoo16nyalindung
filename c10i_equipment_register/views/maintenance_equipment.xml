@@ -11,6 +11,14 @@
                 <xpath expr="//tree" position="attributes">
                     <attribute name="create">false</attribute>
                 </xpath>
+            </field>
+        </record>
+
+        <record id="maintenance_equipment_inherit_view_kanban" model="ir.ui.view">
+            <field name="name">model.name.view.form.inherit.view.kanban</field>
+            <field name="model">maintenance.equipment</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_view_kanban"/>
+            <field name="arch" type="xml">
                 <xpath expr="//kanban" position="attributes">
                     <attribute name="create">false</attribute>
                 </xpath>
