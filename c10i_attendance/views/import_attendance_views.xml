@@ -43,16 +43,6 @@
                                     </tree>
                                 </field>
                             </page>
-                            <!-- <page string="Sheet">
-                                <field name="attendance_sheet_ids" attrs="{'readonly': [('state', '=', 'valid')]}">
-                                    <tree string="Attendance Sheet">
-                                        <field name="employee_id"/>
-                                        <field name="type_id"/>
-                                        <field name="check_in"/>
-                                        <field name="check_out"/>
-                                    </tree>
-                                </field>
-                            </page> -->
                         </notebook>
                     </sheet>
                 </form>
