@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+       <record id="equiment_register_inherit_view_form" model="ir.ui.view">
+        <field name="name">equiment_register_inherit_view_form</field>
+        <field name="model">equipment.register</field>
+        <field name="inherit_id" ref="c10i_purchase_equipment.equipment_register_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='register_line_ids']" position="attributes">
+                <attribute name="readonly">0</attribute>
+            </xpath>
+            <xpath expr="//tree" position="attributes">
+                <attribute name="create">false</attribute>
+                <attribute name="delete">false</attribute>
+            </xpath>
+            <xpath expr="//field[@name='register_line_ids']/tree/field[@name='product_id']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='register_line_ids']/tree/field[@name='name']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='register_line_ids']/tree/field[@name='product_qty']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='register_line_ids']/tree/field[@name='product_uom']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="lva_threshold" invisible="1"/>
+                <field name="count_move" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='register_line_ids']/tree/field[@name='product_uom']" position="after">
+                <field name="purchase_line_id" readonly="1"/>
+                <field name="doc_activity_ids" invisible="1"/>
+                <field name="location_type_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'column_invisible' : [('parent.lva_threshold','!=',True)]}"/>
+                <field name="location_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'column_invisible' : [('parent.lva_threshold','!=',True)]}"/>
+                <field name="activity_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('id','in',doc_activity_ids)]" attrs="{'column_invisible' : [('parent.lva_threshold','!=',True)]}"/>
+                <field name="account_id" attrs="{'column_invisible' : [('parent.lva_threshold','!=',True)]}"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']/button[@name='action_open_equipment']" position="after">
+                <button type="object" name="action_open_move" class="oe_stat_button" icon="fa-pencil-square-o" string="Journal" attrs="{'invisible' : [('count_move','=',0)]}"/>
+            </xpath>
+        </field>
+       </record>
+    
+    </data>
+    
+
+</odoo>

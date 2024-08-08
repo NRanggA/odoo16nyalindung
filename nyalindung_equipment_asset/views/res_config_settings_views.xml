@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_inherit_nyalindung_equipment" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.nyalindung.equipment</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="10" />
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Equipments" data-key="maintenance" string="Equipment">
+                    <h2>Low Value Asset (LVA)</h2>
+                    <div class="row mt16 o_settings_container" id="threshold">
+                        <div class="col-12 col-lg-6 o_setting_box" id="nyalindung_lva_threshold_equipment">
+                            <div class="content-group">
+                                <group>
+                                    <field name="threshold" string="LVA Threshold"/>
+                                </group>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_ny_equipment_register_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form_inherit_nyalindung_equipment"/>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'maintenance', 'bin_size': False}</field>
+    </record>
+
+    <menuitem id="menu_equipment_general_settings" name="Settings" sequence="0" parent="maintenance.menu_maintenance_configuration" action="action_ny_equipment_register_config_settings" groups="base.group_system"/>
+
+</odoo>

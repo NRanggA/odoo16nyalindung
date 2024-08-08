@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="product_category_inherit_nyalindung_equipment_asset" model="ir.ui.view">
+            <field name="name">product.category.inherit.nyalindung.equipment.asset</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="arch" type="xml">
+                <field name="parent_id" position="after">
+                    <field name="asset" />
+                </field>
+                <field name="property_stock_account_output_categ_id" position="after">
+                    <field name="asset_clearing_account_id" attrs="{'invisible' : [('asset','!=',True)]}"/>
+                </field>
+            </field>
+        </record>
+    
+    </data>
+    
+
+</odoo>

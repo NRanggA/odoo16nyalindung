@@ -81,7 +81,7 @@ class EquipmentRegister(models.Model):
 						if prl.product_id not in temp_dict.keys():
 							temp_dict.update({prl.product_id: []})
 						for equip in temp_equip:
-							temp_dict[prl.product_id].append(equip.seq_no)
+							temp_dict[prl.product_id].append(equip.serial_no)
 
 					# if temp_dict:
 					if False:
@@ -156,7 +156,7 @@ class EquipmentRegisterLine(models.Model):
 			'category_id': False,
 			'partner_id': self.purchase_line_id.order_id.partner_id.id,
 			'partner_ref': self.purchase_line_id.order_id.partner_ref,
-			'seq_no': serial_no, #harusnya diisi serial aktualnya, atau diganti dengan sequence
+			'serial_no': serial_no, #harusnya diisi serial aktualnya, atau diganti dengan sequence
 			'cost': self.purchase_line_id.price_unit
 
 			# 'barcode': '/', #diisi dari sequence dlu
