@@ -16,10 +16,10 @@
                   <field name="seq_no" readonly="1" style="color:#000000;"/>
               </h2>
           </label>
-          <xpath expr="//label[@for='warranty_period']" position="before">
-            <!-- <field name="condition" /> -->
+          <!-- <xpath expr="//label[@for='warranty_period']" position="before">
+            <field name="condition" />
             <field name="asset_type" />
-          </xpath>
+          </xpath> -->
         <field name="cost" position="after">
           <field name="is_lva" invisible="1"/>
         </field>
