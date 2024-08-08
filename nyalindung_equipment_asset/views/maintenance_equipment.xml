@@ -17,7 +17,7 @@
               </h2>
           </label>
           <xpath expr="//label[@for='warranty_period']" position="before">
-            <field name="condition" />
+            <!-- <field name="condition" /> -->
             <field name="asset_type" />
           </xpath>
         <field name="cost" position="after">
