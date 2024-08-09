@@ -530,6 +530,7 @@
                                 <field name="type_id" required="0"/>
                                 <field name="account_id" required="0"/>
                                 <field name="is_panen" required="0"/>
+                                <field name="is_hasil_2" required="0"/>
                             </group>
                             <group string="Satuan">
                                 <field name="uom_id" required="0"/>
@@ -597,6 +598,7 @@
                     <field name="uom2_id"/>
                     <field name="type_id"/>
                     <field name="is_panen"/>
+                    <field name="is_hasil_2"/>
                     <field name="company_id" invisible="1"/>
                 </tree>
             </field>
@@ -640,8 +642,6 @@
             </field>
         </record>
         <menuitem id="menu_lhm_master_activity" action="action_lhm_activity" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="10"/>
-
-
 
         <record id="view_activity_noparent_tree" model="ir.ui.view">
             <field name="name">view.activity.noparent.tree</field>
@@ -1826,7 +1826,7 @@
         <!-- End Of Master BJR -->
 
 
-        <!-- Transaksi LHM -->
+        <!-- Transaksi LHM --> 
         <record id="view_lhm_transaction_form" model="ir.ui.view">
             <field name="name">view.lhm.transaction.form</field>
             <field name="model">lhm.transaction</field>
@@ -1875,7 +1875,7 @@
                             <page string="Daftar Karyawan">
                                 <group>
                                     <button name="%(c10i_lhm_v16.action_wizard_add_employee)d" class="oe_stat_button" icon="fa-users" string="Tambah Karyawan" states="draft" type="action" groups="c10i_lhm_v16.group_plantation_operator"/>
-                                    <!-- <button name="button_regenerate" string="Regenerate Employee" type="object" class="oe_stat_button" icon="fa-spinner" states="draft"/> -->
+                                    <button name="button_regenerate" string="Regenerate Employee" type="object" class="oe_stat_button" icon="fa-spinner" states="draft"/>
                                 </group>
                                 <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
                                     <tree editable="bottom" create="false" class="two-line-header">

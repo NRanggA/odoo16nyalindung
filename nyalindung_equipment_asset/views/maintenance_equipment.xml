@@ -8,18 +8,37 @@
       <field name="model">maintenance.equipment</field>
       <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
       <field name="arch" type="xml">
-        <xpath expr="//header" position="inside">
+        <!-- <xpath expr="//header" position="inside">
             <button string="Create Acquisition" name="create_asset_acquisition" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('is_lva', '!=', True), ('register_id', '=', True), ('has_acquisition', '=', True)]}"/>
-        </xpath>
+        </xpath> -->
+        <label for="name" position="before">
+              <h2>
+                  <field name="seq_no" readonly="1" style="color:#000000;"/>
+              </h2>
+          </label>
+          <xpath expr="//label[@for='warranty_period']" position="before">
+            <field name="condition" />
+            <field name="asset_type" />
+          </xpath>
         <field name="cost" position="after">
           <field name="is_lva" invisible="1"/>
-          <field name="has_acquisition" invisible="1"/>
         </field>
         <xpath expr="//field[@name='serial_no']" position="attributes">
           <attribute name="required">0</attribute>
         </xpath>
       </field>
     </record>
+
+    <record id="purchase_equipment_inherit_tree" model="ir.ui.view">
+          <field name="name">purchase.equipment.inherit.tree</field>
+          <field name="model">maintenance.equipment</field>
+          <field name="inherit_id" ref="c10i_purchase_equipment.equipment_view_tree_from_register"/>
+          <field name="arch" type="xml">
+              <field name="serial_no" position="replace">
+                <field name="seq_no" />
+              </field>
+          </field>
+      </record>
   
   </data>
   

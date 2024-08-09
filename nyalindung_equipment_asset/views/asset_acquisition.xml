@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="nyalindung_asset_acquisition_inherit_view_form" model="ir.ui.view">
+            <field name="name">nyalindung.asset.acquisition.inherit.view.form</field>
+            <field name="model">account.asset.acquisition</field>
+            <field name="inherit_id" ref="c10i_equipment_account_asset.asset_acquisition_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_submit']" position="attributes">
+                    <attribute name="string">Approve</attribute>
+                </xpath>
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="statusbar_visible">draft,done,reject</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_submit']" position="after">
+                    <button name="action_rejected" string="Reject" type="object" class="oe_stat_button" attrs="{'invisible' : [('state','in',['reject','done'])]}"/>
+                </xpath>
+                <xpath expr="//field[@name='line_ids']" position="attributes">
+                    <attribute name="attrs">{'readonly' : [('state','in',['reject','done'])]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='line_ids']/tree/field[@name='creation_mode']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='line_ids']/tree/field[@name='group_mark']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button type="object" name="action_open_move_acquisition" class="oe_stat_button" icon="fa-pencil-square-o" string="#Journal Entries" attrs="{'invisible' : [('count_move','=',0)]}"/>
+                </xpath>
+                <xpath expr="//field[@name='date']" position="after">
+                    <field name="count_move" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="nyalindung_asset_acquisition_inherit_tree" model="ir.ui.view">
+            <field name="name">nyalindung.asset.acquisition.inherit.tree</field>
+            <field name="model">account.asset.acquisition</field>
+            <field name="inherit_id" ref="c10i_equipment_account_asset.asset_acquisition_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="default_order">id desc</attribute>
+                </xpath>
+            </field>
+        </record>
+    
+    </data>
+    
+
+</odoo>

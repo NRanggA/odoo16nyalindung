@@ -15,7 +15,7 @@ class HrAttendanceSheet(models.Model):
     date         = fields.Date('Tanggal')
 
     @api.model
-    def create_attendance_sheets(self):
+    def create_attendance_sheets(self, **kwargs):
         
         attendance_type_m = self.env['hr.attendance.type'].search([('code', '=', 'M')], limit=1)
         
@@ -25,6 +25,11 @@ class HrAttendanceSheet(models.Model):
 
         employees = self.env['hr.employee'].search([])
         today_date = fields.Date.context_today(self)
+
+        if kwargs.get("force_date"):
+            today_date = kwargs['force_date']
+        
+        # print("====== DATA hr attendance sheet : {today_date} ", today_date)
 
         attendance_sheets_to_create = []
 

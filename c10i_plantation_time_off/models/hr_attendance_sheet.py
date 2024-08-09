@@ -6,52 +6,16 @@ _logger = logging.getLogger(__name__)
 class HrAttendanceSheet(models.Model):
     _inherit = 'hr.attendance.sheet'
 
-    # Fungsi asli ditaro di atas
-    # @api.model
-    # def create_attendance_sheets(self):
-    #     # Panggil metode asli
-    #     super(HrAttendanceSheet, self).create_attendance_sheets()
-
-    #     today_date = fields.Date.context_today(self)
-    #     employees_with_leave = self.env['hr.leave'].search([
-    #         ('state', '=', 'validate'),
-    #         ('date_from', '<=', today_date),
-    #         ('date_to', '>=', today_date)
-    #     ]).mapped('employee_id')
-
-    #     for employee in employees_with_leave:
-    #         leave = self.env['hr.leave'].search([
-    #             ('employee_id', '=', employee.id),
-    #             ('state', '=', 'validate'),
-    #             ('date_from', '<=', today_date),
-    #             ('date_to', '>=', today_date)
-    #         ], limit=1)
-
-    #         if leave:
-    #             attendance_type = leave.holiday_status_id.attendance_type_id
-    #             if not attendance_type:
-    #                 _logger.error(f"Attendance type tidak ditemukan untuk cuti dengan ID {leave.id}")
-    #                 continue
-
-    #             existing_sheet = self.env['hr.attendance.sheet'].search([
-    #                 ('employee_id', '=', employee.id),
-    #                 ('date', '=', today_date)
-    #             ], limit=1)
-
-    #             if existing_sheet:
-    #                 existing_sheet.write({'type_id': attendance_type.id})
-    #                 _logger.info(f"=== Updated attendance sheet for employee {employee.id} on {today_date} with type {attendance_type.id}")
-
-    #     return True
-    
-
     # fungsi asli ditaro di bawah
     @api.model
-    def create_attendance_sheets(self):
+    def create_attendance_sheets(self, **kwargs):
         # Logika tambahan sebelum memanggil fungsi asli
         employees = self.env['hr.employee'].search([])
         today_date = fields.Date.context_today(self)
 
+        if kwargs.get("force_date"):
+            today_date = kwargs['force_date']
+        
         for employee in employees:
             leave = self.env['hr.leave'].search([
                 ('employee_ids', 'in', employee.id),
@@ -72,8 +36,16 @@ class HrAttendanceSheet(models.Model):
                     if existing_sheet:
                         existing_sheet.write({'type_id': attendance_type.id})
                         _logger.info(f"Updated attendance sheet for {employee.name} with type {attendance_type.code}")
+                    else:
+                        # Membuat lembar kehadiran baru jika belum ada
+                        new_sheet = self.env['hr.attendance.sheet'].create({
+                            'employee_id': employee.id,
+                            'date': today_date,
+                            'type_id': attendance_type.id,
+                        })
+                        _logger.info(f"Created new attendance sheet for {employee.name} with type {attendance_type.code}")
 
         # Memanggil fungsi asli
-        result = super(HrAttendanceSheet, self).create_attendance_sheets()
+        result = super(HrAttendanceSheet, self).create_attendance_sheets(force_date=today_date)
 
         return result

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <data>
+  
+    <record id="equipment_register_form_inherit" model="ir.ui.view">
+      <field name="name">equipment_register_form_inherit</field>
+      <field name="model">equipment.register</field>
+      <field name="inherit_id" ref="c10i_purchase_equipment.equipment_register_form"/>
+      <field name="arch" type="xml">
+        <field name="origin" position="after">
+          <field name="category_id" />
+          <field name="equipment_assign_to" widget="radio"/>
+          <field name="employee_id" string="Employee" attrs="{'invisible': ['|', ('equipment_assign_to', '=', 'department'), ('equipment_assign_to', '=', False)]}"/>
+          <field name="department_id" string="Department" attrs="{'invisible': ['|', ('equipment_assign_to', '=', 'employee'), ('equipment_assign_to', '=', False)]}"/>
+        </field>
+        <field name="company_id" position="after">
+            <field name="location" />
+            <label for="warranty_period"/>
+            <div class="o_row">
+              <field name="warranty_period" class="oe_inline"/>
+              <field name="unit_of_time"/>
+            </div>
+            <field name="partner_id" />
+            <field name="partner_ref" />
+            <field name="model" />
+            <field name="serial_no" />
+        </field>
+      </field>
+    </record>
+  
+  </data>
+  
+
+</odoo>
