@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='currency_id']" position="before">
                 <field name="partner_id"/>
+                <field name="is_grade"/>
             </xpath>
             <xpath expr="//field[@name='company_id']" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -18,16 +19,24 @@
         <field name="inherit_id" ref="product.product_pricelist_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='item_ids']/tree[@groups='!product.group_sale_pricelist']/field[@name='min_quantity']" position="attributes">
-                <attribute name="invisible">1</attribute>
+                <attribute name='attrs'>{'column_invisible': [('parent.is_grade', '=', True)]}</attribute>
             </xpath>
             <xpath expr="//field[@name='item_ids']/tree[@groups='product.group_sale_pricelist']/field[@name='min_quantity']" position="attributes">
-                <attribute name="invisible">1</attribute>
+                <attribute name='attrs'>{'column_invisible': [('parent.is_grade', '=', True)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='item_ids']/tree[@groups='!product.group_sale_pricelist']/field[@name='fixed_price']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <!-- <field name="quantity"/> -->
+            </xpath>
+            <xpath expr="//field[@name='item_ids']/tree[@groups='product.group_sale_pricelist']/field[@name='price']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <!-- <field name="quantity"/> -->
             </xpath>
             <xpath expr="//field[@name='item_ids']/tree[@groups='!product.group_sale_pricelist']/field[@name='fixed_price']" position="before">
-                <field name="quantity"/>
+                <field name="quantity" attrs="{'column_invisible': [('parent.is_grade', '=', False)]}"/>
             </xpath>
             <xpath expr="//field[@name='item_ids']/tree[@groups='product.group_sale_pricelist']/field[@name='price']" position="before">
-                <field name="quantity"/>
+                <field name="quantity" attrs="{'column_invisible': [('parent.is_grade', '=', False)]}"/>
             </xpath>
         </field>
     </record>
@@ -40,7 +49,7 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='min_quantity']" position="after">
-                <field name="quantity"/>
+                <field name="quantity" attrs="{'column_invisible': [('parent.is_grade', '=', False)]}"/>
             </xpath>
         </field>
     </record>
