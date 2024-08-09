@@ -121,9 +121,10 @@ class AssetAcquisition(models.Model):
 				}
 				move_lines.append((0, 0, move_line_vals_asset))
 				# credit_lines
+				credit_account = line.product_id.categ_id.asset_clearing_account_id
 				for account, amount in purchase_account_dict.items():
 					move_line_vals = {
-						'account_id': account.id,
+						'account_id': credit_account.id if credit_account else account.id,
 						'name': 'Reclass SPM to Asset',
 						'credit': amount,
 						'debit': 0.0,
