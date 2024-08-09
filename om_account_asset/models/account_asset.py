@@ -703,12 +703,12 @@ class AccountAssetDepreciationLine(models.Model):
                 msg = _format_message(_('Depreciation line posted.'), msg_values)
                 line.asset_id.message_post(body=msg)
     
-    def unlink(self):
-        for record in self:
-            if record.move_check:
-                if record.asset_id.category_id.type == 'purchase':
-                    msg = _("You cannot delete posted depreciation lines.")
-                else:
-                    msg = _("You cannot delete posted installment lines.")
-                raise UserError(msg)
-        return super(AccountAssetDepreciationLine, self).unlink()
+    # def unlink(self):
+    #     for record in self:
+    #         if record.move_check:
+    #             if record.asset_id.category_id.type == 'purchase':
+    #                 msg = _("You cannot delete posted depreciation lines.")
+    #             else:
+    #                 msg = _("You cannot delete posted installment lines.")
+    #             raise UserError(msg)
+    #     return super(AccountAssetDepreciationLine, self).unlink()
