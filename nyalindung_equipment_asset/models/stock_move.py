@@ -41,8 +41,8 @@ class StockMove(models.Model):
         """ Accounting Valuation Entries """
         res = super(StockMove, self)._account_entry_move(qty, description, svl_id, cost)
         # self.ensure_one()
-        # am_vals = []
         if self.product_id.product_asset:
+            am_vals = []
             if self.restrict_partner_id and self.restrict_partner_id != self.company_id.partner_id:
                 # if the move isn't owned by the company, we don't make any valuation
                 return am_vals
