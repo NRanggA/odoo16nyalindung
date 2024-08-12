@@ -20,13 +20,12 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'hr_contract', 'om_hr_payroll'],
+    'depends': ['base'],
 
     # always loaded
     'data': [
-        'security/ir.model.access.csv',
-        'views/hr_contract_wage_views.xml',
-        'views/hr_contract_views.xml',
+        # 'security/ir.model.access.csv',
+
     ],
     # only loaded in demonstration mode
     'demo': [
