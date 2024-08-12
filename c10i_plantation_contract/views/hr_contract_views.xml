@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_contract_inherit_form" model="ir.ui.view">
+        <field name="name">hr.contract.view.form.inherit</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Menambahkan field wage_id setelah field wage -->
+            <xpath expr="//div[@name='wage']/.." position="inside">
+                <field name="wage_id"/>
+            </xpath>
+
+            <!-- Mengganti div yang memuat wage field -->
+            <xpath expr="//div[@name='wage']/div[@class='mb-3']" position="replace"/>
+            
+            <!-- Menambahkan field employee_type_id setelah field employee_id -->
+            <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="employee_type_id" attrs="{'invisible': [('structure_type_id', '=', 1)]}"/>
+            </xpath>
+
+            <!-- Mengontrol visibilitas field employee_id berdasarkan structure_type_id -->
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="attrs">{'invisible': [('structure_type_id', '=', 2)]}</attribute>
+            </xpath>
+
+            <!-- Menghapus field structure_type_id -->
+            <xpath expr="//field[@name='structure_type_id']" position="replace"/>
+
+            <!-- group instance field structure_type_id dihapus -->
+            <xpath expr="//group//field[@name='structure_type_id']" position="replace"/>
+
+            <!-- Menambahkan field structure_type_id ke atas employee_id -->
+            <xpath expr="//field[@name='employee_id']" position="before">
+                <field name="structure_type_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_contract.action_hr_contract" model="ir.actions.act_window">
+        <field name="domain">[]</field>
+    </record>
+
+
+</odoo>
