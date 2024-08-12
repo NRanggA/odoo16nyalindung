@@ -37,9 +37,9 @@
                             <field name="description"/>
                         </div> -->
                     </sheet>
-                    <div class="o_chatter">
+                    <!-- <div class="o_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
-                    </div>
+                    </div> -->
                 </form>
             </field>
         </record>
@@ -573,7 +573,6 @@
               </p>
           </field>
         </record> -->
-
 
         <!-- <menuitem id="hr.menu_open_view_employee_list_my" action="hr.open_view_employee_list_my" parent="hr.menu_hr_root" sequence="3"/> -->
 
