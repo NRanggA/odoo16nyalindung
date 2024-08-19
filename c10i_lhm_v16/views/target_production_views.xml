@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="target_production_view_form" model="ir.ui.view">
+        <field name="name">target.production.view.form</field>
+        <field name="model">target.production</field>
+        <field name="arch" type="xml">
+            <form string="Target Produksi">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="target" />
+                        <field name="uom_id" />
+                        <field name="volume" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="target_production_view_tree" model="ir.ui.view">
+        <field name="name">target.production.view.tree</field>
+        <field name="model">target.production</field>
+        <field name="arch" type="xml">
+            <tree string="Target Produksi">
+                <field name="name" />
+                <field name="target" />
+                <field name="uom_id" />
+                <field name="volume" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="target_production_action" model="ir.actions.act_window">
+        <field name="name">Target Produksi</field>
+        <field name="res_model">target.production</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="target_production_menu"
+        name="Target Produksi"
+        action="target_production_action"
+        parent="menu_lhm_master"
+    />
+
+
+</odoo>
