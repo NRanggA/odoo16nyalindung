@@ -1,9 +1,9 @@
 from odoo import fields, models, api, _
 
 
-class HrContractWage(models.Model):
-    _name           = 'hr.contract.wage'
-    _description    = 'Employee Salary Wage'
+class HrContractWageType(models.Model):
+    _name           = 'hr.contract.wage.type'
+    _description    = 'Employee Salary Wage Type'
 
     name = fields.Char('Name', required=True)
     

@@ -8,7 +8,10 @@
         <field name="arch" type="xml">
             <!-- Menambahkan field wage_id setelah field wage -->
             <xpath expr="//div[@name='wage']/.." position="inside">
-                <field name="wage_id"/>
+                <!-- <field name="wage_id"/> -->
+                <field name="wage_day"/>
+                <field name="wage_type_id"/>
+                <field name="is_lhm"/>
             </xpath>
 
             <!-- Mengganti div yang memuat wage field -->
@@ -34,6 +37,16 @@
             <xpath expr="//field[@name='employee_id']" position="before">
                 <field name="structure_type_id"/>
             </xpath>
+
+            <xpath expr="//field[@name='date_end']" position="after">
+                <field name="work_day" />
+            </xpath>
+
+            <!-- Mengganti string wage mejadi wage monthly -->
+            <field name="wage" position="attributes">
+                <attribute name="string">Wage Monthly</attribute>
+            </field>
+
         </field>
     </record>
 
