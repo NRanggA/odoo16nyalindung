@@ -1,4 +1,4 @@
-<odoo>
+<!-- <odoo>
     <record model="ir.actions.act_window" id="action_product_pricelist_grade">
         <field name="name">Grade</field>
         <field name="type">ir.actions.act_window</field>
@@ -21,4 +21,4 @@
     parent="sale.product_menu_catalog"
     sequence="10"/>
 
-</odoo>
+</odoo> -->
