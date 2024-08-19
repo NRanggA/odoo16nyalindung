@@ -13,7 +13,6 @@ class hr_attendance_type(models.Model):
     type_hk         = fields.Selection([('hke', 'HKE'), ('hkne', 'HKNE')], string='HK Type')
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     active          = fields.Boolean("Active", default=True)
-    leave_type_id   = fields.Many2one('hr.leave.type', string="Time off type")
 
     @api.onchange('special')
     def _onchange_special(self):
