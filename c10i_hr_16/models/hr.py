@@ -86,8 +86,8 @@ class hr_ptkp(models.Model):
     name            = fields.Char('Status', required=True)
     code            = fields.Char('Kode', required=True)
     marital         = fields.Selection([
-                        ('TK', 'Tidak Menikah'),
-                        ('K', 'Menikah'),
+                        ('single', 'Tidak Menikah'),
+                        ('married', 'Menikah'),
                         ], string='Status Pernikahan')
     children        = fields.Integer('Jumlah Anak')
     value           = fields.Float('Nilai', required=True)
