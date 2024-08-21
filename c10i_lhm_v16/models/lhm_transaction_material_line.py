@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError, ValidationError
 
 class lhm_transaction_material_line(models.Model):
