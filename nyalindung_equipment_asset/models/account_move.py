@@ -6,3 +6,4 @@ class AccountMove(models.Model):
 
     equip_register_id = fields.Many2one('equipment.register', string='Equip Register')
     acquisition_id = fields.Many2one('account.asset.acquisition', string='Acquisition')
+    disposal_id = fields.Many2one('account.asset.disposal', string='Disposal')

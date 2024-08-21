@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="account_res_config_settings_view_form_inherit" model="ir.ui.view">
+        <field name="name">account.res.config.settings.view.form_inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='default_accounts']" position="after">
+                <h2>Default Asset Accounts</h2>
+                <div class="row mt16 o_settings_container" id="default_asset_accounts">
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="gain_on_asset_sales_account_id" class="col-lg-4 o_light_label"/>
+                                    <field name="gain_on_asset_sales_account_id"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="loss_on_asset_sales_account_id" class="col-lg-4 o_light_label"/>
+                                    <field name="loss_on_asset_sales_account_id"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="write_on_asset_sales_account_id" class="col-lg-4 o_light_label"/>
+                                    <field name="write_on_asset_sales_account_id"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
     <record id="res_config_settings_view_form_inherit_nyalindung_equipment" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.nyalindung.equipment</field>
         <field name="model">res.config.settings</field>
@@ -15,6 +47,7 @@
                             <div class="content-group">
                                 <group>
                                     <field name="threshold" string="LVA Threshold"/>
+                                    <field name="income_from_lva_sales_account_id" />
                                 </group>
                             </div>
                         </div>

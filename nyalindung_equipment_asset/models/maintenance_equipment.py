@@ -17,6 +17,13 @@ class EquipmentAsset(models.Model):
         ('lva', 'LVA'),
         ('fa', 'FA'),
     ], string='Asset Type', readonly=True)
+
+    def name_get(self):
+        result = []        
+        for rec in self:
+            if rec.seq_no:
+                result.append((rec.id, '%s - %s' % (rec.name,rec.seq_no)))
+        return result
     
     # @api.depends('cost')
     # def _compute_is_lva(self):

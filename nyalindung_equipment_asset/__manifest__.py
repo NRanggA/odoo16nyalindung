@@ -20,17 +20,18 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'maintenance', 'product', 'c10i_purchase_equipment', 'c10i_equipment_account_asset'],
+    'depends': ['base', 'maintenance', 'account', 'product', 'c10i_purchase_equipment', 'c10i_equipment_account_asset'],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
         'views/maintenance_equipment.xml',
         # 'views/low_value_asset.xml',
-        'views/equipment_register.xml',
         'views/res_config_settings_views.xml',
+        'views/equipment_register.xml',
         'views/product.xml',
         'views/asset_acquisition.xml',
+        'views/account_asset.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
