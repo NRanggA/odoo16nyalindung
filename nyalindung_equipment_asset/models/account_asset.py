@@ -78,7 +78,7 @@ class AccountAssetDisposal(models.Model):
             if record.asset_id and record.asset_id.depreciation_line_ids:
                 depreciated_lines = record.asset_id.depreciation_line_ids.filtered(lambda x: x.move_posted_check)
                 if depreciated_lines:
-                    record.commulative_depreciation = sum(depreciated_lines.mapped('depreciated_value'))
+                    record.commulative_depreciation = sum(depreciated_lines.mapped('amount'))
     
     def _get_disposal_moves(self, invoice_line_ids, disposal_date):
         def get_line(asset, amount, account):
@@ -97,11 +97,7 @@ class AccountAssetDisposal(models.Model):
         move_ids = []
         assert len(self.asset_id) == len(invoice_line_ids)
         for asset, invoice_line_id in zip(self.asset_id, invoice_line_ids):
-            posted_moves = asset.depreciation_line_ids.filtered(lambda x: (
-                # not x.reversal_move_id and 
-                x.move_posted_check == True
-                # x.move_posted_check == 'posted'
-            ))
+            posted_moves = asset.depreciation_line_ids.filtered(lambda x: (x.move_posted_check))
             if posted_moves and disposal_date < max(posted_moves.mapped('depreciation_date')):
                 if invoice_line_id:
                     raise UserError('There are depreciation posted after the invoice date (%s).\nPlease revert them or change the date of the invoice.' % disposal_date)
@@ -148,25 +144,16 @@ class AccountAssetDisposal(models.Model):
                 'name': asset.name + ': ' + (_('Disposal') if not invoice_line_id and self.action != 'sell' else _('Sale')),
                 'sequence' : asset_sequence,
                 'remaining_value': 0,
-                'depreciated_value': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check == True).depreciated_value,
-                'amount': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check == True).amount,
-                # 'asset_depreciated_value': max(asset.depreciation_line_ids.filtered(lambda x: x.state == 'posted'), key=lambda x: x.date, default=self.env['account.move']).asset_depreciated_value,
+                'depreciated_value': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check).depreciated_value,
+                'amount': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check).amount,
                 'depreciation_date': disposal_date,
-                # 'journal_id': asset.category_id.journal_id.id,
-                # 'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
             }
             commands.append((0, 0, vals))
             asset.write({'depreciation_line_ids': commands, 'method_number': asset_sequence})
-            # tracked_fields = self.env['account.asset.asset'].fields_get(['method_number'])
-            # changes, tracking_value_ids = asset._message_track(tracked_fields, old_values)
-            # if changes:
-            #     asset.message_post(body=_('Asset sold or disposed. Accounting entry awaiting for validation.'), tracking_value_ids=tracking_value_ids)
-            # move_ids += self.env['account.move'].search([('asset_id', '=', asset.id), ('state', '=', 'draft')]).ids
             tracked_fields = self.env['account.asset.asset'].fields_get(['method_number', 'method_end'])
             changes, tracking_value_ids = asset._mail_track(tracked_fields, old_values)
             if changes:
                 asset.message_post(subject=_('Asset sold or disposed. Accounting entry awaiting for validation.'), tracking_value_ids=tracking_value_ids)
-            # move_ids += asset.depreciation_line_ids[-1].create_move(post_move=False)
             move = self.env['account.move'].create({
                 'date': disposal_date,
                 'journal_id': asset.category_id.journal_id.id,
@@ -197,15 +184,16 @@ class AccountAssetDisposal(models.Model):
 
             initial_amount = asset.value
             initial_account = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.category_id.account_asset_id
-            commulative_depreciation = -self.value_residual
-            # depreciated_amount = copysign(sum(depreciation_moves.mapped('amount')), -initial_amount)
+            # commulative_depreciation = -self.value_residual
+            depreciation_moves = asset.depreciation_line_ids.filtered(lambda r: r.move_posted_check) # and not (r.reversal_move_id and r.reversal_move_id[0].state == 'posted')
+            depreciated_amount = copysign(sum(depreciation_moves.mapped('amount')), -initial_amount)
             depreciation_account = asset.category_id.account_depreciation_id
-            difference = self.sell_value - self.commulative_depreciation
+            difference = self.sell_value - self.value_residual
             sell_amount = -self.sell_value
             asset_receivable_account = self.env['account.account'].search([('account_type','=','asset_receivable')],limit=1)
 
             difference_account = self.gain_account_id if self.sell_value > self.value_residual else self.loss_account_id
-            line_datas = [(sell_amount, asset_receivable_account),(initial_amount, initial_account), (commulative_depreciation, depreciation_account), (difference, difference_account)]
+            line_datas = [(sell_amount, asset_receivable_account),(initial_amount, initial_account), (depreciated_amount, depreciation_account), (difference, difference_account)]
             print("=======================", line_datas)
             invoice_lines = [(0,0,{
                 'product_id': False,
@@ -216,13 +204,11 @@ class AccountAssetDisposal(models.Model):
                 'currency_id': self.company_id.currency_id.id,
                 'display_type' : 'product'
             })]
-            sale_journal = self.env['account.journal'].search([('type', '=', 'sale')], limit=1)
             move = self.env['account.move'].create({
                 'move_type' : 'out_invoice',
                 'date': date.today(),
-                'journal_id': sale_journal.id,
                 'invoice_line_ids' : invoice_lines,
-                # 'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
+                'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
             })
             return self.action_open_invoice(move)
     

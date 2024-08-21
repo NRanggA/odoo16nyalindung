@@ -36,7 +36,7 @@
                     <attribute name="attrs">{'invisible' : [('action','not in',['sell','dispose'])], 'readonly': [('state', '!=', 'draft')]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='asset_id']" position="attributes">
-                    <attribute name="attrs">{'invisible' : [('lva','=',True)], 'required' : [('lva','!=',True)]}</attribute>
+                    <attribute name="attrs">{'invisible' : [('lva','=',True)], 'required' : [('lva','!=',True)], 'readonly': [('state', '!=', 'draft')]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='invoice_id']" position="attributes">
                     <attribute name="attrs">{'invisible': ['|',('action', '!=', 'sell'),('lva','=',True)]}</attribute>
