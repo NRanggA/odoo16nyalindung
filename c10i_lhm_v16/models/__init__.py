@@ -2,6 +2,7 @@
 
 from . import models
 from . import lhm
+from . import lhm_transaction_material_line
 from . import res
 from . import hr
 from . import account

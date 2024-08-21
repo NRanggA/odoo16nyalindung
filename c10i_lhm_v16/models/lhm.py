@@ -2258,7 +2258,8 @@ class lhm_transaction(models.Model):
                 domain = [
                     ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
                     ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
-                    ('skb', '=', True), ('state', '=', 'done'), 
+                    # ('skb', '=', True), 
+                    ('state', '=', 'done'), 
                     ('plantation_location_id', '=', progress.location_id.id), 
                     ('plantation_activity_id', '=', progress.activity_id.id), 
                     ('origin_returned_move_id', '=', False),
@@ -2820,38 +2821,6 @@ class lhm_transaction_process_line(models.Model):
             if line.activity_id.is_panen:
                 line.nap_nilai = sum([x.qty_nap for x in line.nap_line_ids if x.lhm_nap_id.state!='draft']) \
                         + sum([x.qty for x in line.nap_afkir_line_ids if x.lhm_nap_afkir_id.state!='draft'])
-
-class lhm_transaction_material_line(models.Model):
-    _name           = 'lhm.transaction.material.line'
-    _description    = 'LHM Transaction Material Line'
-
-    name            = fields.Char(string="BPB", readonly=True)
-    date            = fields.Date("Tanggal", )
-    product_id      = fields.Many2one("product.product", string="Product", ondelete="restrict")
-    activity_id     = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
-    activity_name   = fields.Char(related="activity_id.name", string="Name")
-    location_id     = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
-    real_stock_qty  = fields.Float('SKB Qty', digits=dp.get_precision('Product Unit of Measure'),)
-    product_uom_id  = fields.Many2one("uom.uom", string="UoM", ondelete="restrict")
-    stock_qty       = fields.Float('Declared', digits=dp.get_precision('Product Unit of Measure'),)
-    realization     = fields.Float('LHM Qty', digits=dp.get_precision('Product Unit of Measure'),)
-    residual_qty    = fields.Float(compute='_get_residual', string='Residual', digits=dp.get_precision('Product Unit of Measure'),)
-    # residual_qty    = fields.Float('Residual', digits=dp.get_precision('Product Unit of Measure'),)
-    move_id         = fields.Many2one("stock.move", string="Stock Move", ondelete="restrict")
-    picking_id      = fields.Many2one("stock.picking", string="Stock Picking", ondelete="restrict")
-    progress_id     = fields.Many2one("lhm.transaction.process.line", string="Progress", ondelete="restrict")
-    lhm_id          = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
-
-    @api.depends('realization')
-    def _get_residual(self):
-        for line in self:
-            residual = line.real_stock_qty - line.stock_qty - line.realization
-            # if residual < 0:
-            #     raise UserError(_('Realisasi Salah.\n'
-            #                     'Realisasi tidak dapat melebihi Jumlah yg di SKB'))
-            # else:
-            #     line.residual_qty = residual
-            line.residual_qty = residual
 
 ################################################## End Of Transaction LHM ###################################################
 ################################################## Transaction Buku Mesin ###################################################
