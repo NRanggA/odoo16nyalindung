@@ -12,9 +12,8 @@
     'stock', 
     'stock_account', 
     'purchase_stock', 
-    'c10i_material_request', 
-    # 'c10i_plantation', 
     'c10i_lhm_v16',
+    'c10i_material_request', 
     'operating_unit',
 ],
 'data': [

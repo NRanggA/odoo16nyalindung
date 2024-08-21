@@ -1,25 +1,12 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-class PlantationMaterialAllocation(models.Model):
-    _name = 'lhm.material.consumption'
-    _description = "Allocation Material"
-
-    stock_move_id = fields.Many2one('stock.move', 'Source Move')
-    lhm_id = fields.Many2one('lhm.transaction', string='LHM ID')
-    lhm_material_id = fields.Many2one('lhm.transaction.material.line', string='LHM Material ID')
-    mr_id = fields.Many2one('material.request', string='MR ID')
-    product_qty = fields.Float('Qty Allocated')
-    # plantation_partner_activity_material_id = fields.Many2one('plantation.partner.activity.material', string='Material Partner Activity', ondelete='cascade')
-
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    cost_allocation_id = fields.Many2one('plantation.cost.type', string='Cost Allocation')
-    cost_center_id = fields.Many2one('plantation.cost.center', string='Cost Center', 
-        domain="[('type_id','=',cost_allocation_id)]")
-    cost_activity_id = fields.Many2one('plantation.cost.activity', string='Activity', 
-        domain="[('type_id','=',cost_allocation_id)]")
+    plantation_location_type_id = fields.Many2one("lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
+    plantation_location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    plantation_activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
 
     allocation_residual_qty = fields.Float(compute='_compute_residual_qty', store=True, string='Residual Allocation', help='this field only works for Plantation')
     plantation_allocation_ids = fields.One2many('lhm.material.consumption', 'stock_move_id', string='Allocations')
@@ -35,68 +22,24 @@ class StockMove(models.Model):
             else:
                 move.allocation_residual_qty = 0.0
 
-    def action_plantation_stock_move(self):
-        for move in self:
-            if move.mr_line_id and move.product_id.fertilizer:
-                plantation_product = self.env['plantation.stock.product'].search([('product_type','=','fertilizer'),
-                    ('related_product_id','=',move.product_id.id)])
-                to_create_vals = {}
-                if move.location_id.usage=='internal' and move.location_dest_id.usage!='internal':
-                    default_move_type = self.env.ref('c10i_plantation.data_stock_move_tipe_fertilizer_receipt')
-                    if not default_move_type:
-                        default_move_type = self.env['plantation.stock.move'].search([('type','=','incoming'),('product_type','=','fertilizer')])
-                    if not default_move_type:
-                        raise UserError(_("Could not find Operation Type for Outgoing Fertilizer"))
-
-                    to_create_vals.update({
-                        'move_type_id':  default_move_type.id,
-                        'product_id' : plantation_product.id,
-                        
-                        'cost_activity_id' : move.cost_activity_id.id,
-                        'dest_cost_center_id' : move.cost_center_id.id,
-
-                        # 'src_picking_id' : x.picking_id.id,
-                        'product_qty' : move.product_qty,
-                        'date' : move.date
-                    })
-                # elif move.location_id.usage!='internal' and move.location_dest_id.usage=='internal':
-                #     default_move_type = self.env.ref('c10i_plantation.data_stock_move_tipe_fertilizer_return')
-                #     if not default_move_type:
-                #         default_move_type = self.env['plantation.stock.move'].search([('type','=','outgoing'),('product_type','=','fertilizer')])
-                #     if not default_move_type:
-                #         raise UserError(_("Could not find Operation Type for Outgoing Fertilizer"))
-
-                #     to_create_vals.update({
-                #         'move_type_id':  default_move_type.id,
-                #         'product_id' : plantation_product.id,
-                        
-                #         'cost_activity_id' : move.cost_activity_id.id,
-                #         'src_cost_center_id' : move.cost_center_id.id,
-
-                #         # 'src_picking_id' : x.picking_id.id,
-                #         'product_qty' : move.product_qty,
-                #         'date' : move.date
-                #     })
-                
-                if to_create_vals:
-                    pmoves = self.env['plantation.stock.move'].create(to_create_vals)
-                    pmoves.action_confirm()
-                    pmoves.action_done()
+    def _get_accounting_data_for_valuation(self):
+        journal_id, acc_src, acc_dest, acc_valuation = super(StockMove, self)._get_accounting_data_for_valuation()
+        if self._is_out() and self.plantation_activity_id.account_id:
+            acc_dest = self.plantation_activity_id.account_id.id
+        return journal_id, acc_src, acc_dest, acc_valuation
 
     # def _action_done(self, cancel_backorder=False):
     #     res = super(StockMove, self)._action_done(cancel_backorder=cancel_backorder)
     #     # Spesial custom untuk membuat jurnal dari Penerimaan Pembelian
     #     # Hanya berlaku bagi product non real_type valuation dan product stockable
     #     for move in self:
-    #         if move.product_id.valuation == 'real_time' or move.product_id.type != 'product' \
-    #                     or not move.purchase_line_id:
-    #             continue
-    #         for svl in move.stock_valuation_layer_ids:
-    #             unit_cost = abs(move._get_price_unit())
-    #             value = move.company_id.currency_id.round(unit_cost * svl.quantity)
-    #             svl.stock_move_id._account_entry_move_custom(svl.quantity, svl.description, svl.id, value)
-
-    #         # move.action_plantation_stock_move()
+    #         # if move.product_id.valuation == 'real_time' or move.product_id.type != 'product' \
+    #         #             or not move.purchase_line_id:
+    #         #     continue
+    #         # for svl in move.stock_valuation_layer_ids:
+    #         #     unit_cost = abs(move._get_price_unit())
+    #         #     value = move.company_id.currency_id.round(unit_cost * svl.quantity)
+    #         #     svl.stock_move_id._account_entry_move_custom(svl.quantity, svl.description, svl.id, value)
     #     return res
 
     # def _account_entry_move_custom(self, qty, description, svl_id, cost):
@@ -130,22 +73,3 @@ class StockMove(models.Model):
     #     if self.company_id.anglo_saxon_accounting:
     #         # Eventually reconcile together the invoice and valuation accounting entries on the stock interim accounts
     #         self._get_related_invoices()._stock_account_anglo_saxon_reconcile_valuation(product=self.product_id)
-
-    # def _create_account_move_line(self, credit_account_id, debit_account_id, journal_id, qty, description, svl_id, cost):
-    #     self.ensure_one()
-    #     AccountMove = self.env['account.move'].with_context(default_journal_id=journal_id)
-
-    #     move_lines = self._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id, description)
-    #     if move_lines:
-    #         date = self._context.get('force_period_date', fields.Date.context_today(self))
-    #         new_account_move = AccountMove.sudo().create({
-    #             'journal_id': journal_id,
-    #             'line_ids': move_lines,
-    #             'date': date,
-    #             'ref': description,
-    #             'stock_move_id': self.id,
-    #             'operating_unit_id': self.operating_unit_id.id or self.picking_id.operating_unit_id.id,
-    #             'stock_valuation_layer_ids': [(6, None, [svl_id])],
-    #             'move_type': 'entry',
-    #         })
-    #         new_account_move._post()
