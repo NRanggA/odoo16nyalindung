@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="material_request_seq" model="ir.sequence">
+        <field name="name">Material Reqeust</field>
+        <field name="code">material.request</field>
+        <field name="prefix">MR/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

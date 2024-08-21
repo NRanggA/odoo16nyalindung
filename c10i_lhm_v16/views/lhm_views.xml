@@ -1285,7 +1285,7 @@
                                 <field name="tm_year" attrs="{'readonly': [('status','=','tm')]}"/>
                                 <field name="tbm_age" attrs="{'invisible': [('status','=','tm')]}"/>
                                 <field name="tm_age" attrs="{'invisible': [('status','=','tbm')]}"/>
-                                <field name="tm_category" attrs="{'invisible': [('status','=','tbm')]}"/>
+                                <field name="tm_category_id" attrs="{'invisible': [('status','=','tbm')]}"/>
                             </group>
                         </group>
                     </sheet>
@@ -1925,16 +1925,16 @@
 
                                         <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
-                                        <field name="premi" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" optional="show"/>
+                                        <field name="premi" optional="show"/>
 
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
-                                            <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
+                                        <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
                                         <field name="overtime_value" invisible="0" groups="base.group_no_one" optional="show"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                             <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
-                                            <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
+                                        <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
 
                                         <!-- Error ang sama karena groups nya -->
@@ -1954,12 +1954,41 @@
                                         <field name="valid" invisible="0" string="V" groups="base.group_no_one" optional="show"/>
                                         <field name="kontanan" invisible="1"/>
                                         <field name="transfer_id" invisible="1"/>
-                                        <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <!-- <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        
+                                        <!-- Menggunakan contract -->
+                                        <field name="contract_id" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        
                                         <field name="total_hke" invisible="0" groups="base.group_no_one" optional="show"/>
                                         <field name="total_hkne" invisible="0" groups="base.group_no_one" optional="show"/>
-                                        <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="show"/>
-                                        <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="show"/>
-                                        <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        
+                                        <!-- <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_wage_value" invisible="0" groups="base.group_no_one" optional="show"/>
+
+                                        <!-- <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_value_date" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        
+                                        <!-- <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="NAP">
+                                <field name="lhm_nap_line_ids">
+                                    <tree editable="bottom" create="false" class="two-line-header">
+                                        <field name="name" readonly="1" force_save="1" optional="show"/>
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        
+                                        <field name="product_id" optional="show"/>
+                                        <field name="hasil_1" optional="show"/>
+                                        <field name="satuan_1" optional="show"/>
+
+                                        <field name="product_id_2" optional="show"/>
+                                        <field name="hasil_2" optional="show"/>
+                                        <field name="satuan_2" optional="show"/>
+
+                                        <field name="drc_latex" optional="show"/>
+                                        <field name="drc_lump" optional="show"/>
                                     </tree>
                                 </field>
                             </page>

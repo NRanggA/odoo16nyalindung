@@ -4,3 +4,4 @@ from . import models
 from . import hr_leave_type
 from . import hr_leave
 from . import hr_attendance_sheet
+from . import hr_attendance_type

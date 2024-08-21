@@ -23,7 +23,7 @@
 
 
             </div>
-            <xpath expr="//button[@name='button_approved']" position="before">
+            <!-- <xpath expr="//button[@name='button_approved']" position="before">
                 <button
                         name="%(action_internal_move)d"
                         attrs="{'invisible': [('state','=',['draft','to_approve'])]}"
@@ -31,15 +31,15 @@
                         type="action"
                         class="oe_highlight"
                     />
-            </xpath>
+            </xpath> -->
             <xpath expr="//field[@name='origin']" position="before">
                 <field name="material_request_id" invisible="1" groups="c10i_material_request.group_material_request_user"/>
             </xpath>
             <xpath expr="//field[@name='picking_type_id']" position="before">
                 <field name="warehouse_id"/>
             </xpath>
-             <xpath expr="//field[@name='picking_type_id']" position="attributes">
-                 <attribute name="domain">
+            <xpath expr="//field[@name='picking_type_id']" position="attributes">
+                <attribute name="domain">
                     [('warehouse_id', '=', warehouse_id),('code','=','incoming')]
                 </attribute>
             </xpath>
@@ -47,12 +47,16 @@
 
             <xpath expr="//field[@name='line_ids']/tree/field[@name='product_id']" position="before">
                 <field name="material_request_line_id" invisible="1" groups="c10i_material_request.group_material_request_user"/>
-               
             </xpath>
 
-              <xpath expr="//field[@name='line_ids']/form/sheet/group/group/field[@name='product_id']" position="after">
+            <!-- <xpath expr="//field[@name='line_ids']/form/sheet/group/group/field[@name='product_id']" position="after">
                 <field name="qty_im_process"/>
-            </xpath>
+            </xpath> -->
+
+            <!-- <xpath expr="//field[@name='line_ids']/tree//field[@name='product_id']" position="after">
+                <field name="qty_im_process"/>
+            </xpath> -->
+
         </field>
     </record>
 </odoo>

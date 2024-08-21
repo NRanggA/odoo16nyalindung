@@ -71,7 +71,6 @@ class PurchaseRequest(models.Model):
     )
     requested_by = fields.Many2one(
         comodel_name="res.users",
-        string="Requested by",
         required=True,
         copy=False,
         tracking=True,
@@ -91,11 +90,10 @@ class PurchaseRequest(models.Model):
         ],
         index=True,
     )
-    description = fields.Text(string="Description")
+    description = fields.Text()
     company_id = fields.Many2one(
         comodel_name="res.company",
-        string="Company",
-        required=True,
+        required=False,
         default=_company_get,
         tracking=True,
     )
@@ -103,9 +101,10 @@ class PurchaseRequest(models.Model):
         comodel_name="purchase.request.line",
         inverse_name="request_id",
         string="Products to Purchase",
-        readonly=False,
+        readonly=True,
         copy=True,
         tracking=True,
+        states={"draft": [("readonly", False)]},
     )
     product_id = fields.Many2one(
         comodel_name="product.product",
@@ -122,14 +121,13 @@ class PurchaseRequest(models.Model):
         copy=False,
         default="draft",
     )
-    is_editable = fields.Boolean(
-        string="Is editable", compute="_compute_is_editable", readonly=True
-    )
+    is_editable = fields.Boolean(compute="_compute_is_editable", readonly=True)
     to_approve_allowed = fields.Boolean(compute="_compute_to_approve_allowed")
     picking_type_id = fields.Many2one(
         comodel_name="stock.picking.type",
         string="Picking Type",
         required=True,
+        default=_default_picking_type,
     )
     group_id = fields.Many2one(
         comodel_name="procurement.group",
@@ -166,8 +164,7 @@ class PurchaseRequest(models.Model):
             rec.purchase_count = len(rec.mapped("line_ids.purchase_lines.order_id"))
 
     def action_view_purchase_order(self):
-        xmlid = "purchase.purchase_rfq"
-        action = self.env["ir.actions.act_window"]._for_xml_id(xmlid)
+        action = self.env["ir.actions.actions"]._for_xml_id("purchase.purchase_rfq")
         lines = self.mapped("line_ids.purchase_lines.order_id")
         if len(lines) > 1:
             action["domain"] = [("id", "in", lines.ids)]
@@ -185,16 +182,19 @@ class PurchaseRequest(models.Model):
                 rec.mapped("line_ids.purchase_request_allocation_ids.stock_move_id")
             )
 
-    def action_view_stock_move(self):
-        xmlid = "stock.stock_move_action"
-        action = self.env["ir.actions.act_window"]._for_xml_id(xmlid)
+    def action_view_stock_picking(self):
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "stock.action_picking_tree_all"
+        )
         # remove default filters
         action["context"] = {}
-        lines = self.mapped("line_ids.purchase_request_allocation_ids.stock_move_id")
+        lines = self.mapped(
+            "line_ids.purchase_request_allocation_ids.stock_move_id.picking_id"
+        )
         if len(lines) > 1:
             action["domain"] = [("id", "in", lines.ids)]
         elif lines:
-            action["views"] = [(self.env.ref("stock.view_move_form").id, "form")]
+            action["views"] = [(self.env.ref("stock.view_picking_form").id, "form")]
             action["res_id"] = lines.id
         return action
 
@@ -204,8 +204,11 @@ class PurchaseRequest(models.Model):
             rec.line_count = len(rec.mapped("line_ids"))
 
     def action_view_purchase_request_line(self):
-        xmlid = "purchase_request.purchase_request_line_form_action"
-        action = self.env["ir.actions.act_window"]._for_xml_id(xmlid)
+        action = (
+            self.env.ref("purchase_request.purchase_request_line_form_action")
+            .sudo()
+            .read()[0]
+        )
         lines = self.mapped("line_ids")
         if len(lines) > 1:
             action["domain"] = [("id", "in", lines.ids)]
@@ -234,15 +237,17 @@ class PurchaseRequest(models.Model):
         user_id = request.assigned_to or self.env.user
         return user_id.partner_id.id
 
-    @api.model
-    def create(self, vals):
-        if vals.get("name", _("New")) == _("New"):
-            vals["name"] = self._get_default_name()
-        request = super(PurchaseRequest, self).create(vals)
-        if vals.get("assigned_to"):
-            partner_id = self._get_partner_id(request)
-            request.message_subscribe(partner_ids=[partner_id])
-        return request
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("name", _("New")) == _("New"):
+                vals["name"] = self._get_default_name()
+        requests = super(PurchaseRequest, self).create(vals_list)
+        for vals, request in zip(vals_list, requests):
+            if vals.get("assigned_to"):
+                partner_id = self._get_partner_id(request)
+                request.message_subscribe(partner_ids=[partner_id])
+        return requests
 
     def write(self, vals):
         res = super(PurchaseRequest, self).write(vals)

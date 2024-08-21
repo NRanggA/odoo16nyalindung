@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="tarif_premi_production_view_form" model="ir.ui.view">
+        <field name="name">tarif.premi.production.view.form</field>
+        <field name="model">tarif.premi.production</field>
+        <field name="arch" type="xml">
+            <form string="Tarif Premi Produksi">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="nilai_rp" />
+                        <field name="uom_id" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="tarif_premi_production_view_tree" model="ir.ui.view">
+        <field name="name">tarif.premi.production.view.tree</field>
+        <field name="model">tarif.premi.production</field>
+        <field name="arch" type="xml">
+            <tree string="Tarif Premi Produksi">
+                <field name="name" />
+                <field name="nilai_rp" />
+                <field name="uom_id" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="tarif_premi_production_action" model="ir.actions.act_window">
+        <field name="name">Tarif Premi Produksi</field>
+        <field name="res_model">tarif.premi.production</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="tarif_premi_production_menu"
+        name="Tarif Premi Produksi"
+        action="tarif_premi_production_action"
+        parent="menu_lhm_master"
+        />
+
+
+</odoo>

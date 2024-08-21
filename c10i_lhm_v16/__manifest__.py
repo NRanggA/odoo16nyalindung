@@ -95,6 +95,9 @@
         # 'views/data_demo_account_period.xml', # Data dummy dari account.period
 
         'views/hr_attendance_correction_views.xml',
+        'views/lhm_tm_category_views.xml',
+        'views/target_production_views.xml',
+        'views/tarif_premi_production_views.xml',
 
 
         #REPORT

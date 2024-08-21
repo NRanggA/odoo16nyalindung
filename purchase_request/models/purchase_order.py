@@ -11,25 +11,29 @@ class PurchaseOrder(models.Model):
         self.ensure_one()
         if not request_dict:
             request_dict = {}
-        title = _("Order confirmation %s for your Request %s") % (
-            self.name,
-            request.name,
-        )
+        title = _("Order confirmation %(po_name)s for your Request %(pr_name)s") % {
+            "po_name": self.name,
+            "pr_name": request.name,
+        }
         message = "<h3>%s</h3><ul>" % title
         message += _(
-            "The following requested items from Purchase Request %s "
-            "have now been confirmed in Purchase Order %s:"
-        ) % (request.name, self.name)
+            "The following requested items from Purchase Request %(pr_name)s "
+            "have now been confirmed in Purchase Order %(po_name)s:"
+        ) % {
+            "po_name": self.name,
+            "pr_name": request.name,
+        }
 
         for line in request_dict.values():
             message += _(
-                "<li><b>%s</b>: Ordered quantity %s %s, Planned date %s</li>"
-            ) % (
-                line["name"],
-                line["product_qty"],
-                line["product_uom"],
-                line["date_planned"],
-            )
+                "<li><b>%(prl_name)s</b>: Ordered quantity %(prl_qty)s %(prl_uom)s, "
+                "Planned date %(prl_date_planned)s</li>"
+            ) % {
+                "prl_name": line["name"],
+                "prl_qty": line["product_qty"],
+                "prl_uom": line["product_uom"],
+                "prl_date_planned": line["date_planned"],
+            }
         message += "</ul>"
         return message
 
@@ -67,7 +71,7 @@ class PurchaseOrder(models.Model):
                     if request_line.sudo().purchase_state == "done":
                         raise exceptions.UserError(
                             _("Purchase Request %s has already been completed")
-                            % request_line.request_id.name
+                            % (request_line.request_id.name)
                         )
         return True
 
@@ -83,7 +87,9 @@ class PurchaseOrder(models.Model):
             for alloc in (
                 rec.order_line.mapped("purchase_request_lines")
                 .mapped("purchase_request_allocation_ids")
-                .filtered(lambda alloc: alloc.purchase_line_id.order_id.id == rec.id)
+                .filtered(
+                    lambda alloc, rec=rec: alloc.purchase_line_id.order_id.id == rec.id
+                )
             ):
                 alloc_to_unlink += alloc
         res = super().unlink()
@@ -99,7 +105,6 @@ class PurchaseOrderLine(models.Model):
         relation="purchase_request_purchase_order_line_rel",
         column1="purchase_order_line_id",
         column2="purchase_request_line_id",
-        string="Purchase Request Lines",
         readonly=True,
         copy=False,
     )
@@ -174,9 +179,10 @@ class PurchaseOrderLine(models.Model):
                 message = self._purchase_request_confirm_done_message_content(
                     message_data
                 )
-                alloc.purchase_request_line_id.request_id.message_post(
-                    body=message, subtype_id=self.env.ref("mail.mt_comment").id
-                )
+                if message:
+                    alloc.purchase_request_line_id.request_id.message_post(
+                        body=message, subtype_id=self.env.ref("mail.mt_comment").id
+                    )
 
                 alloc.purchase_request_line_id._compute_qty()
         return True
@@ -189,15 +195,21 @@ class PurchaseOrderLine(models.Model):
         message = "<h3>%s</h3>" % title
         message += _(
             "The following requested services from Purchase"
-            " Request %s requested by %s "
+            " Request %(request_name)s requested by %(requestor)s "
             "have now been received:"
-        ) % (message_data["request_name"], message_data["requestor"])
+        ) % {
+            "request_name": message_data["request_name"],
+            "requestor": message_data["requestor"],
+        }
         message += "<ul>"
-        message += _("<li><b>%s</b>: Received quantity %s %s</li>") % (
-            message_data["product_name"],
-            message_data["product_qty"],
-            message_data["product_uom"],
-        )
+        message += _(
+            "<li><b>%(product_name)s</b>: "
+            "Received quantity %(product_qty)s %(product_uom)s</li>"
+        ) % {
+            "product_name": message_data["product_name"],
+            "product_qty": message_data["product_qty"],
+            "product_uom": message_data["product_uom"],
+        }
         message += "</ul>"
         return message
 
