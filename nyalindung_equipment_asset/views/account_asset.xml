@@ -26,13 +26,14 @@
                     <attribute name="attrs">{'invisible': ['|','|',('state', '=', 'closed'),('action','=','sell'),('action','=',False)]}</attribute>
                 </xpath>
                 <field name="action" position="before">
-                    <field name="lva" />
+                    <field name="lva" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                 </field>
                 <field name="asset_id" position="before">
-                    <field name="equip_id" attrs="{'invisible' : [('lva', '!=',True)], 'required' : [('lva','=',True)]}"/>
+                    <field name="equip_id" attrs="{'invisible' : [('lva', '!=',True),], 'required' : [('lva','=',True)], 'readonly': [('state', '!=', 'draft')]}"/>
+                    <!-- <field name="ref" attrs="{'invisible' : [('ref', '!=',True)]}"/> -->
                 </field>
                 <xpath expr="//field[@name='reason']" position="attributes">
-                    <attribute name="attrs">{'invisible' : [('action','not in',['sell','dispose'])]}</attribute>
+                    <attribute name="attrs">{'invisible' : [('action','not in',['sell','dispose'])], 'readonly': [('state', '!=', 'draft')]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='asset_id']" position="attributes">
                     <attribute name="attrs">{'invisible' : [('lva','=',True)], 'required' : [('lva','!=',True)]}</attribute>

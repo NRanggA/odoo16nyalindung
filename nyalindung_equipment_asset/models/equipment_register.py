@@ -4,6 +4,7 @@ from odoo.exceptions import UserError, ValidationError
 
 class EquipmentRegister(models.Model):
 	_inherit = 'equipment.register'
+	_order = 'id desc'
 
 	lva_threshold = fields.Boolean('LVA', compute='get_lva_threshold')
 	move_ids = fields.One2many('account.move', 'equip_register_id', string='Move')
@@ -185,4 +186,5 @@ class EquipmentRegisterLine(models.Model):
 
 			# 'barcode': '/', #diisi dari sequence dlu
 		}
+		print("==========================", res)
 		return res

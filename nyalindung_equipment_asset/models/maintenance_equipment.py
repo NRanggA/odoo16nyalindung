@@ -23,6 +23,10 @@ class EquipmentAsset(models.Model):
         for rec in self:
             if rec.seq_no:
                 result.append((rec.id, '%s - %s' % (rec.name,rec.seq_no)))
+            elif rec.seq_no and rec.serial_no:
+                result.append((rec.id, '%s - %s - %s' % (rec.name,rec.seq_no,rec.serial_no)))
+            else:
+                result.append((rec.id, '%s' % (rec.name)))
         return result
     
     # @api.depends('cost')
