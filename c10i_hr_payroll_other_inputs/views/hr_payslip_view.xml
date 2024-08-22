@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_form_other_input" model="ir.ui.view">
+        <field name="name">hr.payslip.form.other.input</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="c10i_hr_payroll.view_hr_payslip_form"/>
+        <field name="arch" type="xml">
+            <field name="input_line_ids" position="after">
+                <separator string="Other Inputs 2"/>
+                <field name="other_input_ids" readonly="1">
+                    <tree>
+                        <field name="batch_id" optional="hide"/>
+                        <field name="date" optional="hide"/>
+                        <field name="employee_id" optional="hide"/>
+                        <field name="type_id" optional="show"/>
+                        <field name="type_code" />
+                        <field name="amount" />
+                    </tree>
+                </field>
+            </field>
+        </field>
+    </record>
+</odoo>

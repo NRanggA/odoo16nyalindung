@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_payslip_other_input_type,hr.payslip.other.input.type,model_hr_payslip_other_input_type,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_payslip_other_input,hr.payslip.other.input,model_hr_payslip_other_input,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_payslip_batch_other_input,hr.payslip.other.input,model_hr_payslip_batch_other_input,c10i_hr_payroll.group_hr_payroll_user,1,1,1

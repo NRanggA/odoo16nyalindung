@@ -1,0 +1,53 @@
+# -*- coding: utf-8 -*-
+{
+    'name': "Payroll",
+
+    'summary': """
+    """,
+
+    'description': """
+    """,
+
+    'author': "PT Konsalten Solusi Indonesia",
+    'website': "https://konsalten.co.id",
+
+    'category': 'Human Resources',
+    'version': '16.0.1',
+    'license': 'LGPL-3',
+
+    # any module necessary for this one to work correctly
+    'depends': [
+        'mail',
+        'hr_contract',
+        'hr_holidays',
+    ],
+
+    # always loaded
+    'data': [
+        'security/hr_payroll_security.xml',
+        'security/ir.model.access.csv',
+        'data/hr_payroll_sequence.xml',
+        'data/hr_payroll_category.xml',
+        'data/hr_payroll_data.xml',
+        'wizard/hr_payroll_payslips_by_employees_views.xml',
+        'views/hr_contract_type_views.xml',
+        'views/hr_contract_views.xml',
+        'views/hr_salary_rule_views.xml',
+        'views/hr_payslip_views.xml',
+        'views/hr_employee_views.xml',
+        'views/hr_payroll_report.xml',
+        'wizard/hr_payroll_contribution_register_report_views.xml',
+        'views/report_contribution_register_templates.xml',
+        'views/report_payslip_templates.xml',
+        'views/report_payslip_details_templates.xml',
+        'views/hr_contract_history_views.xml',
+        'views/hr_leave_type_view.xml',
+        'views/menuitems.xml',
+        'data/mail_template.xml',
+    ],
+    # only loaded in demonstration mode
+    # 'demo': [
+    #     'demo/demo.xml',
+    # ],
+    'application': True,
+}

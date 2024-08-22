@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_contract_type"
+        action="action_hr_contract_type"
+        parent="hr.menu_human_resources_configuration"
+        sequence="3"
+        groups="base.group_no_one"/>
+    
+    <!-- Root Menus -->
+    <menuitem id="menu_hr_payroll_root"
+        name="Payroll"
+        sequence="186"
+        web_icon="c10i_hr_payroll,static/description/icon.png"/>
+
+        <menuitem id="menu_department_tree"
+            action="action_view_hr_payslip_form"
+            parent="menu_hr_payroll_root"
+            groups="c10i_hr_payroll.group_hr_payroll_user"
+            sequence="5"/>
+        <menuitem id="menu_hr_payslip_run"
+            action="action_hr_payslip_run_tree"
+            parent="menu_hr_payroll_root"
+            sequence="6"/>
+        <menuitem id="menu_payroll_employee"
+                name="Employees"
+                parent="c10i_hr_payroll.menu_hr_payroll_root"
+                sequence="15"/>
+            
+            <menuitem id="menu_hr_employee"
+                name="Employees"
+                action="hr.open_view_employee_list_my"
+                parent="menu_payroll_employee"
+                sequence="10"/>
+
+            <menuitem id="hr_menu_contract"
+                name="Contracts"
+                action="hr_contract.action_hr_contract"
+                parent="menu_payroll_employee"
+                sequence="20"
+                groups="hr_contract.group_hr_contract_manager"/>
+        
+        <menuitem id="menu_hr_payroll_configuration"
+            name="Configuration" parent="menu_hr_payroll_root"
+            sequence="100"
+            groups="c10i_hr_payroll.group_hr_payroll_manager"/>
+    
+            <menuitem
+                id="menu_hr_payroll_structure_view"
+                action="action_view_hr_payroll_structure_list_form"
+                parent="menu_hr_payroll_configuration"
+                sequence="2"/>
+            <menuitem
+                id="menu_hr_salary_rule_category"
+                action="action_hr_salary_rule_category"
+                parent="menu_hr_payroll_configuration"
+                sequence="11"
+                groups="base.group_no_one"/>
+            <menuitem id="menu_action_hr_salary_rule_form" 
+                action="action_salary_rule_form"
+                parent="menu_hr_payroll_configuration" 
+                sequence="12"/>
+            <menuitem
+                id="menu_action_hr_contribution_register_form"
+                action="action_contribution_register_form"
+                parent="menu_hr_payroll_configuration"
+                sequence="14"/>
+            <menuitem
+                id="hr_contract_advantage_template_menu_action"
+                action="hr_contract_advantage_template_action"
+                parent="menu_hr_payroll_configuration"
+                sequence="50"/>
+    
+</odoo>

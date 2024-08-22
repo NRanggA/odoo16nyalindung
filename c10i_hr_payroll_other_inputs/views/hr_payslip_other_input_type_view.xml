@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_other_input_type_view_form" model="ir.ui.view">
+        <field name="name">hr_payslip_other_input_type.view.form</field>
+        <field name="model">hr.payslip.other.input.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code" />
+                        <field name="name" />
+                        <field name="active" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_payslip_other_input_type_view_tree" model="ir.ui.view">
+        <field name="name">hr_payslip_other_input_type.view.tree</field>
+        <field name="model">hr.payslip.other.input.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code" />
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_payslip_other_input_type_view_search" model="ir.ui.view">
+        <field name="name">hr_payslip_other_input_type.view.search</field>
+        <field name="model">hr.payslip.other.input.type</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]" />
+            </search>
+        </field>
+    </record>
+
+    <record id="hr_payslip_other_input_type_action" model="ir.actions.act_window">
+        <field name="name">Other Input Type</field>
+        <field name="res_model">hr.payslip.other.input.type</field>
+        <field name="view_mode">tree,form</field>
+        <!-- <field name="help" type="html"></field> -->
+    </record>
+</odoo>
