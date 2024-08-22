@@ -318,9 +318,6 @@ class MaterialRequestLine(models.Model):
             'warehouse_id': self.mr_id.picking_type_id.warehouse_id.id,
             'product_uom_qty': product_uom_qty,
             'product_uom': product_uom.id,
-            'plantation_location_type_id' : self.location_type_id.id if self.location_type_id else False,
-            'plantation_location_id' : self.location_id.id if self.location_id else False,
-            'plantation_activity_id' : self.activity_id.id if self.activity_id else False,
         }
 
     def _create_stock_moves(self, picking):

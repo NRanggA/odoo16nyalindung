@@ -33,6 +33,6 @@
         <field name="context">{}</field>
     </record>
 
-    <menuitem id="menu_hr_contract_wage" name="Wage" action="action_hr_contract_wage" parent="om_hr_payroll.menu_hr_payroll_configuration" sequence="0"/>
+    <menuitem id="menu_hr_contract_wage" name="Wage" action="action_hr_contract_wage" parent="c10i_hr_payroll.menu_hr_payroll_configuration" sequence="0"/>
 
 </odoo>

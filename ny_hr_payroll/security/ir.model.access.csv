@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ny_premi_penyadap_grade,ny.premi.penyadap.grade,model_ny_premi_penyadap_grade,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_ny_premi_penyadap,ny.premi.penyadap,model_ny_premi_penyadap,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_ny_premi_penyadap_line,ny.premi.penyadap.line,model_ny_premi_penyadap_line,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_hr_payroll_other_input"
+        parent="c10i_hr_payroll.menu_hr_payroll_root"
+        name="Other Inputs"
+        sequence="10"/>
+        <menuitem
+            id="hr_payslip_batch_other_input_menu"
+            action="hr_payslip_batch_other_input_action"
+            parent="menu_hr_payroll_other_input"
+            sequence="5"/>
+        <menuitem
+            id="hr_payroll_other_input_misc_menu"
+            name="Other Source"
+            parent="menu_hr_payroll_other_input"
+            sequence="50"/>
+    <menuitem
+        id="hr_payslip_other_input_type_menu"
+        action="hr_payslip_other_input_type_action"
+        parent="c10i_hr_payroll.menu_hr_payroll_configuration"
+        sequence="15"/>
+</odoo>
