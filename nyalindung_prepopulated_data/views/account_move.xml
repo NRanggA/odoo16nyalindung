@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="prepopulated_data_inherit_account_move" model="ir.ui.view">
+            <field name="name">prepopulated.data.inherit.account.move</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='journal_div']" position="after">
+                    <field name="l10n_id_tax_number" />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="prepopulated_inherit_efaktur_id" model="ir.ui.view">
+            <field name="name">prepopulated.inherit.efaktur.id</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="l10n_id_efaktur.account_move_efaktur_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[child::field[@name='l10n_id_tax_number']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+    
+    </data>
+    
+
+</odoo>

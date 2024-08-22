@@ -20,12 +20,13 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': ['base', 'account', 'base_export_import', 'l10n_id_efaktur'],
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
         'views/prepopulated_data.xml',
+        'views/account_move.xml',
         'views/menu_items.xml',
         
         'wizard/wizard_import_prepopulated_data.xml',

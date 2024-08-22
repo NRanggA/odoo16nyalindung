@@ -18,6 +18,7 @@ class wizardImportPrepopulatedData(models.TransientModel):
             
         df = imp.get_row_excel(self.file_import)
         datas = []
+        data_npwp = []
 
         header_prepopulated_data = [
             'NPWP',
@@ -42,9 +43,6 @@ class wizardImportPrepopulatedData(models.TransientModel):
                 row[h] = imp.string_false(imp.nan_to_false(df[h][i]))
                 
             try:
-                # asset = self.env['maintenance.equipment'].search([('code','=',row.get('Equipment Code'))])
-                # if not asset:
-                #     raise ValidationError("Asset not found")
                 nomor_faktur = self.env['prepopulated.data'].search([('nomor_faktur', '=', row.get('Nomor Faktur'))])
                 dict(self.env['prepopulated.data']._fields['is_dikreditkan'].selection)
                 if not row.get('Dikreditkan') or row.get('Dikreditkan') not in ['Ya','Tidak']:
@@ -63,9 +61,21 @@ class wizardImportPrepopulatedData(models.TransientModel):
                         'ppnbm': float(row.get('PPnBM') or 0),
                         'is_dikreditkan': row.get('Dikreditkan'),
                     })
-
+                    
+                    partner_npwp = self.env['res.partner'].search([('vat','=',row.get('NPWP'))])
+                    if not partner_npwp:
+                        data_npwp.append({
+                            'npwp': row.get('NPWP'),
+                        })
+                
             except binascii.Error as err:
                 pass
+
+        if data_npwp:
+            npwp_list = []
+            for list in data_npwp:
+                npwp_list.append(list['npwp'])            
+            raise ValidationError(f"Please register these NPWPs as partners first:\n{npwp_list}")
         
         self.env['prepopulated.data'].create(datas)
         self.file_import = False
