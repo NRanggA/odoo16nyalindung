@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 *.pyc
 =======
 # sphinx build directories
@@ -52,4 +51,3 @@ package.json
 /man/
 /share/
 /src/
->>>>>>> cimol
