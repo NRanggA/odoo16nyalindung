@@ -27,6 +27,16 @@ class StockMove(models.Model):
         if self._is_out() and self.plantation_activity_id.account_id:
             acc_dest = self.plantation_activity_id.account_id.id
         return journal_id, acc_src, acc_dest, acc_valuation
+    
+    def _generate_valuation_lines_data(self, partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description):
+        res = super(StockMove, self)._generate_valuation_lines_data(partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description)
+        res['credit_line_vals']["plantation_location_type_id"] = self.plantation_location_type_id.id
+        res['debit_line_vals']["plantation_location_type_id"] = self.plantation_location_type_id.id
+        res['credit_line_vals']["plantation_location_id"] = self.plantation_location_id.id
+        res['debit_line_vals']["plantation_location_id"] = self.plantation_location_id.id
+        res['credit_line_vals']["plantation_activity_id"] = self.plantation_activity_id.id
+        res['debit_line_vals']["plantation_activity_id"] = self.plantation_activity_id.id
+        return res
 
     # def _action_done(self, cancel_backorder=False):
     #     res = super(StockMove, self)._action_done(cancel_backorder=cancel_backorder)
