@@ -10,6 +10,11 @@
             action="hr_payslip_batch_other_input_action"
             parent="menu_hr_payroll_other_input"
             sequence="5"/>
+        <menuitem
+            id="hr_payroll_other_input_misc_menu"
+            name="Other Source"
+            parent="menu_hr_payroll_other_input"
+            sequence="50"/>
     <menuitem
         id="hr_payslip_other_input_type_menu"
         action="hr_payslip_other_input_type_action"
