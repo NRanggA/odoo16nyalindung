@@ -1835,7 +1835,6 @@
             <field name="arch" type="xml">
                 <form string="Laporan Harian Mandor">
                     <header>
-                        <button name="run_progress" string="Proses kedua" type="object"/>
                         <button name="run_progress" string="Proses" states="draft" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator"/>
                         <button name="button_confirm" string="Confirm" states="in_progress" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator" confirm="Apakah anda yakin akan dikonfirmasi?"/>
                         <button name="button_approve" string="Approve" states="confirmed" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_manager" confirm="Apakah anda menyetujui dokumen ini?"/>

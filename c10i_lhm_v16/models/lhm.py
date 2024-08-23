@@ -2189,8 +2189,7 @@ class lhm_transaction_line(models.Model):
                     hasil           = wage_hasil_1 + wage_hasil_2
                     
                     record.write({'contract_wage_value' : hasil})
-                    # emp_nap.write({'hasil_convert_latex' : wage_hasil_1})
-                    # emp_nap.write({'hasil_convert_lump' : wage_hasil_2})
+
                 else:
                     # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
                     price_1      = record.activity_id.get_price_borongan()
