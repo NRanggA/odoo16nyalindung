@@ -295,16 +295,44 @@ class lhm_activity(models.Model):
     counterpart_closing_account_id              = fields.Many2one('account.account', 'Kontra Closing Account TBM')
     tm_counterpart_closing_account_id           = fields.Many2one('account.account', 'Kontra Closing Account TM - Inti')
     tm_plasma_counterpart_closing_account_id    = fields.Many2one('account.account', 'Kontra Closing Account TM - Plasma')
-
+    
     # Menambahkan field is hasil 2 untuk menandakan bahwa aktivitas ini hasilnya terdapat 2 hasil
-    is_hasil_2      = fields.Boolean('Hasil 2', default=False)
+    is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
+    is_nap                                      = fields.Boolean('NAP', default=False)
 
-    parent_path     = fields.Char("Parent Path", index=True, unaccent=False)
+    parent_path                                 = fields.Char("Parent Path", index=True, unaccent=False)
+    _parent_name                                = "parent_id"
+    _parent_store                               = True
+    _parent_order                               = 'code, name'
+    _order                                      = 'code, parent_left asc'
 
-    _parent_name    = "parent_id"
-    _parent_store   = True
-    _parent_order   = 'code, name'
-    _order          = 'code, parent_left asc'
+    def get_price_borongan(self, drc=None):
+        price = 0
+        for record in self:
+            if drc is not None: 
+                if record.is_panen and record.is_hasil_2:
+                    borongan_panen = self.env['lhm.wage.borongan.panen'].search([
+                        ('activity_id', '=', record.id),
+                        ('min_drc', '<=', drc),
+                        '|', 
+                        ('max_drc', '>=', drc), 
+                        ('max_drc', '=', 0)
+                    ], limit=1) 
+                    
+                    price = borongan_panen.price
+            else:  
+                if record.is_panen:
+                    borongan_panen = self.env['lhm.wage.borongan.panen'].search([
+                        ('activity_id', '=', record.id),
+                        ('min_drc', '=', 0), 
+                    ], limit=1)  
+                    price = borongan_panen.price
+                else:
+                    borongan_rawat = self.env['lhm.wage.borongan.rawat'].search([
+                        ('activity_id', '=', record.id),
+                    ], limit=1) 
+                    price = borongan_rawat.price
+        return price
 
     @api.depends('parent_id')
     def _compute_level(self):
@@ -1272,17 +1300,13 @@ class lhm_transaction(models.Model):
     nik_mandor          = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
     nik_mandor_1        = fields.Char("NIK Mandor 1", related="kemandoran_id.nik_mandor_1", readonly=True)
     nik_kerani          = fields.Char("NIK Kerani", related="kemandoran_id.nik_kerani", readonly=True)
-
     lhm_line_ids        = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM")
-    
-    # masih belum final untuk penamaan field nya
-    lhm_nap_line_ids    = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM NAP")
-    
+    lhm_nap_line_ids    = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
+    is_nap              = fields.Boolean(string='Is NAP', compute='_compute_is_nap', store=True)
     process_line_ids    = fields.One2many('lhm.transaction.process.line', 'lhm_id', string="Detail Progress LHM")
     material_line_ids   = fields.One2many('lhm.transaction.material.line', 'lhm_id', string="Detail Material LHM")
     emp_out_ids         = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer Out LHM", domain=[('type', '=', 'out')], readonly=1)
     emp_in_ids          = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer In LHM", domain=[('type', '=', 'in')], readonly=1)
-    
     user_id             = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
     operating_unit_id   = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)
     account_period_id   = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', readonly=True, store=True)
@@ -1302,9 +1326,18 @@ class lhm_transaction(models.Model):
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
     pending_nap_link    = fields.Boolean('LHM belum sama dengan NAP', compute='_check_pending_nap_link', store=True)
 
+    def run_progress_2(self):
+        res = super(lhm_transaction, self).run_progress()
+
+    @api.depends('lhm_line_ids.activity_id.is_panen')
+    def _compute_is_nap(self):
+        for record in self:
+            record.is_nap = any(line.activity_id.is_nap for line in record.lhm_line_ids)
+
     def button_regenerate(self):
         self.check_missing_employees()
 
+    # Belum di ganti ke contract untuk pengecekkan nya (sudah dibuat belum di testing)
     def check_missing_employees(self):
         # Ambil employee yang sudah ada di lhm_line_ids
         existing_employee_ids = [line.employee_id.id for line in self.lhm_line_ids]
@@ -1343,21 +1376,25 @@ class lhm_transaction(models.Model):
             new_lines = []
             for emp_id in absensi_employee_ids:
                 employee = self.env['hr.employee'].browse(emp_id)
-                min_wage = False
+                contract = False
                 if employee.basic_salary_type == 'employee':
-                    min_wage = self.env['hr.minimum.wage'].search([
+                    contract = self.env['hr.contract'].search([
                         ('employee_id', '=', employee.id),
-                        ('date_from', '<=', self.date),
-                        ('date_to', '>=', self.date)
+                        ('date_start', '<=', self.date),
+                        ('date_end', '>=', self.date),
+                        ('state', '=', 'open'),
+                        ('is_lhm', '=', True ),
                     ], limit=1)
                 elif employee.basic_salary_type == 'employee_type':
-                    min_wage = self.env['hr.minimum.wage'].search([
-                        ('employee_type_id', '=', employee.type_id.id),
-                        ('date_from', '<=', self.date),
-                        ('date_to', '>=', self.date)
+                    contract = self.env['hr.contract'].search([
+                        ('employee_id', '=', employee.id),
+                        ('date_start', '<=', self.date),
+                        ('date_end', '>=', self.date),
+                        ('state', '=', 'open'),
+                        ('is_lhm', '=', True ),
                     ], limit=1)
                 
-                if not min_wage:
+                if not contract:
                     print(f"=== Minimum wage not found for employee {employee.name}")
                     continue
 
@@ -1375,8 +1412,10 @@ class lhm_transaction(models.Model):
                     'penalty': 0.0,
                     'name': employee.no_induk or False,
                     'employee_id': employee.id or False,
-                    'min_wage_id': min_wage.id or False,
-                    'min_wage_value': (min_wage.umr_month / (min_wage.work_day or 25)),
+                    # 'min_wage_id': contract.id or False,
+                    # 'min_wage_value': (contract.umr_month / (contract.work_day or 25)),
+                    'contract_id'           : contract and contract.id or False,
+                    'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                 }
                 new_lines.append((0, 0, values))
                 print(f"=== Added Employee: {employee.name}, ID: {employee.id}")
@@ -1423,35 +1462,6 @@ class lhm_transaction(models.Model):
 
             for employee in self.kemandoran_id.employee_ids:
                 if employee.id in absensi_employee_ids:
-                    contract = False
-                    if employee and employee.basic_salary_type == 'employee':
-                        contract = self.env['hr.contract'].search([
-                            ('employee_id', '=', employee.id),
-                            ('date_start', '<=', self.date),
-                            ('date_end', '>=', self.date),
-                            ('state', '=', 'open'),
-                            ('is_lhm', '=', True ),
-                        ], limit=1)
-                    elif employee and employee.basic_salary_type == 'employee_type':
-                        contract = self.env['hr.contract'].search([
-                            ('employee_type_id', '=', employee.type_id.id),
-                            ('date_start', '<=', self.date),
-                            ('date_end', '>=', self.date),
-                            ('state', '=', 'open'),
-                            ('is_lhm', '=', True ),
-                        ], limit=1)
-                    if not contract:
-                        return {
-                            'value': {
-                                'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
-                                'date': False,
-                                'kemandoran_id': False,
-                            },
-                            'warning': {
-                                'title': _('Kesalahan Input Data'),
-                                'message': _(f"Contract pada Karyawan : { employee.name } dengan Tipe Karyawan : {employee.type_id.name}, tidak ditemukan !"),
-                            },
-                        }
                     values = {
                         'sequence'              : seq,
                         'date'                  : self.date or False,
@@ -1466,11 +1476,10 @@ class lhm_transaction(models.Model):
                         'penalty'               : 0.0,
                         'name'                  : employee and employee.no_induk or False,
                         'employee_id'           : employee and employee.id or False,
-                        # 'attendance_id'         : absensi.type_id.id, #memasukkan tipe absensi setelah memasukkan kemandoran
-                        # 'min_wage_id'           : min_wage and min_wage.id or False,
-                        # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
-                        'contract_id'           : contract and contract.id or False,
-                        'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                        # 'contract_id'           : contract and contract.id or False,
+                        # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                        'contract_id'           : 0.0,
+                        'contract_wage_value'   : 0.0,
                     }
                     if employee.id in emp_out_ids:
                         values.update({
@@ -1502,29 +1511,35 @@ class lhm_transaction(models.Model):
                         'penalty'               : 0.0,
                         'name'                  : transfer and transfer.employee_id and transfer.employee_id.no_induk or False,
                         'employee_id'           : transfer and transfer.employee_id and transfer.employee_id.id or False,
-                        # 'min_wage_id'           : min_wage and min_wage.id or False,
-                        # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
-                        'contract_id'           : contract and contract.id or False,
-                        'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                        # 'contract_id'           : contract and contract.id or False,
+                        # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                        'contract_id'           : 0.0,
+                        'contract_wage_value'   : 0.0,
                         'attendance_id'         : other_in_attn and other_in_attn.id or False,
                         'transfer_id'           : transfer and transfer.id or False
                     }
                     list_employee.append((0, 0, values))
                     seq += 1
             self.lhm_line_ids = list_employee
-    
+
     # Menggunakan Contract_id
     def check_all(self, date_start, date_stop, employe_ids):
         plantation_line_obj = self.env['lhm.transaction.line'].sudo()
         for employee_id in employe_ids:
             total_hke           = 0
-            total_hkne          = 0
+            # total_hke_2         = 0
             total_hke_day       = 0
+            
+            total_hkne          = 0
             total_hkne_day      = 0
-            trans_valid         = []
-            lhm_list            = []
+            
+            trans_valid             = []
+            # trans_valid_borongan    = []
+            lhm_list                = []
             all_transaction_employee    = plantation_line_obj.search([('lhm_id.date', '>=', date_start), ('lhm_id.date', '<=', date_stop), ('employee_id', '=', employee_id)], order='date asc')
+            
             for emp_transaction in all_transaction_employee:
+                # if not emp_transaction.is_borong:
                 if emp_transaction.attendance_id and emp_transaction.employee_id.contract_id.wage_type_id.name == 'Month' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
                     trans_valid.append(emp_transaction.id)
                     if emp_transaction.lhm_id.id not in lhm_list:
@@ -1533,7 +1548,11 @@ class lhm_transaction(models.Model):
                     total_hke += emp_transaction.work_day
                 elif emp_transaction.non_work_day > 0 and emp_transaction.attendance_id and emp_transaction.attendance_id.type_hk == 'hkne' and emp_transaction.employee_id.contract_id.wage_type_id.name == 'Month' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
                     total_hkne += emp_transaction.non_work_day
-                    
+                # else:
+                #     trans_valid_borongan.append(emp_transaction.id)
+                #     total_hke_2 += emp_transaction.work_day
+
+            # Looping untuk lhm transaksi yang bukan borongan 
             for emp_transaction_write in plantation_line_obj.search([('id', 'in', trans_valid)], order='date asc'):
                 if emp_transaction_write.work_day > 0 and emp_transaction_write.attendance_id and emp_transaction_write.attendance_id.type_hk == 'hke' and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
                     total_hke_day += emp_transaction_write.work_day
@@ -1546,6 +1565,7 @@ class lhm_transaction(models.Model):
                     contract_value_hkne         = ((emp_transaction_write.contract_id.wage / (total_hke + total_hkne)) * total_hkne)
 
                     values  = {
+                        # 'total_hke'             : total_hke_2 + total_hke,
                         'total_hke'             : total_hke,
                         'total_hkne'            : total_hkne,
                         'contract_wage_value'   : contract_wage_value,
@@ -1563,6 +1583,23 @@ class lhm_transaction(models.Model):
                     }
                     emp_transaction_write.write(values)
             
+            # Looping untuk lhm transaksi yang borongan
+            # for emp_transaction_borongan in plantation_line_obj.search([('id', 'in', trans_valid_borongan)], order='date asc'):
+            #     if emp_transaction_borongan.work_day > 0 and emp_transaction_borongan.attendance_id and emp_transaction_borongan.attendance_id.type_hk == 'hke' and (emp_transaction_borongan.lhm_id.state == 'done' or emp_transaction_borongan.lhm_id.state == 'in_progress'):
+            #         total_hke_day += emp_transaction_borongan.work_day
+            #     elif emp_transaction_borongan.non_work_day > 0 and emp_transaction_borongan.attendance_id and emp_transaction_borongan.attendance_id.type_hk == 'hkne' and emp_transaction_borongan.employee_id.contract_id.wage_type_id.name == 'Month' and (emp_transaction_borongan.lhm_id.state == 'done' or emp_transaction_borongan.lhm_id.state == 'in_progress'):
+            #         total_hkne_day += emp_transaction_borongan.non_work_day
+            #     if emp_transaction_borongan.attendance_id and (emp_transaction_borongan.non_work_day > 0 or emp_transaction_borongan.work_day > 0) and (emp_transaction_borongan.lhm_id.state == 'done' or emp_transaction_borongan.lhm_id.state == 'in_progress'):
+            #         values  = {
+            #             'total_hke'             : total_hke_2 + total_hke,
+            #         }
+            #         emp_transaction_borongan.write(values)
+            #     else:
+            #         values = {
+            #             'total_hke'             : 0.0,
+            #         }
+            #         emp_transaction_borongan.write(values)
+
             for lhm_reprogress in plantation_line_obj.search([('lhm_id', 'in', lhm_list)], order='date asc'):
                 # print(f"=== Isii  LHM List : {lhm_reprogress.employee_id.name} Nama : {lhm_reprogress.lhm_id.name} Date : {lhm_reprogress.lhm_id.date}")
 
@@ -1600,6 +1637,22 @@ class lhm_transaction(models.Model):
 
     # Menggunakan Contract_id
     def run_progress(self):
+        # fungsi untuk menambahkan employee panen ke dalam panen
+        self.lhm_line_ids.get_employee_panen_nap()
+
+        # Panggil fungsi untuk mengambil gaji untuk setiap employee
+        self.lhm_line_ids.get_wage_value_employee()
+        
+        # Fungsi mengambil gaji karyawan borongan rawat
+        self.lhm_line_ids.get_wage_borong_rawat()
+        
+        # Fungsi mengambil gaji karyawan borongan panen
+        self.lhm_line_ids.get_wage_borong_panen()
+        
+        # jelankan fungsi progress
+        self._progress()
+
+    def _progress(self):
         lhm_progress_list = []
         lhm_removed_list = []
         sequence_number = 1
@@ -1636,8 +1689,6 @@ class lhm_transaction(models.Model):
 
         for progres in self.env.cr.fetchall():
             activity_data = self.env['lhm.activity'].search([('id', '=', progres[0])])
-
-            # print(f"==== HASIL PREMI per aktivitas {activity_data.name}: {progres[5]}")
 
             if lhm_progress_list:
                 progress_line = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
@@ -1765,7 +1816,6 @@ class lhm_transaction(models.Model):
                         line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
                         and line.valid and (line.work_day > 0 or line.non_work_day > 0):
                     employee_ids.append(line.employee_id.id)
-                    print(f"=== Employeee {line.employee_id.contract_id.wage_type_id.name}")
             if employee_ids != []:
                 self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
 
@@ -1776,10 +1826,19 @@ class lhm_transaction(models.Model):
                     values = {
                         'total_hke'             : 0.0,
                         'total_hkne'            : 0.0,
-                        'contract_wage_value'   : line.contract_id.wage if line.contract_id.wage_type_id.name == 'Month' else line.contract_id.wage_day / line.contract_id.work_day,
+                        'contract_wage_value'   : 0.0,
                         'contract_value_date'   : 0.0,
+                        'contract_id'           : 0,
                     }
-                    print(f"=== Employeee 2 {line.employee_id.contract_id.wage_type_id.name}")
+                    line.write(values)
+                else:
+                    values = {
+                        'total_hke'             : 0.0,
+                        'total_hkne'            : 0.0,
+                        'contract_wage_value'   : 0.0,
+                        'contract_value_date'   : 0.0,
+                        'contract_id'           : 0,
+                    }
                     line.write(values)
             return True
         return True
@@ -1812,416 +1871,6 @@ class lhm_transaction(models.Model):
                                 line.overtime_value = (line.contract_id.wage / 25) * float(float(3) / float(20)) * overtime_data.normal_day
                             else:
                                 line.overtime_value = 0
-
-    # Menggunakan UMR (min.wage)
-    # @api.onchange('date', 'kemandoran_id')
-    # def _onchange_kemandoran(self):
-    #     other_ids = False
-    #     if self.date and self.kemandoran_id:
-    #         other_ids = self.env['lhm.transaction'].search([('id', '!=', self._origin.id), ('date', '=', self.date), ('kemandoran_id', '=', self.kemandoran_id.id)])
-    #         if other_ids:
-    #             self.date = False
-    #             self.kemandoran_id = False
-    #             return {
-    #                 'value': {'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids]))},
-    #                 'warning': {'title': _('Kesalahan Input Data'),
-    #                             'message': _("Dokumen sudah ada: %s.") % other_ids[-1].name},
-    #             }
-    #     if self.date and self.kemandoran_id and not other_ids:
-    #         transfer_out_ids    = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
-    #         transfer_in_ids     = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'in'), ('kemandoran_from_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
-    #         other_out_attn      = self.env['hr.attendance.type'].search([('type', '=', 'out')], limit=1)
-    #         other_in_attn       = self.env['hr.attendance.type'].search([('type', '=', 'in')], limit=1)
-
-    #         emp_out_ids = [x.employee_id.id for x in transfer_out_ids]
-    #         list_employee = []
-    #         seq = 1
-
-    #         # Mencari Absensi karyawan berdasarkan tanggal yang sama di masukkan di form lhm
-    #         start_date  = datetime.combine(self.date, datetime.min.time())
-    #         end_date    = start_date + timedelta(days=1)
-
-    #         # Pencarian absensi karyawan pada tanggal yang sama
-    #         absensi = self.env['hr.attendance.sheet'].search([
-    #             ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
-    #             ('check_in', '>=', start_date),
-    #             ('check_in', '<', end_date)
-    #         ])
-    #         absensi_employee_ids = absensi.mapped('employee_id.id')
-
-    #         for employee in self.kemandoran_id.employee_ids:
-    #             if employee.id in absensi_employee_ids:
-    #                 min_wage = False
-    #                 if employee and employee.basic_salary_type == 'employee':
-    #                     min_wage = self.env['hr.minimum.wage'].search([
-    #                         ('employee_id', '=', employee.id),
-    #                         ('date_from', '<=', self.date),
-    #                         ('date_to', '>=', self.date)
-    #                     ], limit=1)
-    #                 elif employee and employee.basic_salary_type == 'employee_type':
-    #                     min_wage = self.env['hr.minimum.wage'].search([
-    #                         ('employee_type_id', '=', employee.type_id.id),
-    #                         ('date_from', '<=', self.date),
-    #                         ('date_to', '>=', self.date)
-    #                     ], limit=1)
-    #                 if not min_wage:
-    #                     return {
-    #                         'value': {
-    #                             'lhm_line_ids': list(map(lambda x: (2, x), [x.id for x in self.lhm_line_ids])),
-    #                             'date': False,
-    #                             'kemandoran_id': False,
-    #                         },
-    #                         'warning': {
-    #                             'title': _('Kesalahan Input Data'),
-    #                             'message': _(f"UMR pada Karyawan : { employee.name } dengan Tipe Karyawan : {employee.type_id.name}, tidak ditemukan !"),
-    #                         },
-    #                     }
-    #                 values = {
-    #                     'sequence'              : seq,
-    #                     'date'                  : self.date or False,
-    #                     'work_day'              : 0.0,
-    #                     'non_work_day'          : 0.0,
-    #                     'total_hke'             : 0.0,
-    #                     'total_hkne'            : 0.0,
-    #                     'min_wage_value_date'   : 0.0,
-    #                     'work_result'           : 0.0,
-    #                     'premi'                 : 0.0,
-    #                     'overtime_value'        : 0.0,
-    #                     'penalty'               : 0.0,
-    #                     'name'                  : employee and employee.no_induk or False,
-    #                     'employee_id'           : employee and employee.id or False,
-    #                     # 'attendance_id'         : absensi.type_id.id, #memasukkan tipe absensi setelah memasukkan kemandoran
-    #                     'min_wage_id'           : min_wage and min_wage.id or False,
-    #                     'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
-    #                 }
-    #                 if employee.id in emp_out_ids:
-    #                     values.update({
-    #                         'attendance_id': other_out_attn and other_out_attn.id or False,
-    #                         'transfer_id': self.env['hr.employee.foreman.transfer'].search([
-    #                             ('date', '=', self.date),
-    #                             ('type', '=', 'out'),
-    #                             ('kemandoran_to_id', '=', self.kemandoran_id.id),
-    #                             ('lhm_line_id', '=', False),
-    #                             ('employee_id', '=', employee.id)
-    #                         ], limit=1).id or False
-    #                     })
-    #                 list_employee.append((0, 0, values))
-    #                 seq += 1
-
-    #         if transfer_in_ids:
-    #             for transfer in transfer_in_ids:
-    #                 values = {
-    #                     'sequence'              : seq,
-    #                     'date'                  : self.date or False,
-    #                     'work_day'              : 0.0,
-    #                     'non_work_day'          : 0.0,
-    #                     'total_hke'             : 0.0,
-    #                     'total_hkne'            : 0.0,
-    #                     'min_wage_value_date'   : 0.0,
-    #                     'work_result'           : 0.0,
-    #                     'premi'                 : 0.0,
-    #                     'overtime_value'        : 0.0,
-    #                     'penalty'               : 0.0,
-    #                     'name'                  : transfer and transfer.employee_id and transfer.employee_id.no_induk or False,
-    #                     'employee_id'           : transfer and transfer.employee_id and transfer.employee_id.id or False,
-    #                     'min_wage_id'           : min_wage and min_wage.id or False,
-    #                     'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)),
-    #                     'attendance_id'         : other_in_attn and other_in_attn.id or False,
-    #                     'transfer_id'           : transfer and transfer.id or False
-    #                 }
-    #                 list_employee.append((0, 0, values))
-    #                 seq += 1
-    #         self.lhm_line_ids = list_employee
-
-    # Menggunakan Min Wage (UMR)
-    # def check_all(self, date_start, date_stop, employe_ids):
-    #     plantation_line_obj = self.env['lhm.transaction.line'].sudo()
-    #     for employee_id in employe_ids:
-    #         total_hke           = 0
-    #         total_hkne          = 0
-    #         total_hke_day       = 0
-    #         total_hkne_day      = 0
-    #         trans_valid         = []
-    #         lhm_list            = []
-    #         all_transaction_employee    = plantation_line_obj.search([('lhm_id.date', '>=', date_start), ('lhm_id.date', '<=', date_stop), ('employee_id', '=', employee_id)], order='date asc')
-    #         for emp_transaction in all_transaction_employee:
-    #             if emp_transaction.attendance_id and emp_transaction.employee_id.type_id.monthly_employee and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
-    #                 trans_valid.append(emp_transaction.id)
-    #                 if emp_transaction.lhm_id.id not in lhm_list:
-    #                     lhm_list.append(emp_transaction.lhm_id.id)
-    #             if emp_transaction.work_day > 0 and emp_transaction.attendance_id and emp_transaction.attendance_id.type_hk == 'hke' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
-    #                 total_hke += emp_transaction.work_day
-    #             elif emp_transaction.non_work_day > 0 and emp_transaction.attendance_id and emp_transaction.attendance_id.type_hk == 'hkne' and emp_transaction.employee_id.type_id.monthly_employee and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
-    #                 total_hkne += emp_transaction.non_work_day
-                    
-    #         for emp_transaction_write in plantation_line_obj.search([('id', 'in', trans_valid)], order='date asc'):
-    #             if emp_transaction_write.work_day > 0 and emp_transaction_write.attendance_id and emp_transaction_write.attendance_id.type_hk == 'hke' and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
-    #                 total_hke_day += emp_transaction_write.work_day
-    #             elif emp_transaction_write.non_work_day > 0 and emp_transaction_write.attendance_id and emp_transaction_write.attendance_id.type_hk == 'hkne' and emp_transaction_write.employee_id.type_id.monthly_employee and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
-    #                 total_hkne_day += emp_transaction_write.non_work_day
-    #             if emp_transaction_write.attendance_id and (emp_transaction_write.non_work_day > 0 or emp_transaction_write.work_day > 0) and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
-    #                 values  = {
-    #                     'total_hke'             : total_hke,
-    #                     'total_hkne'            : total_hkne,
-    #                     'min_wage_value'        : emp_transaction_write.min_wage_id.umr_month / (total_hke + total_hkne),
-    #                     'min_wage_value_date'   : emp_transaction_write.min_wage_id.umr_month / (total_hke_day + total_hkne_day),
-    #                     'min_wage_value_hkne'   : ((emp_transaction_write.min_wage_id.umr_month / (total_hke + total_hkne)) * total_hkne),
-    #                 }
-    #                 emp_transaction_write.write(values)
-    #             else:
-    #                 values = {
-    #                     'total_hke'             : 0.0,
-    #                     'total_hkne'            : 0.0,
-    #                     'min_wage_value'        : emp_transaction_write.min_wage_id.umr_month / emp_transaction_write.min_wage_id.work_day,
-    #                     'min_wage_value_date'   : 0.0,
-    #                 }
-    #                 emp_transaction_write.write(values)
-    #         for lhm_reprogress in plantation_line_obj.search([('lhm_id', 'in', lhm_list)], order='date asc'):
-    #             if (lhm_reprogress.lhm_id.state == 'done' or lhm_reprogress.lhm_id.state == 'in_progress'):
-    #                 if lhm_reprogress.attendance_id and lhm_reprogress.employee_id and lhm_reprogress.employee_id.type_id and lhm_reprogress.employee_id.type_id.monthly_employee and \
-    #                     (lhm_reprogress.non_work_day > 0 or lhm_reprogress.work_day > 0):
-    #                     self.env.cr.execute("""
-    #                         SELECT 
-    #                             ltl.activity_id,
-    #                             ltl.location_id,
-    #                             SUM(ltl.work_day) as hk,
-    #                             SUM(ltl.work_day*ltl.min_wage_value)+SUM(ltl.premi+ltl.overtime_value-ltl.penalty) as realisasi,
-    #                             case when is_panen is TRUE then SUM(ltl.work_result) else 0 end as nilai,
-    #                             SUM(ltl.premi+ltl.overtime_value-ltl.penalty) as premi,
-    #                             SUM(ltl.non_work_day) as hkne,
-    #                             SUM(ltl.min_wage_value_date)+SUM(ltl.work_day*ltl.min_wage_value)+SUM(ltl.premi+ltl.overtime_value-ltl.penalty)-SUM(CASE WHEN ltl.min_wage_value_date > 0 THEN ltl.min_wage_value ELSE 0 END) as realisasi_date
-    #                         FROM 
-    #                             lhm_transaction_line ltl
-    #                         LEFT JOIN 
-    #                             lhm_activity la on ltl.activity_id = la.id
-    #                         WHERE 
-    #                             ltl.activity_id is not NULL and lhm_id = %s 
-    #                         GROUP BY 
-    #                             ltl.activity_id, ltl.location_id, la.is_panen;
-    #                         """, (lhm_reprogress.lhm_id.id,))
-    #                     for progres in self.env.cr.fetchall():
-    #                         progress_line   = self.env['lhm.transaction.process.line'].search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', lhm_reprogress.lhm_id.id)])
-    #                         if progress_line:
-    #                             new_lines = {
-    #                                 'realization'       : progres[3],
-    #                                 'realization_date'  : progres[7],
-    #                             }
-    #                             progress_line.write(new_lines)
-    #     return True
-
-    # Menggunakan Min Wage (UMR)
-    # def run_progress(self):
-    #     lhm_progress_list = []
-    #     lhm_removed_list = []
-    #     sequence_number = 1
-    #     progress_line_obj = self.env['lhm.transaction.process.line']
-
-    #     if self.process_line_ids:
-    #         for data in self.process_line_ids:
-    #             lhm_progress_list.append(data.id)
-
-    #     self.env.cr.execute("""
-    #         SELECT 
-    #             ltl.activity_id,
-    #             ltl.location_id,
-    #             ltl.product_id,
-    #             ltl.product_id_2,
-    #             SUM(ltl.work_day) AS hk,
-    #             SUM(ltl.work_day * ltl.min_wage_value) + SUM(ltl.premi + ltl.overtime_value - ltl.penalty) AS realisasi,
-    #             SUM(ltl.hasil_1) AS nilai,
-    #             CASE WHEN la.is_hasil_2 IS TRUE THEN SUM(ltl.hasil_2) ELSE 0 END AS nilai2,
-    #             SUM(ltl.premi + ltl.overtime_value - ltl.penalty) AS premi,
-    #             SUM(ltl.non_work_day) AS hkne,
-    #             SUM(ltl.min_wage_value_date) + SUM(ltl.work_day * ltl.min_wage_value) + SUM(ltl.premi + ltl.overtime_value - ltl.penalty) - SUM(CASE WHEN ltl.min_wage_value_date > 0 THEN ltl.min_wage_value ELSE 0 END) AS realisasi_date,
-    #             ltl.satuan_1,
-    #             CASE WHEN la.is_hasil_2 IS TRUE THEN ltl.satuan_2 ELSE NULL END AS satuan_2
-    #         FROM 
-    #             lhm_transaction_line ltl
-    #         LEFT JOIN 
-    #             lhm_activity la ON ltl.activity_id = la.id
-    #         WHERE 
-    #             ltl.activity_id IS NOT NULL AND ltl.lhm_id = %s 
-    #         GROUP BY 
-    #             ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, la.is_hasil_2, ltl.satuan_1, ltl.satuan_2;
-    #     """, (self.id,))
-
-    #     for progres in self.env.cr.fetchall():
-    #         activity_data = self.env['lhm.activity'].search([('id', '=', progres[0])])
-
-    #         print(f"==== HASIL PREMI per aktivitas {activity_data.name}: {progres[5]}")
-
-    #         if lhm_progress_list:
-    #             progress_line = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
-    #             if progress_line and len(progress_line) > 1:
-    #                 raise ValidationError(_("Terjadi kesalahan (T.T), Error Code %s. \n"
-    #                                         "Hubungi administrator untuk informasi lebih lanjut!"))
-    #             if progress_line and len(progress_line) == 1:
-    #                 if progress_line.nilai != progres[6] and progress_line.activity_id:
-    #                     progress_line.write({'nilai': progres[6], 'updated': True})
-    #                 if progress_line.nilai2 != progres[7] and progress_line.activity_id.is_hasil_2:
-    #                     progress_line.write({'nilai2': progres[7], 'updated': True})
-    #                 if progress_line.work_day != progres[4]:
-    #                     progress_line.write({'work_day': progres[4], 'updated': True})
-    #                 if progress_line.non_work_day != progres[9]:
-    #                     progress_line.write({'non_work_day': progres[9]})
-    #                 if progress_line.realization != progres[5]:
-    #                     progress_line.write({'realization': progres[5], 'updated': True})
-    #                 if progress_line.realization_date != progres[10]:
-    #                     progress_line.write({'realization_date': progres[10]})
-    #                 if progress_line.premi != progres[8]:
-    #                     progress_line.write({'premi': progres[8], 'updated': True})
-    #                 if progress_line.product_id.id != progres[2]:
-    #                     progress_line.write({'product_id': progres[2]})
-    #                 if progress_line.product_id_2.id != progres[3]:
-    #                     progress_line.write({'product_id_2': progres[3]})
-    #                 if progres[7] > 0:  # Jika ada hasil_2
-    #                     if progress_line.uom_id.id != progres[11]:
-    #                         progress_line.write({'uom_id': progres[11]})
-    #                     if progress_line.uom2_id.id != progres[12]:
-    #                         progress_line.write({'uom2_id': progres[12]})
-    #                 else:  # Jika tidak ada hasil_2
-    #                     if progress_line.uom_id.id != activity_data.uom_id.id:
-    #                         progress_line.write({'uom_id': activity_data.uom_id.id})
-    #                     if progress_line.uom2_id.id != activity_data.uom2_id.id:
-    #                         progress_line.write({'uom2_id': activity_data.uom2_id.id})
-    #                 lhm_removed_list.append(progress_line.id)
-    #             else:
-    #                 new_lines = {
-    #                     'sequence': sequence_number,
-    #                     'date': self.date,
-    #                     'activity_id': progres[0],
-    #                     'location_id': progres[1],
-    #                     'product_id': progres[2],
-    #                     'product_id_2': progres[3],
-    #                     'nilai': progres[6],
-    #                     'uom_id': progres[11] if progres[11] else (activity_data.uom_id.id if activity_data else False),
-    #                     'nilai2': progres[7],
-    #                     'uom2_id': progres[12] if progres[12] else (activity_data.uom2_id.id if activity_data else False),
-    #                     'work_day': progres[4],
-    #                     'non_work_day': progres[9],
-    #                     'realization': progres[5],
-    #                     'realization_date': progres[10],
-    #                     'premi': progres[8],
-    #                     'lhm_id': self.id,
-    #                 }
-    #                 if new_lines:
-    #                     self.env['lhm.transaction.process.line'].create(new_lines)
-    #                     sequence_number += 1
-    #         else:
-    #             new_lines = {
-    #                 'sequence': sequence_number,
-    #                 'date': self.date,
-    #                 'activity_id': progres[0],
-    #                 'location_id': progres[1],
-    #                 'product_id': progres[2],
-    #                 'product_id_2': progres[3],
-    #                 'nilai': progres[6],
-    #                 'uom_id': progres[11] if progres[11] else (activity_data.uom_id.id if activity_data else False),
-    #                 'nilai2': progres[7],
-    #                 'uom2_id': progres[12] if progres[12] else (activity_data.uom2_id.id if activity_data else False),
-    #                 'work_day': progres[4],
-    #                 'non_work_day': progres[9],
-    #                 'realization': progres[5],
-    #                 'realization_date': progres[10],
-    #                 'premi': progres[8],
-    #                 'lhm_id': self.id,
-    #             }
-    #             if new_lines:
-    #                 self.env['lhm.transaction.process.line'].create(new_lines)
-    #                 sequence_number += 1
-
-    #     if len(lhm_removed_list) != len(lhm_progress_list):
-    #         to_remove_list = []
-    #         if len(lhm_progress_list) > len(lhm_removed_list):
-    #             to_remove_list = list(set(lhm_progress_list) ^ set(lhm_removed_list))
-    #         for removed_progress in progress_line_obj.search([('id', 'in', to_remove_list)]):
-    #             removed_progress.write({
-    #                 'realization': 0.0,
-    #                 'realization_date': 0.0,
-    #                 'work_day': 0.0,
-    #                 'premi': 0.0,
-    #                 'deleted': True,
-    #             })
-    #     if False in [isinstance(x.attendance_id.id, bool) for x in self.lhm_line_ids]:
-    #         date_str = self.date.strftime('%Y-%m-%d')
-    #         self.name = self.kemandoran_id.code + "/" + datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
-    #         if self.doc_type_id.approval:
-    #             self.state = 'in_progress'
-    #         else:
-    #             self.state = 'done'
-    #     else:
-    #         raise ValidationError(_("Minimal salah satu absensi di daftar karyawan harus terisi!"))
-    #     for lhm_line in self.lhm_line_ids:
-    #         if lhm_line.transfer_id:
-    #             lhm_line.transfer_id.write({'name': self.name})
-
-    #     employee_ids = []
-    #     for line in self.lhm_line_ids:
-    #         if line.attendance_id and line.employee_id and \
-    #                 line.employee_id.type_id and line.employee_id.type_id.monthly_employee and line.employee_id.id not in employee_ids \
-    #                 and line.valid and (line.work_day > 0 or line.non_work_day > 0):
-    #             employee_ids.append(line.employee_id.id)
-    #     if employee_ids:
-    #         self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
-
-    # Menggunakan UMR (Min Wage)
-    # def button_draft(self):
-    #     if self.state in ['close']:
-    #         raise ValidationError(_("Anda tidak dapat membatalkan dokumen dalam status Close!"))
-    #     else:
-    #         self.state      = 'draft'
-    #         employee_ids    = []
-    #         for line in self.lhm_line_ids:
-    #             if line.attendance_id and line.employee_id and \
-    #                     line.employee_id.type_id and line.employee_id.type_id.monthly_employee and line.employee_id.id not in employee_ids \
-    #                     and line.valid and (line.work_day > 0 or line.non_work_day > 0):
-    #                 employee_ids.append(line.employee_id.id)
-    #         if employee_ids != []:
-    #             self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
-
-    #         for line in self.lhm_line_ids:
-    #             if line.attendance_id and line.employee_id and \
-    #                 line.employee_id.type_id and line.employee_id.type_id.monthly_employee and line.employee_id and \
-    #                 line.valid and (line.work_day > 0 or line.non_work_day > 0):
-    #                 values = {
-    #                     'total_hke'             : 0.0,
-    #                     'total_hkne'            : 0.0,
-    #                     'min_wage_value'        : line.min_wage_id.umr_month / line.min_wage_id.work_day,
-    #                     'min_wage_value_date'   : 0.0,
-    #                 }
-    #                 line.write(values)
-    #         return True
-    #     return True
-
-    # Menggunakan UMR 
-    # def recalculate_plantation(self):
-    #     all_plantation_ids  = self.env['lhm.transaction'].search([('account_period_id', '=', self.account_period_id.id)])
-    #     for plantation in all_plantation_ids:
-    #         for line in plantation.lhm_line_ids:
-    #             if line.attendance_id and line.employee_id and line.min_wage_id:
-    #                 if line.attendance_id:
-    #                     line.valid      = True
-    #                 if line.overtime_hour and line.overtime_hour > 0:
-    #                     holiday         = False
-    #                     overtime_data   = self.env['hr.overtime'].search([('hours', '=', line.overtime_hour)], limit=1)
-    #                     holiday_data    = self.env['hr.holidays.public.line'].search([('date', '=', line.date)])
-    #                     if holiday_data:
-    #                         holiday     = True
-    #                     if overtime_data and line.employee_id.type_id and line.employee_id.type_id.overtime_calc:
-    #                         if holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-    #                             line.overtime_value = (line.min_wage_id.umr_month / 173) * overtime_data.holiday
-    #                         elif not holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-    #                             line.overtime_value = (line.min_wage_id.umr_month / 173) * overtime_data.normal_day
-    #                         else:
-    #                             line.overtime_value = 0
-    #                     if overtime_data and line.employee_id.type_id and not line.employee_id.type_id.overtime_calc:
-    #                         if holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-    #                             line.overtime_value = (line.min_wage_id.umr_month / 25) * float(float(3) / float(20)) * overtime_data.holiday
-    #                         elif not holiday and overtime_data and line.min_wage_id.umr_month != 0.00:
-    #                             line.overtime_value = (line.min_wage_id.umr_month / 25) * float(float(3) / float(20)) * overtime_data.normal_day
-    #                         else:
-    #                             line.overtime_value = 0
-
 
     @api.depends('process_line_ids.nab_line_ids', 'process_line_ids.nab_afkir_line_ids')
     def _check_pending_nab_link(self):
@@ -2409,7 +2058,6 @@ class lhm_transaction_line(models.Model):
     _description    = 'Detail Transaksi Laporan Harian Mandor'
     _order          = 'sequence'
 
-    # @api.depends("location_type_id","location_id")
     @api.onchange("location_type_id", "location_id")
     def _get_doc_activity_ids(self):
         for line in self:
@@ -2461,7 +2109,6 @@ class lhm_transaction_line(models.Model):
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
     sequence            = fields.Integer()
-    
     work_day            = fields.Float("HK")
     non_work_day        = fields.Float("HKN")
     work_result         = fields.Float("Hasil")
@@ -2474,17 +2121,14 @@ class lhm_transaction_line(models.Model):
     valid               = fields.Boolean("Valid")
     total_hke           = fields.Float(string="Total HKE")
     total_hkne          = fields.Float(string="Total HKNE")
-    
     # UMR 
     min_wage_value      = fields.Float(string="Upah Minimum")
     min_wage_value_date = fields.Float(string="Upah Tanggal")
     min_wage_value_hkne = fields.Float(string="Upah HKNE")
-    
     # Contract
-    contract_wage_value = fields.Float(string="Upah Contract")
+    contract_wage_value = fields.Float(string="Upah")
     contract_value_date = fields.Float(string="Upah Tanggal Contract")
     contract_value_hkne = fields.Float(string="Upah HKNE Contract")
-
     # relasi
     employee_id         = fields.Many2one("hr.employee", string="Nama", ondelete="restrict")
     attendance_id       = fields.Many2one("hr.attendance.type", string="Absensi", ondelete="restrict")
@@ -2505,7 +2149,6 @@ class lhm_transaction_line(models.Model):
     lhm_id              = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
     state               = fields.Selection(related='lhm_id.state', string='Status', store=True)
     contract_id         = fields.Many2one('hr.contract', string='Contract', ondelete="restrict")
-    
     # POC Nyalindung
     # Penyadap
     hasil_latex     = fields.Float('Hasil Latex (L)')
@@ -2516,12 +2159,129 @@ class lhm_transaction_line(models.Model):
 
     product_id      = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
     product_id_2    = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
-
     hasil_1         = fields.Integer(string="Hasil 1")
     satuan_1        = fields.Many2one('uom.uom', string='Satuan 1', ondelete="restrict")
     hasil_2         = fields.Integer(string="Hasil 2")
     satuan_2        = fields.Many2one('uom.uom', string='Satuan 2', ondelete="restrict")
     is_hasil_2      = fields.Boolean("Is Hasil 2", default=False)
+    is_borong       = fields.Boolean("Is Borong", default=False)
+
+    # Fungsi untuk memasukkan gaji employee yang borong panen
+    def get_wage_borong_panen(self):
+        for record in self:
+            if record.is_borong and record.activity_id.is_nap:
+                # panggil fungsi untuk mengecek employee ini bulanan atau bukan
+                record._check_employee_bulanan()
+                emp_nap = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+                
+                if record.is_hasil_2:
+                    
+                    # Product 1 = Latex
+                    drc_value_1     = emp_nap.drc_latex_nap
+                    price_1         = record.activity_id.get_price_borongan(drc=drc_value_1)
+                    wage_hasil_1    = (emp_nap.hasil_1_nap * drc_value_1) * price_1
+                
+                    # Product 2 = Lump
+                    drc_value_2     = emp_nap.drc_lump_nap
+                    price_2         = record.activity_id.get_price_borongan(drc=drc_value_2)
+                    wage_hasil_2    = (emp_nap.hasil_2_nap * drc_value_2) * price_2
+
+                    hasil           = wage_hasil_1 + wage_hasil_2
+                    
+                    record.write({'contract_wage_value' : hasil})
+                    # emp_nap.write({'hasil_convert_latex' : wage_hasil_1})
+                    # emp_nap.write({'hasil_convert_lump' : wage_hasil_2})
+                else:
+                    # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
+                    price_1      = record.activity_id.get_price_borongan()
+                    wage_hasil_1 = emp_nap.hasil_1_nap * price_1
+                    record.write({'contract_wage_value': wage_hasil_1})
+
+    # fungsi untuk mendapatkan gaji employee yang borongan non panen (rawat)
+    def get_wage_borong_rawat(self):
+        for record in self:
+            if record.is_borong:
+                if not record.activity_id.is_nap:
+                    # panggil fungsi untuk mengecek employee ini bulanan atau bukan
+                    record._check_employee_bulanan()
+                    
+                    wage_hasil = record.hasil_1 * record.activity_id.get_price_borongan()
+                    values = {
+                        'contract_wage_value': wage_hasil
+                    }
+                    record.write(values)
+                    # print(f"==== Gaji Borongan Rawat : {record.employee_id.name}")
+
+    # Fungsi untuk mendapatkan gaji
+    def get_wage_value_employee(self):
+        for record in self:
+            if not record.is_borong:
+                contract             = False
+                lhm_transaction_date = record.lhm_id.date if record.lhm_id else False
+                
+                if record.employee_id and record.employee_id.basic_salary_type == 'employee':
+                    contract = self.env['hr.contract'].search([
+                        ('employee_id', '=', record.employee_id.id),
+                        ('date_start', '<=', lhm_transaction_date),
+                        ('date_end', '>=', lhm_transaction_date),
+                        ('state', '=', 'open'),
+                        ('is_lhm', '=', True ),
+                    ], limit=1)
+                elif record.employee_id and record.employee_id.basic_salary_type == 'employee_type':
+                    contract = self.env['hr.contract'].search([
+                        ('employee_type_id', '=', record.employee_id.type_id.id),
+                        ('date_start', '<=', lhm_transaction_date),
+                        ('date_end', '>=', lhm_transaction_date),
+                        ('state', '=', 'open'),
+                        ('is_lhm', '=', True ),
+                    ], limit=1)
+                if not contract:
+                    return {
+                        'warning': {
+                            'title': _('Kesalahan Input Data'),
+                            'message': _(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.type_id.name}, tidak ditemukan !"),
+                        },
+                    }
+                values = {
+                    'contract_id'           : contract and contract.id or False,
+                    'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                }
+                record.write(values)
+
+    # Fungsi untuk menambahkan employee ke dalam NAP jika panen
+    def get_employee_panen_nap(self):
+        for record in self:
+            # Cek apakah aktivitas adalah panen
+            if record.activity_id.is_nap:
+                # Periksa apakah record untuk employee dan lhm_id serta lhm_transaction_line_id sudah ada
+                existing_nap_line = self.env['lhm.transaction.nap.line'].search([
+                    ('lhm_id', '=', record.lhm_id.id),
+                    ('lhm_transaction_line_id', '=', record.id),
+                    ('employee_id', '=', record.employee_id.id),
+                ], limit=1)
+
+                # Jika record belum ada, buat record baru
+                if not existing_nap_line:
+                    value = {
+                        'lhm_id'                 : record.lhm_id.id,
+                        'lhm_transaction_line_id': record.id,
+                        'employee_id'            : record.employee_id.id,
+                        'sequence'               : record.sequence,
+                    }
+                    # Buat record baru di lhm.transaction.nap.line
+                    self.env['lhm.transaction.nap.line'].create(value)
+
+    # Fungsi untuk mengecek jika borongan employee bulanan atau bukan
+    def _check_employee_bulanan(self):
+        employee_bulanan_names = [] 
+        for record in self:
+            if record.is_borong:
+                if record.employee_id.contract_id.wage_type_id.name == 'Month':
+                    employee_bulanan_names.append(record.employee_id.name)
+        
+        if employee_bulanan_names:
+            employee_names_str = ', '.join(employee_bulanan_names)
+            raise ValidationError(_(f'Untuk karyawan bulanan tidak bisa dihitung menggunakan borongan untuk employee:[ {employee_names_str} ]'))
 
     @api.onchange('is_hasil_2')
     def _onchange_is_hasil_2(self):
@@ -2776,6 +2536,28 @@ class lhm_transaction_line(models.Model):
             if lhm_line:
                 raise UserError(_('Anda tidak dapat membuat daftar karyawan dengan nama %s dan absensi %s karena terjadi duplikasi data!') % (self.employee_id.name, self.attendance_id.code))
         return True
+
+class lhm_transaction_nap_line(models.Model):
+    _name               = 'lhm.transaction.nap.line'
+    _description        = 'LHM Transaksi NAP Line'
+
+
+    lhm_id                  = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
+    lhm_transaction_line_id = fields.Many2one('lhm.transaction.line', string="LHM Line", ondelete="cascade")
+    sequence                = fields.Integer()
+    employee_id             = fields.Many2one('hr.employee', string='Employee')
+    name                    = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
+    product_id              = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product_id_2            = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
+    hasil_1_nap             = fields.Integer(string="Hasil NAP 1")
+    satuan_1_nap            = fields.Many2one('uom.uom', string='Satuan NAP 1', ondelete="restrict")
+    hasil_2_nap             = fields.Integer(string="Hasil NAP 2")
+    satuan_2_nap            = fields.Many2one('uom.uom', string='Satuan NAP 2', ondelete="restrict")
+    drc_latex_nap           = fields.Float('drc Latex NAP (%)')
+    drc_lump_nap            = fields.Float('drc Lump NAP (%)')
+    
+    hasil_convert_latex = fields.Integer(string="Hasil Convert Latex")
+    hasil_convert_lump = fields.Integer(string="Hasil Convert Lump")
 
 class lhm_transaction_process_line(models.Model):
     _name           = 'lhm.transaction.process.line'
