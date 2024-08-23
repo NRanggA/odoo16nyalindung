@@ -4221,6 +4221,7 @@ class lhm_nab_line(models.Model):
     product_qty         = fields.Integer(string="Quantity")
     uom_id              = fields.Many2one('uom.uom', string="Unit of Measure")
     pemanen             = fields.Char(string='Pemanen')
+    employee_id         = fields.Many2one("hr.employee", string="Nama", ondelete="restrict")
 
     def compute_weight(self):
         self.ensure_one()
@@ -4633,6 +4634,8 @@ class lhm_nap_line(models.Model):
     product_qty         = fields.Integer(string="Quantity")
     uom_id              = fields.Many2one('uom.uom', string="Unit of Measure")
     pemanen             = fields.Char(string='Pemanen')
+    employee_id         = fields.Many2one("hr.employee", string="Nama", ondelete="restrict")
+    # pemanen             = fields.Many2one('hr.employee', string='Pemanen', domain="[('job_id.name', '=', 'PEMANEN')]")
 
     def compute_weight(self):
         self.ensure_one()
@@ -4732,7 +4735,42 @@ class TimbanganKebun(models.Model):
     uom_id      = fields.Many2one('uom.uom', string='UoM')
     block_id    = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
     tgl_panen   = fields.Date(string='Tanggal Panen')
-    # lokasi_tk   = fields.Char(string='Lokasi Timbangan Kebun')
+
+    @api.model
+    def create(self, vals):
+        record = super(TimbanganKebun, self).create(vals)
+        record._create_or_update_timbangan_pabrik()  # Memperbarui TimbanganPabrik saat create
+        return record
+
+    def write(self, vals):
+        res = super(TimbanganKebun, self).write(vals)
+        self._create_or_update_timbangan_pabrik()  # Memperbarui TimbanganPabrik saat update
+        return res
+
+    def _create_or_update_timbangan_pabrik(self):
+        for record in self:
+            # Nilai yang akan diperbarui atau dibuat pada TimbanganPabrik
+            pabrik_vals = {
+                'lhm_nab_id': record.lhm_nab_id.id,
+                'lhm_nap_id': record.lhm_nap_id.id,
+                'product_id': record.product_id.id,
+                'uom_id': record.uom_id.id,
+                'block_id': record.block_id.id,
+                # 'product_qty' dan 'tgl_terima' tidak diisi dari TimbanganKebun
+            }
+            # Cari existing record di TimbanganPabrik berdasarkan lhm_nab_id, lhm_nap_id, product_id, dan block_id
+            existing_pabrik = self.env['timbangan.pabrik'].search([
+                ('lhm_nab_id', '=', record.lhm_nab_id.id),
+                ('lhm_nap_id', '=', record.lhm_nap_id.id),
+                ('product_id', '=', record.product_id.id),
+                ('block_id', '=', record.block_id.id)
+            ])
+            if existing_pabrik:
+                # Jika record ditemukan, update hanya field yang ditentukan
+                existing_pabrik.write(pabrik_vals)
+            else:
+                # Jika record belum ada, buat record baru tanpa mengisi 'product_qty' dan 'tgl_terima'
+                self.env['timbangan.pabrik'].create(pabrik_vals)
 
 class TimbanganPabrik(models.Model):
     _name = 'timbangan.pabrik'
@@ -4740,52 +4778,56 @@ class TimbanganPabrik(models.Model):
 
     lhm_nab_id         = fields.Many2one('lhm.nab', string='LHM NAB')
     lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
-    product_id         = fields.Many2one('product.product', string='Product')
+    product_id         = fields.Many2one('product.product', string='Product', readonly=True)  # Tidak dapat diedit manual
     product_qty        = fields.Integer(string='Product Quantity')
     uom_id             = fields.Many2one('uom.uom', string='UoM')
     drc                = fields.Float(string='DRC')
     quality_pabrik     = fields.Many2one('lhm.quality.pabrik', string='Quality')
-    tgl_terima         = fields.Date(string='Tanggal Terima')
-    block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
-    # lokasi_tp          = fields.Char(string='Lokasi Timbangan Pabrik')
+    tgl_terima         = fields.Date(string='Tanggal Terima')  # Tidak akan diupdate oleh TimbanganKebun
+    block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict", readonly=True)  # Tidak dapat diedit manual
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
 
     @api.model
     def create(self, vals):
         record = super(TimbanganPabrik, self).create(vals)
-        record._create_or_update_stock_picking()
+        record._create_or_update_stock_picking()  # Memperbarui stock picking saat create
         return record
 
     def write(self, vals):
         res = super(TimbanganPabrik, self).write(vals)
-        self._create_or_update_stock_picking()
+        self._create_or_update_stock_picking()  # Memperbarui stock picking saat update
         return res
 
     def _create_or_update_stock_picking(self):
-        for record in self:
-            if not record.stock_picking_id:
-                picking_vals = {
-                    'partner_id': record.lhm_nab_id.partner_id.id if record.lhm_nab_id else False,
-                    'partner_id': record.lhm_nap_id.partner_id.id if record.lhm_nap_id else False,
-                    'location_id': record.block_id.location_id.id if record.block_id else False,
-                    'location_dest_id': record.env.ref('stock.stock_location_stock').id,
-                    'move_ids_without_package': [(0, 0, {
-                        'product_id': record.product_id.id,
-                        'name': record.product_id.name,
-                        'product_uom_qty': record.product_qty,
-                        'product_uom': record.uom_id.id,
-                        'location_id': record.env.ref('stock.stock_location_suppliers').id,  # Lokasi supplier
-                        'location_dest_id': record.env.ref('stock.stock_location_stock').id,  # Lokasi internal
-                    })],
-                    'picking_type_id': record.env.ref('stock.picking_type_in').id,  # Receipts picking type
-                }
-                picking = self.env['stock.picking'].create(picking_vals)
-                record.stock_picking_id = picking.id
-            else:
-                # Update the existing picking
-                record.stock_picking_id.move_ids_without_package[0].write({
-                    'product_uom_qty': record.product_qty,
-                })
+        # Pastikan uom_id ada sebelum melanjutkan operasi
+        if not self.uom_id:
+            raise UserError("Unit of Measure (UoM) harus diisi sebelum menyimpan data.")
+
+        if not self.stock_picking_id:
+            # Membuat record Stock Picking baru jika belum ada
+            picking_vals = {
+                'partner_id': self.lhm_nab_id.partner_id.id if self.lhm_nab_id else False,
+                'location_id': self.block_id.location_id.id if self.block_id else False,
+                'location_dest_id': self.env.ref('stock.stock_location_stock').id,
+                'move_ids_without_package': [(0, 0, {
+                    'product_id': self.product_id.id,
+                    'name': self.product_id.name,
+                    'product_uom_qty': self.product_qty,
+                    'product_uom': self.uom_id.id,  # Memastikan 'product_uom' diisi dengan benar
+                    'location_id': self.env.ref('stock.stock_location_suppliers').id,  # Lokasi supplier
+                    'location_dest_id': self.env.ref('stock.stock_location_stock').id,  # Lokasi internal
+                })],
+                'picking_type_id': self.env.ref('stock.picking_type_in').id,  # Receipts picking type
+            }
+            picking = self.env['stock.picking'].create(picking_vals)  # Membuat Stock Picking baru
+            self.stock_picking_id = picking.id  # Menyimpan ID Stock Picking yang baru dibuat pada record saat ini
+        else:
+            # Memperbarui Stock Picking yang sudah ada
+            self.stock_picking_id.move_ids_without_package[0].write({
+                'product_uom_qty': self.product_qty,
+                'product_uom': self.uom_id.id,  # Memastikan 'product_uom' juga di-update
+            })
+
 ################################################## Link NAB and LHM ####################################################
 class lhm_transaction_line_nab_line(models.Model):
     _name = 'lhm.transaction.line.nab.line'
