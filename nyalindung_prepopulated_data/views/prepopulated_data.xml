@@ -1,6 +1,25 @@
 <?xml version="1.0" ?>
 <odoo>
     
+      <record id="prepopulated_data_view_tree" model="ir.ui.view">
+          <field name="name">prepopulated.data.view.tree</field>
+          <field name="model">prepopulated.data</field>
+          <field name="arch" type="xml">
+              <tree editable="top" js_class="import_data">
+                <field name="npwp" />
+                <field name="name" />
+                <field name="jenis_transaksi" />
+                <field name="status_pengganti" />
+                <field name="nomor_faktur" />
+                <field name="tanggal_faktur" />
+                <field name="dpp" />
+                <field name="ppn" />
+                <field name="ppnbm" />
+                <field name="is_dikreditkan" />
+              </tree>
+          </field>
+      </record>
+      
       <record id="prepopulated_data_view_form" model="ir.ui.view">
         <field name="name">prepopulated.data.view.form</field>
         <field name="model">prepopulated.data</field>
@@ -34,24 +53,6 @@
       </record>
 
 
-      <record id="prepopulated_data_view_tree" model="ir.ui.view">
-          <field name="name">prepopulated.data.view.tree</field>
-          <field name="model">prepopulated.data</field>
-          <field name="arch" type="xml">
-              <tree js_class="import_data">
-                <field name="npwp" />
-                <field name="name" />
-                <field name="jenis_transaksi" />
-                <field name="status_pengganti" />
-                <field name="nomor_faktur" />
-                <field name="tanggal_faktur" />
-                <field name="dpp" />
-                <field name="ppn" />
-                <field name="ppnbm" />
-                <field name="is_dikreditkan" />
-              </tree>
-          </field>
-      </record>    
       
       <record id="prepopulated_data_action" model="ir.actions.act_window">
           <field name="name">Prepopulated Data</field>
