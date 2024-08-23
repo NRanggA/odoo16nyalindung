@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+import re
 import binascii
 
 class wizardImportPrepopulatedData(models.TransientModel):
@@ -61,8 +62,9 @@ class wizardImportPrepopulatedData(models.TransientModel):
                         'ppnbm': float(row.get('PPnBM') or 0),
                         'is_dikreditkan': row.get('Dikreditkan'),
                     })
-                    
-                    partner_npwp = self.env['res.partner'].search([('vat','=',row.get('NPWP'))])
+
+
+                    partner_npwp = self.env['res.partner'].search([('vat','like',row.get('NPWP'))])
                     if not partner_npwp:
                         data_npwp.append({
                             'npwp': row.get('NPWP'),
@@ -74,8 +76,13 @@ class wizardImportPrepopulatedData(models.TransientModel):
         if data_npwp:
             npwp_list = []
             for list in data_npwp:
-                npwp_list.append(list['npwp'])            
-            raise ValidationError(f"Please register these NPWPs as partners first:\n{npwp_list}")
+                npwp_list.append(list['npwp'])
+
+            if len(npwp_list) > 1:
+                raise ValidationError(f"Please register these NPWPs as partners first:\n{npwp_list}")
+            else:
+                raise ValidationError(f"Please register this NPWP as partners first:\n{npwp_list}")
+
         
         self.env['prepopulated.data'].create(datas)
         self.file_import = False
