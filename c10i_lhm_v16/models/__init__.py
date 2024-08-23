@@ -16,3 +16,5 @@ from . import hr_attendance_correction
 from . import lhm_tm_category
 from . import target_production
 from . import tarif_premi_production
+from . import lhm_wage_borongan_panen
+from . import lhm_wage_borongan_rawat
