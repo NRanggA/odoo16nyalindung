@@ -41,7 +41,6 @@ class AccountAssetDisposal(models.Model):
     equip_id = fields.Many2one('maintenance.equipment', string='Asset')
     asset_id = fields.Many2one('account.asset.asset', required=False, domain="[('state', '=', 'open')]")
     income_from_lva_sales_account_id = fields.Many2one('account.account', string='Income From LVA Sales Account',related='company_id.income_from_lva_sales_account_id', readonly=False)
-    # ref = fields.Char('Ref')
 
     @api.onchange('asset_id')
     def _onchange_asset_id(self):
@@ -66,10 +65,11 @@ class AccountAssetDisposal(models.Model):
             self.sell_account_move_id = res['res_id']
             return res
 
-    # @api.onchange('lva')
-    # def _onchange_lva(self):
-    #     if self.lva:
-    #         self.asset_id = False            
+    @api.onchange('lva')
+    def _onchange_lva(self):
+        if self.lva:
+            self.asset_id = False
+            self.value_residual = 0
 
     @api.depends('asset_id')
     def get_amount_commulative_depreciation(self):
