@@ -65,17 +65,6 @@
                                         options="{'no_create_edit': True, 'no_create': True}" 
                                         attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="name" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
-                                    <field name="plantation_location_type_id" 
-                                        options="{'no_create_edit':True, 'no_create':True}" 
-                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
-                                    <field name="plantation_location_id" 
-                                        domain="[('type_id','=',plantation_location_type_id)]" 
-                                        options="{'no_create_edit':True, 'no_create':True}" 
-                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
-                                    <field name="plantation_activity_id" 
-                                        domain="[('type_id','=',plantation_location_type_id)]" 
-                                        options="{'no_create_edit':True, 'no_create':True}" 
-                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="account_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
                                         attrs="{'readonly': [('parent.state', 'not in', ['draft','confirm'])]}"/>

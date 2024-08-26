@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_.\plantation\nyalindung_direct_payment_expense_.\plantation\nyalindung_direct_payment_expense,.\plantation\nyalindung_direct_payment_expense..\plantation\nyalindung_direct_payment_expense,model_.\plantation\nyalindung_direct_payment_expense_.\plantation\nyalindung_direct_payment_expense,base.group_user,1,1,1,1

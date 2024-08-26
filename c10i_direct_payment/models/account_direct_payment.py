@@ -252,29 +252,6 @@ class DirectPaymentLine(models.Model):
     analytic_account_id = fields.Many2one("account.analytic.account", "Analytic Account", ondelete="restrict")
     name = fields.Char(string="Description", required=True)
     amount = fields.Monetary('Amount')
-    plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
-    plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
-    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")    
-
-    @api.onchange('plantation_location_type_id')
-    def _onchange_plantation_location_type_id(self):
-        if self.plantation_location_type_id:
-            self.plantation_location_id = False
-            self.plantation_activity_id = False
-            # if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-            #     self.account_id = False
-            # else:
-            #     self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
-
-    @api.onchange('plantation_location_id')
-    def _onchange_plantation_location_id(self):
-        if self.plantation_location_id:
-            self.plantation_activity_id = False
-
-    # @api.onchange('plantation_activity_id')
-    # def _onchange_plantation_activity_id(self):
-    #     if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-    #         self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
 
     @api.onchange('product_id')
     def onchange_product(self):
