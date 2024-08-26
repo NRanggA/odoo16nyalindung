@@ -12,10 +12,8 @@ class ResCompany(models.Model):
         help='Please complete the help')
     
     employee_advance_journal_id = fields.Many2one(
-        comodel_name='account.account',
+        comodel_name='account.journal',
         string="Journal",
-        domain=lambda self: "[('company_id', '=', company_id), ('deprecated','=',False),\
-            ('internal_type', '=', 'other'), ('reconcile','=',True)",
         help='Please complete the help')
 
 class ResConfigSettings(models.TransientModel):
@@ -30,9 +28,7 @@ class ResConfigSettings(models.TransientModel):
         help='Please complete the help')
     
     employee_advance_journal_id = fields.Many2one(
-        comodel_name='account.account',
+        comodel_name='account.journal',
         related='company_id.employee_advance_journal_id', readonly=False,
         string="Journal",
-        domain=lambda self: "[('company_id', '=', company_id), ('deprecated','=',False),\
-            ('reconcile','=',True)]",
         help='Please complete the help')
