@@ -35,6 +35,15 @@
     <field name="model">account.direct.payment</field>
     <field name="inherit_id" ref="c10i_direct_payment_employee_expense.account_employee_expense_form"/>
     <field name="arch" type="xml">
+      <xpath expr="//sheet/*[1]" position="before">
+        <div class="oe_button_box" name="button_box">
+          <button type="object" name="action_open_employee_expense_journal"
+              class="oe_stat_button"
+              icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_journal_count', '=', 0)]}">
+              <field name="employee_expense_journal_count" widget="statinfo"/>
+          </button>
+        </div>
+      </xpath>
       <xpath expr="//button[@name='action_post']" position="attributes">
         <attribute name="invisible">1</attribute>
       </xpath>

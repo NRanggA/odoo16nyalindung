@@ -1,6 +1,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.tools.float_utils import float_is_zero, float_compare
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 
 
 class DirectPayment(models.Model):
@@ -14,6 +15,7 @@ class DirectPayment(models.Model):
         domain=lambda self: "[('company_id', '=', company_id), ('deprecated','=',False),\
             ('reconcile','=',True)]",
         help='Please complete the help')
+    employee_expense_journal_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
@@ -26,6 +28,21 @@ class DirectPayment(models.Model):
             # 'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
             'credit': abs(amount) if amount < 0 else 0.0,
+        }
+    
+    def _prepare_move(self):
+        journal = self.journal_id
+        # account_date = self.date or fields.Datetime.now()
+        account_date = self.date or fields.Date.context_today.strftime(DF)
+        return {
+            # 'direct_payment_id' : self.id,
+            'move_type' : 'entry',
+            'name': '/',
+            'date': account_date,
+            'journal_id' : journal.id,
+            'ref': self.name,
+            'company_id': self.company_id.id,
+            'employee_expense_id' : self.id
         }
 
     def action_create_move(self):
@@ -49,6 +66,18 @@ class DirectPayment(models.Model):
         new_move._post()
 
         return True
+    
+    def _get_count_employee_expense(self):
+        for record in self:
+            journal_count = self.env['account.move'].search_count([('employee_expense_id', '=', record.id)])
+            record.employee_expense_journal_count = journal_count
+
+    
+    def action_open_employee_expense_journal(self):
+        result = self.env["ir.actions.actions"]._for_xml_id('account.action_move_journal_line')
+        result['domain'] = [('employee_expense_id', '=', self.id)]
+            
+        return result
 
     def employee_submit(self):
         res = super().employee_submit()
@@ -70,6 +99,12 @@ class DirectPayment(models.Model):
             if setteled:
                 if setteled.settelement_date and record.date > setteled.settelement_date:
                     raise ValidationError("You can't request direct payment if the date is more than the your direct payment that not setteled")
+                
+    def employee_approve(self):
+        res = super().employee_approve()
+        for record in self:
+            record.action_create_move()
+        return res
 
     @api.model
     def create(self, vals):
