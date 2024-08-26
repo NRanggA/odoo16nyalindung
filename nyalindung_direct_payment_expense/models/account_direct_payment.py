@@ -1,11 +1,54 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+from odoo.tools.float_utils import float_is_zero, float_compare
 
 
 class DirectPayment(models.Model):
     _inherit = 'account.direct.payment'
 
     settelement_date = fields.Date('Settelement Date', required=True)
+    contra_account_for_advance = fields.Many2one(
+        comodel_name='account.account',
+        related='company_id.contra_account_for_advance', readonly=False,
+        string="Contra Account for Advance",
+        domain=lambda self: "[('company_id', '=', company_id), ('deprecated','=',False),\
+            ('reconcile','=',True)]",
+        help='Please complete the help')
+
+    def _prepare_payable_move_line(self, amount):
+        partner =  self.partner_id or self.requested_by.partner_id or False
+        return {
+            'partner_id': partner.id if partner else False,
+            'name': _("Request of Direct Payment"),
+            # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
+            'account_id': self.contra_account_for_advance.id if self.contra_account_for_advance else self.company_id.partner_id.property_account_payable_id.id,
+            # 'analytic_account_id': self.analytic_account_id.id,
+            # 'product_id': self.product_id.id,
+            'debit': amount if amount > 0 else 0.0,
+            'credit': abs(amount) if amount < 0 else 0.0,
+        }
+
+    def action_create_move(self):
+        AccountMove = self.env['account.move']
+        move_lines = [l._prepare_move_line() for l in self.line_ids]
+        move_lines = self.direct_payment_hook(move_lines)
+        
+        total = sum([ml['debit'] - ml['credit'] for ml in move_lines])
+        if total:
+            payable_move_lines = self._prepare_payable_move_line(-1*total)
+            if not float_is_zero(total + payable_move_lines['debit'] - payable_move_lines['credit'], 
+                            precision_digits=self.company_id.currency_id.decimal_places):
+                rounding_move_lines = self._prepare_rounding_move_line(total + payable_move_lines['debit'] - payable_move_lines['credit'])
+                move_lines.append(rounding_move_lines)
+            move_lines.append(payable_move_lines)
+
+        move_dict = self._prepare_move()
+        move_dict.update({'line_ids': list(map(lambda l: (0,0,l), move_lines))})
+        new_move = AccountMove.create(move_dict)
+        self.account_move_id = new_move.id
+        new_move._post()
+
+        return True
 
     def employee_submit(self):
         res = super().employee_submit()

@@ -6,6 +6,10 @@
     <field name="model">account.direct.payment</field>
     <field name="inherit_id" ref="c10i_direct_payment.account_direct_payment_form"/>
     <field name="arch" type="xml">
+      <xpath expr="//field[@name='account_move_id']" position="after">
+        <field name="employee_expense_state" invisible="1"/>
+        <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')]}"/>
+      </xpath>
       <xpath expr="//field[@name='line_ids']/tree/field[@name='name']" position="after">
         <field name="plantation_location_type_id" 
             options="{'no_create_edit':True, 'no_create':True}" 
@@ -23,7 +27,7 @@
   </record>
 
   <record model="ir.actions.act_window" id="c10i_direct_payment.account_direct_payment_action">
-      <field name="domain">['|',('is_advance','=',False),('employee_expense_state', '!=', 'draft')]</field>
+      <field name="domain">['|',('is_advance','=',False),('employee_expense_state', 'not in', ['draft','submit'])]</field>
   </record>
 
   <record id="nyalindung_direct_payment_expense_inherit_direct_payment_expense" model="ir.ui.view">
