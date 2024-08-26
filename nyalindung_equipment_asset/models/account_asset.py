@@ -57,7 +57,6 @@ class AccountAssetDisposal(models.Model):
             self.equip_id.unlink()
             self.update({
                 'state' : 'closed',
-                # 'ref' : f"{self.equip_id.name} - {self.equip_id.seq_no}"
             })
         else:
             invoice_line = self.env['account.move.line'] if self.action == 'dispose' else self.invoice_line_id or self.invoice_id.invoice_line_ids
