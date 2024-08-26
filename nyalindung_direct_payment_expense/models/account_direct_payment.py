@@ -25,7 +25,7 @@ class DirectPayment(models.Model):
             ], limit=1, order='settelement_date desc')
             
             if setteled:
-                if record.date > setteled.settelement_date:
+                if setteled.settelement_date and record.date > setteled.settelement_date:
                     raise ValidationError("You can't request direct payment if the date is more than the your direct payment that not setteled")
 
     @api.model
