@@ -24,16 +24,12 @@ class DirectPayment(models.Model):
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
-        credit_account = self.company_id.partner_id.property_account_payable_id
-        if self.is_direct_payment:
-            credit_account = self.journal_id.outbound_payment_method_line_ids[0].payment_account_id
-        else:
-            credit_account = self.employee_advance_journal_id
+        credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
         return {
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
-            'account_id': credit_account.id,
+            'account_id': credit_account.id if self.is_direct_payment else self.employee_advance_journal_id.id,
             # 'analytic_account_id': self.analytic_account_id.id,
             # 'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
