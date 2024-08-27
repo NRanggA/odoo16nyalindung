@@ -1977,12 +1977,11 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="NAP" attrs="{'invisible': [('is_nap', '=', False)]}" >
+                            <page string="NAP" attrs="{'invisible': [('is_nap', '=', False)]}">
                                 <field name="lhm_nap_line_ids">
                                     <tree editable="bottom" create="false" class="two-line-header">
                                         <field name="name" readonly="1" force_save="1" optional="show"/>
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        
                                         <field name="product_id" optional="show"/>
                                         <field name="hasil_1_nap" optional="show"/>
                                         <field name="satuan_1_nap" optional="show"/>
@@ -1995,8 +1994,8 @@
                                         <field name="drc_lump_nap" optional="show"/>
 
                                         <!-- dikomen dlu karena blum siap -->
-                                        <!-- <field name="hasil_convert_latex" optional="show"/>
-                                        <field name="hasil_convert_lump" optional="show"/> -->
+                                        <field name="hasil_convert_latex" optional="show"/>
+                                        <field name="hasil_convert_lump" optional="show"/>
                                     </tree>
                                 </field>
                             </page>
@@ -2840,9 +2839,7 @@
                         </group>
                         <notebook>
                             <page string="Detail Aktivitas">
-
-                                <!-- error conteks pada field ini, 'period_id':account_period_id -->
-                                <field name="line_vehicle_ids" force_save="1" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
+                                <field name="line_vehicle_ids" force_save="1" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form', 'line_vehicle_ids':line_vehicle_ids,'period_id':account_period_id, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
                                         <field name="tidak_ditagihkan" optional="show"/>
@@ -2855,11 +2852,7 @@
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        
-                                        <!-- <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2]),('child_ids','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                       
-                                        
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="nilai" optional="show"/>
                                         <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
@@ -2873,11 +2866,10 @@
                                         <field name="type" invisible="1"/>
                                     </tree>
                                 </field>
-                                
                                 <field name="line_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',False)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form'}">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
-                                        <field name="tidak_ditagihkan" optional="show"/>
+                                        <!-- <field name="tidak_ditagihkan" optional="show"/> -->
                                         <field name="date" optional="show"/>
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
