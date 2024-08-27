@@ -15,15 +15,21 @@ class DirectPayment(models.Model):
         domain=lambda self: "[('company_id', '=', company_id), ('deprecated','=',False),\
             ('reconcile','=',True)]",
         help='Please complete the help')
+    employee_advance_journal_id = fields.Many2one(
+        comodel_name='account.journal',
+        related='company_id.employee_advance_journal_id', readonly=False,
+        string="Journal")
     employee_expense_journal_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
+    is_direct_payment = fields.Boolean('Is Direct Payment')
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
+        credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
         return {
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
-            'account_id': self.contra_account_for_advance.id if self.contra_account_for_advance else self.company_id.partner_id.property_account_payable_id.id,
+            'account_id': credit_account.id if credit_account else self.company_id.partner_id.property_account_payable_id.id,
             # 'analytic_account_id': self.analytic_account_id.id,
             # 'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
@@ -39,7 +45,7 @@ class DirectPayment(models.Model):
             'move_type' : 'entry',
             'name': '/',
             'date': account_date,
-            'journal_id' : journal.id,
+            'journal_id' : self.employee_advance_journal_id.id if self.employee_advance_journal_id else journal.id,
             'ref': self.name,
             'company_id': self.company_id.id,
             'employee_expense_id' : self.id
@@ -78,6 +84,17 @@ class DirectPayment(models.Model):
         result['domain'] = [('employee_expense_id', '=', self.id)]
             
         return result
+    
+    @api.onchange('is_direct_payment')
+    def onchange_is_direct_payment(self):
+        if self.is_direct_payment:
+            account = self.company_id.contra_account_for_advance
+            if not account:
+                raise ValidationError(_('Please configure Contra Account for Advance on your Accounting Settings'))
+            self.line_ids = [(0,0,{
+                'name': 'Request of Employee Advance',
+                'account_id': account.id,
+                })]
 
     def employee_submit(self):
         res = super().employee_submit()

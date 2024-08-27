@@ -9,6 +9,7 @@
       <xpath expr="//field[@name='account_move_id']" position="after">
         <field name="employee_expense_state" invisible="1"/>
         <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')]}"/>
+        <field name="is_direct_payment" invisible="1"/>
       </xpath>
       <xpath expr="//field[@name='line_ids']/tree/field[@name='name']" position="after">
         <field name="plantation_location_type_id" 
@@ -28,6 +29,7 @@
 
   <record model="ir.actions.act_window" id="c10i_direct_payment.account_direct_payment_action">
       <field name="domain">['|',('is_advance','=',False),('employee_expense_state', 'not in', ['draft','submit'])]</field>
+      <field name="context">{'default_is_direct_payment' : True}</field>
   </record>
 
   <record id="nyalindung_direct_payment_expense_inherit_direct_payment_expense" model="ir.ui.view">
@@ -40,7 +42,7 @@
           <button type="object" name="action_open_employee_expense_journal"
               class="oe_stat_button"
               icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_journal_count', '=', 0)]}">
-              <field name="employee_expense_journal_count" widget="statinfo"/>
+              <field name="employee_expense_journal_count" string="Journal Item" widget="statinfo"/>
           </button>
         </div>
       </xpath>
