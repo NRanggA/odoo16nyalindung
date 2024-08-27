@@ -24,7 +24,10 @@ class DirectPayment(models.Model):
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
-        credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
+        if self.is_direct_payment:
+            credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
+        else:
+            credit_account = self.employee_advance_journal_id
         return {
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
