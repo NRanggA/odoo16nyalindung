@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_inherit_c10i_lhm_v16" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.plantation</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="10" />
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Plantation" data-key="c10i_lhm_v16" string="Plantation">
+                    <t groups="account.group_account_user">
+                        <h2>Buku Contractor</h2>
+                        <div class="row mt16 o_settings_container" id="default_accounts">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <div class="content-group">
+                                        <div>
+                                            <span class="o_form_label">Post Buku Contractor Entries In :</span>
+                                        </div>
+                                        <div class="row mt8">
+                                            <label for="contractor_default_journal_id" class="col-lg-4 o_light_label" string="Journal"/>
+                                            <field name="contractor_default_journal_id" domain="[('type', '=', 'general')]"/>
+                                        </div>
+                                        <div class="row mt8">
+                                            <label for="account_payable_contractor_id" class="col-lg-4 o_light_label" string="Account Payable Perantara Buku Kontraktor"/>
+                                            <field name="account_payable_contractor_id"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_plantation_register_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form_inherit_c10i_lhm_v16"/>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'c10i_lhm_v16', 'bin_size': False}</field>
+    </record>
+
+    <menuitem id="menu_equipment_general_settings" name="Settings" sequence="0" parent="menu_lhm_config" action="action_plantation_register_config_settings" groups="base.group_system"/>
+
+
+</odoo>

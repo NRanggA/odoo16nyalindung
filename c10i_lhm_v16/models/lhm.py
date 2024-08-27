@@ -3314,37 +3314,46 @@ class lhm_contractor(models.Model):
             state = 'confirmed'
         return state
 
-    name                = fields.Char('Nama', required=False)
-    type                = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', index=False, readonly=True)
-    supplier_id         = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict")
-    supplier_code       = fields.Char('Kode', readonly=True, related="supplier_id.ref")
-    doc_type_id         = fields.Many2one("res.doc.type", string="Document Type", ondelete="restrict", tracking=True, default=_default_doc_id)
-    approval            = fields.Boolean(string="Approval", related="doc_type_id.approval", readonly=True)
-    account_period_id   = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", tracking=True, default=_default_account_period_id)
-    date_stop           = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
-    operating_unit_id   = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)  #
-    date_start          = fields.Date("Tanggal Pembayaran Mulai")
-    date_end            = fields.Date("Tanggal Pembayaran Selesai")
-    contractor_vehicle  = fields.Boolean(string="Vehicle")
-    total_type          = fields.Selection([('used', 'HM/KM Terpakai'), ('result', 'Hasil Kerja')], string='Kalkulasi')
-    company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    line_ids            = fields.One2many('lhm.contractor.line', 'contractor_id', string="Detail Kontraktor", )
-    line_vehicle_ids    = fields.One2many('lhm.contractor.vehicle.line', 'contractor_id', string="Detail Kontraktor Alat", )
-    payment_type        = fields.Selection([('payment0', 'Pembayaran 1 Bulan Penuh'),('payment1','Pembayaran Ke-1'),('payment2','Pembayaran Ke-2')], string='Pembayaran', index=False, readonly=False)
-    user_id             = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
-    note                = fields.Text('Catatan')
-    state               = fields.Selection([
-                            ('draft', 'New'), ('cancel', 'Cancelled'),
-                            ('confirmed', 'Confirmed'), ('done', 'Done')], string='Status',
-                            copy=False, default=_default_state, index=True, readonly=True,
-                            help="* New: Dokumen Baru.\n"
-                                 "* Cancelled: Dokumen Telah Dibatalkan.\n"
-                                 "* Confirmed: Dokumen Sudah Diperiksa Pihak Terkait.\n"
-                                 "* Done: Dokumen Sudah Selesai Diproses. \n")
-    invoice_id          = fields.Many2one('account.move', 'Invoice')
-    move_id             = fields.Many2one('account.move', 'Journal Entry')
-    amount_total        = fields.Float(compute='_compute_total', string='Total')
-    material_line_ids   = fields.One2many('lhm.contractor.material.line', 'contractor_id', string="Detail Material")
+    name                          = fields.Char('Nama', required=False)
+    type                          = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', index=False, readonly=True)
+    supplier_id                   = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict")
+    supplier_code                 = fields.Char('Kode', readonly=True, related="supplier_id.ref")
+    doc_type_id                   = fields.Many2one("res.doc.type", string="Document Type", ondelete="restrict", tracking=True, default=_default_doc_id)
+    approval                      = fields.Boolean(string="Approval", related="doc_type_id.approval", readonly=True)
+    account_period_id             = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", tracking=True, default=_default_account_period_id)
+    date_stop                     = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
+    operating_unit_id             = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)  #
+    date_start                    = fields.Date("Tanggal Pembayaran Mulai")
+    date_end                      = fields.Date("Tanggal Pembayaran Selesai")
+    contractor_vehicle            = fields.Boolean(string="Vehicle")
+    total_type                    = fields.Selection([('used', 'HM/KM Terpakai'), ('result', 'Hasil Kerja')], string='Kalkulasi')
+    company_id                    = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
+    line_ids                      = fields.One2many('lhm.contractor.line', 'contractor_id', string="Detail Kontraktor", )
+    line_vehicle_ids              = fields.One2many('lhm.contractor.vehicle.line', 'contractor_id', string="Detail Kontraktor Alat", )
+    payment_type                  = fields.Selection([('payment0', 'Pembayaran 1 Bulan Penuh'),('payment1','Pembayaran Ke-1'),('payment2','Pembayaran Ke-2')], string='Pembayaran', index=False, readonly=False)
+    user_id                       = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
+    note                          = fields.Text('Catatan')
+    state                         = fields.Selection([
+                                    ('draft', 'New'), ('cancel', 'Cancelled'),
+                                    ('confirmed', 'Confirmed'), ('done', 'Done')], string='Status',
+                                    copy=False, default=_default_state, index=True, readonly=True,
+                                    help="* New: Dokumen Baru.\n"
+                                        "* Cancelled: Dokumen Telah Dibatalkan.\n"
+                                        "* Confirmed: Dokumen Sudah Diperiksa Pihak Terkait.\n"
+                                        "* Done: Dokumen Sudah Selesai Diproses. \n")
+    invoice_id                    = fields.Many2one('account.move', 'Invoice')
+    move_id                       = fields.Many2one('account.move', 'Journal Entry')
+    amount_total                  = fields.Float(compute='_compute_total', string='Total')
+    material_line_ids             = fields.One2many('lhm.contractor.material.line', 'contractor_id', string="Detail Material")
+    
+    contractor_default_journal_id = fields.Many2one(
+                                comodel_name='account.journal',
+                                related='company_id.contractor_default_journal_id', readonly=False,
+                                string="Journal")
+    account_payable_contractor_id = fields.Many2one(
+                                comodel_name='account.account',
+                                related='company_id.account_payable_contractor_id', readonly=False,
+                                string="Account Payable Perantara Buku Kontraktor")
 
     @api.depends('line_ids.unit_price', 'line_ids.nilai', 'line_vehicle_ids.unit_price', 'line_vehicle_ids.nilai')
     def _compute_total(self):
@@ -3460,11 +3469,12 @@ class lhm_contractor(models.Model):
         AccountMoveLine = self.env['account.move.line']
         grouped_lines = {}
         for buku_kontraktor in self:
-            acc_dest = buku_kontraktor.supplier_id.account_payable_contractor_id
+            acc_dest = buku_kontraktor.account_payable_contractor_id
             if not acc_dest:
                 raise ValidationError(_('Akun Perantara Hutang pada Kontraktor Belum diisi.\n'
                     'Silahkan isi akun tersebut terlebih dahulu'))
-            journal_id = self.env['account.journal'].search([('type','=','general'),('code','like','MISC%')], limit=1)
+            # journal_id = self.env['account.journal'].search([('type','=','general'),('code','like','MISC%')], limit=1)
+            journal_id = buku_kontraktor.contractor_default_journal_id
             if not journal_id:
                 raise ValidationError(_('General Jurnal belum didefinisikan.\n'
                     'Silahkan membuat General Jurnal terlebih dahulu'))
