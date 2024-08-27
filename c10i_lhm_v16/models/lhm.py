@@ -23,6 +23,8 @@ import base64
 import xlrd
 from datetime import datetime
 
+from decimal import Decimal, getcontext
+
 _logger = logging.getLogger(__name__)
 
 BULAN_INDONESIA = [('1', 'Januari'),
@@ -1326,9 +1328,6 @@ class lhm_transaction(models.Model):
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
     pending_nap_link    = fields.Boolean('LHM belum sama dengan NAP', compute='_check_pending_nap_link', store=True)
 
-    def run_progress_2(self):
-        res = super(lhm_transaction, self).run_progress()
-
     @api.depends('lhm_line_ids.activity_id.is_panen')
     def _compute_is_nap(self):
         for record in self:
@@ -1376,28 +1375,26 @@ class lhm_transaction(models.Model):
             new_lines = []
             for emp_id in absensi_employee_ids:
                 employee = self.env['hr.employee'].browse(emp_id)
-                contract = False
-                if employee.basic_salary_type == 'employee':
-                    contract = self.env['hr.contract'].search([
-                        ('employee_id', '=', employee.id),
-                        ('date_start', '<=', self.date),
-                        ('date_end', '>=', self.date),
-                        ('state', '=', 'open'),
-                        ('is_lhm', '=', True ),
-                    ], limit=1)
-                elif employee.basic_salary_type == 'employee_type':
-                    contract = self.env['hr.contract'].search([
-                        ('employee_id', '=', employee.id),
-                        ('date_start', '<=', self.date),
-                        ('date_end', '>=', self.date),
-                        ('state', '=', 'open'),
-                        ('is_lhm', '=', True ),
-                    ], limit=1)
-                
-                if not contract:
-                    print(f"=== Minimum wage not found for employee {employee.name}")
-                    continue
-
+                # contract = False
+                # if employee.basic_salary_type == 'employee':
+                #     contract = self.env['hr.contract'].search([
+                #         ('employee_id', '=', employee.id),
+                #         ('date_start', '<=', self.date),
+                #         ('date_end', '>=', self.date),
+                #         ('state', '=', 'open'),
+                #         ('is_lhm', '=', True ),
+                #     ], limit=1)
+                # elif employee.basic_salary_type == 'employee_type':
+                #     contract = self.env['hr.contract'].search([
+                #         ('employee_id', '=', employee.id),
+                #         ('date_start', '<=', self.date),
+                #         ('date_end', '>=', self.date),
+                #         ('state', '=', 'open'),
+                #         ('is_lhm', '=', True ),
+                #     ], limit=1)
+                # if not contract:
+                #     print(f"=== Minimum wage not found for employee {employee.name}")
+                #     continue
                 values = {
                     'sequence': len(self.lhm_line_ids) + 1,
                     'date': self.date or False,
@@ -1412,10 +1409,8 @@ class lhm_transaction(models.Model):
                     'penalty': 0.0,
                     'name': employee.no_induk or False,
                     'employee_id': employee.id or False,
-                    # 'min_wage_id': contract.id or False,
-                    # 'min_wage_value': (contract.umr_month / (contract.work_day or 25)),
-                    'contract_id'           : contract and contract.id or False,
-                    'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                    'contract_id'           : 0.0,
+                    'contract_wage_value'   : 0.0,
                 }
                 new_lines.append((0, 0, values))
                 print(f"=== Added Employee: {employee.name}, ID: {employee.id}")
@@ -1637,7 +1632,7 @@ class lhm_transaction(models.Model):
 
     # Menggunakan Contract_id
     def run_progress(self):
-        # fungsi untuk menambahkan employee panen ke dalam panen
+        # fungsi untuk menambahkan employee panen ke dalam Nap
         self.lhm_line_ids.get_employee_panen_nap()
 
         # Panggil fungsi untuk mengambil gaji untuk setiap employee
@@ -1648,7 +1643,8 @@ class lhm_transaction(models.Model):
         
         # Fungsi mengambil gaji karyawan borongan panen
         self.lhm_line_ids.get_wage_borong_panen()
-        
+        # print(f"{a}")
+
         # jelankan fungsi progress
         self._progress()
 
@@ -2172,28 +2168,35 @@ class lhm_transaction_line(models.Model):
             if record.is_borong and record.activity_id.is_nap:
                 # panggil fungsi untuk mengecek employee ini bulanan atau bukan
                 record._check_employee_bulanan()
-                emp_nap = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+                lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
                 
                 if record.is_hasil_2:
                     
-                    # Product 1 = Latex
-                    drc_value_1     = emp_nap.drc_latex_nap
-                    price_1         = record.activity_id.get_price_borongan(drc=drc_value_1)
-                    wage_hasil_1    = (emp_nap.hasil_1_nap * drc_value_1) * price_1
-                
-                    # Product 2 = Lump
-                    drc_value_2     = emp_nap.drc_lump_nap
-                    price_2         = record.activity_id.get_price_borongan(drc=drc_value_2)
-                    wage_hasil_2    = (emp_nap.hasil_2_nap * drc_value_2) * price_2
+                    print(f"== Borongan Panen Karet : {record.employee_id.name}")
 
-                    hasil           = wage_hasil_1 + wage_hasil_2
+                    # Product 1 = Latex
+                    drc_latex             = lhm_nap_line.drc_latex_nap 
+                    price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
                     
+                    convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
+                    hasil_latex           = convert_hasil_latex * price_1
+                    lhm_nap_line.write({'hasil_convert_latex': convert_hasil_latex})
+
+                    # Product 2 = Lump
+                    drc_lump            = lhm_nap_line.drc_lump_nap
+                    price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
+                    
+                    convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+                    hasil_lump          = convert_hasil_lump * price_2
+                    lhm_nap_line.write({'hasil_convert_lump': convert_hasil_lump})
+                    
+                    hasil           = hasil_latex + hasil_lump
                     record.write({'contract_wage_value' : hasil})
 
                 else:
                     # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
                     price_1      = record.activity_id.get_price_borongan()
-                    wage_hasil_1 = emp_nap.hasil_1_nap * price_1
+                    wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
                     record.write({'contract_wage_value': wage_hasil_1})
 
     # fungsi untuk mendapatkan gaji employee yang borongan non panen (rawat)
@@ -2555,8 +2558,8 @@ class lhm_transaction_nap_line(models.Model):
     drc_latex_nap           = fields.Float('drc Latex NAP (%)')
     drc_lump_nap            = fields.Float('drc Lump NAP (%)')
     
-    hasil_convert_latex = fields.Integer(string="Hasil Convert Latex")
-    hasil_convert_lump = fields.Integer(string="Hasil Convert Lump")
+    hasil_convert_latex     = fields.Float(string="Hasil Convert Latex",  digits=(16, 2))
+    hasil_convert_lump      = fields.Float(string="Hasil Convert Lump",  digits=(16, 2))
 
 class lhm_transaction_process_line(models.Model):
     _name           = 'lhm.transaction.process.line'
@@ -3311,7 +3314,6 @@ class lhm_contractor(models.Model):
             state = 'confirmed'
         return state
 
-
     name                = fields.Char('Nama', required=False)
     type                = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', index=False, readonly=True)
     supplier_id         = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict")
@@ -3476,15 +3478,15 @@ class lhm_contractor(models.Model):
                             'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
                             (line.activity_id.code,line.activity_id.name))
                     grouped_lines.update({key: {
-                        'location_type': line.location_type_id,
-                        'location': line.location_id,
-                        'activity': line.activity_id,
-                        'account_id': acc_src.id,
-                        'journal_id': journal_id.id,
-                        'partner_id': buku_kontraktor.supplier_id.id,
-                        'date': buku_kontraktor.date_end,
-                        'amount': 0.0,
-                        'operating_unit_id': buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
+                        'location_type'     : line.location_type_id,
+                        'location'          : line.location_id,
+                        'activity'          : line.activity_id,
+                        'account_id'        : acc_src.id,
+                        'journal_id'        : journal_id.id,
+                        'partner_id'        : buku_kontraktor.supplier_id.id,
+                        'date'              : buku_kontraktor.date_end,
+                        'amount'            : 0.0,
+                        # 'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                         }})
                 grouped_lines[key]['amount'] += line.total
                 total_lines += line.total
@@ -3497,15 +3499,15 @@ class lhm_contractor(models.Model):
                             'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
                             (line.activity_id.code,line.activity_id.name))
                     grouped_lines.update({key: {
-                        'location_type': line.location_type_id,
-                        'location': line.location_id,
-                        'activity': line.activity_id,
-                        'account_id': acc_src.id,
-                        'journal_id': journal_id.id,
-                        'partner_id': buku_kontraktor.supplier_id.id,
-                        'date': buku_kontraktor.date_end,
-                        'amount': 0.0,
-                        'operating_unit_id': buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
+                        'location_type'     : line.location_type_id,
+                        'location'          : line.location_id,
+                        'activity'          : line.activity_id,
+                        'account_id'        : acc_src.id,
+                        'journal_id'        : journal_id.id,
+                        'partner_id'        : buku_kontraktor.supplier_id.id,
+                        'date'              : buku_kontraktor.date_end,
+                        'amount'            : 0.0,
+                        'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                         }})
                 grouped_lines[key]['amount'] += line.total
                 total_lines += line.total
@@ -3514,40 +3516,40 @@ class lhm_contractor(models.Model):
                 move_lines.append((0,0, self._prepare_move_line_entry(line)))
             # counterpart entry for all activity
             move_lines.append((0, 0, self._prepare_move_line_entry({
-                    'account_id': acc_dest.id,
-                    'journal_id': journal_id.id,
-                    'partner_id': buku_kontraktor.supplier_id.id,
-                    'date': buku_kontraktor.date_end,
-                    'amount': -1*total_lines,
-                    'operating_unit_id': buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
+                    'account_id'        : acc_dest.id,
+                    'journal_id'        : journal_id.id,
+                    'partner_id'        : buku_kontraktor.supplier_id.id,
+                    'date'              : buku_kontraktor.date_end,
+                    'amount'            : -1*total_lines,
+                    # 'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                     })))
             move = AccountMove.create({
-                'journal_id': journal_id.id,
-                'date': buku_kontraktor.date_end,
-                # 'period_id': buku_kontraktor.account_period_id.id,
-                'line_ids': move_lines,
-                'operating_unit_id': buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
-                'ref': buku_kontraktor.name
+                'journal_id'    : journal_id.id,
+                'date'          : buku_kontraktor.date_end,
+                'line_ids'      : move_lines,
+                'ref'           : buku_kontraktor.name
+                # 'period_id'     : buku_kontraktor.account_period_id.id,
+                # 'operating_unit_id': buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                 })
-            move.post()
+            move.action_post()
             buku_kontraktor.write({'move_id': move.id})
 
     def _prepare_move_line_entry(self, line):
         # convert amount
         amount = line.get('amount', 0.0)
         return {
-            'name': line.get('activity', False) and line['activity'].name or '/',
-            'plantation_location_type_id': line.get('location_type', False) and line['location_type'].id or False,
-            'plantation_location_id': line.get('location', False) and line['location'].id or False,
-            'plantation_activity_id': line.get('activity', False) and line['activity'].id or False,
-            'account_id': line.get('account_id', False) and line['account_id'] or False,
-            'journal_id': line.get('journal_id', False) and line['journal_id'] or False,
-            'date': line.get('date', False) and line['date'] or False,
-            'debit': amount>0 and amount or 0.0,
-            'credit': amount<0 and -1*amount or 0.0,
-            'amount_currency': 0.0,
-            'operating_unit_id': line.get('operating_unit_id', False) and line['operating_unit_id'] or False,
-            'currency_id': False,
+            'name'                          : line.get('activity', False) and line['activity'].name or '/',
+            'plantation_location_type_id'   : line.get('location_type', False) and line['location_type'].id or False,
+            'plantation_location_id'        : line.get('location', False) and line['location'].id or False,
+            'plantation_activity_id'        : line.get('activity', False) and line['activity'].id or False,
+            'account_id'                    : line.get('account_id', False) and line['account_id'] or False,
+            'journal_id'                    : line.get('journal_id', False) and line['journal_id'] or False,
+            'date'                          : line.get('date', False) and line['date'] or False,
+            'debit'                         : amount>0 and amount or 0.0,
+            'credit'                        : amount<0 and -1*amount or 0.0,
+            # 'amount_currency'               : 0.0,
+            # 'operating_unit_id': line.get('operating_unit_id', False) and line['operating_unit_id'] or False,
+            # 'currency_id'                   : False,
         }
 
     def write(self, values):
@@ -3681,31 +3683,34 @@ class lhm_contractor_line(models.Model):
                 line.doc_activity_ids = [(6, 0, activity_list)]
 
     # Field definitions
-    name = fields.Char(related='activity_id.name', readonly=True)
-    date = fields.Date("Tanggal", required=True)
-    location_type_id = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
-    no_line = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
-    location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
-    activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
-    doc_activity_ids = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
-    nilai = fields.Float('Hasil 1')
-    uom_id = fields.Many2one("uom.uom", string="Satuan 1", ondelete="restrict")
-    nilai2 = fields.Float('Hasil 2')
-    uom2_id = fields.Many2one("uom.uom", string="Satuan 2", ondelete="restrict")
-    unit_price = fields.Float('Tarif Satuan')
-    total = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
-    type = fields.Selection([('vehicle', 'Alat'), ('vendor', 'Vendor')], string='Type', related="contractor_id.type", readonly=True)
-    supplier_id = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
-    contractor_vehicle = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
-    contractor_id = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
-    tidak_ditagihkan = fields.Boolean(string="Tidak Ditagihkan")
-    skip_constraint = fields.Boolean(string="Skip Constraint")
+    name                = fields.Char(related='activity_id.name', readonly=True)
+    date                = fields.Date("Tanggal", required=True)
+    location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
+    location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+    doc_activity_ids    = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
+    nilai               = fields.Float('Hasil 1')
+    uom_id              = fields.Many2one("uom.uom", string="Satuan 1", ondelete="restrict")
+    nilai2              = fields.Float('Hasil 2')
+    uom2_id             = fields.Many2one("uom.uom", string="Satuan 2", ondelete="restrict")
+    unit_price          = fields.Float('Tarif Satuan')
+    total               = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
+    type                = fields.Selection([('vehicle', 'Alat'), ('vendor', 'Vendor')], string='Type', related="contractor_id.type", readonly=True)
+    supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
+    contractor_vehicle  = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
+    contractor_id       = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
+    tidak_ditagihkan    = fields.Boolean(string="Tidak Ditagihkan")
+    skip_constraint     = fields.Boolean(string="Skip Constraint")
 
     @api.onchange('activity_id')
     def _onchange_activity_id(self):
         if self.activity_id:
-            self.uom_id = self.activity_id.uom_id and self.activity_id.uom_id.id or False
-            self.uom2_id = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
+            borongan_contractor = self.env['lhm.wage.borongan.contractor'].search([('activity_id', '=', self.activity_id.id)]);
+            
+            self.unit_price = borongan_contractor.price if borongan_contractor.price else 0.0
+            self.uom_id     = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            self.uom2_id    = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
 
     @api.onchange('location_type_id')
     def _onchange_location_type_id(self):
@@ -3783,7 +3788,6 @@ class lhm_contractor_vehicle_line(models.Model):
                 line.filter_charge_ids = [(6, 0, [x.id for x in line.activity_id.charge_ids])]
             else:
                 line.filter_charge_ids = []
-
 
     start_value         = fields.Float("km/hm Berangkat")
     end_value           = fields.Float("km/hm Kembali")

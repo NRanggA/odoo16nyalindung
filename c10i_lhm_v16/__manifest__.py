@@ -100,6 +100,7 @@
         'views/tarif_premi_production_views.xml',
         'views/lhm_wage_borongan_panen_views.xml',
         'views/lhm_wage_borongan_rawat_views.xml',
+        'views/lhm_wage_borongan_contractor_views.xml',
 
 
         #REPORT

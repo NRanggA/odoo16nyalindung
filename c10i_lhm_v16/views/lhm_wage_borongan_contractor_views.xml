@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="lhm_wage_borongan_contractor_view_form" model="ir.ui.view">
+        <field name="name">lhm.wage.borongan.contractor.view.form</field>
+        <field name="model">lhm.wage.borongan.contractor</field>
+        <field name="arch" type="xml">
+            <form string="Upah Borongan Contractor">
+                <sheet>
+                    <group>
+                        <field name="activity_code" />
+                        <field name="activity_id" />
+                        <field name="qty" />
+                        <field name="satuan_id" />
+                        <field name="price" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="lhm_wage_borongan_contractor_view_tree" model="ir.ui.view">
+        <field name="name">lhm.wage.borongan.contractor.view.tree</field>
+        <field name="model">lhm.wage.borongan.contractor</field>
+        <field name="arch" type="xml">
+            <tree string="Upah Borongan Contractor">
+                <field name="activity_code" />
+                <field name="activity_id" />
+                <field name="qty" />
+                <field name="satuan_id" />
+                <field name="price" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="lhm_wage_borongan_contractor_action" model="ir.actions.act_window">
+        <field name="name">Upah Borongan Contractor</field>
+        <field name="res_model">lhm.wage.borongan.contractor</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="lhm_wage_borongan_contractor_menu"
+        name="Upah Borongan Contractor"
+        action="lhm_wage_borongan_contractor_action"
+        parent="menu_lhm_master"
+    />
+
+
+</odoo>

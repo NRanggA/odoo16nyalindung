@@ -36,13 +36,13 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     # @api.multi
-    def post(self):
+    def action_post(self):
         default_loc_type = self.env['lhm.location.type'].search([('name', '=', '-')])
         for move in self:
             for line in move.line_ids:
                 if not line.plantation_location_type_id:
                     line.plantation_location_type_id = default_loc_type and default_loc_type[0].id or False
-        return super(AccountMove, self).post()
+        return super(AccountMove, self).action_post()
 
 
 class AccountMoveLine(models.Model):
@@ -58,20 +58,20 @@ class AccountMoveLine(models.Model):
         if self.plantation_location_type_id:
             self.plantation_location_id = False
             self.plantation_activity_id = False
-            # if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-            #     self.account_id = False
-            # else:
-            #     self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
+            if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+                self.account_id = False
+            else:
+                self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
 
     @api.onchange('plantation_location_id')
     def _onchange_plantation_location_id(self):
         if self.plantation_location_id:
             self.plantation_activity_id = False
 
-    # @api.onchange('plantation_activity_id')
-    # def _onchange_plantation_activity_id(self):
-    #     if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-    #         self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
+    @api.onchange('plantation_activity_id')
+    def _onchange_plantation_activity_id(self):
+        if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+            self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
 
 
 # class AccountInvoice(models.Model):
