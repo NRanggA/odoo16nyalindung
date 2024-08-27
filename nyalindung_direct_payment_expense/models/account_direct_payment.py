@@ -29,7 +29,7 @@ class DirectPayment(models.Model):
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
-            'account_id': credit_account.id if self.is_direct_payment else self.employee_advance_journal_id.id,
+            'account_id': credit_account.id if self.is_direct_payment else self.contra_account_for_advance.id,
             # 'analytic_account_id': self.analytic_account_id.id,
             # 'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
@@ -77,7 +77,6 @@ class DirectPayment(models.Model):
         for record in self:
             journal_count = self.env['account.move'].search_count([('employee_expense_id', '=', record.id)])
             record.employee_expense_journal_count = journal_count
-
     
     def action_open_employee_expense_journal(self):
         result = self.env["ir.actions.actions"]._for_xml_id('account.action_move_journal_line')
@@ -100,6 +99,12 @@ class DirectPayment(models.Model):
         res = super().employee_submit()
         self.validation_settlement_date_by_date()
         return res
+    
+    def employee_approve(self):
+        res = super().employee_approve()
+        for record in self:
+            record.action_create_move()
+        return res
 
     def validation_settlement_date_by_date(self):
         for record in self:
@@ -117,11 +122,6 @@ class DirectPayment(models.Model):
                 if setteled.settelement_date and record.date > setteled.settelement_date:
                     raise ValidationError("You can't request direct payment if the date is more than the your direct payment that not setteled")
                 
-    def employee_approve(self):
-        res = super().employee_approve()
-        for record in self:
-            record.action_create_move()
-        return res
 
     @api.model
     def create(self, vals):
