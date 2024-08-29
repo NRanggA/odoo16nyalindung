@@ -1840,7 +1840,7 @@
                         <button name="button_approve" string="Approve" states="confirmed" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_manager" confirm="Apakah anda menyetujui dokumen ini?"/>
                         <button name="button_reject" string="Reject" states="confirmed" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_manager" confirm="Apakah anda menolak dokumen ini?"/>
                         <button name="button_draft" string="Set Draft" states="in_progress,done" type="object" groups="c10i_lhm_v16.group_plantation_operator"/>
-                        <button name="get_material" string="Material" states="in_progress,done" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator"/>
+                        <!-- <button name="get_material" string="Material" states="in_progress,done" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator"/> -->
                         <button name="recalculate_plantation" class="oe_stat_button" icon="fa-refresh" string="Recalculate" type="object" groups="base.group_no_one"/>
                         <button name="reprogress_plantation" class="oe_stat_button" icon="fa-refresh" string="Reprogress" states="in_progress,done" type="object" groups="base.group_no_one"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,in_progress,confirmed,done,close"/>
@@ -1872,6 +1872,7 @@
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="is_nap" invisible="1"/>
+                                <field name="skb" invisible="0"/>
                             </group>
                         </group>
                         <notebook>
@@ -2026,7 +2027,7 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Material"> 
+                            <page string="Material" attrs="{'invisible': [('skb', '=', False)]}"> 
                                 <!--attrs="{'invisible': ['|',('material_line_ids','=',[]),('state','=','draft')]}"> -->
                                 <field name="material_line_ids" nolabel="1" attrs="{'readonly': [('state','not in',['draft','in_progress']),('approval','=',True)]}">
                                     <tree editable="bottom" create="false">

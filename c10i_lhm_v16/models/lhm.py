@@ -1305,6 +1305,7 @@ class lhm_transaction(models.Model):
     lhm_line_ids        = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM")
     lhm_nap_line_ids    = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
     is_nap              = fields.Boolean(string='Is NAP', compute='_compute_is_nap', store=True)
+    skb                 = fields.Boolean('Is SKB', compute="_compute_is_skb", store=True)
     process_line_ids    = fields.One2many('lhm.transaction.process.line', 'lhm_id', string="Detail Progress LHM")
     material_line_ids   = fields.One2many('lhm.transaction.material.line', 'lhm_id', string="Detail Material LHM")
     emp_out_ids         = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer Out LHM", domain=[('type', '=', 'out')], readonly=1)
@@ -1332,6 +1333,11 @@ class lhm_transaction(models.Model):
     def _compute_is_nap(self):
         for record in self:
             record.is_nap = any(line.activity_id.is_nap for line in record.lhm_line_ids)
+
+    @api.depends('lhm_line_ids.activity_id.skb')
+    def _compute_is_skb(self):
+        for record in self:
+            record.skb = any(line.activity_id.skb for line in record.lhm_line_ids)
 
     def button_regenerate(self):
         self.check_missing_employees()
@@ -1640,6 +1646,9 @@ class lhm_transaction(models.Model):
         
         # Fungsi mengambil gaji karyawan borongan rawat
         self.lhm_line_ids.get_wage_borong_rawat()
+
+        # Panggil fungsi untuk mengambil material yang digunakan
+        self.get_material()
         
         # Fungsi mengambil gaji karyawan borongan panen
         self.lhm_line_ids.get_wage_borong_panen()
