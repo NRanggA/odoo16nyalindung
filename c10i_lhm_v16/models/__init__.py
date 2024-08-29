@@ -20,3 +20,4 @@ from . import lhm_wage_borongan_panen
 from . import lhm_wage_borongan_rawat
 from . import lhm_wage_borongan_contractor
 from . import res_config_settings
+from . import account_cost_center
