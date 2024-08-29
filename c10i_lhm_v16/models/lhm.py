@@ -3473,7 +3473,6 @@ class lhm_contractor(models.Model):
             if not acc_dest:
                 raise ValidationError(_('Akun Perantara Hutang pada Kontraktor Belum diisi.\n'
                     'Silahkan isi akun tersebut terlebih dahulu'))
-            # journal_id = self.env['account.journal'].search([('type','=','general'),('code','like','MISC%')], limit=1)
             journal_id = buku_kontraktor.contractor_default_journal_id
             if not journal_id:
                 raise ValidationError(_('General Jurnal belum didefinisikan.\n'
@@ -3496,7 +3495,6 @@ class lhm_contractor(models.Model):
                         'partner_id'        : buku_kontraktor.supplier_id.id,
                         'date'              : buku_kontraktor.date_end,
                         'amount'            : 0.0,
-                        # 'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                         }})
                 grouped_lines[key]['amount'] += line.total
                 total_lines += line.total
@@ -3531,15 +3529,12 @@ class lhm_contractor(models.Model):
                     'partner_id'        : buku_kontraktor.supplier_id.id,
                     'date'              : buku_kontraktor.date_end,
                     'amount'            : -1*total_lines,
-                    # 'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                     })))
             move = AccountMove.create({
                 'journal_id'    : journal_id.id,
                 'date'          : buku_kontraktor.date_end,
                 'line_ids'      : move_lines,
-                'ref'           : buku_kontraktor.name
-                # 'period_id'     : buku_kontraktor.account_period_id.id,
-                # 'operating_unit_id': buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
+                'ref'           : buku_kontraktor.name,
                 })
             move.action_post()
             buku_kontraktor.write({'move_id': move.id})
@@ -3558,7 +3553,6 @@ class lhm_contractor(models.Model):
             'debit'                         : amount>0 and amount or 0.0,
             'credit'                        : amount<0 and -1*amount or 0.0,
             # 'amount_currency'               : 0.0,
-            # 'operating_unit_id': line.get('operating_unit_id', False) and line['operating_unit_id'] or False,
             # 'currency_id'                   : False,
         }
 
