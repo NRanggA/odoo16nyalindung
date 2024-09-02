@@ -276,10 +276,11 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
                 all_qty = min(po_line_product_uom_qty, wizard_product_uom_qty)
                 self.create_allocation(po_line, line, all_qty, alloc_uom)
             # TODO: Check propagate_uom compatibility:
-            new_qty = pr_line_obj._calc_new_qty(
-                line, po_line=po_line, new_pr_line=new_pr_line
-            )
-            po_line.product_qty = new_qty
+            # new_qty = pr_line_obj._calc_new_qty(
+            #     line, po_line=po_line, new_pr_line=new_pr_line
+            # )
+            # po_line.product_qty = new_qty
+            
             # The quantity update triggers a compute method that alters the
             # unit price (which is what we want, to honor graduate pricing)
             # but also the scheduled date which is what we don't want.

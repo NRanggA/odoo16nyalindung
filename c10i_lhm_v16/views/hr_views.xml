@@ -46,6 +46,8 @@
 
         <menuitem id="menu_partner_kontraktor" name="Kontraktor" parent="menu_lhm_master" action="base.action_partner_supplier_form" sequence="10" groups="group_plantation_supervisor"/>
 
+        <!-- <menuitem id="menu_setting_plantation" name="Setting" action="account.action_account_config" groups="group_plantation_super" parent="menu_lhm_config" sequence="1"/> -->
+
         <!-- <menuitem id="menu_account_period" name="Account Period" action="account_period_action" parent="main_menu_lhm"/> -->
         <!-- <menuitem id="menu_account_period" name="Account Period" action="account_period_action" parent="main_menu_lhm" sequence="10"/> -->
 

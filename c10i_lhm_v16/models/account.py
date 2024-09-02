@@ -35,7 +35,6 @@ class account_period(models.Model):
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    # @api.multi
     def action_post(self):
         default_loc_type = self.env['lhm.location.type'].search([('name', '=', '-')])
         for move in self:
@@ -49,9 +48,9 @@ class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
     plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
-    plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
-    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
-    plantation_validator = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
+    plantation_location_id      = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
+    plantation_activity_id      = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
+    plantation_validator        = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
 
     @api.onchange('plantation_location_type_id')
     def _onchange_plantation_location_type_id(self):

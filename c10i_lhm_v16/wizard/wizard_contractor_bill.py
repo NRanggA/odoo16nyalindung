@@ -23,6 +23,11 @@ class LhmContractorBill(models.TransientModel):
     line_vehicle_ids    = fields.Many2many('lhm.contractor.vehicle.line', string='Detail Kontraktor Alat', readonly=True)
     has_npwp            = fields.Boolean(compute='_get_npwp', string='Ada NPWP?')
     taxes_id            = fields.Many2many('account.tax', string='Tax')
+
+    account_payable_contractor_id = fields.Many2one(
+                                comodel_name='account.account',
+                                related='company_id.account_payable_contractor_id', readonly=False,
+                                string="Account Payable Perantara Buku Kontraktor")
     
     # @api.multi
     @api.depends('contractor_id')
@@ -84,8 +89,6 @@ class LhmContractorBill(models.TransientModel):
                         bk_line_ids.append(x.id)
 
                     for line in buku_kontraktor.line_ids:
-                        # if line.tidak_ditagihkan:
-                        #     continue
                         key = (line.location_type_id, line.location_id, line.activity_id)
                         if key not in grouped_lines.keys():
                             grouped_lines.update({key: {
@@ -105,8 +108,8 @@ class LhmContractorBill(models.TransientModel):
 
     # @api.multi
     def process(self):
-        Invoice = self.env['account.invoice']
-        InvoiceLine = self.env['account.invoice.line']
+        Invoice = self.env['account.move']
+        InvoiceLine = self.env['account.move.line']
         if self.line_vehicle_ids:
             contractor_datas = list(set([x.contractor_id for x in self.line_vehicle_ids]))
         else:
@@ -116,61 +119,59 @@ class LhmContractorBill(models.TransientModel):
             if contractor.invoice_id:
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Vendor Bill'))
 
-        journal_id = Invoice.with_context({'type': 'in_invoice'}).default_get(['journal_id'])['journal_id']
+        journal_id = self.env['account.journal'].search([('type', '=', 'purchase')], limit=1)
         if not journal_id:
             raise UserError(_('Please define an accounting purchase journal for this company.'))
-        invoice_vals = {
-            'name'                  : '',
-            'type'                  : 'in_invoice',
-            'date_invoice'          : self.date_invoice,
-            'account_id'            : self.contractor_id.property_account_payable_id.id,
-            'partner_id'            : self.contractor_id.id,
-            'partner_shipping_id'   : self.contractor_id.id,
-            'journal_id'            : journal_id,
-            'currency_id'           : self.company_id.currency_id.id,
-            'company_id'            : self.company_id.id,
-            'operating_unit_id'     : contractor_datas and contractor_datas[0].operating_unit_id and contractor_datas[0].operating_unit_id.id or False,
-        }
-        invoice = Invoice.create(invoice_vals)
-
+        
+        line_to_add = []
         for line in self.invoice_lines:
-            invoice_line_vals = {
-                'invoice_id'                    : invoice.id,
+
+            # default_loc_type = self.env['lhm.location.type'].search([('name', '=', '-')])
+            
+            line_to_add.append((0,0,{
                 'name'                          : "Jasa Kontraktor: %s"%(line.activity_id.name),
-                'plantation_location_type_id'   : line.location_type_id.id,
-                'plantation_location_id'        : line.location_id.id,
-                'plantation_activity_id'        : line.activity_id.id,
-                'account_id'                    : self.contractor_id.account_payable_contractor_id.id,
+                # 'plantation_location_type_id'   : line.location_type_id.id if line.activity_id.is_nap else default_loc_type.id,
+                # 'plantation_location_id'        : line.location_id.id if line.activity_id.is_nap else False,
+                # 'plantation_activity_id'        : line.activity_id.id if line.activity_id.is_nap else False,
+                'account_id'                    : self.account_payable_contractor_id.id,
                 'product_id'                    : False,
-                'uom_id'                        : False,
+                'product_uom_id'                : False,
                 'quantity'                      : 1,
                 'price_unit'                    : line.amount,
-                'invoice_line_tax_ids'          : [(6,0,[x.id for x in self.taxes_id])],
-            }
-            invoice_line_id = InvoiceLine.create(invoice_line_vals)
+                'tax_ids'                       : [(6,0,[x.id for x in self.taxes_id])],
+            }))
+        
+        invoice_vals = {
+            'name'                  : '',
+            'move_type'             : 'in_invoice',
+            'invoice_date'          : self.date_invoice,
+            'partner_id'            : self.contractor_id.id,
+            'partner_shipping_id'   : self.contractor_id.id,
+            'journal_id'            : journal_id.id,
+            'currency_id'           : self.company_id.currency_id.id,
+            'company_id'            : self.company_id.id,
+            'invoice_line_ids'      : line_to_add
+        }
+
+        invoice = Invoice.create(invoice_vals)
 
         if not invoice.invoice_line_ids:
             raise UserError(_('There is no invoicable line.'))
         # If invoice is negative, do a refund invoice instead
         if invoice.amount_untaxed < 0:
-            invoice.type = 'in_refund'
+            invoice.move_type  = 'in_refund'
             for line in invoice.invoice_line_ids:
                 line.quantity = -line.quantity
-        # Use additional field helper function (for account extensions)
-        for line in invoice.invoice_line_ids:
-            line._set_additional_fields(invoice)
-        # Necessary to force computation of taxes. In account_invoice, they are triggered
-        # by onchanges, which are not triggered when doing a create.
-        invoice.compute_taxes()
-        invoice.message_post('This invoice has been created from Buku Kontraktor')
+
+        invoice.message_post(body=_('This invoice has been created from Buku Kontraktor'))
 
         # Update all related Buku Kontraktor
         for contractor in contractor_datas:
             contractor.write({'invoice_id': invoice.id})
 
         # Redirect to show Invoice
-        action = self.env.ref('account.action_invoice_tree1').read()[0]
-        action['views'] = [(self.env.ref('account.invoice_supplier_form').id, 'form')]
+        action = self.env.ref('account.action_move_in_invoice_type').read()[0]
+        action['views'] = [(self.env.ref('account.view_move_form').id, 'form')]
         action['res_id'] = invoice.id
         return action
 
