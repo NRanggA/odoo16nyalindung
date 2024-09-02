@@ -37,6 +37,27 @@
                         </div>
                     </div>
                 </xpath>
+
+                <!-- Account Write Off pada setting account -->
+                <xpath expr="//div[@id='earning']" position="after">
+                    <h2>Account Write off</h2>
+                    <div class="row mt16 o_settings_container" id="earning">
+                        <div class="col-12 col-lg-6 o_setting_box" id="create_closing_earning">
+                            <div class="o_setting_right_pane">
+                                <div class="content-group">
+                                    <div class="mt8">
+                                        <label for="write_off_default_journal_id"  class="col-lg-3 o_light_label"/>
+                                        <field name="write_off_default_journal_id" />
+                                    </div>
+                                    <div class="mt8">
+                                        <label for="account_write_off"  class="col-lg-3 o_light_label"/>
+                                        <field name="account_write_off" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
             </field>
         </record>
     </data>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_write_off_view_form" model="ir.ui.view">
+        <field name="name">account.write.off.view.form</field>
+        <field name="model">account.write.off</field>
+        <field name="arch" type="xml">
+            <form string="Account Write Off">
+                <header>
+                    <button name="button_approve" states="draft" string="Approve" type="object" class="btn-default btn-primary"/>
+                    <button name="button_draft" states="approve" string="Set to draft" type="object" class="btn-default"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approve"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button string="Journal" type="object" name="action_view_journal_entry" class="btn-secondary" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Nama" class="oe_edit_only"/>
+                        <h1><field name="name" readonly="1" force_save="1"/></h1>
+                    </div>
+                    <group>
+                        <field name="date" />
+                        <field name="customer_id" />
+                    </group>
+                    <notebook>
+                        <page string="Detail Write Off">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="date"/>
+                                    <field name="invoice_id" invisible="1"/>
+                                    <field name="invoice_no"/>
+                                    <field name="total_value" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                    <field name="write_off" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                    <field name="reason"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_write_off_view_tree" model="ir.ui.view">
+        <field name="name">account.write.off.view.tree</field>
+        <field name="model">account.write.off</field>
+        <field name="arch" type="xml">
+            <tree string="Account Write Off">
+                <field name="name" />
+                <field name="date" />
+                <field name="customer_id" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="account_write_off_action" model="ir.actions.act_window">
+        <field name="name">Account Write Off</field>
+        <field name="res_model">account.write.off</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+
+
+    <!-- Kode untuk mengubah tampian yang ada di invoice -->
+    <!-- <record id="view_invoice_tree_write_off_inherit" model="ir.ui.view">
+        <field name="name">account.invoice.tree.write.off.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="decoration-grey">payment_state == 'written_off'</attribute>
+            </xpath>
+        </field>
+    </record> -->
+
+
+
+</odoo>

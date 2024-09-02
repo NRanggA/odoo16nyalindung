@@ -3492,7 +3492,7 @@ class lhm_contractor(models.Model):
         AccountMoveLine = self.env['account.move.line']
         grouped_lines = {}
         for buku_kontraktor in self:
-            acc_dest = buku_kontraktor.account_payable_contractor_id
+            acc_dest = buku_kontraktor.account_payable_contractor_id #untuk credit
             if not acc_dest:
                 raise ValidationError(_('Akun Perantara Hutang pada Kontraktor Belum diisi.\n'
                     'Silahkan isi akun tersebut terlebih dahulu'))
@@ -3504,11 +3504,12 @@ class lhm_contractor(models.Model):
             for line in buku_kontraktor.line_ids:
                 key = (line.location_type_id, line.location_id, line.activity_id)
                 if key not in grouped_lines.keys():
-                    acc_src = line.activity_id.account_id
+                    acc_src = line.activity_id.account_id # untuk debit
                     if not acc_src:
                         raise ValidationError(_('Aktivitas yg digunakan tidak memiliki Account Allocation.\n'
                             'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
                             (line.activity_id.code,line.activity_id.name))
+                    # untuk sisi debit
                     grouped_lines.update({key: {
                         'location_type'     : line.location_type_id,
                         'location'          : line.location_id,
@@ -3546,6 +3547,7 @@ class lhm_contractor(models.Model):
             for line in grouped_lines.values():
                 move_lines.append((0,0, self._prepare_move_line_entry(line)))
             # counterpart entry for all activity
+            # untuk sisi credit
             move_lines.append((0, 0, self._prepare_move_line_entry({
                     'account_id'        : acc_dest.id,
                     'journal_id'        : journal_id.id,
