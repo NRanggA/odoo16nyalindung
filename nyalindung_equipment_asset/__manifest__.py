@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "nyalindung_equipment_asset",
+    'name': "Nyalindung Equipment Asset",
 
     'summary': """
         Short (1 phrase/line) summary of the module's purpose, used as
@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'maintenance', 'account', 'product', 'c10i_purchase_equipment', 'c10i_equipment_account_asset'],
+    'depends': ['base', 'maintenance', 'account', 'om_account_accountant', 'product', 'c10i_purchase_equipment', 'c10i_equipment_account_asset'],
 
     # always loaded
     'data': [

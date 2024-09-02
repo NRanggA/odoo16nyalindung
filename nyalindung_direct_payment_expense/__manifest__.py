@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "nyalindung_direct_payment_expense",
+    'name': "Nyalindung Direct Payment Expense",
 
     'summary': """
         Short (1 phrase/line) summary of the module's purpose, used as

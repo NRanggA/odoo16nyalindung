@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "nyalindung_report",
+    'name': "Nyalindung Report",
 
     'summary': """
         Nyalindung Reports Module""",

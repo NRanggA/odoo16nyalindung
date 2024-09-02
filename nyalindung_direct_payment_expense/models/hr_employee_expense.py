@@ -229,6 +229,11 @@ class HrEmployeeExpense(models.Model):
         self.account_move_id = new_move.id
         new_move._post()
 
+        if self.advance_to_settle_ids.filtered(lambda a: a.advance_residual>0.0):
+            settlement_advances = self.account_move_id.line_ids.filtered(lambda l: l.account_id==self.company_id.employee_advance_account_id)
+            advances_to_settle = self.advance_to_settle_ids.mapped('account_move_id.line_ids').filtered(lambda l: l.account_id==self.company_id.employee_advance_account_id)
+            (settlement_advances + advances_to_settle).reconcile()
+
         return True
     
     def action_create_direct_payment(self):

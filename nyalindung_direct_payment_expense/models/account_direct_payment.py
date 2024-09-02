@@ -46,7 +46,7 @@ class DirectPayment(models.Model):
             'move_type' : 'entry',
             'name': '/',
             'date': account_date,
-            'journal_id' : self.employee_advance_journal_id.id if (self.is_advance or self.expense_report) else journal.id,
+            'journal_id' : journal.id,
             'ref': self.name,
             'company_id': self.company_id.id,
         }
