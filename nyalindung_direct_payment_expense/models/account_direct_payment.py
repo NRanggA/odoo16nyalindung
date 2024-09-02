@@ -20,7 +20,8 @@ class DirectPayment(models.Model):
         related='company_id.employee_advance_journal_id', readonly=False,
         string="Journal")
     employee_expense_journal_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
-    # is_direct_payment = fields.Boolean('Is Direct Payment')
+    expense_report = fields.Boolean('Expense Report')
+    is_advance = fields.Boolean('Employee Advance')
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
@@ -29,7 +30,7 @@ class DirectPayment(models.Model):
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
-            'account_id': self.contra_account_for_advance.id if (self.is_advance or self.expense_report) else credit_account.id,
+            'account_id': credit_account.id,
             # 'analytic_account_id': self.analytic_account_id.id,
             # 'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
@@ -48,7 +49,6 @@ class DirectPayment(models.Model):
             'journal_id' : self.employee_advance_journal_id.id if (self.is_advance or self.expense_report) else journal.id,
             'ref': self.name,
             'company_id': self.company_id.id,
-            'employee_expense_id' : self.id
         }
 
     def action_create_move(self):
@@ -73,66 +73,24 @@ class DirectPayment(models.Model):
 
         return True
     
-    def _get_count_employee_expense(self):
-        for record in self:
-            journal_count = self.env['account.move'].search_count([('employee_expense_id', '=', record.id)])
-            record.employee_expense_journal_count = journal_count
-    
-    def action_open_employee_expense_journal(self):
-        result = self.env["ir.actions.actions"]._for_xml_id('account.action_move_journal_line')
-        result['domain'] = [('employee_expense_id', '=', self.id)]
-            
-        return result
-    
-    # @api.onchange('is_direct_payment')
-    # def onchange_is_direct_payment(self):
-    #     if self.is_direct_payment:
-    #         account = self.company_id.contra_account_for_advance
-    #         if not account:
-    #             raise ValidationError(_('Please configure Contra Account for Advance on your Accounting Settings'))
-    #         self.line_ids = [(0,0,{
-    #             'name': 'Request of Employee Advance',
-    #             'account_id': account.id,
-    #             })]
+    def action_confirm(self):
+        for payment in self:
+            if payment.state!='draft':
+                raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
+            for line in payment.line_ids:
+                if line.amount is not None and line.amount <= 0:
+                    raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
+            # if payment.name == 'New':
+            #     payment.name = self.env['ir.sequence'].next_by_code('account.direct.payment')
+            payment.state="confirm"
 
-    def employee_submit(self):
-        res = super().employee_submit()
-        self.validation_settlement_date_by_date()
-        return res
-    
-    def employee_approve(self):
-        res = super().employee_approve()
-        for record in self:
-            record.action_create_move()
-        return res
-
-    def validation_settlement_date_by_date(self):
-        for record in self:
-            if record.settelement_date < record.date:
-                raise ValidationError("Settlement Date cannot be less than Date")
-            
-    def validation_setteled(self):
-        for record in self:
-            setteled = self.search([
-                ('employee_id', '=', record.employee_id.id),
-                ('payment_state', '!=', 'not_paid'),
-            ], limit=1, order='settelement_date desc')
-            
-            if setteled:
-                if setteled.settelement_date and record.date > setteled.settelement_date:
-                    raise ValidationError("You can't request direct payment if the date is more than the your direct payment that not setteled")
-                
-
-    @api.model
-    def create(self, vals):
-        record = super(DirectPayment, self).create(vals)
-        record.validation_setteled()
-        return record
-
-    def write(self, vals):
-        res = super(DirectPayment, self).write(vals)
-        self.validation_setteled()
-        return res
+    def action_post(self):
+        for payment in self:
+            if payment.state!='confirm':
+                raise ValidationError(_('You cannot set Post payment that is not in a Confirmed State'))
+            payment.action_create_move()
+            payment.state="posted"
+            payment.name = payment.account_move_id.name
 
 class DirectPaymentLine(models.Model):
     _inherit = 'account.direct.payment.line'
@@ -147,11 +105,10 @@ class DirectPaymentLine(models.Model):
         if self.plantation_location_type_id:
             self.plantation_location_id = False
             self.plantation_activity_id = False
-            self.has_plantation = True
-            if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
-                self.account_id = False
-            else:
-                self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
+            # if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+            #     self.account_id = False
+            # else:
+            #     self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
 
     @api.onchange('plantation_location_id')
     def _onchange_plantation_location_id(self):
@@ -160,5 +117,7 @@ class DirectPaymentLine(models.Model):
 
     @api.onchange('plantation_activity_id')
     def _onchange_plantation_activity_id(self):
-        if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+        if self.plantation_activity_id:
+        # if self.plantation_activity_id and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
+            self.has_plantation = True
             self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False
