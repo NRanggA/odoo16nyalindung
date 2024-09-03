@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mutation_type_view_form" model="ir.ui.view">
+        <field name="name">mutation.type.view.form</field>
+        <field name="model">mutation.type</field>
+        <field name="arch" type="xml">
+            <form string="Tipe Mutasi">
+                <sheet>
+                    <group>
+                        <field name="code" />
+                        <field name="name" />
+                        <field name="mutation" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mutation_type_view_tree" model="ir.ui.view">
+        <field name="name">mutation.type.view.tree</field>
+        <field name="model">mutation.type</field>
+        <field name="arch" type="xml">
+            <tree string="Tipe Mutasi">
+                <field name="code" />
+                <field name="name" />
+                <field name="mutation" widget="badge" decoration-danger="mutation == 'kurang'" decoration-success="mutation == 'tambah'"/>
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="mutation_type_action" model="ir.actions.act_window">
+        <field name="name">Tipe Mutasi</field>
+        <field name="res_model">mutation.type</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="mutation_type_menu" name="Tipe Mutasi" action="mutation_type_action" parent="menu_lhm_master"/>
+
+
+</odoo>
