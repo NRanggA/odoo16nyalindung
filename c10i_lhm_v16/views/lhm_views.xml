@@ -3496,7 +3496,7 @@
                                         <field name="tgl_panen"/>
                                         <field name="drc"/>
                                         <field name="quality_pabrik"/>
-                                        <field name="stock_picking_id"/>
+                                        <!-- <field name="stock_picking_id"/> -->
                                     </tree>
                                 </field>
                             </page>                                               
