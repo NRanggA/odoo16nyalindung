@@ -536,6 +536,8 @@
                             <group string="Satuan">
                                 <field name="uom_id" required="0"/>
                                 <field name="uom2_id" required="0"/>
+                                <field name="product_id" required="0"/>
+                                <field name="product2_id" required="0"/>
                             </group>
                             <group string="Reporting">
                                 <field name="is_variance" required="0" string="Variance Progress Kerja"/>
@@ -1872,7 +1874,7 @@
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="is_nap" invisible="1"/>
-                                <field name="skb" invisible="0"/>
+                                <field name="skb" invisible="1"/>
                             </group>
                         </group>
                         <notebook>
@@ -1983,20 +1985,20 @@
                                     <tree editable="bottom" create="false" class="two-line-header">
                                         <field name="name" readonly="1" force_save="1" optional="show"/>
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="product_id" optional="show"/>
-                                        <field name="hasil_1_nap" optional="show"/>
-                                        <field name="satuan_1_nap" optional="show"/>
+                                        <field name="product_id" optional="show"  readonly="1"/>
+                                        <field name="hasil_1_nap" optional="show"  readonly="1"/>
+                                        <field name="satuan_1_nap" optional="show"  readonly="1"/>
 
-                                        <field name="product_id_2" optional="show"/>
-                                        <field name="hasil_2_nap" optional="show"/>
-                                        <field name="satuan_2_nap" optional="show"/>
+                                        <field name="product_id_2" optional="show"  readonly="1"/>
+                                        <field name="hasil_2_nap" optional="show"  readonly="1"/>
+                                        <field name="satuan_2_nap" optional="show"  readonly="1"/>
 
-                                        <field name="drc_latex_nap" optional="show"/>
-                                        <field name="drc_lump_nap" optional="show"/>
+                                        <field name="drc_latex_nap" optional="show"  readonly="1"/>
+                                        <field name="drc_lump_nap" optional="show"  readonly="1"/>
 
                                         <!-- dikomen dlu karena blum siap -->
-                                        <field name="hasil_convert_latex" optional="show"/>
-                                        <field name="hasil_convert_lump" optional="show"/>
+                                        <field name="hasil_convert_latex" optional="show"  readonly="1"/>
+                                        <field name="hasil_convert_lump" optional="show"  readonly="1"/>
                                     </tree>
                                 </field>
                             </page>
@@ -3394,13 +3396,14 @@
             <field name="arch" type="xml">
                 <form string="Nota Angkut Panen">
                     <header>
-                        <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
-                        <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
-                        <button name="create_material_receipt" string="Create Material Receipt" type="object" class="oe_highlight" />
-                        <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
+                        <button name="button_draft" states="cancel,process,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_save_to_nap_line" states="draft" string="Process" type="object" class="btn-primary" />
+                        <button name="button_confirm" states="process" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="create_material_receipt" states="confirmed" string="Create Material Receipt" type="object" class="oe_highlight"/>
+                        <button name="button_cancel" states="process,confirmed" string="Cancel" type="object" class="btn-default"/>
                         <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,process,confirmed,done"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -3475,7 +3478,6 @@
                                 <field name="kebun_line_ids" nolabel="1">
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <!-- <field name="lokasi_tk"/> -->
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
@@ -3487,11 +3489,11 @@
                                 <field name="pabrik_line_ids" nolabel="1">
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <!-- <field name="lokasi_tp"/> -->
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
                                         <field name="tgl_terima"/>
+                                        <field name="tgl_panen"/>
                                         <field name="drc"/>
                                         <field name="quality_pabrik"/>
                                         <!-- <field name="stock_picking_id"/> -->
@@ -3500,16 +3502,14 @@
                             </page>                                               
                             <page string="DETAIL NOTA ANGKUT PANEN">
                                 <field name="line_ids" nolabel="1">
-                                <!-- <field name="lhm_nap_line_ids"> -->
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="product_id"/>
                                         <field name="tgl_panen"/>
-                                        <field name="qty_nap" sum="qty_nap"/>
-                                        <!-- <field name="qty_panen_lhm"/>
-                                        <field name="qty_akum_nap"/>
-                                        <field name="qty_sisa_panen"/> -->
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="product_id"/>
+                                        <field name="uom_id"/>
+                                        <field name="drc"/>
+                                        <field name="qty_nap"/>
                                     </tree>
                                     <form string="Detail nap">
                                         <group>
@@ -3518,7 +3518,7 @@
                                                 <field name="tgl_panen"/>
                                             </group>
                                             <group>
-                                                <field name="qty_nap"/>
+                                                <!-- <field name="qty_nap"/> -->
                                             </group>
                                         </group>
                                         <label for="lhm_progress_ids"/>

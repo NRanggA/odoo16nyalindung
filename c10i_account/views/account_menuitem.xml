@@ -6,4 +6,8 @@
         <menuitem id="menu_action_period" action="action_account_period" sequence="2"/>
     </menuitem>    
 
+    <!-- Menu untuk Write Off -->
+    <menuitem id="write_off_menu" name="Write Off" parent="account.menu_finance" sequence="5"/>
+    <menuitem id="receivable_menu" name="Receivable" action="account_write_off_action" parent="write_off_menu" sequence="1"/>
+
 </odoo>

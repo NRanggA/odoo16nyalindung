@@ -302,6 +302,9 @@ class lhm_activity(models.Model):
     is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
     is_nap                                      = fields.Boolean('NAP', default=False)
 
+    product_id                                  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product2_id                                = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
+
     parent_path                                 = fields.Char("Parent Path", index=True, unaccent=False)
     _parent_name                                = "parent_id"
     _parent_store                               = True
@@ -371,7 +374,6 @@ class lhm_activity(models.Model):
                 result.append((record.id, record.name))
         return result
 
-
     @api.model
     def default_get(self, default_fields):
         """If we're creating a new account through a many2one, there are chances that we typed the account code
@@ -388,7 +390,6 @@ class lhm_activity(models.Model):
                 default_name = False
         contextual_self = self.with_context(default_name=default_name, default_code=default_code)
         return super(lhm_activity, contextual_self).default_get(default_fields)
-
 
     @api.model
     def name_search(self, name, args=None, operator='ilike', limit=100):
@@ -1912,7 +1913,7 @@ class lhm_transaction(models.Model):
                 domain = [
                     ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
                     ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
-                    # ('skb', '=', True), 
+                    # ('skb', '=', True),
                     ('state', '=', 'done'), 
                     ('plantation_location_id', '=', progress.location_id.id), 
                     ('plantation_activity_id', '=', progress.activity_id.id), 
@@ -1943,6 +1944,10 @@ class lhm_transaction(models.Model):
             plantation.run_progress()
 
     def button_confirm(self):
+        for nap_line in self.lhm_nap_line_ids:
+            if not nap_line.hasil_1_nap or nap_line.hasil_1_nap == 0:
+                raise ValidationError(_(f'Nilai NAP belum terisi, silahkan melakukan proses Nota Angkut Panen !'))
+
         self.state = 'confirmed'
 
     def button_approve(self):
@@ -2071,17 +2076,13 @@ class lhm_transaction_line(models.Model):
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
 
-            # _logger.info(f'Doc ID: {doc_id}, Level 1: {level_1}, Avail Act: {avail_act}')
-
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
-            # _logger.info(f'Activity List setelah Doc ID di cek: {activity_list}')
 
             if level_1:
                 activity_list.append(level_1.id)
-            # _logger.info(f'Activity List setelah Level 1 di cek: {activity_list}')
 
             if (line.location_type_id and line.location_type_id.project) and line.location_id:
                 project_ids = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
@@ -2091,13 +2092,11 @@ class lhm_transaction_line(models.Model):
                     avail.append(level_1.id)
                 for project in project_ids:
                     project_act += [x.activity_id.id for x in project.line_ids]
-                # _logger.info(f'Project Act: {project_act}')
 
                 if project_act != []:
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                # _logger.info(f'Avail: {avail}')
                 if avail:
                     line.doc_activity_ids = [(6, 0, avail)]
                 else:
@@ -2105,11 +2104,9 @@ class lhm_transaction_line(models.Model):
             else:
                 line.doc_activity_ids = [(6, 0, activity_list)]
 
-            # Ensure doc_activity_ids is never empty or undefined
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
 
-            # _logger.info(f'Final doc_activity_ids: {line.doc_activity_ids}')
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
@@ -2154,6 +2151,7 @@ class lhm_transaction_line(models.Model):
     lhm_id              = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
     state               = fields.Selection(related='lhm_id.state', string='Status', store=True)
     contract_id         = fields.Many2one('hr.contract', string='Contract', ondelete="restrict")
+    transaction_nap_line_ids = fields.One2many('lhm.transaction.nap.line', 'lhm_transaction_line_id', string="Transaction NAP Lines")
     # POC Nyalindung
     # Penyadap
     hasil_latex     = fields.Float('Hasil Latex (L)')
@@ -2172,41 +2170,95 @@ class lhm_transaction_line(models.Model):
     is_borong       = fields.Boolean("Is Borong", default=False)
 
     # Fungsi untuk memasukkan gaji employee yang borong panen
+    # def get_wage_borong_panen(self):
+    #     for record in self:
+    #         if record.is_borong and record.activity_id.is_nap:
+    #             # panggil fungsi untuk mengecek employee ini bulanan atau bukan
+    #             record._check_employee_bulanan()
+    #             lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+                
+    #             if record.is_hasil_2:
+                    
+    #                 # Product 1 = Latex
+    #                 drc_latex             = lhm_nap_line.drc_latex_nap 
+    #                 price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
+    #                 convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
+    #                 hasil_latex           = convert_hasil_latex * price_1
+
+    #                 # Product 2 = Lump
+    #                 drc_lump            = lhm_nap_line.drc_lump_nap
+    #                 price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
+    #                 convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+    #                 hasil_lump          = convert_hasil_lump * price_2
+                    
+    #                 hasil           = hasil_latex + hasil_lump
+                    
+    #                 lhm_nap_line.write({
+    #                     'hasil_convert_latex': convert_hasil_latex,
+    #                     'hasil_convert_lump': convert_hasil_lump
+    #                     })
+                    
+    #                 record.write({'contract_wage_value' : hasil})
+
+    #             else:
+    #                 # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
+    #                 price_1      = record.activity_id.get_price_borongan()
+    #                 wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
+    #                 record.write({'contract_wage_value': wage_hasil_1})
+
+    # Fungsi untuk menghitung konversi latex dan lump
+    def compute_conversion(self, lhm_nap_line, is_hasil_2):
+        """
+        Fungsi untuk menghitung konversi hasil latex dan lump.
+        """
+        convert_hasil_latex = 0
+        convert_hasil_lump = 0
+
+        if is_hasil_2:
+            # Menghitung konversi untuk hasil latex
+            drc_latex           = lhm_nap_line.drc_latex_nap
+            convert_hasil_latex = lhm_nap_line.hasil_1_nap * drc_latex / 100
+
+            # Menghitung konversi untuk hasil lump
+            drc_lump            = lhm_nap_line.drc_lump_nap
+            convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+
+        lhm_nap_line.write({
+            'hasil_convert_latex'   : convert_hasil_latex,
+            'hasil_convert_lump'    : convert_hasil_lump
+        })
+        
+        return convert_hasil_latex, convert_hasil_lump
+
     def get_wage_borong_panen(self):
         for record in self:
-            if record.is_borong and record.activity_id.is_nap:
-                # panggil fungsi untuk mengecek employee ini bulanan atau bukan
-                record._check_employee_bulanan()
-                lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+            if not record.activity_id.is_nap:
+                continue  # Langsung lanjut ke loop berikutnya jika bukan aktivitas NAP
+
+            # Panggil fungsi untuk mengecek apakah employee ini bulanan atau bukan
+            record._check_employee_bulanan()
+            lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+
+            if record.is_hasil_2:
+                # Hitung konversi menggunakan fungsi compute_conversion
+                convert_hasil_latex, convert_hasil_lump = record.compute_conversion(lhm_nap_line, record.is_hasil_2)
                 
-                if record.is_hasil_2:
-                    
-                    print(f"== Borongan Panen Karet : {record.employee_id.name}")
+                # Dapatkan harga borongan berdasarkan DRC
+                price_1     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_latex_nap)
+                price_2     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_lump_nap)
+                
+                # Menghitung hasil akhir
+                hasil_latex = convert_hasil_latex * price_1
+                hasil_lump  = convert_hasil_lump * price_2
+                hasil       = hasil_latex + hasil_lump
+            else:
+                # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
+                price_1     = record.activity_id.get_price_borongan()
+                hasil       = lhm_nap_line.hasil_1_nap * price_1
 
-                    # Product 1 = Latex
-                    drc_latex             = lhm_nap_line.drc_latex_nap 
-                    price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
-                    
-                    convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
-                    hasil_latex           = convert_hasil_latex * price_1
-                    lhm_nap_line.write({'hasil_convert_latex': convert_hasil_latex})
-
-                    # Product 2 = Lump
-                    drc_lump            = lhm_nap_line.drc_lump_nap
-                    price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
-                    
-                    convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
-                    hasil_lump          = convert_hasil_lump * price_2
-                    lhm_nap_line.write({'hasil_convert_lump': convert_hasil_lump})
-                    
-                    hasil           = hasil_latex + hasil_lump
-                    record.write({'contract_wage_value' : hasil})
-
-                else:
-                    # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
-                    price_1      = record.activity_id.get_price_borongan()
-                    wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
-                    record.write({'contract_wage_value': wage_hasil_1})
+            # Hanya update nilai kontrak jika is_borong bernilai True
+            if record.is_borong:
+                record.write({'contract_wage_value': hasil})
 
     # fungsi untuk mendapatkan gaji employee yang borongan non panen (rawat)
     def get_wage_borong_rawat(self):
@@ -2555,6 +2607,7 @@ class lhm_transaction_nap_line(models.Model):
 
     lhm_id                  = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
     lhm_transaction_line_id = fields.Many2one('lhm.transaction.line', string="LHM Line", ondelete="cascade")
+    lhm_nap_line_id         = fields.Many2one('lhm.nap.line', string="NAP Line", ondelete="cascade")
     sequence                = fields.Integer()
     employee_id             = fields.Many2one('hr.employee', string='Employee')
     name                    = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
@@ -2569,6 +2622,21 @@ class lhm_transaction_nap_line(models.Model):
     
     hasil_convert_latex     = fields.Float(string="Hasil Convert Latex",  digits=(16, 2))
     hasil_convert_lump      = fields.Float(string="Hasil Convert Lump",  digits=(16, 2))
+
+    # @api.onchange('block_id', 'tgl_panen')
+    # def _onchange_block_tgl_panen(self):
+    #     if self.block_id and self.tgl_panen:
+    #         # Cari karyawan yang sesuai dari data NAP
+    #         nap_lines = self.env['lhm.transaction.nap.line'].search([
+    #             ('lhm_transaction_line_id.location_id', '=', self.block_id.location_id.id),
+    #             ('lhm_transaction_line_id.lhm_id.date', '=', self.tgl_panen),
+    #             ('lhm_transaction_line_id.activity_id.is_panen', '=', True),
+    #         ])
+    #         employee_ids = nap_lines.mapped('employee_id')
+    #         return {'domain': {'employee_id': [('id', 'in', employee_ids.ids)]}}
+
+
+    
 
 class lhm_transaction_process_line(models.Model):
     _name           = 'lhm.transaction.process.line'
@@ -3478,7 +3546,7 @@ class lhm_contractor(models.Model):
         AccountMoveLine = self.env['account.move.line']
         grouped_lines = {}
         for buku_kontraktor in self:
-            acc_dest = buku_kontraktor.account_payable_contractor_id
+            acc_dest = buku_kontraktor.account_payable_contractor_id #untuk credit
             if not acc_dest:
                 raise ValidationError(_('Akun Perantara Hutang pada Kontraktor Belum diisi.\n'
                     'Silahkan isi akun tersebut terlebih dahulu'))
@@ -3490,11 +3558,12 @@ class lhm_contractor(models.Model):
             for line in buku_kontraktor.line_ids:
                 key = (line.location_type_id, line.location_id, line.activity_id)
                 if key not in grouped_lines.keys():
-                    acc_src = line.activity_id.account_id
+                    acc_src = line.activity_id.account_id # untuk debit
                     if not acc_src:
                         raise ValidationError(_('Aktivitas yg digunakan tidak memiliki Account Allocation.\n'
                             'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
                             (line.activity_id.code,line.activity_id.name))
+                    # untuk sisi debit
                     grouped_lines.update({key: {
                         'location_type'     : line.location_type_id,
                         'location'          : line.location_id,
@@ -3532,6 +3601,7 @@ class lhm_contractor(models.Model):
             for line in grouped_lines.values():
                 move_lines.append((0,0, self._prepare_move_line_entry(line)))
             # counterpart entry for all activity
+            # untuk sisi credit
             move_lines.append((0, 0, self._prepare_move_line_entry({
                     'account_id'        : acc_dest.id,
                     'journal_id'        : journal_id.id,
@@ -4383,12 +4453,14 @@ class lhm_nap(models.Model):
     confirmed           = fields.Boolean('Confirmed')
     cancelled           = fields.Boolean('Cancelled')
     force_edit          = fields.Boolean('Revisi')
+    process             = fields.Boolean('Process')
     state               = fields.Selection(compute='_get_state', store=True, selection=[
-                                ('draft', 'New'), ('cancel', 'Cancelled'),
+                                ('draft', 'New'), ('cancel', 'Cancelled'), ('process', 'Process'),
                                 ('confirmed', 'Confirmed'), ('done', 'Done'), ('revision','Revisi')], string='Status',
                                 copy=False, default='draft', index=True, readonly=True,
                                 help="* New: Dokumen Baru.\n"
                                      "* Cancelled: Dokumen Telah Dibatalkan.\n"
+                                     "* Process: Menyimpan Data Timbangan Pabrik ke Detail Nota Angkut Panen.\n"
                                      "* Confirmed: Dokumen Sudah Diperiksa Pihak Terkait.\n"
                                      "* Done: Dokumen Sudah Selesai Diproses. \n")
     invoice_id          = fields.Many2one('account.move', 'NAP Invoice')
@@ -4402,9 +4474,10 @@ class lhm_nap(models.Model):
     kebun_line_ids      = fields.One2many('timbangan.kebun', inverse_name='lhm_nap_id', string="Penamaan")
     pabrik_line_ids     = fields.One2many('timbangan.pabrik', inverse_name='lhm_nap_id', string="Penamaan")
     partner_id          = fields.Many2one('res.partner', string="Partner")
+    drc                 = fields.Float(string='DRC')
     _order = "date_nap desc"
 
-    @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'force_edit')
+    @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'process', 'force_edit')
     def _get_state(self):
         for record in self:
             if record.confirmed:
@@ -4412,6 +4485,8 @@ class lhm_nap(models.Model):
                     record.state = 'done'
                 else:
                     record.state = 'confirmed'
+            elif record.process:
+                record.state = 'process'
             elif record.cancelled:
                 record.state = 'cancel'
             elif record.force_edit:
@@ -4479,13 +4554,15 @@ class lhm_nap(models.Model):
         elif self.vehicle_subtitute_id:
             self.contractor_id = self.vehicle_subtitute_id and self.vehicle_subtitute_id.partner_id and self.vehicle_subtitute_id.partner_id.id or False
 
-    @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'force_edit')
+    @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'process','force_edit')
     def _get_state(self):
         if self.confirmed:
             if self.sudo().invoice_id and self.sudo().invoice_id.state not in ('draft', 'cancel'):
                 self.state = 'done'
             else:
                 self.state = 'confirmed'
+        elif self.process:
+            self.state = 'process'
         elif self.cancelled:
             self.state = 'cancel'
         elif self.force_edit:
@@ -4505,46 +4582,82 @@ class lhm_nap(models.Model):
     def create_material_receipt(self):
         for record in self:
             for line in record.pabrik_line_ids:
-                if not line.stock_picking_id:
-                    picking_vals = {
-                        'partner_id': record.partner_id.id if record.partner_id else False,
-                        'location_id': line.env.ref('stock.stock_location_suppliers').id,
-                        'location_dest_id': line.env.ref('stock.stock_location_stock').id,
-                        'move_ids_without_package': [(0, 0, {
-                            'product_id': line.product_id.id,
-                            'name': line.product_id.name,
-                            'product_uom_qty': line.product_qty,
-                            'product_uom': line.uom_id.id,
-                            'location_id': line.env.ref('stock.stock_location_suppliers').id,
-                            'location_dest_id': line.env.ref('stock.stock_location_stock').id,
-                        })],
-                        'picking_type_id': line.env.ref('stock.picking_type_in').id,  # Receipts picking type
-                    }
-                    picking = line.env['stock.picking'].create(picking_vals)
-                    line.stock_picking_id = picking.id
-                else:
-                    line.stock_picking_id.write({
-                        'move_ids_without_package': [(1, line.stock_picking_id.move_ids_without_package.id, {
-                            'product_uom_qty': line.product_qty,
-                        })]
-                    })
+                line._create_or_update_stock_picking()
 
     def button_confirm(self):
         self.state = 'confirmed'
-        # if not self.pks_id:
-        #     raise UserError(_('Nama PKS masih Kosong.\n'
-        #                         'Silahkan isi Nama PKS tersebut terlebih dahulu'))
-        # if self.line_ids:
-        #     for line in self.line_ids:
-        #         if line.qty_nap <= 0 :
-        #             raise UserError(_('Total NAP harus lebih dari 0.\n'
-        #                         'Perbaiki data pada lokasi %s sebelum diconfirm!!')%(line.block_id.code or '-'))
-        # else:
-        #     raise UserError(_('Detail Nota Angkut Panen Kosong.\n'
-        #                         'Silahkan isi Detail Nota Angkut Panen terlebih dahulu'))
+        transaction_draft = self.env['lhm.transaction'].search([
+            ('date', '=', self.date_nap),
+            ('state', '=', 'draft')
+        ])
+        if transaction_draft:
+            raise ValidationError(
+                _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
+            )
         self.confirmed = True
-        self.line_ids.link_to_lhm_progress()
-        self.line_ids.allocate_nap_line_to_lhm_line()
+        for record in self:
+            employee_data = {}
+
+            for nap_line in record.line_ids:
+                employee_id = nap_line.employee_id.id
+                product = nap_line.product_id
+
+                if employee_id not in employee_data:
+                    employee_data[employee_id] = {
+                        'employee_id': employee_id,
+                        'product_1': None,
+                        'hasil_1_nap': None,
+                        'drc_latex': None,
+                        'satuan_1_nap': None,
+                        'product_2': None,
+                        'hasil_2_nap': None,
+                        'drc_lump': None,
+                        'satuan_2_nap': None,
+                    }
+
+                if employee_data[employee_id]['product_1'] is None:
+                    employee_data[employee_id]['product_1'] = product.id
+                    employee_data[employee_id]['hasil_1_nap'] = nap_line.qty_nap
+                    employee_data[employee_id]['drc_latex'] = nap_line.drc
+                    employee_data[employee_id]['satuan_1_nap'] = nap_line.uom_id.id
+                else:
+                    employee_data[employee_id]['product_2'] = product.id
+                    employee_data[employee_id]['hasil_2_nap'] = nap_line.qty_nap
+                    employee_data[employee_id]['drc_lump'] = nap_line.drc
+                    employee_data[employee_id]['satuan_2_nap'] = nap_line.uom_id.id
+
+            for employee_id, data in employee_data.items():
+                existing_transaction_nap_line = self.env['lhm.transaction.nap.line'].search([
+                    ('lhm_transaction_line_id.employee_id', '=', data['employee_id']),
+                    ('lhm_transaction_line_id.lhm_id.date', '=', nap_line.tgl_panen),
+                ], limit=1)
+
+                if not existing_transaction_nap_line:
+                    self.env['lhm.transaction.nap.line'].create({
+                        'lhm_nap_line_id': record.id,
+                        'employee_id': data['employee_id'],
+                        'product_id': data['product_1'],
+                        'hasil_1_nap': data['hasil_1_nap'],
+                        'drc_latex_nap': data['drc_latex'],
+                        'satuan_1_nap': data['satuan_1_nap'],
+                        'product_id_2': data['product_2'],
+                        'hasil_2_nap': data['hasil_2_nap'],
+                        'drc_lump_nap': data['drc_lump'],
+                        'satuan_2_nap': data['satuan_2_nap'],
+                    })
+                else:
+                    existing_transaction_nap_line.write({
+                        'product_id': data['product_1'],
+                        'hasil_1_nap': data['hasil_1_nap'],
+                        'drc_latex_nap': data['drc_latex'],
+                        'satuan_1_nap': data['satuan_1_nap'],
+                        'product_id_2': data['product_2'],
+                        'hasil_2_nap': data['hasil_2_nap'],
+                        'drc_lump_nap': data['drc_lump'],
+                        'satuan_2_nap': data['satuan_2_nap'],
+                    })
+                # Panggil fungsi untuk mengupdate nilai upah untuk yang borongan panen
+                existing_transaction_nap_line.lhm_transaction_line_id.get_wage_borong_panen()
 
     def button_draft(self):
         for nap in self:
@@ -4557,12 +4670,14 @@ class lhm_nap(models.Model):
         self.state = 'draft'
         self.confirmed = False
         self.cancelled = False
+        self.process = False
         self.line_ids.write({'lhm_progress_ids': [(5,False,False)]})
 
     def button_cancel(self):
         self.state = 'cancel'
         self.confirmed = False
         self.cancelled = True
+        self.process = False
 
     def button_revise(self):
         for nap in self:
@@ -4582,6 +4697,81 @@ class lhm_nap(models.Model):
     def create(self, values):
         values['name'] = self.env['ir.sequence'].next_by_code('lhm.nap') or _('New')
         return super(lhm_nap, self).create(values)
+                        
+    def button_save_to_nap_line(self):
+        self.state = 'process'
+        self.process = True
+        for record in self:
+            employee_data = {}
+
+            for pabrik_line in record.pabrik_line_ids:
+                kebun_line = self.env['timbangan.kebun'].search([
+                    ('lhm_nap_id', '=', self.id),
+                    ('block_id', '=', pabrik_line.block_id.id),
+                    ('product_id', '=', pabrik_line.product_id.id),
+                    ('tgl_panen', '=', pabrik_line.tgl_panen),
+                ], limit=1)
+
+                if kebun_line:
+                    nap_lines = self.env['lhm.transaction.line'].search([
+                        ('location_id', '=', pabrik_line.block_id.location_id.id),
+                        ('date', '=', pabrik_line.tgl_panen),
+                        ('activity_id.is_nap', '=', True),
+                    ])
+
+                    for nap_line in nap_lines:
+                        employee_id = nap_line.employee_id.id
+                        product_id = pabrik_line.product_id.id
+
+                        if employee_id not in employee_data:
+                            employee_data[employee_id] = {
+                                'employee_id': employee_id,
+                                'product_1': None,
+                                'hasil_1_nap': None,
+                                'drc_latex': None,
+                                'uom_1': None,
+                                'product_2': None,
+                                'hasil_2_nap': None,
+                                'drc_lump': None,
+                                'uom_2': None,
+                            }
+
+                        if nap_line.product_id.id == product_id:
+                            if employee_data[employee_id]['product_1'] is None:
+                                employee_data[employee_id]['product_1'] = nap_line.product_id.id
+                                employee_data[employee_id]['hasil_1_nap'] = (nap_line.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
+                                employee_data[employee_id]['drc_latex'] = pabrik_line.drc
+                                employee_data[employee_id]['uom_1'] = pabrik_line.uom_id.id
+                        elif nap_line.product_id_2.id == product_id:
+                            employee_data[employee_id]['product_2'] = nap_line.product_id_2.id
+                            employee_data[employee_id]['hasil_2_nap'] = (nap_line.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
+                            employee_data[employee_id]['drc_lump'] = pabrik_line.drc
+                            employee_data[employee_id]['uom_2'] = pabrik_line.uom_id.id
+
+            for employee_id, data in employee_data.items():
+                if data['hasil_1_nap']:
+                    self.env['lhm.nap.line'].create({
+                        'lhm_nap_id': record.id,
+                        'block_id': pabrik_line.block_id.id,
+                        'employee_id': data['employee_id'],
+                        'product_id': data['product_1'],
+                        'tgl_panen': pabrik_line.tgl_panen,
+                        'qty_nap': data['hasil_1_nap'],
+                        'drc': data['drc_latex'],
+                        'uom_id': data['uom_1'],
+                    })
+                if data['product_2'] and data['hasil_2_nap']:
+                    self.env['lhm.nap.line'].create({
+                        'lhm_nap_id': record.id,
+                        'block_id': pabrik_line.block_id.id,
+                        'employee_id': data['employee_id'],
+                        'product_id': data['product_2'],
+                        'tgl_panen': pabrik_line.tgl_panen,
+                        'qty_nap': data['hasil_2_nap'],
+                        'drc': data['drc_lump'],
+                        'uom_id': data['uom_2'],
+                    })
+
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
@@ -4589,34 +4779,35 @@ class lhm_nap_line(models.Model):
 
     @api.depends('block_id', 'tgl_panen')
     def _compute_panen(self):
-        if self.block_id and self.tgl_panen:
-            total_lhm       = 0
-            total_nap       = 0
-            if isinstance(self.id, int):
-                domain = [
-                    ('block_id', '=', self.block_id.id),
-                    ('tgl_panen', '=', self.tgl_panen),
-                    ('id', '!=', self.id)]
-            else:
-                domain = [
-                    ('block_id', '=', self.block_id.id),
-                    ('tgl_panen', '=', self.tgl_panen)]
-            other_nap       = self.env['lhm.nap.line'].search(domain)
-            progress_ids    = self.env['lhm.transaction.process.line'].search([('date', '=', self.tgl_panen), ('location_id', '=', self.block_id.location_id.id)])
-            balance_ids     = self.env['lhm.restan.balance'].search([('tgl_panen', '=', self.tgl_panen), ('block_id', '=', self.block_id.id)])
-            if balance_ids:
-                for balance in balance_ids:
-                    total_lhm += balance.value
-            if progress_ids:
-                for progress in progress_ids:
-                    if progress.activity_id.is_panen:
-                        total_lhm += progress.nilai
-            if other_nap:
-                for nap in other_nap:
-                    total_nap += nap.qty_nap
-            self.qty_panen_lhm  = total_lhm
-            self.qty_akum_nap   = total_nap
-            self.qty_sisa_panen = total_lhm - total_nap
+        for line in self:
+            if line.block_id and line.tgl_panen:
+                total_lhm       = 0
+                total_nap       = 0
+                if isinstance(line.id, int):
+                    domain = [
+                        ('block_id', '=', line.block_id.id),
+                        ('tgl_panen', '=', line.tgl_panen),
+                        ('id', '!=', line.id)]
+                else:
+                    domain = [
+                        ('block_id', '=', line.block_id.id),
+                        ('tgl_panen', '=', line.tgl_panen)]
+                other_nap       = self.env['lhm.nap.line'].search(domain)
+                progress_ids    = self.env['lhm.transaction.process.line'].search([('date', '=', line.tgl_panen), ('location_id', '=', line.block_id.location_id.id)])
+                balance_ids     = self.env['lhm.restan.balance'].search([('tgl_panen', '=', line.tgl_panen), ('block_id', '=', line.block_id.id)])
+                if balance_ids:
+                    for balance in balance_ids:
+                        total_lhm += balance.value
+                if progress_ids:
+                    for progress in progress_ids:
+                        if progress.activity_id.is_panen:
+                            total_lhm += progress.nilai
+                if other_nap:
+                    for nap in other_nap:
+                        total_nap += nap.qty_nap
+                line.qty_panen_lhm  = total_lhm
+                line.qty_akum_nap   = total_nap
+                line.qty_sisa_panen = total_lhm - total_nap
 
     @api.depends('lhm_nap_id.state','lhm_line_ids','lhm_line_ids.lhm_id.state',
         'lhm_line_ids.lhm_line_id.location_id','lhm_line_ids.lhm_line_id.activity_id',
@@ -4635,23 +4826,36 @@ class lhm_nap_line(models.Model):
             else:
                 line.pending_allocation = False
 
-    name                = fields.Char('Name', related="lhm_nap_id.name", store=True)
-    block_id            = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
-    tgl_panen           = fields.Date("Tgl. Panen")
-    qty_panen_lhm       = fields.Float("Total Panen", compute="_compute_panen", store=True)
-    qty_akum_nap        = fields.Float("Akumulasi NAP", compute="_compute_panen", store=True)
-    qty_sisa_panen      = fields.Float("Sisa Panen", compute="_compute_panen", store=True)
-    qty_nap             = fields.Float("Total NAP")
-    lhm_nap_id          = fields.Many2one("lhm.nap", string="Nota Buah Angkut", ondelete="cascade")
-    lhm_progress_ids    = fields.Many2many('lhm.transaction.process.line', 'lhm_process_nap_line_rel', 'nap_line_id', 'progress_id', 'LHM Progress Ref')
-    lhm_line_ids        = fields.One2many('lhm.transaction.line.nap.line', 'nap_line_id', 'LHM Detail')
-    pending_allocation  = fields.Boolean('Pending Allocaton', compute='_check_allocation_state', store=True)
-    product_id          = fields.Many2one('product.product', string="Product")
-    product_qty         = fields.Integer(string="Quantity")
-    uom_id              = fields.Many2one('uom.uom', string="Unit of Measure")
-    pemanen             = fields.Char(string='Pemanen')
-    employee_id         = fields.Many2one("hr.employee", string="Nama", ondelete="restrict")
-    # pemanen             = fields.Many2one('hr.employee', string='Pemanen', domain="[('job_id.name', '=', 'PEMANEN')]")
+    name                     = fields.Char('Name', related="lhm_nap_id.name", store=True)
+    block_id                 = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
+    tgl_panen                = fields.Date("Tgl. Panen")
+    qty_panen_lhm            = fields.Float("Total Panen", compute="_compute_panen", store=True)
+    qty_akum_nap             = fields.Float("Akumulasi NAP", compute="_compute_panen", store=True)
+    qty_sisa_panen           = fields.Float("Sisa Panen", compute="_compute_panen", store=True)
+    qty_nap                  = fields.Float("Total NAP")
+    lhm_nap_id               = fields.Many2one("lhm.nap", string="Nota Buah Angkut", ondelete="cascade")
+    transaction_nap_line_ids = fields.One2many('lhm.transaction.nap.line', 'lhm_nap_line_id', string="Transaction NAP Lines")
+    lhm_progress_ids         = fields.Many2many('lhm.transaction.process.line', 'lhm_process_nap_line_rel', 'nap_line_id', 'progress_id', 'LHM Progress Ref')
+    lhm_line_ids             = fields.One2many('lhm.transaction.line.nap.line', 'nap_line_id', 'LHM Detail')
+    pending_allocation       = fields.Boolean('Pending Allocaton', compute='_check_allocation_state', store=True)
+    product_id               = fields.Many2one('product.product', string="Product")
+    product_qty              = fields.Integer(string="Quantity")
+    uom_id                   = fields.Many2one('uom.uom', string="UoM")
+    pemanen                  = fields.Char(string='Pemanen')
+    employee_id              = fields.Many2one("hr.employee", string="Pemanen", ondelete="restrict")
+    drc                      = fields.Float(string='DRC')
+
+    @api.onchange('block_id', 'tgl_panen')
+    def _onchange_block_tgl_panen(self):
+        if self.block_id and self.tgl_panen:
+            nap_lines = self.env['lhm.transaction.nap.line'].search([
+                ('lhm_transaction_line_id.location_id', '=', self.block_id.location_id.id),
+                ('lhm_transaction_line_id.lhm_id.date', '=', self.tgl_panen),
+                ('lhm_transaction_line_id.activity_id.is_panen', '=', True),
+            ])
+            employee_ids = nap_lines.mapped('employee_id')
+            return {'domain': {'employee_id': [('id', 'in', employee_ids.ids)]}}
+            # tambahkan looping
 
     def compute_weight(self):
         self.ensure_one()
@@ -4709,6 +4913,25 @@ class lhm_nap_line(models.Model):
         pending_line.link_to_lhm_progress()
         pending_line = self.search([('pending_allocation','=',True), ('lhm_nap_id.state','not in',['draft','revision'])])
         pending_line.allocate_nap_line_to_lhm_line()
+
+    def update_from_timbangan_kebun(self, block_id, tgl_panen, product_id, employee_id, qty_nap):
+        for record in self:
+            record.write({
+                'block_id': block_id,
+                'tgl_panen': tgl_panen,
+                'product_id': product_id,
+                'employee_id': employee_id,
+                'qty_nap': qty_nap,
+            })
+    
+    @api.model
+    def create(self, vals):
+        record = super(lhm_nap_line, self).create(vals)
+        return record
+
+    def write(self, vals):
+        res = super(lhm_nap_line, self).write(vals)
+        return res
     
     # @api.constrains('tgl_panen', 'block_id', 'lhm_nap_id')
     # def _check_attendance_id(self):
@@ -4755,26 +4978,26 @@ class TimbanganKebun(models.Model):
     @api.model
     def create(self, vals):
         record = super(TimbanganKebun, self).create(vals)
-        record._create_or_update_timbangan_pabrik()  # Memperbarui TimbanganPabrik saat create
+        record._create_or_update_timbangan_pabrik()
+        record._create_or_update_nota_angkut_panen()
         return record
 
     def write(self, vals):
         res = super(TimbanganKebun, self).write(vals)
-        self._create_or_update_timbangan_pabrik()  # Memperbarui TimbanganPabrik saat update
+        self._create_or_update_timbangan_pabrik()
+        self._create_or_update_nota_angkut_panen()
         return res
 
     def _create_or_update_timbangan_pabrik(self):
         for record in self:
-            # Nilai yang akan diperbarui atau dibuat pada TimbanganPabrik
             pabrik_vals = {
                 'lhm_nab_id': record.lhm_nab_id.id,
                 'lhm_nap_id': record.lhm_nap_id.id,
                 'product_id': record.product_id.id,
                 'uom_id': record.uom_id.id,
                 'block_id': record.block_id.id,
-                # 'product_qty' dan 'tgl_terima' tidak diisi dari TimbanganKebun
+                'tgl_panen': record.tgl_panen,
             }
-            # Cari existing record di TimbanganPabrik berdasarkan lhm_nab_id, lhm_nap_id, product_id, dan block_id
             existing_pabrik = self.env['timbangan.pabrik'].search([
                 ('lhm_nab_id', '=', record.lhm_nab_id.id),
                 ('lhm_nap_id', '=', record.lhm_nap_id.id),
@@ -4782,11 +5005,37 @@ class TimbanganKebun(models.Model):
                 ('block_id', '=', record.block_id.id)
             ])
             if existing_pabrik:
-                # Jika record ditemukan, update hanya field yang ditentukan
                 existing_pabrik.write(pabrik_vals)
             else:
-                # Jika record belum ada, buat record baru tanpa mengisi 'product_qty' dan 'tgl_terima'
                 self.env['timbangan.pabrik'].create(pabrik_vals)
+
+    def _create_or_update_nota_angkut_panen(self):
+        for record in self:
+            if record.lhm_nap_id:
+                nap_lines = record.lhm_nap_id.line_ids.filtered(
+                    lambda l: l.block_id == record.block_id and l.tgl_panen == record.tgl_panen
+                )
+                for nap_line in nap_lines:
+                    detail_vals = {
+                        'block_id': record.block_id.id,
+                        'employee_id': nap_line.employee_id.id,
+                        'product_id': record.product_id.id,
+                        'tgl_panen': record.tgl_panen,
+                        'qty_nap': nap_line.qty_nap,
+                    }
+                    existing_details = self.env['lhm.nap.line'].search([
+                        ('block_id', '=', record.block_id.id),
+                        ('employee_id', '=', nap_line.employee_id.id),
+                        ('tgl_panen', '=', record.tgl_panen),
+                        ('product_id', '=', record.product_id.id),
+                    ])
+                    
+                    if existing_details:
+                        for detail in existing_details:
+                            detail.update_from_timbangan_kebun(
+                                record.block_id.id, record.tgl_panen, record.product_id.id, nap_line.employee_id.id, nap_line.qty_nap)
+                    else:
+                        self.env['lhm.nap.line'].create(detail_vals)
 
 class TimbanganPabrik(models.Model):
     _name = 'timbangan.pabrik'
@@ -4794,33 +5043,28 @@ class TimbanganPabrik(models.Model):
 
     lhm_nab_id         = fields.Many2one('lhm.nab', string='LHM NAB')
     lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
-    product_id         = fields.Many2one('product.product', string='Product', readonly=True)  # Tidak dapat diedit manual
+    product_id         = fields.Many2one('product.product', string='Product', readonly=True)
     product_qty        = fields.Integer(string='Product Quantity')
     uom_id             = fields.Many2one('uom.uom', string='UoM')
     drc                = fields.Float(string='DRC')
     quality_pabrik     = fields.Many2one('lhm.quality.pabrik', string='Quality')
-    tgl_terima         = fields.Date(string='Tanggal Terima')  # Tidak akan diupdate oleh TimbanganKebun
-    block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict", readonly=True)  # Tidak dapat diedit manual
+    tgl_panen          = fields.Date(string='Tanggal Panen')
+    tgl_terima         = fields.Date(string='Tanggal Terima')
+    block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict", readonly=True)
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
 
     @api.model
     def create(self, vals):
-        record = super(TimbanganPabrik, self).create(vals)
-        record._create_or_update_stock_picking()  # Memperbarui stock picking saat create
-        return record
+        return super(TimbanganPabrik, self).create(vals)
 
     def write(self, vals):
-        res = super(TimbanganPabrik, self).write(vals)
-        self._create_or_update_stock_picking()  # Memperbarui stock picking saat update
-        return res
+        return super(TimbanganPabrik, self).write(vals)
 
     def _create_or_update_stock_picking(self):
-        # Pastikan uom_id ada sebelum melanjutkan operasi
         if not self.uom_id:
             raise UserError("Unit of Measure (UoM) harus diisi sebelum menyimpan data.")
 
         if not self.stock_picking_id:
-            # Membuat record Stock Picking baru jika belum ada
             picking_vals = {
                 'partner_id': self.lhm_nab_id.partner_id.id if self.lhm_nab_id else False,
                 'location_id': self.block_id.location_id.id if self.block_id else False,
@@ -4829,19 +5073,18 @@ class TimbanganPabrik(models.Model):
                     'product_id': self.product_id.id,
                     'name': self.product_id.name,
                     'product_uom_qty': self.product_qty,
-                    'product_uom': self.uom_id.id,  # Memastikan 'product_uom' diisi dengan benar
-                    'location_id': self.env.ref('stock.stock_location_suppliers').id,  # Lokasi supplier
-                    'location_dest_id': self.env.ref('stock.stock_location_stock').id,  # Lokasi internal
+                    'product_uom': self.uom_id.id,
+                    'location_id': self.env.ref('stock.stock_location_suppliers').id,
+                    'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                 })],
-                'picking_type_id': self.env.ref('stock.picking_type_in').id,  # Receipts picking type
+                'picking_type_id': self.env.ref('stock.picking_type_in').id,
             }
-            picking = self.env['stock.picking'].create(picking_vals)  # Membuat Stock Picking baru
-            self.stock_picking_id = picking.id  # Menyimpan ID Stock Picking yang baru dibuat pada record saat ini
+            picking = self.env['stock.picking'].create(picking_vals)
+            self.stock_picking_id = picking.id
         else:
-            # Memperbarui Stock Picking yang sudah ada
             self.stock_picking_id.move_ids_without_package[0].write({
                 'product_uom_qty': self.product_qty,
-                'product_uom': self.uom_id.id,  # Memastikan 'product_uom' juga di-update
+                'product_uom': self.uom_id.id,
             })
 
 ################################################## Link NAB and LHM ####################################################

@@ -37,5 +37,16 @@
             <field name="implementation">no_gap</field>
         </record>
 
+        <!-- Sequence untuk Pengeluaran Bibit -->
+        <record id="seq_seed_release" model="ir.sequence">
+            <field name="name">Pengeluaran Pajak</field>
+            <field name="code">seed.release</field>
+            <field name="prefix">FPB/%(year)s/</field>
+            <field name="padding">3</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+
     </data>
 </odoo>

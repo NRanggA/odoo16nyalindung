@@ -24,3 +24,6 @@ class ResConfigSettings(models.TransientModel):
     counterpart_earning_account_id = fields.Many2one('account.account', related='company_id.counterpart_earning_account_id', 
         string='Counter-part Earning Account', readonly=False,
         domain=lambda self: "[('deprecated', '=', False), ('company_id', '=', company_id)]") #('internal_type', '=', 'other'), 
+    
+    write_off_default_journal_id  = fields.Many2one(comodel_name='account.journal', related='company_id.write_off_default_journal_id', readonly=False, string="Journal", help='Please complete the help')
+    account_write_off             = fields.Many2one('account.account', related='company_id.account_write_off', readonly=False, string="Account Write Off", help='Please complete the help')

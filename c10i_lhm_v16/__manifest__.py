@@ -92,8 +92,6 @@
         'wizard/wizard_create_contractor_book_views.xml',
         'wizard/lhm_state_views.xml',
         'wizard/wizard_hasil_lhm_views.xml',
-        # 'views/data_demo_account_period.xml', # Data dummy dari account.period
-
         'views/hr_attendance_correction_views.xml',
         'views/lhm_tm_category_views.xml',
         'views/target_production_views.xml',
@@ -101,9 +99,12 @@
         'views/lhm_wage_borongan_panen_views.xml',
         'views/lhm_wage_borongan_rawat_views.xml',
         'views/lhm_wage_borongan_contractor_views.xml',
-
         'views/res_config_settings_views.xml',
         'views/account_cost_center_views.xml',
+
+        # Mutasi
+        'views/mutation_type_views.xml',
+        'views/seed_release_views.xml',
 
 
         #REPORT

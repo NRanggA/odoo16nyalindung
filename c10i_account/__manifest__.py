@@ -27,7 +27,10 @@
         'views/account_fiscalyear_period_views.xml',
         'views/account_move_views.xml',
         'views/res_config_settings_views.xml',
+        'views/account_write_off_views.xml',
         'views/account_menuitem.xml',
+
+        'data/sequence_data.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

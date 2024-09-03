@@ -8,13 +8,13 @@ class WizardHasilLhm(models.TransientModel):
 
 	transaction_line_id = fields.Many2one('lhm.transaction.line', string="Transaction Line")
 	
-	product_id 	= fields.Many2one('product.product', string="Product 1")
-	hasil_1 	= fields.Integer("Hasil 1")
-	satuan_1 	= fields.Many2one('uom.uom', string='Satuan 1', related='product_id.uom_id', readonly=True)
+	product_id 	 = fields.Many2one('product.product', string="Product 1")
+	hasil_1 	 = fields.Integer("Hasil 1")
+	satuan_1 	 = fields.Many2one('uom.uom', string='Satuan 1', related='product_id.uom_id', readonly=True)
 	
-	product_id_2 = fields.Many2one('product.product', string="Product 2")
+	product2_id = fields.Many2one('product.product', string="Product 2")
 	hasil_2 	 = fields.Integer("Hasil 2")
-	satuan_2 	 = fields.Many2one('uom.uom', string='Satuan 2', related='product_id_2.uom_id', readonly=True)
+	satuan_2 	 = fields.Many2one('uom.uom', string='Satuan 2', related='product2_id.uom_id', readonly=True)
 
 	@api.model
 	def default_get(self, fields_list):
@@ -22,38 +22,43 @@ class WizardHasilLhm(models.TransientModel):
 
 		# Set default transaction_line_id if exists in context
 		if self.env.context.get('default_transaction_line_id'):
-		    transaction_line = self.env['lhm.transaction.line'].browse(self.env.context['default_transaction_line_id'])
-		    defaults['transaction_line_id'] = transaction_line.id
+			transaction_line = self.env['lhm.transaction.line'].browse(self.env.context['default_transaction_line_id'])
+			defaults['transaction_line_id'] = transaction_line.id
+		
+		lhm_transaction = self.env['lhm.transaction.line'].search([('id', '=', defaults['transaction_line_id'])])
 
-		# Find product named 'latex'
-		product_latex = self.env['product.product'].search([('name', '=', 'Latex')], limit=1)
-		if product_latex:
-		    defaults['product_id'] = product_latex.id
 
-		# Find product named 'lump'
-		product_lump = self.env['product.product'].search([('name', '=', 'Lump')], limit=1)
-		if product_lump:
-		    defaults['product_id_2'] = product_lump.id
+		product1 = lhm_transaction.activity_id.product_id
+		hasil_1  = lhm_transaction.hasil_1 if lhm_transaction.hasil_1 else 0
+		if product1:
+			defaults['product_id'] 	= product1.id
+			defaults['hasil_1'] 	= hasil_1
+
+		product2 = lhm_transaction.activity_id.product2_id
+		hasil_2  = lhm_transaction.hasil_2 if lhm_transaction.hasil_2 else 0
+		if product2:
+			defaults['product2_id'] = product2.id
+			defaults['hasil_2'] 	= hasil_2
 
 		return defaults
 
 
 	def action_confirm(self):
 		if self.transaction_line_id:
-		    values_to_write = {}
-		    if self.product_id:
-		        values_to_write.update({
-		        	'product_id': self.product_id.id,
-					'hasil_1'	: self.hasil_1,
-					'satuan_1'	: self.satuan_1.id,
-		        })
-		    if self.product_id_2:
-		        values_to_write.update({
-		        	'product_id_2' : self.product_id_2.id,
-		            'hasil_2': self.hasil_2,
-		            'satuan_2': self.satuan_2.id,
-		        })
-		    self.transaction_line_id.write(values_to_write)
+			values_to_write = {}
+			if self.product_id:
+				values_to_write.update({
+					'product_id'	: self.product_id.id,
+					'hasil_1'		: self.hasil_1,
+					'satuan_1'		: self.satuan_1.id,
+				})
+			if self.product2_id:
+				values_to_write.update({
+					'product_id_2' 	: self.product2_id.id,
+					'hasil_2'		: self.hasil_2,
+					'satuan_2'		: self.satuan_2.id,
+				})
+			self.transaction_line_id.write(values_to_write)
 		else:
-		    pass
+			pass
 
