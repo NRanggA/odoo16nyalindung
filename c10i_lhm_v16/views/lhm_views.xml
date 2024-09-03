@@ -3398,8 +3398,8 @@
                     <header>
                         <button name="button_draft" states="cancel,process,confirmed" string="Set Draft" type="object" class="btn-default"/>
                         <button name="button_save_to_nap_line" states="draft" string="Process" type="object" class="btn-primary" />
-                        <button name="button_confirm" states="draft,process" string="Confirm" type="object" class="btn-default btn-primary"/>
-                        <button name="create_material_receipt" string="Create Material Receipt" type="object" class="oe_highlight" />
+                        <button name="button_confirm" states="process" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="create_material_receipt" states="confirmed" string="Create Material Receipt" type="object" class="oe_highlight"/>
                         <button name="button_cancel" states="process,confirmed" string="Cancel" type="object" class="btn-default"/>
                         <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
@@ -3496,6 +3496,7 @@
                                         <field name="tgl_panen"/>
                                         <field name="drc"/>
                                         <field name="quality_pabrik"/>
+                                        <field name="stock_picking_id"/>
                                     </tree>
                                 </field>
                             </page>                                               
@@ -3504,7 +3505,7 @@
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="tgl_panen"/>
-                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_id"/>
                                         <field name="uom_id"/>
                                         <field name="drc"/>

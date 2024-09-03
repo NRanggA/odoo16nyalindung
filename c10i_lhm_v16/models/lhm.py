@@ -4475,8 +4475,6 @@ class lhm_nap(models.Model):
     pabrik_line_ids     = fields.One2many('timbangan.pabrik', inverse_name='lhm_nap_id', string="Penamaan")
     partner_id          = fields.Many2one('res.partner', string="Partner")
     drc                 = fields.Float(string='DRC')
-    # hasil_1             = fields.One2many('lhm_transaction_line.hasil_1')
-    # hasil_2             = fields.One2many('lhm_transaction_line.hasil_2')
     _order = "date_nap desc"
 
     @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'process', 'force_edit')
@@ -4564,7 +4562,7 @@ class lhm_nap(models.Model):
             else:
                 self.state = 'confirmed'
         elif self.process:
-            self.process = 'process'
+            self.state = 'process'
         elif self.cancelled:
             self.state = 'cancel'
         elif self.force_edit:
@@ -4584,29 +4582,7 @@ class lhm_nap(models.Model):
     def create_material_receipt(self):
         for record in self:
             for line in record.pabrik_line_ids:
-                if not line.stock_picking_id:
-                    picking_vals = {
-                        'partner_id': record.partner_id.id if record.partner_id else False,
-                        'location_id': line.env.ref('stock.stock_location_suppliers').id,
-                        'location_dest_id': line.env.ref('stock.stock_location_stock').id,
-                        'move_ids_without_package': [(0, 0, {
-                            'product_id': line.product_id.id,
-                            'name': line.product_id.name,
-                            'product_uom_qty': line.product_qty,
-                            'product_uom': line.uom_id.id,
-                            'location_id': line.env.ref('stock.stock_location_suppliers').id,
-                            'location_dest_id': line.env.ref('stock.stock_location_stock').id,
-                        })],
-                        'picking_type_id': line.env.ref('stock.picking_type_in').id,  # Receipts picking type
-                    }
-                    picking = line.env['stock.picking'].create(picking_vals)
-                    line.stock_picking_id = picking.id
-                else:
-                    line.stock_picking_id.write({
-                        'move_ids_without_package': [(1, line.stock_picking_id.move_ids_without_package.id, {
-                            'product_uom_qty': line.product_qty,
-                        })]
-                    })
+                line._create_or_update_stock_picking()
 
     def button_confirm(self):
         self.state = 'confirmed'
@@ -4619,39 +4595,6 @@ class lhm_nap(models.Model):
                 _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
             )
         self.confirmed = True
-        # self.line_ids.link_to_lhm_progress()
-        # self.line_ids.allocate_nap_line_to_lhm_line()
-        # for record in self:
-        #     for nap_line in record.line_ids:
-        #         existing_transaction_nap_line = self.env['lhm.transaction.nap.line'].search([
-        #             # ('lhm_transaction_line_id.lhm_id', '=', record.id),
-        #             ('lhm_transaction_line_id.lhm_id.date', '=', nap_line.tgl_panen),
-        #             ('lhm_transaction_line_id.employee_id', '=', nap_line.employee_id.id),
-        #             # ('lhm_transaction_line_id.product_id', '=', nap_line.product_id.id),
-        #             # ('lhm_transaction_line_id.product_id_2', '=', nap_line.product_id.id),
-        #         ])
-        #         #looping
-        #         if not existing_transaction_nap_line:
-        #             self.env['lhm.transaction.nap.line'].create({
-        #                 # 'lhm_id': record.id,
-        #                 'lhm_nap_line_id': nap_line.id,
-        #                 'employee_id': nap_line.employee_id.id,
-        #                 'product_id': nap_line.product_id.id,
-        #                 'product_id_2': nap_line.product_id.id,
-        #                 'hasil_1_nap': nap_line.qty_nap if nap_line.product_id.name == 'Latex' else 0,
-        #                 'hasil_2_nap': nap_line.qty_nap if nap_line.product_id.name == 'Lump' else 0,
-        #                 'drc_latex_nap': nap_line.drc if nap_line.product_id.name == 'Latex' else 0,
-        #                 'drc_lump_nap': nap_line.drc if nap_line.product_id.name == 'Lump' else 0,
-        #             })
-        #         else:
-        #             existing_transaction_nap_line.write({
-        #                 'product_id': nap_line.product_id.id if nap_line.product_id.name == 'Latex' else existing_transaction_nap_line.product_id,
-        #                 'product_id_2': nap_line.product_id.id if nap_line.product_id.name == 'Lump' else existing_transaction_nap_line.product_id_2,
-        #                 'hasil_1_nap': nap_line.qty_nap if nap_line.product_id.name == 'Latex' else existing_transaction_nap_line.hasil_1_nap,
-        #                 'hasil_2_nap': nap_line.qty_nap if nap_line.product_id.name == 'Lump' else existing_transaction_nap_line.hasil_2_nap,
-        #                 'drc_latex_nap': nap_line.drc if nap_line.product_id.name == 'Latex' else existing_transaction_nap_line.drc_latex_nap,
-        #                 'drc_lump_nap': nap_line.drc if nap_line.product_id.name == 'Lump' else existing_transaction_nap_line.drc_lump_nap,
-        #             })
         for record in self:
             employee_data = {}
 
@@ -4727,12 +4670,14 @@ class lhm_nap(models.Model):
         self.state = 'draft'
         self.confirmed = False
         self.cancelled = False
+        self.process = False
         self.line_ids.write({'lhm_progress_ids': [(5,False,False)]})
 
     def button_cancel(self):
         self.state = 'cancel'
         self.confirmed = False
         self.cancelled = True
+        self.process = False
 
     def button_revise(self):
         for nap in self:
@@ -4752,66 +4697,16 @@ class lhm_nap(models.Model):
     def create(self, values):
         values['name'] = self.env['ir.sequence'].next_by_code('lhm.nap') or _('New')
         return super(lhm_nap, self).create(values)
-
-    # def button_save_to_nap_line(self):
-    #     for record in self:
-    #         for pabrik_line in record.pabrik_line_ids:
-    #             kebun_line = self.env['timbangan.kebun'].search([
-    #                 ('block_id', '=', pabrik_line.block_id.id),
-    #                 ('product_id', '=', pabrik_line.product_id.id),
-    #                 ('tgl_panen', '=', pabrik_line.tgl_panen),
-    #             ], limit=1)
-                
-    #             if kebun_line:
-    #                 nap_lines = self.env['lhm.transaction.nap.line'].search([
-    #                     ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
-    #                     ('lhm_transaction_line_id.lhm_id.date', '=', pabrik_line.tgl_panen),
-    #                     ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
-    #                 ])
-
-    #                 for nap_line in nap_lines:
-    #                     if pabrik_line.product_id.name == 'Latex':
-    #                         total_nap_latex = (nap_line.lhm_transaction_line_id.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
-    #                         self.env['lhm.nap.line'].create({
-    #                             'lhm_nap_id': record.id,
-    #                             'block_id': pabrik_line.block_id.id,
-    #                             'employee_id': nap_line.employee_id.id,
-    #                             'product_id': pabrik_line.product_id.id,
-    #                             'tgl_panen': pabrik_line.tgl_panen,
-    #                             'qty_nap': total_nap_latex,
-    #                             'drc': pabrik_line.drc,
-    #                         })
-
-    #                     elif pabrik_line.product_id.name == 'Lump':
-    #                         total_nap_lump = (nap_line.lhm_transaction_line_id.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
-    #                         self.env['lhm.nap.line'].create({
-    #                             'lhm_nap_id': record.id,
-    #                             'block_id': pabrik_line.block_id.id,
-    #                             'employee_id': nap_line.employee_id.id,
-    #                             'product_id': pabrik_line.product_id.id,
-    #                             'tgl_panen': pabrik_line.tgl_panen,
-    #                             'qty_nap': total_nap_lump,
-    #                             'drc': pabrik_line.drc,
-    #                         })
-
-    #                     elif pabrik_line.product_id.name == 'Melon':
-    #                         total_nap_lump = (nap_line.lhm_transaction_line_id.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
-    #                         self.env['lhm.nap.line'].create({
-    #                             'lhm_nap_id': record.id,
-    #                             'block_id': pabrik_line.block_id.id,
-    #                             'employee_id': nap_line.employee_id.id,
-    #                             'product_id': pabrik_line.product_id.id,
-    #                             'tgl_panen': pabrik_line.tgl_panen,
-    #                             'qty_nap': total_nap_lump,
-    #                             'drc': pabrik_line.drc,
-    #                         })
                         
     def button_save_to_nap_line(self):
+        self.state = 'process'
+        self.process = True
         for record in self:
             employee_data = {}
 
             for pabrik_line in record.pabrik_line_ids:
                 kebun_line = self.env['timbangan.kebun'].search([
+                    ('lhm_nap_id', '=', self.id),
                     ('block_id', '=', pabrik_line.block_id.id),
                     ('product_id', '=', pabrik_line.product_id.id),
                     ('tgl_panen', '=', pabrik_line.tgl_panen),
@@ -4877,10 +4772,6 @@ class lhm_nap(models.Model):
                         'uom_id': data['uom_2'],
                     })
 
-
-    # def create_material_receipt(self):
-    #     super(lhm_nap, self).create_material_receipt()
-    #     self.button_save_to_nap_line()
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
@@ -5164,17 +5055,12 @@ class TimbanganPabrik(models.Model):
 
     @api.model
     def create(self, vals):
-        record = super(TimbanganPabrik, self).create(vals)
-        record._create_or_update_stock_picking()  # Memastikan Stock Picking terupdate
-        return record
+        return super(TimbanganPabrik, self).create(vals)
 
     def write(self, vals):
-        res = super(TimbanganPabrik, self).write(vals)
-        self._create_or_update_stock_picking()  # Memastikan Stock Picking terupdate
-        return res
+        return super(TimbanganPabrik, self).write(vals)
 
     def _create_or_update_stock_picking(self):
-        # Logika untuk memastikan stock picking dibuat atau diperbarui
         if not self.uom_id:
             raise UserError("Unit of Measure (UoM) harus diisi sebelum menyimpan data.")
 
