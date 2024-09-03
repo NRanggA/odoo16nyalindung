@@ -22,6 +22,10 @@ class DirectPayment(models.Model):
     employee_expense_journal_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
     expense_report = fields.Boolean('Expense Report')
     is_advance = fields.Boolean('Employee Advance')
+    direct_state = fields.Selection([
+        ('send', 'Send'),
+        ('receive', 'Receive'),
+    ], string='Direct State')
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False

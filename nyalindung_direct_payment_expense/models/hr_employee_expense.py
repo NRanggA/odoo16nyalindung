@@ -177,9 +177,14 @@ class HrEmployeeExpense(models.Model):
             'employee_expense_id' : self.id
         }
 
-    def _prepare_payable_move_line(self, amount):
+    def _prepare_payable_move_line(self, amount): 
         partner =  self.partner_id or self.requested_by.partner_id or False
-        credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
+        direct_state = self.action_get_direct_state()
+        if direct_state == 'send':
+            credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
+        else:
+            credit_account = self.journal_id.inbound_payment_method_line_ids.payment_account_id
+
         return {
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
@@ -209,6 +214,7 @@ class HrEmployeeExpense(models.Model):
     ##########################
     #     BUSINESS METHOD    #
     ##########################
+    
     def action_create_move(self):
         AccountMove = self.env['account.move']
         move_lines = [l._prepare_move_line() for l in self.line_ids]
@@ -236,6 +242,18 @@ class HrEmployeeExpense(models.Model):
 
         return True
     
+    def action_get_direct_state(self):
+        for record in self:
+            this_um = abs(record.advance_amount_settle)
+            this_settelement = record.amount_total
+            direct_state = False
+            if this_um > this_settelement:
+                direct_state = 'receive'
+            elif this_settelement > this_um:
+                direct_state = 'send'
+
+        return direct_state
+    
     def action_create_direct_payment(self):
         for record in self:
             direct_payment = self.env['account.direct.payment'].sudo().create({
@@ -247,13 +265,27 @@ class HrEmployeeExpense(models.Model):
                 'currency_id' : record.currency_id.id,
                 'is_advance' : record.is_advance,
                 'expense_report' : record.expense_report,
-                'line_ids' : [Command.create({
-                    'product_id' : line.product_id.id,
-                    'name' : line.name,
-                    'account_id' : record.contra_account_for_advance.id,
-                    'amount' : line.amount,
-                }) for line in record.line_ids]
+                'direct_state' : record.action_get_direct_state()
             })
+
+            if record.expense_report:
+                direct_payment.write({
+                        'line_ids' : [Command.create({
+                            'product_id' : line.product_id.id,
+                            'name' : line.name,
+                            'account_id' : record.contra_account_for_advance.id,
+                            'amount' : record.amount_total2,
+                        }) for line in record.line_ids[0]]
+                })
+            else:
+                direct_payment.write({
+                        'line_ids' : [Command.create({
+                            'product_id' : line.product_id.id,
+                            'name' : line.name,
+                            'account_id' : record.contra_account_for_advance.id,
+                            'amount' : line.amount if (record.is_advance and not record.expense_report) else record.amount_total2,
+                        }) for line in record.line_ids]
+                })
             
             record.account_direct_payment_id = direct_payment
 
@@ -378,7 +410,10 @@ class HrEmployeeExpense(models.Model):
             payment.validation_setteled()
             payment.action_confirm()
             payment.action_create_move()
-            payment.action_create_direct_payment()
+            this_um = abs(self.advance_amount_settle)
+            this_settelement = self.amount_total
+            if (payment.is_advance and not payment.expense_report) or payment.expense_report and (this_um > this_settelement or this_um < this_settelement):
+                payment.action_create_direct_payment()
 
     def employee_reject(self):
         for payment in self:

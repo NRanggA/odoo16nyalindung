@@ -26,6 +26,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/hr_employee_expense.xml',
+        'views/account_direct_payment.xml',
         'views/res_config_settings_view.xml',
     ],
     # only loaded in demonstration mode
