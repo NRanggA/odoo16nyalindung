@@ -174,7 +174,7 @@ class HrEmployeeExpense(models.Model):
             'journal_id' : self.employee_advance_journal_id.id if self.is_advance or self.expense_report else journal.id,
             'ref': self.name,
             'company_id': self.company_id.id,
-            'employee_expense_id' : self.id
+            'employee_expense' : self.id
         }
 
     def _prepare_payable_move_line(self, amount): 
@@ -452,12 +452,12 @@ class HrEmployeeExpense(models.Model):
 
     def _get_count_employee_expense(self):
         for record in self:
-            journal_count = self.env['account.move'].search_count([('employee_expense_id', '=', record.id)])
+            journal_count = self.env['account.move'].search_count([('employee_expense', '=', record.id)])
             record.employee_expense_journal_count = journal_count
     
     def action_open_employee_expense_journal(self):
         result = self.env["ir.actions.actions"]._for_xml_id('account.action_move_journal_line')
-        result['domain'] = [('employee_expense_id', '=', self.id)]
+        result['domain'] = [('employee_expense', '=', self.id)]
             
         return result
 
