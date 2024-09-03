@@ -4556,12 +4556,14 @@ class lhm_nap(models.Model):
 
     def button_confirm(self):
         self.state = 'confirmed'
-        transaction = self.env['lhm.transaction'].search([
-            ('date', '=', self.line_ids.mapped('tgl_panen')[0]),
-            ('state', '!=', 'proses')
-        ], limit=1)
-        if transaction:
-            raise UserError("Laporan Harian Mandor pada tanggal tersebut belum berada di tahap 'proses'. Tidak bisa melanjutkan konfirmasi.")
+        transaction_draft = self.env['lhm.transaction'].search([
+            ('date', '=', self.date_nap),
+            ('state', '=', 'draft')
+        ])
+        if transaction_draft:
+            raise ValidationError(
+                _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
+            )
         self.confirmed = True
         # self.line_ids.link_to_lhm_progress()
         # self.line_ids.allocate_nap_line_to_lhm_line()
