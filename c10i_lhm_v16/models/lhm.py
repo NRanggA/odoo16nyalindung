@@ -302,6 +302,9 @@ class lhm_activity(models.Model):
     is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
     is_nap                                      = fields.Boolean('NAP', default=False)
 
+    product_id                                  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product2_id                                = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
+
     parent_path                                 = fields.Char("Parent Path", index=True, unaccent=False)
     _parent_name                                = "parent_id"
     _parent_store                               = True
@@ -371,7 +374,6 @@ class lhm_activity(models.Model):
                 result.append((record.id, record.name))
         return result
 
-
     @api.model
     def default_get(self, default_fields):
         """If we're creating a new account through a many2one, there are chances that we typed the account code
@@ -388,7 +390,6 @@ class lhm_activity(models.Model):
                 default_name = False
         contextual_self = self.with_context(default_name=default_name, default_code=default_code)
         return super(lhm_activity, contextual_self).default_get(default_fields)
-
 
     @api.model
     def name_search(self, name, args=None, operator='ilike', limit=100):
@@ -1912,7 +1913,7 @@ class lhm_transaction(models.Model):
                 domain = [
                     ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
                     ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
-                    # ('skb', '=', True), 
+                    # ('skb', '=', True),
                     ('state', '=', 'done'), 
                     ('plantation_location_id', '=', progress.location_id.id), 
                     ('plantation_activity_id', '=', progress.activity_id.id), 
@@ -1943,6 +1944,10 @@ class lhm_transaction(models.Model):
             plantation.run_progress()
 
     def button_confirm(self):
+        for nap_line in self.lhm_nap_line_ids:
+            if not nap_line.hasil_1_nap or nap_line.hasil_1_nap == 0:
+                raise ValidationError(_(f'Nilai NAP belum terisi, silahkan melakukan proses Nota Angkut Panen !'))
+
         self.state = 'confirmed'
 
     def button_approve(self):
@@ -2071,17 +2076,13 @@ class lhm_transaction_line(models.Model):
             level_1         = self.env['lhm.activity'].search([('level','=',1)], limit=1)
             avail_act       = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
 
-            # _logger.info(f'Doc ID: {doc_id}, Level 1: {level_1}, Avail Act: {avail_act}')
-
             if doc_id:
                 for act in avail_act:
                     if doc_id.id in act.doc_ids.ids:
                         activity_list.append(act.id)
-            # _logger.info(f'Activity List setelah Doc ID di cek: {activity_list}')
 
             if level_1:
                 activity_list.append(level_1.id)
-            # _logger.info(f'Activity List setelah Level 1 di cek: {activity_list}')
 
             if (line.location_type_id and line.location_type_id.project) and line.location_id:
                 project_ids = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
@@ -2091,13 +2092,11 @@ class lhm_transaction_line(models.Model):
                     avail.append(level_1.id)
                 for project in project_ids:
                     project_act += [x.activity_id.id for x in project.line_ids]
-                # _logger.info(f'Project Act: {project_act}')
 
                 if project_act != []:
                     for act_project in project_act:
                         if act_project in activity_list:
                             avail.append(act_project)
-                # _logger.info(f'Avail: {avail}')
                 if avail:
                     line.doc_activity_ids = [(6, 0, avail)]
                 else:
@@ -2105,11 +2104,9 @@ class lhm_transaction_line(models.Model):
             else:
                 line.doc_activity_ids = [(6, 0, activity_list)]
 
-            # Ensure doc_activity_ids is never empty or undefined
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
 
-            # _logger.info(f'Final doc_activity_ids: {line.doc_activity_ids}')
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
@@ -2173,41 +2170,95 @@ class lhm_transaction_line(models.Model):
     is_borong       = fields.Boolean("Is Borong", default=False)
 
     # Fungsi untuk memasukkan gaji employee yang borong panen
+    # def get_wage_borong_panen(self):
+    #     for record in self:
+    #         if record.is_borong and record.activity_id.is_nap:
+    #             # panggil fungsi untuk mengecek employee ini bulanan atau bukan
+    #             record._check_employee_bulanan()
+    #             lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+                
+    #             if record.is_hasil_2:
+                    
+    #                 # Product 1 = Latex
+    #                 drc_latex             = lhm_nap_line.drc_latex_nap 
+    #                 price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
+    #                 convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
+    #                 hasil_latex           = convert_hasil_latex * price_1
+
+    #                 # Product 2 = Lump
+    #                 drc_lump            = lhm_nap_line.drc_lump_nap
+    #                 price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
+    #                 convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+    #                 hasil_lump          = convert_hasil_lump * price_2
+                    
+    #                 hasil           = hasil_latex + hasil_lump
+                    
+    #                 lhm_nap_line.write({
+    #                     'hasil_convert_latex': convert_hasil_latex,
+    #                     'hasil_convert_lump': convert_hasil_lump
+    #                     })
+                    
+    #                 record.write({'contract_wage_value' : hasil})
+
+    #             else:
+    #                 # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
+    #                 price_1      = record.activity_id.get_price_borongan()
+    #                 wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
+    #                 record.write({'contract_wage_value': wage_hasil_1})
+
+    # Fungsi untuk menghitung konversi latex dan lump
+    def compute_conversion(self, lhm_nap_line, is_hasil_2):
+        """
+        Fungsi untuk menghitung konversi hasil latex dan lump.
+        """
+        convert_hasil_latex = 0
+        convert_hasil_lump = 0
+
+        if is_hasil_2:
+            # Menghitung konversi untuk hasil latex
+            drc_latex           = lhm_nap_line.drc_latex_nap
+            convert_hasil_latex = lhm_nap_line.hasil_1_nap * drc_latex / 100
+
+            # Menghitung konversi untuk hasil lump
+            drc_lump            = lhm_nap_line.drc_lump_nap
+            convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+
+        lhm_nap_line.write({
+            'hasil_convert_latex'   : convert_hasil_latex,
+            'hasil_convert_lump'    : convert_hasil_lump
+        })
+        
+        return convert_hasil_latex, convert_hasil_lump
+
     def get_wage_borong_panen(self):
         for record in self:
-            if record.is_borong and record.activity_id.is_nap:
-                # panggil fungsi untuk mengecek employee ini bulanan atau bukan
-                record._check_employee_bulanan()
-                lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+            if not record.activity_id.is_nap:
+                continue  # Langsung lanjut ke loop berikutnya jika bukan aktivitas NAP
+
+            # Panggil fungsi untuk mengecek apakah employee ini bulanan atau bukan
+            record._check_employee_bulanan()
+            lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+
+            if record.is_hasil_2:
+                # Hitung konversi menggunakan fungsi compute_conversion
+                convert_hasil_latex, convert_hasil_lump = record.compute_conversion(lhm_nap_line, record.is_hasil_2)
                 
-                if record.is_hasil_2:
-                    
-                    print(f"== Borongan Panen Karet : {record.employee_id.name}")
+                # Dapatkan harga borongan berdasarkan DRC
+                price_1     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_latex_nap)
+                price_2     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_lump_nap)
+                
+                # Menghitung hasil akhir
+                hasil_latex = convert_hasil_latex * price_1
+                hasil_lump  = convert_hasil_lump * price_2
+                hasil       = hasil_latex + hasil_lump
+            else:
+                # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
+                price_1     = record.activity_id.get_price_borongan()
+                hasil       = lhm_nap_line.hasil_1_nap * price_1
 
-                    # Product 1 = Latex
-                    drc_latex             = lhm_nap_line.drc_latex_nap 
-                    price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
-                    
-                    convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
-                    hasil_latex           = convert_hasil_latex * price_1
-                    lhm_nap_line.write({'hasil_convert_latex': convert_hasil_latex})
-
-                    # Product 2 = Lump
-                    drc_lump            = lhm_nap_line.drc_lump_nap
-                    price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
-                    
-                    convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
-                    hasil_lump          = convert_hasil_lump * price_2
-                    lhm_nap_line.write({'hasil_convert_lump': convert_hasil_lump})
-                    
-                    hasil           = hasil_latex + hasil_lump
-                    record.write({'contract_wage_value' : hasil})
-
-                else:
-                    # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
-                    price_1      = record.activity_id.get_price_borongan()
-                    wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
-                    record.write({'contract_wage_value': wage_hasil_1})
+            # Hanya update nilai kontrak jika is_borong bernilai True
+            if record.is_borong:
+                record.write({'contract_wage_value': hasil})
 
     # fungsi untuk mendapatkan gaji employee yang borongan non panen (rawat)
     def get_wage_borong_rawat(self):
@@ -2572,17 +2623,20 @@ class lhm_transaction_nap_line(models.Model):
     hasil_convert_latex     = fields.Float(string="Hasil Convert Latex",  digits=(16, 2))
     hasil_convert_lump      = fields.Float(string="Hasil Convert Lump",  digits=(16, 2))
 
-    @api.onchange('block_id', 'tgl_panen')
-    def _onchange_block_tgl_panen(self):
-        if self.block_id and self.tgl_panen:
-            # Cari karyawan yang sesuai dari data NAP
-            nap_lines = self.env['lhm.transaction.nap.line'].search([
-                ('lhm_transaction_line_id.location_id', '=', self.block_id.location_id.id),
-                ('lhm_transaction_line_id.lhm_id.date', '=', self.tgl_panen),
-                ('lhm_transaction_line_id.activity_id.is_panen', '=', True),
-            ])
-            employee_ids = nap_lines.mapped('employee_id')
-            return {'domain': {'employee_id': [('id', 'in', employee_ids.ids)]}}
+    # @api.onchange('block_id', 'tgl_panen')
+    # def _onchange_block_tgl_panen(self):
+    #     if self.block_id and self.tgl_panen:
+    #         # Cari karyawan yang sesuai dari data NAP
+    #         nap_lines = self.env['lhm.transaction.nap.line'].search([
+    #             ('lhm_transaction_line_id.location_id', '=', self.block_id.location_id.id),
+    #             ('lhm_transaction_line_id.lhm_id.date', '=', self.tgl_panen),
+    #             ('lhm_transaction_line_id.activity_id.is_panen', '=', True),
+    #         ])
+    #         employee_ids = nap_lines.mapped('employee_id')
+    #         return {'domain': {'employee_id': [('id', 'in', employee_ids.ids)]}}
+
+
+    
 
 class lhm_transaction_process_line(models.Model):
     _name           = 'lhm.transaction.process.line'
@@ -4659,6 +4713,8 @@ class lhm_nap(models.Model):
                         'drc_lump_nap': data['drc_lump'],
                         'satuan_2_nap': data['satuan_2_nap'],
                     })
+                # Panggil fungsi untuk mengupdate nilai upah untuk yang borongan panen
+                existing_transaction_nap_line.lhm_transaction_line_id.get_wage_borong_panen()
 
     def button_draft(self):
         for nap in self:
