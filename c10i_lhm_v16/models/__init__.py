@@ -21,3 +21,5 @@ from . import lhm_wage_borongan_rawat
 from . import lhm_wage_borongan_contractor
 from . import res_config_settings
 from . import account_cost_center
+from . import mutation_type
+from . import seed_release

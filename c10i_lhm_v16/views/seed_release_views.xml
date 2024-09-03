@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seed_release_view_form" model="ir.ui.view">
+        <field name="name">seed.release.view.form</field>
+        <field name="model">seed.release</field>
+        <field name="arch" type="xml">
+            <form string="Form Pengeluaran Bibit">
+                <header>
+                    <!-- <button name="button_approve" states="draft" string="Approve" type="object" class="btn-default btn-primary"/>
+                    <button name="button_draft" states="approve" string="Set to draft" type="object" class="btn-default"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approve"/> -->
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Nama" class="oe_edit_only"/>
+                        <h1><field name="name" readonly="1" force_save="1"/></h1>
+                    </div>
+                    <group>
+                        <field name="date" />
+                    </group>
+                    <notebook>
+                        <page string="Detail Pengeluaran Bibit">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="product_id" />
+                                    <field name="mutation_type_id" />
+                                    <field name="location_id" />
+                                    <field name="qty" />
+                                    <field name="satuan_id" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="seed_release_view_tree" model="ir.ui.view">
+        <field name="name">seed.release.view.tree</field>
+        <field name="model">seed.release</field>
+        <field name="arch" type="xml">
+            <tree string="List Pengeluaran Bibit">
+                <field name="name" />
+                <field name="date" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="seed_release_action" model="ir.actions.act_window">
+        <field name="name">Form Pengeluaran Bibit</field>
+        <field name="res_model">seed.release</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="seed_release_menu"
+        name="Form Pengeluaran Bibit"
+        action="seed_release_action"
+        parent="menu_bibitan"
+        sequence="1"/>
+
+</odoo>
