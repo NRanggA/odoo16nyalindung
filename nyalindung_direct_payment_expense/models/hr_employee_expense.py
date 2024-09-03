@@ -274,7 +274,7 @@ class HrEmployeeExpense(models.Model):
                             'product_id' : line.product_id.id,
                             'name' : line.name,
                             'account_id' : record.contra_account_for_advance.id,
-                            'amount' : record.amount_total2,
+                            'amount' : abs(record.amount_total2),
                         }) for line in record.line_ids[0]]
                 })
             else:
