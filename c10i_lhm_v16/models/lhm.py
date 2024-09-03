@@ -4556,17 +4556,12 @@ class lhm_nap(models.Model):
 
     def button_confirm(self):
         self.state = 'confirmed'
-        # if not self.pks_id:
-        #     raise UserError(_('Nama PKS masih Kosong.\n'
-        #                         'Silahkan isi Nama PKS tersebut terlebih dahulu'))
-        # if self.line_ids:
-        #     for line in self.line_ids:
-        #         if line.qty_nap <= 0 :
-        #             raise UserError(_('Total NAP harus lebih dari 0.\n'
-        #                         'Perbaiki data pada lokasi %s sebelum diconfirm!!')%(line.block_id.code or '-'))
-        # else:
-        #     raise UserError(_('Detail Nota Angkut Panen Kosong.\n'
-        #                         'Silahkan isi Detail Nota Angkut Panen terlebih dahulu'))
+        transaction = self.env['lhm.transaction'].search([
+            ('date', '=', self.line_ids.mapped('tgl_panen')[0]),
+            ('state', '!=', 'proses')
+        ], limit=1)
+        if transaction:
+            raise UserError("Laporan Harian Mandor pada tanggal tersebut belum berada di tahap 'proses'. Tidak bisa melanjutkan konfirmasi.")
         self.confirmed = True
         # self.line_ids.link_to_lhm_progress()
         # self.line_ids.allocate_nap_line_to_lhm_line()
