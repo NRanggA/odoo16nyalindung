@@ -199,6 +199,8 @@ class AccountPayment(models.Model):
             pay.write(move._cleanup_write_orm_values(pay, payment_vals_to_write))
     
     def _synchronize_to_moves(self, changed_fields):
+        return
+        print("................_synchronize_to_moves", changed_fields)
         ''' Update the account.move regarding the modified account.payment.
         :param changed_fields: A list containing all modified fields on account.payment.
         '''
@@ -210,6 +212,9 @@ class AccountPayment(models.Model):
 
         for pay in self.with_context(skip_account_move_synchronization=True):
             liquidity_lines, counterpart_lines, writeoff_lines = pay._seek_for_lines()
+            print("................_synchronize_to_moves liquidity_lines", liquidity_lines)
+            print("................_synchronize_to_moves counterpart_lines", counterpart_lines)
+            print("................_synchronize_to_moves writeoff_lines", writeoff_lines)
 
             # Make sure to preserve the write-off amount.
             # This allows to create a new payment with custom 'line_ids'.
@@ -229,7 +234,7 @@ class AccountPayment(models.Model):
 
             line_ids_commands = [
                 Command.update(liquidity_lines.id, line_vals_list[0]) if liquidity_lines else Command.create(line_vals_list[0]),
-                # Command.update(counterpart_lines.id, line_vals_list[1]) if counterpart_lines else Command.create(line_vals_list[1])
+                Command.update(counterpart_lines.id, line_vals_list[1]) if counterpart_lines else Command.create(line_vals_list[1])
             ]
 
             for line in writeoff_lines:
