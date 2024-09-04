@@ -17,14 +17,15 @@
                         <h1><field name="name" readonly="1" force_save="1"/></h1>
                     </div>
                     <group>
+                        <field name="product_id" />
                         <field name="date" />
                     </group>
                     <notebook>
                         <page string="Detail Pengeluaran Bibit">
                             <field name="line_ids" nolabel="1">
                                 <tree editable="bottom">
-                                    <field name="product_id" />
-                                    <field name="mutation_type_id" />
+                                    <field name="product_id" readonly="1" />
+                                    <field name="mutation_type_id" domain="[('mutation', '=', 'kurang')]"/>
                                     <field name="location_id" />
                                     <field name="qty" />
                                     <field name="satuan_id" />
@@ -43,6 +44,7 @@
         <field name="arch" type="xml">
             <tree string="List Pengeluaran Bibit">
                 <field name="name" />
+                <field name="product_id" />
                 <field name="date" />
             </tree>
         </field>
