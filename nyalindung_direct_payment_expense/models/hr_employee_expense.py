@@ -179,17 +179,12 @@ class HrEmployeeExpense(models.Model):
 
     def _prepare_payable_move_line(self, amount): 
         partner =  self.partner_id or self.requested_by.partner_id or False
-        direct_state = self.action_get_direct_state()
-        if direct_state == 'send':
-            credit_account = self.journal_id.outbound_payment_method_line_ids.payment_account_id
-        else:
-            credit_account = self.journal_id.inbound_payment_method_line_ids.payment_account_id
 
         return {
             'partner_id': partner.id if partner else False,
             'name': _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
-            'account_id': self.contra_account_for_advance.id if (self.is_advance or self.expense_report) else credit_account.id,
+            'account_id': self.contra_account_for_advance.id,
             # 'analytic_account_id': self.analytic_account_id.id,
             # 'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
