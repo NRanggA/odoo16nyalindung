@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seed_mutation_view_tree" model="ir.ui.view">
+        <field name="name">seed.mutation.view.tree</field>
+        <field name="model">seed.mutation</field>
+        <field name="arch" type="xml">
+            <tree string="Mutasi Bibitan">
+                <field name="product_id" />
+                <field name="date" />
+                <field name="mutation_type_id" />
+                <field name="mutation" invisible="1" />
+                <field name="location_id" />
+                <field name="qty" decoration-success="mutation == 'tambah'" decoration-danger="mutation == 'kurang'"/>
+                <field name="satuan_id" />
+                <field name="balance" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="seed_mutation_action" model="ir.actions.act_window">
+        <field name="name">Mutasi Bibitan</field>
+        <field name="res_model">seed.mutation</field>
+        <field name="view_mode">tree</field>
+        <field name="domain">[]</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+</odoo>
