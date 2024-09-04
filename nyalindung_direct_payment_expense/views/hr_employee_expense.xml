@@ -58,8 +58,8 @@
                             <field name="description" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/>
                         </group>
                         <group>
-                            <field name="journal_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'invisible' : [('is_advance','!=',True)]}"/>
-                            <field name="employee_advance_journal_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'invisible' : [('is_advance','=',True)]}" readonly="1"/>
+                            <!-- <field name="journal_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'invisible' : [('is_advance','!=',True)]}"/> -->
+                            <field name="employee_advance_journal_id" options="{'no_create_edit': True, 'no_create': True}" readonly="1"/>
                             <field name="currency_id" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="account_move_id" readonly="1" groups="account.group_account_user" invisible="1"/>
                             <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')]}"/>
