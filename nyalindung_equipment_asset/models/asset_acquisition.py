@@ -106,7 +106,7 @@ class AssetAcquisition(models.Model):
 				# Create Original Move
 				move_lines = []
 				move_vals = {
-					'journal_id': self.env['account.journal'].search([('name', '=', 'Miscellaneous Operations')], limit=1).id,
+					'journal_id': self.env['account.journal'].search([('type', '=', 'general')], limit=1).id,
 					'date': acquisition.date,
 					'acquisition_line_ids': asset_vals['acquisition_line_ids'],
 				}
