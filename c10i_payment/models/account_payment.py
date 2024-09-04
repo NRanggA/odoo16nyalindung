@@ -99,7 +99,8 @@ class AccountPayment(models.Model):
                     debit_tot = abs(amount_total)
                     
                 bank_line_vals = {
-                    'account_id': self.journal_id.default_account_id.id,
+                    # 'account_id': self.journal_id.default_account_id.id,
+                    'account_id': self.outstanding_account_id.id,
                     'debit': debit_tot,
                     'credit': credit_tot,
                     'partner_id': self.partner_id.id,
