@@ -39,9 +39,18 @@
 
         <!-- Sequence untuk Pengeluaran Bibit -->
         <record id="seq_seed_release" model="ir.sequence">
-            <field name="name">Pengeluaran Pajak</field>
+            <field name="name">Form Pengeluaran Bibit</field>
             <field name="code">seed.release</field>
             <field name="prefix">FPB/%(year)s/</field>
+            <field name="padding">3</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="seq_seed_semai" model="ir.sequence">
+            <field name="name">Form Semai/Sisip Bibitan</field>
+            <field name="code">seed.semai</field>
+            <field name="prefix">FSB/%(year)s/</field>
             <field name="padding">3</field>
             <field name="number_next">1</field>
             <field name="number_increment">1</field>

@@ -35,13 +35,21 @@ class account_period(models.Model):
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    def action_post(self):
+    # def action_post(self):
+    #     default_loc_type = self.env['lhm.location.type'].search([('name', '=', '-')])
+    #     for move in self:
+    #         for line in move.line_ids:
+    #             if not line.plantation_location_type_id:
+    #                 line.plantation_location_type_id = default_loc_type and default_loc_type[0].id or False
+    #     return super(AccountMove, self).action_post()
+
+    def _post(self, soft=True):
         default_loc_type = self.env['lhm.location.type'].search([('name', '=', '-')])
         for move in self:
             for line in move.line_ids:
                 if not line.plantation_location_type_id:
                     line.plantation_location_type_id = default_loc_type and default_loc_type[0].id or False
-        return super(AccountMove, self).action_post()
+        return super(AccountMove, self)._post(soft=soft)
 
 
 class AccountMoveLine(models.Model):

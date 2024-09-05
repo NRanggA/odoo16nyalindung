@@ -23,3 +23,5 @@ from . import res_config_settings
 from . import account_cost_center
 from . import mutation_type
 from . import seed_release
+from . import seed_semai
+from . import seed_mutation
