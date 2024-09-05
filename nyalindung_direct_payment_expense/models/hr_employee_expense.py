@@ -108,7 +108,7 @@ class HrEmployeeExpense(models.Model):
     @api.depends('advance_amount_settle')
     def _compute_amount_to_clear(self):
         for record in self:
-            record.has_amount = True if record.advance_to_settle_ids.advance_amount_settle > 0 else False
+            record.has_amount = True if sum(record.advance_to_settle_ids.advance_amount_settle) > 0 else False
 
     @api.depends('line_ids', 'line_ids.amount')
     def _amount_total(self):
