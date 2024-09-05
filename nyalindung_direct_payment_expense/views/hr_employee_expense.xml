@@ -28,6 +28,11 @@
                             icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_journal_count', '=', 0)]}">
                             <field name="employee_expense_journal_count" string="Journal Item" widget="statinfo"/>
                         </button>
+                        <button type="object" name="action_open_direct_payment"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_direct_payment_count', '=', 0)]}">
+                            <field name="employee_expense_direct_payment_count" string="Direct Payment" widget="statinfo"/>
+                        </button>
                     </div>
 
                     <field name="state" invisible="1"/>
@@ -62,7 +67,8 @@
                             <field name="employee_advance_journal_id" options="{'no_create_edit': True, 'no_create': True}" readonly="1"/>
                             <field name="currency_id" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="account_move_id" readonly="1" groups="account.group_account_user" invisible="1"/>
-                            <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')]}"/>
+                            <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')], 'required' : [('is_advance','=',True)], 'invisible' : [('is_advance','!=',True)]}"/>
+                            <field name="has_amount" invisible="1"/>
                             
                             <field name="company_id" options="{'no_create_edit': True, 'no_create': True}"/> <!-- groups="base.group_multi_company"-->
                         </group>
@@ -73,7 +79,8 @@
                             <field name="advance_to_settle_ids" nolabel="1">
                                 <tree create="false">
                                     <field name="name"/>
-                                    <field name="advance_residual" sum="amount_to_settle"/>
+                                    <field name="advance_residual" sum="amount_to_settle" attrs="{'column_invisible' : [('parent.has_amount','!=',True)]}"/>
+                                    <field name="amount_total" string="Amount to Clear" sum="amount_to_settle" attrs="{'column_invisible' : [('parent.has_amount','=',True)]}"/>
                                 </tree>
                             </field>
                         </group>
@@ -233,7 +240,7 @@
         <field name="res_model">hr.employee.expense</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('expense_report','=',True),('is_advance','=', True)]</field>
-        <field name="context">{'default_expense_report': 1, 'default_is_advance': True, 'search_default_my_reports': 1}</field>
+        <field name="context">{'default_is_advance': True, 'search_default_my_reports': 1}</field>
         <field name="search_view_id" ref="account_employee_expense_search" />
     </record>
 

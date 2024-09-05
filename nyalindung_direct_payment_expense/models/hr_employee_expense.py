@@ -60,7 +60,7 @@ class HrEmployeeExpense(models.Model):
     requested_by = fields.Many2one("res.users", string="Requested by", 
         default=lambda s: s.env.uid, tracking=True, index=True,
     )
-    settelement_date = fields.Date('Settelement Date', required=True)
+    settelement_date = fields.Date('Settelement Date')
     contra_account_for_advance = fields.Many2one(
         comodel_name='account.account',
         related='company_id.contra_account_for_advance', readonly=False,
@@ -102,6 +102,13 @@ class HrEmployeeExpense(models.Model):
     advance_amount_settle = fields.Monetary(compute="_compute_settlement_amount", string="Advance Amount", store=True)
     amount_total2 = fields.Monetary(compute="_compute_settlement_amount", string="Amount Total", store=True)
     account_direct_payment_id = fields.Many2one('account.direct.payment', string='Direct Payment')
+    has_amount = fields.Boolean('Has Amount', compute='_compute_amount_to_clear')
+    employee_expense_direct_payment_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
+
+    @api.depends('advance_amount_settle')
+    def _compute_amount_to_clear(self):
+        for record in self:
+            record.has_amount = True if record.advance_to_settle_ids.advance_amount_settle > 0 else False
 
     @api.depends('line_ids', 'line_ids.amount')
     def _amount_total(self):
@@ -260,6 +267,7 @@ class HrEmployeeExpense(models.Model):
                 'currency_id' : record.currency_id.id,
                 'is_advance' : record.is_advance,
                 'expense_report' : record.expense_report,
+                'employee_expense_id' : record.id,
                 'direct_state' : record.action_get_direct_state()
             })
 
@@ -377,15 +385,6 @@ class HrEmployeeExpense(models.Model):
         move_lines.extend(self.get_advance_move_line())
         return move_lines
 
-    # def action_create_move(self):
-    #     res = super().action_create_move()
-    #     # Do Reconciliation Adavance
-    #     if self.advance_to_settle_ids.filtered(lambda a: a.advance_residual>0.0):
-    #         settlement_advances = self.account_move_id.line_ids.filtered(lambda l: l.account_id==self.company_id.employee_advance_account_id)
-    #         advances_to_settle = self.advance_to_settle_ids.mapped('account_move_id.line_ids').filtered(lambda l: l.account_id==self.company_id.employee_advance_account_id)
-    #         (settlement_advances + advances_to_settle).reconcile()
-    #     return res
-
     def employee_submit(self):
         for payment in self:
             if payment.employee_expense_state!='draft':
@@ -433,32 +432,29 @@ class HrEmployeeExpense(models.Model):
             if payment.employee_expense_state!='reject':
                 raise ValidationError(_('You cannot Set Draft Expense that is not in a Rejected state'))
             payment.action_draft()
-    
-    # @api.onchange('is_direct_payment')
-    # def onchange_is_direct_payment(self):
-    #     if self.is_direct_payment:
-    #         account = self.company_id.contra_account_for_advance
-    #         if not account:
-    #             raise ValidationError(_('Please configure Contra Account for Advance on your Accounting Settings'))
-    #         self.line_ids = [(0,0,{
-    #             'name': 'Request of Employee Advance',
-    #             'account_id': account.id,
-    #             })]
 
     def _get_count_employee_expense(self):
         for record in self:
             journal_count = self.env['account.move'].search_count([('employee_expense', '=', record.id)])
+            direct_count = self.env['account.direct.payment'].search_count([('employee_expense_id', '=', record.id)])
             record.employee_expense_journal_count = journal_count
+            record.employee_expense_direct_payment_count = direct_count
     
     def action_open_employee_expense_journal(self):
         result = self.env["ir.actions.actions"]._for_xml_id('account.action_move_journal_line')
         result['domain'] = [('employee_expense', '=', self.id)]
             
         return result
+    
+    def action_open_direct_payment(self):
+        result = self.env["ir.actions.actions"]._for_xml_id('c10i_direct_payment.account_direct_payment_action')
+        result['domain'] = [('employee_expense_id', '=', self.id)]
+            
+        return result
 
     def validation_settlement_date_by_date(self):
         for record in self:
-            if record.settelement_date < record.date:
+            if record.settelement_date and record.settelement_date < record.date:
                 raise ValidationError("Settlement Date cannot be less than Date")
             
     def validation_setteled(self):

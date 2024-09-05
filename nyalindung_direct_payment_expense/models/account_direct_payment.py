@@ -19,13 +19,13 @@ class DirectPayment(models.Model):
         comodel_name='account.journal',
         related='company_id.employee_advance_journal_id', readonly=False,
         string="Journal")
-    employee_expense_journal_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
     expense_report = fields.Boolean('Expense Report')
     is_advance = fields.Boolean('Employee Advance')
     direct_state = fields.Selection([
         ('send', 'Send'),
         ('receive', 'Receive'),
     ], string='Direct State')
+    employee_expense_id = fields.Many2one('hr.employee.expense', string='Employee Expense')
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
@@ -106,6 +106,19 @@ class DirectPaymentLine(models.Model):
     plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
     plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
     has_plantation = fields.Boolean('Has Plantation')
+
+    def _prepare_move_line(self):
+        amount = self.currency_id.compute(self.amount, self.payment_id.company_id.currency_id)
+        partner =  self.payment_id.partner_id or self.payment_id.requested_by.partner_id or False
+        return {
+            'partner_id': partner.id if partner else False,
+            'name': self.name,
+            'account_id': self.account_id.id,
+            # 'analytic_account_id': self.analytic_account_id.id,
+            'product_id': self.product_id.id,
+            'debit': (abs(amount) if amount < 0 else 0.0) if self.payment_id.expense_report else (amount if amount > 0 else 0.0),
+            'credit': (amount if amount > 0 else 0.0) if self.payment_id.expense_report else (abs(amount) if amount < 0 else 0.0),
+        }
 
     @api.onchange('plantation_location_type_id')
     def _onchange_plantation_location_type_id(self):
