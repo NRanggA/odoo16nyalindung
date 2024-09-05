@@ -1,0 +1,12 @@
+<odoo>
+    <!-- Record Rule -->
+    <data noupdate="1">
+        <record id="hr_payslip_pph_employee_user" model="ir.rule">
+            <field name="name">User can only see his / her Payslip</field>
+            <field name="model_id" ref="c10i_hr_payroll_pph.model_hr_payslip_pph"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+    </data>
+    <!-- Record Rule : Payroll -->
+</odoo>

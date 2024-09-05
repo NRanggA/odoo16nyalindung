@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="hr_rate_pp58_menu"
+        action="c10i_hr_payroll_pph.hr_rate_pp58_action"
+        parent="hr.menu_human_resources_configuration"
+        sequence="93"/>
+    
+    <menuitem
+        id="hr_payslip_pph_menu"
+        action="action_hr_payslip_pph"
+        parent="c10i_hr_payroll.menu_department_tree"
+        sequence="7"/>
+    <!-- groups="c10i_hr_payroll.group_hr_payroll_user" -->
+</odoo>

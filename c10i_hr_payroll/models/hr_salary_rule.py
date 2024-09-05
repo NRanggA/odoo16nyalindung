@@ -244,7 +244,9 @@ result = contract.wage * 0.10''')
                         %s
                         """
                     ) % (self.name, self.code, repr(ex)))
-
+    
+    def _hook_localdict(self ,localdict, res_rule_amount, previous_amount):
+        return localdict
 
 class HrRuleInput(models.Model):
     _name = 'hr.rule.input'
