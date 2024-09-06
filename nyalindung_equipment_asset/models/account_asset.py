@@ -45,10 +45,13 @@ class AccountAssetDisposal(models.Model):
     def _account_asset_on_sale(self):
         for record in self:
             if record.asset_id:
-                product = record.asset_id.acquisition_line_ids[0].product_id.categ_id
-                record.gain_account_id = product.gain_on_asset_sales_account_id if product else False
-                record.loss_account_id = product.loss_on_asset_sales_account_id if product else False
-                record.write_on_asset_sales_account_id = product.write_on_asset_sales_account_id if product else False
+                product = None
+                if record.asset_id.acquisition_line_ids:
+                    product = record.asset_id.acquisition_line_ids[0].product_id.categ_id
+                if product:
+                    record.gain_account_id = product.gain_on_asset_sales_account_id if product else False
+                    record.loss_account_id = product.loss_on_asset_sales_account_id if product else False
+                    record.write_on_asset_sales_account_id = product.write_on_asset_sales_account_id if product else False
 
     @api.onchange('asset_id')
     def _onchange_asset_id(self):
