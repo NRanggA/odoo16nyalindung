@@ -52,7 +52,7 @@
                 <field name="sell_account_move_id" position="after">
                     <field name="gross_value" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>                    
                     <field name="commulative_depreciation" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>
-                    <field name="write_on_asset_sales_account_id" />
+                    <field name="write_on_asset_sales_account_id" invisible="1"/>
                 </field>
             </field>
         </record>
