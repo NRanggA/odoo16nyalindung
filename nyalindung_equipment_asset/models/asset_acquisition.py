@@ -13,6 +13,15 @@ class AssetAcquisition(models.Model):
 	move_ids = fields.One2many('account.move', 'acquisition_id', string='Move')
 	count_move = fields.Integer('Count Move', compute='_get_count_move_equip')
 
+	account_journal_id = fields.Many2one('account.journal', string='Account Journal', compute='_account_asset_on_sale', store=True)
+
+	@api.depends('line_ids')
+	def _account_asset_on_sale(self):
+		for record in self:
+			if record.line_ids:
+				product = record.line_ids[0].product_id.categ_id
+				record.account_journal_id = product.asset_journal_id if product else False
+
 	def _get_count_move_equip(self):
 		for record in self:
 			record.count_move = len(record.move_ids)
@@ -104,9 +113,11 @@ class AssetAcquisition(models.Model):
 				asset_vals = values['asset_values']
 				purchase_account_dict = values['purchase_account_values']
 				# Create Original Move
+
+				journal = self.account_journal_id
 				move_lines = []
 				move_vals = {
-					'journal_id': self.env['account.journal'].search([('type', '=', 'general')], limit=1).id,
+					'journal_id': journal.id if journal else False,
 					'date': acquisition.date,
 					'acquisition_line_ids': asset_vals['acquisition_line_ids'],
 				}

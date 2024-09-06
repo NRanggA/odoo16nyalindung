@@ -186,5 +186,4 @@ class EquipmentRegisterLine(models.Model):
 
 			# 'barcode': '/', #diisi dari sequence dlu
 		}
-		print("==========================", res)
 		return res

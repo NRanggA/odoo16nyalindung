@@ -85,7 +85,7 @@ class EquipmentRegister(models.Model):
 					'purchase_line_id': rline.purchase_line_id.id,
 				}
                 lines.append((0,0,line_vals))
-        values.update({'line_ids': lines})  
+        values.update({'line_ids': lines})
 		
         if lines:
             new_acquisition = Acquisition.create(values)

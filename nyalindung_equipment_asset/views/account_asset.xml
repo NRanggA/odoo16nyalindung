@@ -25,6 +25,9 @@
                 <xpath expr="//button[@name='do_action']" position="attributes">
                     <attribute name="attrs">{'invisible': ['|','|',('state', '=', 'closed'),('action','=','sell'),('action','=',False)]}</attribute>
                 </xpath>
+                <field name="name" position="attributes">
+                    <attribute name="placeholder">Name</attribute>
+                </field>
                 <field name="action" position="before">
                     <field name="lva" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                 </field>
@@ -47,8 +50,9 @@
                     <attribute name="attrs">{'invisible' : ['|','|',('gain_or_loss', '=', 'gain'),('lva','=',True),('action','=',False)]}</attribute>
                 </xpath>
                 <field name="sell_account_move_id" position="after">
-                    <field name="gross_value" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>
+                    <field name="gross_value" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>                    
                     <field name="commulative_depreciation" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>
+                    <field name="write_on_asset_sales_account_id" />
                 </field>
             </field>
         </record>

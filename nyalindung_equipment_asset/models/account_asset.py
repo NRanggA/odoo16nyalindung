@@ -34,13 +34,21 @@ class AccountAssetDisposal(models.Model):
     lva = fields.Boolean('LVA')
     gross_value = fields.Monetary('Gross Value', related='asset_id.value')
     commulative_depreciation = fields.Float('Commulative Depreciation', compute='get_amount_commulative_depreciation')
-    gain_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.gain_on_asset_sales_account_id', help="Account used to write the journal item in case of gain", readonly=False)
-    loss_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.loss_on_asset_sales_account_id', help="Account used to write the journal item in case of loss", readonly=False)
-    write_on_asset_sales_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.write_on_asset_sales_account_id', help="Account used to write the journal item in case of loss", readonly=False)
+    gain_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", compute='_account_asset_on_sale', store=True, help="Account used to write the journal item in case of gain", readonly=True)
+    loss_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", compute='_account_asset_on_sale', store=True, help="Account used to write the journal item in case of loss", readonly=True)
+    write_on_asset_sales_account_id = fields.Many2one('account.account', compute='_account_asset_on_sale', store=True)
     income_from_lva_sales_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.income_from_lva_sales_account_id', help="Account used to write the journal item in case of loss", readonly=False)
     equip_id = fields.Many2one('maintenance.equipment', string='Asset')
     asset_id = fields.Many2one('account.asset.asset', required=False, domain="[('state', '=', 'open')]")
-    income_from_lva_sales_account_id = fields.Many2one('account.account', string='Income From LVA Sales Account',related='company_id.income_from_lva_sales_account_id', readonly=False)
+
+    @api.depends('asset_id')
+    def _account_asset_on_sale(self):
+        for record in self:
+            if record.asset_id:
+                product = record.asset_id.acquisition_line_ids[0].product_id.categ_id
+                record.gain_account_id = product.gain_on_asset_sales_account_id if product else False
+                record.loss_account_id = product.loss_on_asset_sales_account_id if product else False
+                record.write_on_asset_sales_account_id = product.write_on_asset_sales_account_id if product else False
 
     @api.onchange('asset_id')
     def _onchange_asset_id(self):
@@ -131,7 +139,7 @@ class AccountAssetDisposal(models.Model):
             invoice_account = invoice_line_id.account_id if self.invoice_id else self.asset_id.category_id.account_asset_id
             difference = -initial_amount - depreciated_amount - invoice_amount
 
-            difference_account = asset.company_id.gain_on_asset_sales_account_id if difference > 0 else asset.company_id.loss_on_asset_sales_account_id	
+            difference_account = self.gain_account_id if difference > 0 else self.loss_account_id
             if self.action != 'sell' and self.write_on_asset_sales_account_id:
                 line_datas = [(initial_amount, initial_account), (depreciated_amount, depreciation_account), (invoice_amount, invoice_account), (difference, self.write_on_asset_sales_account_id)]
             else:
@@ -193,7 +201,6 @@ class AccountAssetDisposal(models.Model):
 
             difference_account = self.gain_account_id if self.sell_value > self.value_residual else self.loss_account_id
             line_datas = [(sell_amount, asset_receivable_account),(initial_amount, initial_account), (depreciated_amount, depreciation_account), (difference, difference_account)]
-            print("=======================", line_datas)
             invoice_lines = [(0,0,{
                 'product_id': False,
                 'name': f"{self.asset_id.name} - {self.asset_id.register_id.name}",
@@ -204,9 +211,9 @@ class AccountAssetDisposal(models.Model):
                 'display_type' : 'product'
             })]
             move = self.env['account.move'].create({
-                'move_type' : 'out_invoice',
+                # 'move_type' : 'out_invoice',
                 'date': date.today(),
-                'invoice_line_ids' : invoice_lines,
+                # 'invoice_line_ids' : invoice_lines,
                 'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
             })
             return self.action_open_invoice(move)

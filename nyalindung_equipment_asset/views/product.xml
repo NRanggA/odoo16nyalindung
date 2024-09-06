@@ -13,6 +13,10 @@
                 </field>
                 <field name="property_stock_account_output_categ_id" position="after">
                     <field name="asset_clearing_account_id" attrs="{'invisible' : [('asset','!=',True)]}"/>
+                    <field name="gain_on_asset_sales_account_id" attrs="{'invisible' : [('asset','!=',True)]}"/>
+                    <field name="loss_on_asset_sales_account_id" attrs="{'invisible' : [('asset','!=',True)]}"/>
+                    <field name="write_on_asset_sales_account_id" attrs="{'invisible' : [('asset','!=',True)]}"/>
+                    <field name="asset_journal_id" attrs="{'invisible' : [('asset','!=',True)]}"/>
                 </field>
             </field>
         </record>

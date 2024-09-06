@@ -24,3 +24,7 @@ class ProductCategory(models.Model):
 
     asset = fields.Boolean('Asset')
     asset_clearing_account_id = fields.Many2one('account.account', string='Asset Clearing Account')
+    gain_on_asset_sales_account_id = fields.Many2one('account.account', string='Gain on Asset Sales Account')
+    loss_on_asset_sales_account_id = fields.Many2one('account.account', string='Loss on Asset Sales Account')
+    write_on_asset_sales_account_id = fields.Many2one('account.account', string='Write-Off Asset Account')
+    asset_journal_id = fields.Many2one('account.journal', string='Asset Journal')
