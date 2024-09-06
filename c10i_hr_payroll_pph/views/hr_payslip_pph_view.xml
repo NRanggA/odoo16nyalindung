@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- hr.payslip.pph -->
+    <record id="hr_payslip_pph_form" model="ir.ui.view">
+        <field name="name">hr.payslip.pph.form</field>
+        <field name="model">hr.payslip.pph</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button 
+                            name="action_view_payslip_pph" 
+                            class="oe_stat_button"
+                            icon="fa-bars"
+                            type="object"
+                            attrs="{'invisible': [('count_payslip_pph', '&lt;', 0)]}">
+                            <field name="count_payslip_pph" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <!-- <field name="currency_id" invisible="1" /> -->
+                    <!-- <field name="company_id" groups="base.group_multi_company" readonly="1" invisible="1"/> -->
+                    <div class="oe_title">
+                        <h1>
+                            <!-- <field name="nomor_bukti_potong" readonly="1" groups="base.group_no_one"/> -->
+                            <field name="slip_id" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group name="basic_info">
+                        <group>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="date"  required="1"/>
+                            <field name="total_masa_penyetahun" />
+                            <field name="masa_pajak_penyetahun" />
+                            <field name="ptkp_id" options="{'no_create': True, 'no_edit': True, 'no_open': True}"  required="1"/>
+                        </group>
+                        <group>
+                            <field name="first_contract_date" />
+                            <field name="termination_date" />
+                        </group>
+                    </group>
+
+                    <group name="salary">
+                        <group string="Pendapatan Bulan Ini">
+                            <field name="current_income_base_pph_amount" />
+                            <field name="prev_income_base_pph_amount" />
+                            <field name="tunj_pph_this_month" />
+                            <field name="cumm_pph_base_amount" />
+                        </group>
+                        <group string="Pendapatan Tahun Ini">
+                            <field name="prev_income_this_year" />
+                            <field name="a_year_tunj_pph" />
+                            <field name="a_year_income"  />
+                            <!-- <field name="prev_cumm_jht"  /> -->
+                            <field name="a_year_jht" />
+                            <field name="biaya_jabatan" />
+                            <field name="ptkp_amount" />
+                            <field name="pkp_amount"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="pp58" string="PP 58 Tahun 2023">
+                            <group>
+                                <field name="rate_category" />
+                                <field name="rate_pph" />
+                                <field name="this_month_pph_paid_amount" />
+                                <field name="n_loop_1" groups="base.group_no_one"/>
+                                <field name="pph_pp58_amount"/>
+                            </group>
+                        </page>
+                        <page name ="pph_progresif" string="Pajak Progresif Setahun">
+                            <field name="pph_progresif_line_ids" readonly="1" nolabel="1">
+                                <tree>
+                                    <field name="range_start"/>
+                                    <field name="range_stop"/>
+                                    <field name="rate"/>
+                                    <field name="base_amount" sum="amount"/>
+                                    <field name="rate_denda"/>
+                                    <field name="amount" sum="amount"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <field name="a_year_pph" />
+                                <field name="prev_pph_paid_amount" />
+                                <field name="pph_paid_amount"/>
+                                <field name="pph_unpaid_amount"/>
+                                <field name="status_potongan" widget="badge" decoration-danger="status_potongan=='kurang'" decoration-warning="status_potongan=='lebih'" decoration-info="status_potongan=='benar'" />
+                            </group>
+                        </page>
+                    </notebook>
+
+                    <group name="total-tax" class="oe_subtotal_footer oe_right">
+                        <field name="pph_amount" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_payslip_pph_tree" model="ir.ui.view">
+        <field name="name">hr.payslip.pph.tree</field>
+        <field name="model">hr.payslip.pph</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false">
+                <!-- <field name="currency_id" invisible="1" /> -->
+                <field name="employee_id" />
+                <field name="date" />
+
+                <field name="current_income_base_pph_amount" sum="current_income_base_pph_amount"/>
+                <field name="tunj_pph_this_month" sum="tunj_pph_this_month"/>
+                <field name="cumm_pph_base_amount" sum="cumm_pph_base_amount"/>
+                <field name="rate_pph" />
+                <field name="pph_pp58_amount" sum="pph_pp58_amount"/>
+
+                <field name="pph_amount" sum="pph_amount"/>
+
+                <field name="a_year_income" optional="hide"/>
+                <field name="a_year_pph" optional="hide"/>
+                <field name="pph_paid_amount" optional="hide"/>
+                <field name="status_potongan" widget="badge" decoration-danger="status_potongan=='kurang'" decoration-warning="status_potongan=='lebih'" decoration-info="status_potongan=='benar'" optional="hide"/>
+                
+                <!-- <field name="company_id" groups="base.group_multi_company" optional="hide"/> -->
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_payslip_pph_search" model="ir.ui.view">
+        <field name="name">hr.payslip.pph.search</field>
+        <field name="model">hr.payslip.pph</field>
+        <field name="arch" type="xml">
+            <search string="Search Payslip">
+                <field name="employee_id"/>
+                <separator/>
+                <filter name="filter_date" date="date" string="Masa Pajak"/>
+                <group>
+                    <filter name="groupby_employee_id" string="Employee" domain="" context="{'group_by':'employee_id'}"/>
+                    <filter name="groupby_date" string="Masa Pajak" domain="" context="{'group_by':'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_payslip_pph" model="ir.actions.act_window">
+        <field name="name">Potongan PPH 21</field>
+        <field name="res_model">hr.payslip.pph</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="hr_payslip_pph_search"/>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Record a new entry for your Employee's PPH 21
+          </p>
+        </field>
+    </record>
+    <!-- END: hr.payslip.pph -->
+</odoo>

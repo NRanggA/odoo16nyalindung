@@ -1,28 +1,18 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Payroll",
-
-    'summary': """
-    """,
-
-    'description': """
-    """,
-
-    'author': "PT Konsalten Solusi Indonesia",
+    'summary': """""",
+    'description': """""",
+    'author': "PT. Konsalten Solusi Indonesia",
     'website': "https://konsalten.co.id",
-
     'category': 'Human Resources',
     'version': '16.0.1',
     'license': 'LGPL-3',
-
-    # any module necessary for this one to work correctly
     'depends': [
         'mail',
         'hr_contract',
         'hr_holidays',
     ],
-
-    # always loaded
     'data': [
         'security/hr_payroll_security.xml',
         'security/ir.model.access.csv',

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_rate_pp58_view_form" model="ir.ui.view">
+        <field name="name">hr.rate.pp58.view.form</field>
+        <field name="model">hr.rate.pp58</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="tier_type" />
+                        </group>
+                        <group>
+                            <field name="range_start" />
+                            <field name="range_stop" />
+                            <field name="percentage" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_rate_pp58_view_tree" model="ir.ui.view">
+        <field name="name">hr.rate.pp58.view.tree</field>
+        <field name="model">hr.rate.pp58</field>
+        <field name="arch" type="xml">
+            <tree editable="top">
+                <field name="tier_type" />
+                <field name="range_start" />
+                <field name="range_stop" />
+                <field name="percentage" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_rate_pp58_action" model="ir.actions.act_window">
+        <field name="name">Rate PPH PP 58</field>
+        <field name="res_model">hr.rate.pp58</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

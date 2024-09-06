@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_rate_pph,hr.rate.pph user,model_hr_rate_pp58,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_payslip_pph_all,hr.payslip.pph userinternal,model_hr_payslip_pph,base.group_user,1,0,0,0
+access_hr_payslip_pph_hrpayroll,hr.payslip.pph user,model_hr_payslip_pph,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_payslip_pph_progresif_all,hr.payslip.pph.progresif userinternal,model_hr_payslip_pph_progresif,base.group_user,1,0,0,0
+access_hr_payslip_pph_progresif_hrpayroll,hr.payslip.pph.progresif hr_payroll,model_hr_payslip_pph_progresif,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1

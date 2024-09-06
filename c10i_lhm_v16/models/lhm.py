@@ -2286,7 +2286,7 @@ class lhm_transaction_line(models.Model):
                     contract = self.env['hr.contract'].search([
                         ('employee_id', '=', record.employee_id.id),
                         ('date_start', '<=', lhm_transaction_date),
-                        ('date_end', '>=', lhm_transaction_date),
+                        '|',('date_end', '=', False),('date_end', '>=', lhm_transaction_date),
                         ('state', '=', 'open'),
                         ('is_lhm', '=', True ),
                     ], limit=1)

@@ -1,6 +1,5 @@
 #-*- coding:utf-8 -*-
 from datetime import date, datetime, time
-from dateutil.relativedelta import relativedelta
 from json import JSONEncoder
 
 from odoo import fields, models
