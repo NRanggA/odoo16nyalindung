@@ -1,0 +1,131 @@
+<odoo>
+    <template id="sales_order_template_custom">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page" style="font-size: 7px; border: 2px solid black; padding: 6px;">
+                    <h2 style="text-align: center; font-size: 12px;">Sales Order</h2>
+
+                    <!-- Informasi dari Sale Order -->
+                    <table style="width: 100%; margin-bottom: 20px; font-family: Arial, sans-serif; font-size: 7px;">
+                        <tr>
+                            <td><strong>No Order</strong></td>
+                            <td><strong>:</strong></td>
+                            <td><t t-esc="doc.name"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nama Konsumen</strong></td>
+                            <td><strong>:</strong></td>
+                            <td><t t-esc="doc.partner_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Alamat</strong></td>
+                            <td><strong>:</strong></td>
+                            <td><t t-esc="doc.partner_id.contact_address"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tanggal Order</strong></td>
+                            <td><strong>:</strong></td>
+                            <td><t t-esc="doc.date_order.strftime('%d-%m-%Y')"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>No. Telepon</strong></td>
+                            <td><strong>:</strong></td>
+                            <td><t t-esc="doc.partner_id.phone"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Tabel Produk dengan border -->
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 7px;">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <th style="border: 1px solid black;">No</th>
+                                <th style="border: 1px solid black;">Produk</th>
+                                <th style="border: 1px solid black;">UoM</th>
+                                <th style="border: 1px solid black;">Qty</th>
+                                <th style="border: 1px solid black;">Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="index" t-value="0"/>
+                            <t t-foreach="doc.order_line" t-as="line">
+                                <t t-set="index" t-value="index + 1"/>
+                                <tr style="border: 1px solid black;">
+                                    <td style="border: 1px solid black;"><t t-esc="index"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="line.product_id.name"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="line.product_uom.name"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="line.product_uom_qty"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="line.name"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- Tanggal dan Lokasi -->
+                    <table style="width: 100%; margin-top: 20px; font-size: 7px;">
+                        <tr>
+                            <td style="text-align: right;"><strong>Nyalindung,</strong> <t t-esc="doc.date_order.strftime('%d-%m-%Y')"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Informasi Bank dari Wizard -->
+                    <table style="width: 100%; font-family: Arial, sans-serif; font-size: 7px;">
+                        <p><strong>Pembayaran dapat dilakukan ke rekening</strong></p>
+                        <t t-if="bank_name">
+                            <tr>
+                                <td><strong>Nama Bank</strong></td>
+                                <td><strong>:</strong></td>
+                                <td><t t-esc="bank_name"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="bank_acc_number">
+                            <tr>
+                                <td><strong>No. Rekening</strong></td>
+                                <td><strong>:</strong></td>
+                                <td><t t-esc="bank_acc_number"/></td> <!-- Revisi: Menampilkan No. Rekening, bukan Nama Bank -->
+                            </tr>
+                        </t>
+                    </table>
+
+                    <!-- Tanda tangan -->
+                    <table style="width: 100%; margin-top: 40px; font-size: 7px;">
+                        <tr>
+                            <td style="text-align: center;">
+                                <strong>(..............................)</strong>
+                            </td>
+                            <td style="text-align: center;">
+                                <strong>(..............................)</strong>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Paper format untuk laporan A6 -->
+    <record id="paperformat_sales_order_custom" model="report.paperformat">
+        <field name="name">Custom A6 Paper</field>
+        <field name="default" eval="True"/>
+        <field name="format">A6</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_right">7</field>
+        <field name="margin_left">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">72</field>
+    </record>
+
+    <!-- Definisi action report -->
+    <record id="report_sales_order_custom" model="ir.actions.report">
+        <field name="name">Sales Order Report</field> 
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ny_salesorder_report.sales_order_template_custom</field>
+        <field name="paperformat_id" ref="paperformat_sales_order_custom"/>
+        <!-- <field name="print_report_name">Sales Order - %(object.name)s</field> -->
+    </record>
+</odoo>
