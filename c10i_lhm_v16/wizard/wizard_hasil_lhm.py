@@ -9,11 +9,11 @@ class WizardHasilLhm(models.TransientModel):
 	transaction_line_id = fields.Many2one('lhm.transaction.line', string="Transaction Line")
 	
 	product_id 	 = fields.Many2one('product.product', string="Product 1")
-	hasil_1 	 = fields.Integer("Hasil 1")
+	hasil_1 	 = fields.Float("Hasil 1")
 	satuan_1 	 = fields.Many2one('uom.uom', string='Satuan 1', related='product_id.uom_id', readonly=True)
 	
 	product2_id = fields.Many2one('product.product', string="Product 2")
-	hasil_2 	 = fields.Integer("Hasil 2")
+	hasil_2 	 = fields.Float("Hasil 2")
 	satuan_2 	 = fields.Many2one('uom.uom', string='Satuan 2', related='product2_id.uom_id', readonly=True)
 
 	@api.model
