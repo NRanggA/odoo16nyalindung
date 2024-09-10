@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="view_bank_statement_form_inherit_c10i_bank_statement" model="ir.ui.view">
+            <field name="name">account.bank.statement.view.form.c10i.bank.statement.inherit</field>
+            <field name="model">account.bank.statement</field>
+            <field name="inherit_id" ref="account_statement_base.view_bank_statement_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+                    <button string="Validate" name="button_validate" type="object" class="oe_highlight" states="draft"/>
+                    <button string="Set to Draft" name="button_draft" type="object" states="validated"/>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="button_reconcile" type="object" class="oe_stat_button" icon="fa-bars" string="Reconcile Items"/>
+                </xpath>
+                <!-- Readonly Fields -->
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='balance_start']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='balance_end_real']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='line_ids']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="attributes">
+                    <attribute name="invisible">0</attribute>
+                    <attribute name="required">1</attribute>
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                    <attribute name="required">1</attribute>
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_bank_statement_tree_inherit_c10i_bank_statement" model="ir.ui.view">
+            <field name="name">account.bank.statement.view.tree.c10i.bank.statement.inherit</field>
+            <field name="model">account.bank.statement</field>
+            <field name="inherit_id" ref="account.view_bank_statement_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="create">1</attribute>
+                </xpath>
+            </field>
+        </record>
+    
+    </data>
+    
+
+</odoo>
