@@ -1,0 +1,37 @@
+<odoo>
+    <record id="view_select_bank_wizard_form" model="ir.ui.view">
+        <field name="name">select.bank.wizard.form</field>
+        <field name="model">select.bank.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Select Bank Account">
+                <group>
+                    <field name="company_id" invisible="1"/>
+                    <field name="bank_id" required="1"/>
+                </group>
+                <footer>
+                    <button string="Print" type="object" name="print_report" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_select_bank_wizard" model="ir.actions.act_window">
+        <field name="name">Select Bank Wizard</field>
+        <field name="res_model">select.bank.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_select_bank_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_sale_order_form_custom_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.custom.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_select_bank_wizard)d" string="Print Sales Order Custom" type="action" class="btn-secondary"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
