@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+        <record id="action_report_payment_vendor_bank" model="ir.actions.report">
+            <field name="name">Report Payment Vendor Bank</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_payment_vendor_bank</field>
+            <field name="report_file">ny_account.report_payment_vendor_bank</field>
+            <field name="print_report_name">('Report Payment Vendor Bank')</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+
+        <record id="action_report_payment_vendor_cash" model="ir.actions.report">
+            <field name="name">Report Payment Vendor (Cash)</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_payment_vendor_cash</field>
+            <field name="report_file">ny_account.report_payment_vendor_cash</field>
+            <field name="print_report_name">('Report Payment Vendor (Cash)')</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+
+        <!-- <record id="action_print_vendor_payment_report" model="ir.actions.server">
+            <field name="name">Print Payment Report</field>
+            <field name="model_id" ref="account.model_account_payment"/>
+            <field name="binding_model_id" ref="account.model_account_payment"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env.ref('ny_account.action_report_payment_vendor_bank').report_action(record)
+            </field>
+        </record> -->
+    </data>
+    
+
+</odoo>

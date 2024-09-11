@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template t-name="ny_account.report_payment_vendor_cash">
+        <t t-call="web.html_container">
+            <head>
+                <meta charset="utf-8"/>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+
+                    .header-left{
+                        width:50%;
+                    }
+
+                    .header-right{
+                        width:50%;
+                    }
+                    .header-table td, th{
+                        padding: 3px;
+                    }
+                    td, th {
+                        text-align: left;
+                        padding: 5px;
+                    }
+                    .signature-box .signature-box-header{
+                        background-color: orange;
+                        vertical-align: top;
+                    }
+
+                    .signature-box .signature-box-footer{
+                        vertical-align: buttom;
+                    }
+                </style>
+            </head>
+            <body>
+                <t t-set="o" t-value="doc"/>
+                <t t-foreach="docs" t-as="o">
+                    <table class="header-table" style="border: 1px solid black; text-align: left; padding: 5px;">
+                        <tr style="border: 1px solid black;">
+                            <th class="header-left" style="border: 1px solid black;">
+                                <table style="border: none; font-size: 8px; text-align: left;">
+                                    <tr>
+                                        <th rowspan="4" width="40%">
+                                            <img t-att-src="'http://localhost:8069/ny_account/static/src/img/logo.jpg'" width="170px" height="40px" alt="Logo"/>
+                                        </th>
+                                        <th style="font-size: 10px;">KASBON KELUAR</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">PT. Nyalindung</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jl. Raya Purwakarta No. 625 Km.9</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Padalarang / Kab. Bandung Barat</td>
+                                    </tr>
+                                </table>
+                            </th>
+                            <th class="header-right" colspan="2">
+                                <table style="border: none; font-size: 8px;">
+                                    <tr>
+                                        <th>No. DBIS</th>
+                                        <td> : </td>
+                                    </tr>
+                                    <tr>
+                                        <th>No. Invoice</th>
+                                        <td>
+                                            :
+                                            <t t-set="line_count" t-value="len(o.payment_line_ids)"/>
+                                            <t t-set="counter" t-value="0"/> 
+                                            <t t-foreach="o.payment_line_ids" t-as="line">
+                                                <t t-set="counter" t-value="counter + 1"/>
+                                                <t t-if="counter &gt; 1">, </t>
+                                                <span t-field="line.origin"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>No. Payment</th>
+                                        <td> : <span t-field="o.name"/></td>
+                                    </tr>
+                                </table>
+                            </th>
+                        </tr>
+                        <tr style="border: 1px solid black;">
+                            <td class="header-left" rowspan="2" style="border: 1px solid black;">
+                                <table style="border: none; font-size: 8px;">
+                                    <tr>
+                                        <th>Dibayar Kepada</th>
+                                        <td> : <span t-field="o.partner_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Nominal</th>
+                                        <td> : <span t-esc="o.format_amount(o.amount)"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Terbilang</th>
+                                        <td style="font-weight: bold; font-style: italic;"> : # <span t-field="o.amount_text"/> rupiah #</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td class="header-right" colspan="2">
+                                <table style="border: none; font-size: 8px;">
+                                    <tr>
+                                        <th style="width: 20%">Beban</th>
+                                        <td style="width: 80%">:</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Dept/Divisi</th>
+                                        <td>:</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="header-left" colspan="2">
+                                <t t-set="row_count" t-value="len(o.move_id.line_ids.filtered(lambda l: l.debit > 0)) + 1"/>
+                                <table style="border: 1px solid black; font-size: 8px;">
+                                    <tr style="border: 1px solid black;">
+                                        <th t-att-rowspan="row_count" style="background-color: orange; border: 1px solid black; text-align:center;">
+                                            Rincian COA
+                                        </th>
+                                        <th style="background-color: orange; border: 1px solid black;">Dept</th>
+                                        <th style="background-color: orange; border: 1px solid black;">No COA</th>
+                                        <th style="background-color: orange; border: 1px solid black;">Nilai</th>
+                                    </tr>
+                                    <t t-foreach="o.move_id.line_ids" t-as="jurnal">
+                                        <t t-if="jurnal.debit > 0">
+                                            <tr style="border: 1px solid black;">
+                                                <td style="border: 1px solid black;"/>
+                                                <td t-esc="jurnal.account_id.name" style="border: 1px solid black;"/>
+                                                <td style="text-align:right; border: 1px solid black;"><span t-esc="o.format_amount(jurnal.debit)"/></td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="header-left" style="background-color: orange; font-size: 8px; border: 1px solid black;">Untuk Pembayaran :</td>
+                            <td class="header-right" style="background-color: orange; font-size: 8px; border: 1px solid black;" colspan="2">Penyelesaian bon sementara : (diisi kasir)</td>
+                        </tr>
+                        <tr>
+                            <td class="header-left" style="font-size: 8px; border: 1px solid black;">
+                                <p><span t-field="o.ref"/></p>
+                            </td>
+                            <td class="header-right" colspan="2">
+                                <table style="border: none; font-size: 8px;">
+                                    <tr>
+                                        <th style="width: 20%">Nama PIC BS</th>
+                                        <td>: </td>
+                                    </tr>
+                                    <tr>
+                                        <th>No Invoicing BS</th>
+                                        <td>: </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Jumlah BS</th>
+                                        <td>: Rp</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Pembayaran/Pengembalian BS</th>
+                                        <td>: Rp</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr style="border: 1px solid black;">
+                            <td rowspan="8" style="width:50%; border: 1px solid black; vertical-align: top;">
+                                <table style="border: none; font-size: 8px; width: 100%; height: 100%;" class="signature-box">
+                                    <tr class="signature-box-header">
+                                        <th>Dibuat Oleh</th>
+                                        <th>Diperiksa Oleh</th>
+                                        <th>Disetujui Oleh</th>
+                                        <th>Kasir</th>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="signature-box-footer">
+                                        <td>(Nama dan Tanggal)</td>
+                                        <td>(Nama dan Tanggal)</td>
+                                        <td>(Nama dan Tanggal)</td>
+                                        <td>(Nama dan Tanggal)</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="width:30%; border: 1px solid black;">
+                                <table style="border: none; font-size: 8px;">
+                                    <tr>
+                                        <th style="width: 40%">Jenis Pembayaran</th>
+                                        <td>: </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th style="text-decoration: underline;">Transfer ke rekening</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Atas Nama</th>
+                                        <td>: </td>
+                                    </tr>
+                                    <tr>
+                                        <th>No. Rekening</th>
+                                        <td>: </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank</th>
+                                        <td>: </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td tyle="width:20%; border: 1px solid black; vertical-align: top;">
+                                <table style="border: none; font-size: 8px; width: 100%; height: 100%; margin:0;" class="signature-box">
+                                    <tr class="signature-box-header">
+                                        <th>Dibuat Oleh</th>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="signature-box-footer">
+                                        <td>(Isi Nama dan Tanggal)</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </t>
+            </body>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ny_account_ny_account,ny_account.ny_account,model_ny_account_ny_account,base.group_user,1,1,1,1
