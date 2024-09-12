@@ -1,0 +1,130 @@
+<odoo>
+    <template id="invoice_report_custom">
+        <t t-call="web.html_container">
+            <head>
+                <style>
+                    table.bordered {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    table.bordered th, table.bordered td {
+                        border: 1px solid black;
+                        padding: 5px;
+                    }
+                    .right-align {
+                        text-align: right;
+                    }
+                    table.no-border {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    table.no-border th, table.no-border td {
+                        border: -1px solid black;
+                        padding: 5px;
+                    }
+                    table.no-border2 {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    table.no-border2 th, table.no-border2 td {
+                        border: -1px solid black;
+                        padding: 2px;
+                    }
+                </style>
+            </head>
+            <t t-foreach="docs" t-as="o">
+                <!-- Tabel Pertama (Tanpa Border) -->
+                <div class="invoice-table">
+                    <h2>NYALINDUNG</h2>
+                    <h6>FAKTUR/INVOICE</h6>
+                    <table class="no-border; font-size: 7px;">
+                        <tr>
+                            <td>No</td>
+                            <td>: </td>
+                            <td><t t-esc="o.name"/></td>
+                            <td t-if="o.invoice_line_ids" rowspan="3">
+                                <t t-foreach="o.invoice_line_ids" t-as="line" t-if="line.plantation_activity_id">
+                                    <span><t t-esc="line.plantation_activity_id.name or 'N/A'"/></span>
+                                    <br/>
+                                </t>
+                            </td>
+                            <td><t t-esc="o.partner_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>: </td>
+                            <td><t t-esc="o.invoice_date"/></td>
+                            <!-- <td></td> -->
+                            <td><t t-esc="o.partner_id.contact_address"/></td>
+                        </tr>
+                        <tr>
+                            <td>Due Date</td>
+                            <td>: </td>
+                            <td><t t-esc="o.invoice_date_due"/></td>
+                            <!-- <td></td> -->
+                            <td><t t-esc="o.partner_id.phone or ''"/></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Tabel Kedua (Produk) dengan Border -->
+                <table class="bordered">
+                    <tr>
+                        <th>No.</th>
+                        <th>Deskripsi/Product</th>
+                        <th>Qty</th>
+                        <th>UoM</th>
+                        <th>Price</th>
+                        <th></th>
+                        <th>Amount</th>
+                    </tr>
+                    <t t-set="index" t-value="0"/>
+                    <t t-foreach="o.invoice_line_ids" t-as="line">
+                        <t t-set="index" t-value="index + 1"/>
+                        <tr style="border: 1px solid black;">
+                            <td style="border: 1px solid black;"><t t-esc="index"/></td>
+                            <td><t t-esc="line.name"/></td>
+                            <td class="right-align"><t t-esc="line.quantity"/></td>
+                            <td><t t-esc="line.product_uom_id.name"/></td>
+                            <td class="right-align"><t t-esc="line.price_unit"/></td>
+                            <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                            <td class="right-align"><t t-esc="line.price_total"/></td>
+                        </tr>
+                    </t>
+                </table>
+
+                <!-- Perhitungan Sub Total dan Total Diskon -->
+                <t t-set="sub_total" t-value="sum(line.price_unit * line.quantity for line in o.invoice_line_ids)"/>
+                <t t-set="total_discount" t-value="sum(line.price_unit * line.quantity * line.discount / 100 for line in o.invoice_line_ids)"/>
+
+                <!-- Tabel Ketiga (Tanpa Border) -->
+                <table class="no-border2">
+                    <tr>
+                        <td colspan="4" class="terbilang">Terbilang</td>
+                        <td class="right-align col-narrow">Sub Total</td>
+                        <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                        <td class="right-align col-narrow"><t t-esc="sub_total"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="terbilang" style="font-style: italic;"># <t t-esc="o.amount_text"/> rupiah #</td>
+                        <td class="right-align">Disc Total</td>
+                        <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                        <td class="right-align"><t t-esc="total_discount"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="right-align">PPN 11%</td>
+                        <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                        <td class="right-align"><t t-esc="o.amount_tax"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="right-align">Grand Total</td>
+                        <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                        <td class="right-align"><t t-esc="o.amount_total"/></td>
+                    </tr>
+                </table>
+            </t>
+        </t>
+    </template>
+</odoo>

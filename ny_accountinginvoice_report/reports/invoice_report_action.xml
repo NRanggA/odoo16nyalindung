@@ -1,0 +1,29 @@
+<odoo>
+    <!-- Paper format untuk laporan F4 -->
+    <record id="paperformat_f4" model="report.paperformat">
+        <field name="name">F4</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+    
+    <!-- Definisi action report -->
+    <record id="action_invoice_report_custom" model="ir.actions.report">
+        <field name="name">Invoice Nyalindung</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ny_accountinginvoice_report.invoice_report_custom</field>
+        <field name="report_file">ny_accountinginvoice_report.invoice_report_custom</field>
+        <field name="paperformat_id" ref="paperformat_f4"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
