@@ -106,7 +106,8 @@
                                 <table class="logo" style="border: none; font-size: 10px; text-align: left;">
                                     <tr>
                                         <th rowspan="4" width="40%">
-                                            <img t-att-src="'http://localhost:8069/ny_account/static/src/img/logo.jpg'" width="170px" height="40px" alt="Logo"/>
+                                            <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
+                                            <!-- <img t-att-src="'http://localhost:8069/ny_account/static/src/img/logo.jpg'" width="170px" height="40px" alt="Logo"/> -->
                                         </th>
                                         <th style="font-size: 13px;">BUKTI PENGELUARAN BANK</th>
                                     </tr>

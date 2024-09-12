@@ -29,7 +29,7 @@
         'views/templates.xml',
 
         # Report Payment
-        'report/report_payment_template.xml',
+        'report/report_payment_bank_template.xml',
         'report/report_payment_cash_template.xml',
         'report/action_report_payment.xml',
         'views/account_payment_views.xml',

@@ -26,8 +26,10 @@
         # 'security/ir.model.access.csv',
         'report/sales_quotation_karet.xml',
         'report/form_pengeluaran_barang_template.xml',
+        'report/surat_jalan_template.xml',
         'report/form_pengeluaran_barang_action.xml',
-        'report/sales_quotation_karet_action.xml'
+        'report/sales_quotation_karet_action.xml',
+        'report/surat_jalan_action.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

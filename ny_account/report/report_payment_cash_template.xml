@@ -25,11 +25,13 @@
                         text-align: left;
                         padding: 5px;
                     }
+                    .signature-box, td, th{
+                        padding:4px;
+                    }
                     .signature-box .signature-box-header{
                         background-color: orange;
                         vertical-align: top;
                     }
-
                     .signature-box .signature-box-footer{
                         vertical-align: buttom;
                     }
@@ -38,15 +40,16 @@
             <body>
                 <t t-set="o" t-value="doc"/>
                 <t t-foreach="docs" t-as="o">
-                    <table class="header-table" style="border: 1px solid black; text-align: left; padding: 5px;">
-                        <tr style="border: 1px solid black;">
+                    <table style="border: 1px solid black; text-align: left; padding: 5px;">
+                        <tr style="border: 1px solid black;" class="header-table">
                             <th class="header-left" style="border: 1px solid black;">
                                 <table style="border: none; font-size: 8px; text-align: left;">
                                     <tr>
                                         <th rowspan="4" width="40%">
-                                            <img t-att-src="'http://localhost:8069/ny_account/static/src/img/logo.jpg'" width="170px" height="40px" alt="Logo"/>
+                                            <!-- <img t-att-src="'http://localhost:8069/ny_account/static/src/img/logo.jpg'" width="170px" height="40px" alt="Logo"/> -->
+                                            <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                         </th>
-                                        <th style="font-size: 10px;">KASBON KELUAR</th>
+                                        <th style="font-size: 13px;">KASBON KELUAR</th>
                                     </tr>
                                     <tr>
                                         <td style="font-weight: bold;">PT. Nyalindung</td>
@@ -85,7 +88,7 @@
                                 </table>
                             </th>
                         </tr>
-                        <tr style="border: 1px solid black;">
+                        <tr style="border: 1px solid black;" class="header-table">
                             <td class="header-left" rowspan="2" style="border: 1px solid black;">
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
@@ -115,7 +118,7 @@
                                 </table>
                             </td>
                         </tr>
-                        <tr>
+                        <tr class="header-table">
                             <td class="header-left" colspan="2">
                                 <t t-set="row_count" t-value="len(o.move_id.line_ids.filtered(lambda l: l.debit > 0)) + 1"/>
                                 <table style="border: 1px solid black; font-size: 8px;">
@@ -139,11 +142,11 @@
                                 </table>
                             </td>
                         </tr>
-                        <tr>
+                        <tr class="header-table">
                             <td class="header-left" style="background-color: orange; font-size: 8px; border: 1px solid black;">Untuk Pembayaran :</td>
                             <td class="header-right" style="background-color: orange; font-size: 8px; border: 1px solid black;" colspan="2">Penyelesaian bon sementara : (diisi kasir)</td>
                         </tr>
-                        <tr>
+                        <tr class="header-table">
                             <td class="header-left" style="font-size: 8px; border: 1px solid black;">
                                 <p><span t-field="o.ref"/></p>
                             </td>
@@ -237,18 +240,6 @@
                                         <td></td>
                                         <td></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
                                     <tr class="signature-box-footer">
                                         <td>(Nama dan Tanggal)</td>
                                         <td>(Nama dan Tanggal)</td>
@@ -257,7 +248,7 @@
                                     </tr>
                                 </table>
                             </td>
-                            <td style="width:30%; border: 1px solid black;">
+                            <td style="width:30%; border: 1px solid black;" class="header-table">
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
                                         <th style="width: 40%">Jenis Pembayaran</th>
@@ -283,16 +274,10 @@
                                     </tr>
                                 </table>
                             </td>
-                            <td tyle="width:20%; border: 1px solid black; vertical-align: top;">
-                                <table style="border: none; font-size: 8px; width: 100%; height: 100%; margin:0;" class="signature-box">
+                            <td style="width:20%; border: 1px solid black; vertical-align: top;">
+                                <table style="border: none; font-size: 8px; width: 100%; height: 100%;" class="signature-box">
                                     <tr class="signature-box-header">
-                                        <th>Dibuat Oleh</th>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
+                                        <th style="text-align:center;">Dibuat Oleh</th>
                                     </tr>
                                     <tr>
                                         <td></td>
@@ -325,7 +310,7 @@
                                         <td></td>
                                     </tr>
                                     <tr class="signature-box-footer">
-                                        <td>(Isi Nama dan Tanggal)</td>
+                                        <td style="text-align:center;">(Nama dan Tanggal)</td>
                                     </tr>
                                 </table>
                             </td>
