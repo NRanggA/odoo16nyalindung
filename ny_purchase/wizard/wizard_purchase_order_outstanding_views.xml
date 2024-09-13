@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_purchase_order_outstanding_view_form" model="ir.ui.view">
+        <field name="name">wizard.purchase.order.outstanding.view.form</field>
+        <field name="model">wizard.purchase.order.outstanding</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Order Outstanding">
+                <sheet>
+                    <group>
+                        <field name="date" widget="date" />
+                    </group>
+                    <footer>
+                        <button string="Search" type="object" name="action_po" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_purchase_order_outstanding_action" model="ir.actions.act_window">
+        <field name="name">Wizard Purchase Order Outstanding</field>
+        <field name="res_model">wizard.purchase.order.outstanding</field>
+        <field name="view_mode">form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="target">new</field>
+    </record>
+
+
+
+</odoo>
