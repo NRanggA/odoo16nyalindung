@@ -19,8 +19,11 @@
     'depends': ['base','account_statement_base', 'account_reconcile_oca'],
 
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
+        'data/cash_type.xml',
         'views/bank_statement.xml',
+        'views/cash_type.xml',
+        'views/menu_items.xml',
         'views/templates.xml',
     ],
 }

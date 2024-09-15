@@ -40,6 +40,16 @@
                     <attribute name="required">1</attribute>
                     <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
                 </xpath>
+                <xpath expr="//field[@name='line_ids']" position="after">
+                    <field name="type" invisible="1" />
+                    <separator string="Cash Count"/>
+                    <field name="cash_count_line_ids" attrs="{'invisible': [('type','!=','cash')]}">
+                        <tree create="0" delete="0" editable="bottom" >
+                            <field name="cash_type_id" readonly="1"/>
+                            <field name="amount" />
+                        </tree>
+                    </field>
+                </xpath>
             </field>
         </record>
 
