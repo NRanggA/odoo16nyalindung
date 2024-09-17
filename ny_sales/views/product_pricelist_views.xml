@@ -18,6 +18,12 @@
         <field name="model">product.pricelist</field>
         <field name="inherit_id" ref="product.product_pricelist_view"/>
         <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="button_approve" states="draft" string="Approve" type="object" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,running" readonly="1"/>
+                </header>
+            </xpath>
             <xpath expr="//field[@name='item_ids']/tree[@groups='!product.group_sale_pricelist']/field[@name='min_quantity']" position="attributes">
                 <attribute name='attrs'>{'column_invisible': [('parent.is_grade', '=', True)]}</attribute>
             </xpath>
