@@ -32,7 +32,7 @@
                         <table width="100%">
                             <tbody>
                                 <tr>
-                                    <td style="text-align: left; width: 50%;">No: 004/MKT-SP/VII/23</td>
+                                    <td style="text-align: left; width: 50%;">No: <t t-if="o.name" t-esc="o.name"/></td>
                                     <td style="text-align: right; width: 50%;">Nyalindung, <span t-esc="formatted_date"/></td>
                                 </tr>
                             </tbody>
@@ -40,7 +40,6 @@
                         <div>
                             <p style="line-height: 28px">Kepada Yth <br/>
                             <span><t t-esc="o.partner_id.name"/></span> <br/>
-                            <span>PT Sinar Multinaga Sejahtera</span> <br/>
                             <span style="text-decoration : underline">Hal : PenawaranProdukKaret</span>
                             </p>
                         </div>
@@ -69,6 +68,21 @@
 
                         <p style="margin-top : 24px">*) Harga belum termasuk PPN 11%</p>
                         <p style="margin-top : 14px; text-align: justify">Demikian penawaran ini dibuat, semoga menjadi pertimbangan bapak untuk membeli produk kami. Terima kasih.</p>
+                        <t t-set="marketing" t-value=""/>
+                        <t t-if="o.marketing">
+                            <t t-set="marketing" t-value="o.marketing"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="marketing" t-value="o.get_marketing()"/>
+                        </t>
+
+                        <t t-set="phone" t-value=""/>
+                        <t t-if="o.phone">
+                            <t t-set="phone" t-value="o.phone"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="phone" t-value="o.get_phone()"/>
+                        </t>
                         <table>
                             <tbody>
                                 <tr>
@@ -79,9 +93,9 @@
                                     </td>
                                     <tr height="80px"></tr>
                                     <tr>
-                                        <td><span style="text-decoration: underline;">Ilmiano Swara</span><br/>
+                                        <td><span style="text-decoration: underline;"><t t-esc="marketing"/></span><br/>
                                             Marketing<br/>
-                                            0852 2130 6440
+                                            <span><t t-esc="phone"/></span>
                                         </td>
                                     </tr>
                                 </tr>

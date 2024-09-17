@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="nyalindung_report_inherit_sale_order" model="ir.ui.view">
+        <field name="name">nyalindung.report.inherit.sale.order</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="user_id" position="replace">
+                <field name="marketing" />
+            </field>
+            <field name="marketing" position="after">
+                <field name="phone" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

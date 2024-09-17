@@ -9,7 +9,7 @@
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">nyalindung_report.sales_quotation_karet_template</field>
             <field name="report_file">nyalindung_report.sales_quotation_karet_template</field>
-            <field name="print_report_name">'Sales Quotation Karet (%s)' %object.partner_id.name</field>
+            <field name="print_report_name">'Sales Quotation Karet (%s)' %object.name</field>
             <field name="paperformat_id" ref="paperformat_sales_quotation_karet"/>
             <field name="binding_model_id" ref="sale.model_sale_order"/>
         </record>

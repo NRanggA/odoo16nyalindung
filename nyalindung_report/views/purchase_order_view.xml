@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="nyalindung_report_inherit_purchase_order" model="ir.ui.view">
+        <field name="name">nyalindung.report.inherit.purchase.order</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='purchase_delivery_invoice']" position="inside">
+                <group>
+                    <group name="dibuat_oleh" string="Dibuat Oleh">
+                        <field name="dibuat_oleh" string="Nama"/>
+                        <field name="jabatan_pembuat" string="Jabatan"/>
+                    </group>
+                    <group name="disetuji" string="Disetujui Oleh">
+                        <field name="disetujui" string="Nama"/>
+                        <field name="jabatan_penyetuju" string="Jabatan"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
