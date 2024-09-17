@@ -81,7 +81,7 @@
                             <tr>
                                 <td><strong>No. Rekening</strong></td>
                                 <td><strong>:</strong></td>
-                                <td><t t-esc="bank_acc_number"/></td> <!-- Revisi: Menampilkan No. Rekening, bukan Nama Bank -->
+                                <td><t t-esc="bank_acc_number"/></td>
                             </tr>
                         </t>
                     </table>

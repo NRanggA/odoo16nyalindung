@@ -1,0 +1,84 @@
+<odoo>
+    <template id="material_request_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Form Pengeluaran Barang</h2>
+                        <table class="no-border" width="100%">
+                            <tr>
+                                <td rowspan="3" colspan="3" style="width: 50%; text-align: center;">
+                                    <div style="font-size: 16px;">PERKEBUNAN TEH DAN KARET</div>
+                                    <div style="font-size: 20px; font-weight: bold;">PT. NYALINDUNG</div>
+                                    <div style="font-size: 14px;">POST ADDRESS PADALARANG BANDUNG</div>
+                                    <div style="border-top: 1px solid black; margin-top: 5px;"></div>
+                                </td>
+                                <td colspan="3" style="font-size: 15px; font-weight: bold; text-align: center;">
+                                    BON PERMINTAAN / PENGELUARAN BARANG
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Bagian: <t t-esc="doc.department_id.name"/></td>
+                                <td>No.: <t t-esc="doc.name"/></td>
+                            </tr>
+                        </table>
+                        
+                        <table border="1" width="100%" style="border-collapse: collapse;">
+                            <tr>
+                                <th rowspan="2" class="center">No.</th>
+                                <th rowspan="2" class="center">Nama Barang</th>
+                                <th colspan="2" class="center">Banyaknya</th>
+                                <th rowspan="2" class="center">Satuan</th>
+                                <th rowspan="2" class="center">Keterangan</th>
+                            </tr>
+                            <tr>
+                                <th class="center">Diminta</th>
+                                <th class="center">Dikeluarkan</th>
+                            </tr>
+                            <t t-foreach="doc.request_line_ids" t-as="line">
+                                <tr>
+                                    <td class="center">
+                                        <t t-esc="line.sequence"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="line.product_id.name"/>
+                                    </td>
+                                    <td class="center">
+                                        <t t-esc="line.product_qty"/>
+                                    </td>
+                                    <td class="center">
+                                        <t t-esc="line.qty_delivered"/>
+                                    </td>
+                                    <td class="center">
+                                        <t t-esc="line.product_uom_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="line.notes"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+
+                        <table class="no-border" width="100%">
+                            <tr>
+                                <td colspan="4" style="text-align: right;">Nyalindung, <t t-esc="doc.date"/></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">Menyetujui</td>
+                                <td style="text-align: center;">Kepala Gudang</td>
+                                <td style="text-align: center;">Penerima</td>
+                                <td style="text-align: center;">Pemohon</td>
+                            </tr>
+                            <tr>
+                                <td style="height: 50px; text-align: center;">(.........................)</td>
+                                <td style="height: 50px; text-align: center;">(.........................)</td>
+                                <td style="height: 50px; text-align: center;">(.........................)</td>
+                                <td style="height: 50px; text-align: center;">(.........................)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
