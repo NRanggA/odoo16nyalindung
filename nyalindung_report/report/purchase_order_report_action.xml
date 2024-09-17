@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="purchase_order_report_action" model="ir.actions.report">
+            <field name="name">Nyalindung Purchase Order</field>
+            <field name="model">purchase.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">nyalindung_report.purchase_order_report_template</field>
+            <field name="report_file">nyalindung_report.purchase_order_report_template</field>
+            <field name="print_report_name">'Purchase Order (%s)' %object.name</field>
+            <field name="paperformat_id" ref="paperformat_purchase_order_report"/>
+            <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        </record>
+    
+    </data>
+    
+
+</odoo>

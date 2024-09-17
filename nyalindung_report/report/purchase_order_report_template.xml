@@ -1,0 +1,215 @@
+<odoo>
+    <data>
+
+        <template id="purchase_order_report_template">
+            <t t-call="web.html_container"> 
+                <t t-foreach="docs" t-as="o">
+                    <div class="header" style="margin: 0; padding: 0">
+                        <img src="/nyalindung_report/static/img/logo.jpg" width="340px" height="80px"/>
+                    </div>
+                    <div class="page" style="font-family: 'Arial', sans-serif;">
+                        <t t-set="months" t-value="{
+                            '01': 'Januari',
+                            '02': 'Februari',
+                            '03': 'Maret',
+                            '04': 'April',
+                            '05': 'Mei',
+                            '06': 'Juni',
+                            '07': 'Juli',
+                            '08': 'Agustus',
+                            '09': 'September',
+                            '10': 'Oktober',
+                            '11': 'November',
+                            '12': 'Desember'
+                        }"/>
+
+                        <t t-set="day" t-value="o.date_order.strftime('%d')"/>
+                        <t t-set="month" t-value="months[o.date_order.strftime('%m')]"/>
+                        <t t-set="year" t-value="o.date_order.strftime('%Y')"/>
+                        <t t-set="formatted_date" t-value="day + '  ' + month + '  ' + year"/>
+
+                        <t t-set="approve_day" t-value="o.date_approve.strftime('%d')"/>
+                        <t t-set="approve_month" t-value="months[o.date_approve.strftime('%m')]"/>
+                        <t t-set="approve_year" t-value="o.date_approve.strftime('%Y')"/>
+                        <t t-set="approve_date" t-value="approve_day + '  ' + approve_month + '  ' + approve_year"/>
+
+
+                        <p style="font-size : 20px; padding-top: 40px; text-align : center;"><span style="text-decoration : underline">PURCHASE ORDER</span> <br/>
+                        NOMOR : <t t-esc="o.name"/>
+                        </p>
+
+                        <table width="80%" style="margin-left : 68px">
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: left; width: 50%; vertical-align: top;">Supplier: <span style="text-transform : uppercase"><t t-if="o.partner_id.name" t-esc="o.partner_id.name"/></span> <br/> <span style="padding-left : 68px"><t t-if="o.partner_id.city" t-esc="o.partner_id.city"/>.</span></td>
+                                    <td style="text-align: right; width: 50%; vertical-align: top;">Nyalindung, <span t-esc="formatted_date"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <t t-set="seq" t-value="1"/>
+                        <table width="100%" style="border-collapse: collapse; margin-top : 40px" border="1">
+                            <tbody>
+                                <tr style="text-align : center" height="34px">
+                                    <td>NO</td>
+                                    <td>NAMA BARANG</td>
+                                    <td>QTY</td>
+                                    <td>SATUAN</td>
+                                    <td>HARGA</td>
+                                    <td>JUMLAH</td>
+                                </tr>
+                                <tr height="34px" t-foreach="o.order_line" t-as="item">
+                                    <td style="text-align : center"> <t t-esc="seq"/> </td>
+                                    <td style="padding-left: 8px"><t t-esc="item.product_id.name"/></td>
+                                    <td style="text-align: center"><t t-esc="item.product_qty" t-options='{"widget": "float", "precision": 0}'/></td>
+                                    <td style="text-align: center"><t t-esc="item.product_uom.name"/></td>
+                                    <td style="text-align: center"><t t-esc="item.price_unit" t-options='{"widget": "float", "precision": 0}'/></td>
+                                    <td style="text-align: center"><t t-esc="item.price_subtotal" t-options='{"widget": "float", "precision": 0}'/></td>
+                                    <t t-set="seq" t-value="seq + 1"/>
+                                </tr>
+                                <t t-set="grouped_taxes" t-value="o.get_grouped_taxes()"/>
+                                <t t-if="grouped_taxes" t-foreach="grouped_taxes.values()" t-as="tax">
+                                    <td></td>
+                                    <td style="padding-left: 8px; font-weight : bold"><t t-esc="tax['name']"/></td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"><t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0}'/></td>
+                                </t>
+                                <tr height="34px" style="font-weight : bold">
+                                    <td style=""></td>
+                                    <td style="text-align : center">JUMLAH</td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"><t t-esc="o.tax_totals['amount_total']" t-options='{"widget": "float", "precision": 0}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table width="90%" style="margin-left : 48px; margin-top: 48px">
+                            <tbody>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Term of Payment</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.payment_term_id" t-esc="o.payment_term_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Delivery Time</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.date_approve" t-esc="approve_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Lokasi Kirim</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td style="padding-left : 8px; padding-right: 8px; vertical-align: top; line-height: 18px"><t t-esc="o.company_id.name"/> <br/>
+                                        <span t-if="o.company_id.street" t-esc="o.company_id.street"/> <span t-if="o.company_id.street2" t-esc="o.company_id.street2"/> <span t-if="o.company_id.city" t-esc="o.company_id.city"/> <span t-if="o.company_id.zip" t-esc="o.company_id.zip"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Telepon</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.company_id.phone" t-esc="o.company_id.phone"/></td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">NPWP</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.company_id.vat" t-esc="o.company_id.vat"/></td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Pembayaran Transfer</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.partner_id.bank_ids" t-esc="o.partner_id.bank_ids[0].bank_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Nomor Rekening</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.partner_id.bank_ids" t-esc="o.partner_id.bank_ids[0].acc_number"/></td>
+                                </tr>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Pemilik Rekening</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-esc="o.partner_id.name"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <t t-set="dibuat_oleh" t-value=""/>
+                        <t t-if="o.dibuat_oleh">
+                            <t t-set="dibuat_oleh" t-value="o.dibuat_oleh"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="dibuat_oleh" t-value="o.get_dibuat_oleh()"/>
+                        </t>
+
+                        <t t-set="jabatan_pembuat" t-value=""/>
+                        <t t-if="o.jabatan_pembuat">
+                            <t t-set="jabatan_pembuat" t-value="o.jabatan_pembuat"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="jabatan_pembuat" t-value="o.get_jabatan_pembuat()"/>
+                        </t>
+
+                        <t t-set="disetujui" t-value=""/>
+                        <t t-if="o.disetujui">
+                            <t t-set="disetujui" t-value="o.disetujui"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="disetujui" t-value="o.get_disetujui()"/>
+                        </t>
+
+                        <t t-set="jabatan_penyetuju" t-value=""/>
+                        <t t-if="o.jabatan_penyetuju">
+                            <t t-set="jabatan_penyetuju" t-value="o.jabatan_penyetuju"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="jabatan_penyetuju" t-value="o.get_jabatan_penyetuju()"/>
+                        </t>
+                        <table width="90%" style="margin-left : 48px; margin-top: 48px">
+                            <tbody>
+                                <tr>
+                                    <td width="40%" style="text-align : center">Dibuat</td>
+                                    <td style="text-align : center">Disetujui</td>
+                                </tr>
+                                <tr height="100px">
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p style="text-align : center; vertical-align : top"><span style="text-transform : uppercase;" t-esc="dibuat_oleh"/><br/>
+                                        <t t-esc="jabatan_pembuat"/>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p style="text-align : center; vertical-align : top"><span style="text-transform : uppercase;" t-esc="disetujui"/><br/>
+                                        <t t-esc="jabatan_penyetuju"/>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer">
+                        <div style="text-align: center; font-size: 8px">
+                            <span class="page"/>
+                        </div>
+                    </div>   
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_purchase_order_report" model="report.paperformat">
+            <field name="name">Purchase Order</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="page_width">0</field>
+            <field name="page_width">0</field>
+            <field name="margin_top">24</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_right">24</field>
+            <field name="margin_left">24</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">18</field>
+            <field name="dpi">90</field>
+        </record>
+    </data>
+</odoo>
