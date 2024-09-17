@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    
+       <menuitem id="cash_type_menu" name="Cash Type" action="cash_type_action" parent="account.account_banks_menu" sequence="4"/> 
+    
+    </data>
+</odoo>

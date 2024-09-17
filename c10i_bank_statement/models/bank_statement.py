@@ -4,6 +4,10 @@ from odoo.exceptions import UserError
 class AccountBankStatement(models.Model):
     _inherit = 'account.bank.statement'
 
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company.id)
+    cash_count_line_ids = fields.One2many('cash.count.line', 'statement_id', string='Cash Count Line')
+    type = fields.Selection([], string='Type', related="journal_id.type")
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('validated', 'Validated'),
@@ -30,3 +34,17 @@ class AccountBankStatement(models.Model):
             'context': {'default_journal_id': self.journal_id.id, 'search_default_not_reconciled': True, 'view_ref': 'account_reconcile_oca.bank_statement_line_form_reconcile_view'},
             'domain': [('statement_id', '=', self.id)],
         }
+        
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountBankStatement, self).default_get(fields)
+        if res:
+            records = self.env['cash.type'].search([])
+            vals = [(0, 0, {'cash_type_id': rec.id}) for rec in records]
+            res.update({"cash_count_line_ids":vals})
+        return res
+    
+    @api.onchange('cash_count_line_ids')
+    def onchange_ending_balance(self):
+        total = sum(rec.cash_type_id.amount * rec.amount for rec in self.cash_count_line_ids)
+        self.write({'balance_end_real': total})
