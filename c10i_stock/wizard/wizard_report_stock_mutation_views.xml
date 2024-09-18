@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_report_stock_mutation_view_form" model="ir.ui.view">
+        <field name="name">wizard.report.stock.mutation.view.form</field>
+        <field name="model">wizard.report.stock.mutation</field>
+        <field name="arch" type="xml">
+            <form string="Report Stock Mutation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="from_date" />
+                            <field name="location_id" />
+                            <field name="company_id" />
+                        </group>
+                        <group>
+                            <field name="to_date" />
+                            <field name="username" />
+                            <field name="show_value" widget="radio" />
+                        </group>
+                    </group>
+                    <group name="location" string="Product">
+                        <field name="product_ids"/>
+                    </group>
+                    <footer>
+                        <button string="print" type="object" name="create_report" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_report_stock_mutation_action" model="ir.actions.act_window">
+        <field name="name">Report Stock Mutation</field>
+        <field name="res_model">wizard.report.stock.mutation</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="wizard_report_stock_mutation_menu"
+        name="Stock Mutation"
+        action="wizard_report_stock_mutation_action"
+        parent="stock.menu_warehouse_report"
+        sequence="99"/>
+
+</odoo>

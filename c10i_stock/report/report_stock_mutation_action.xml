@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action Report EXCEL stock mutation -->
+    <record id="action_stock_mutation_report_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Stock Mutation XLSX</field>
+        <field name="model">wizard.report.stock.mutation</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">c10i_stock.stock_mutation_xlsx</field>
+        <field name="report_file">c10i_stock.stock_mutation_xlsx</field>
+        <field name="print_report_name">'(LAPORAN STOCK MUTATION XLSX)'</field>
+        <field name="binding_model_id" ref="c10i_stock.model_wizard_report_stock_mutation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
