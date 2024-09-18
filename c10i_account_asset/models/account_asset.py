@@ -12,6 +12,18 @@ class AccountAsset(models.Model):
     sell_account_move_id = fields.Many2one('account.move', 'Sell Account Move', related="disposal_id.sell_account_move_id")
     reason = fields.Text(string="Sell/Dispose Reason", related="disposal_id.reason")
     acquisition_date = fields.Date('Acquisition Date')
+    gain_account_id = fields.Many2one('account.account', string='Gain Account on Sales')
+    loss_account_id = fields.Many2one('account.account', string='Loss Account on Sales')  
+
+    @api.onchange('category_id')
+    def _set_gain_and_loss_account(self):
+        if self.category_id:
+            try:
+                self.gain_account_id = self.category_id.gain_account_id.id
+                self.loss_account_id = self.category_id.loss_account_id.id
+            except:
+                self.gain_account_id = False
+                self.loss_account_id = False
     
     def validate(self):
         res = super(AccountAsset, self).validate()
@@ -25,3 +37,9 @@ class AccountAssetDepreciationLine(models.Model):
     _description = 'Asset depreciation line'
 
     ref = fields.Char('ref')
+
+class AccountAssetCategory(models.Model):
+    _inherit = 'account.asset.category'
+
+    gain_account_id = fields.Many2one('account.account', string='Gain Account on Sales')
+    loss_account_id = fields.Many2one('account.account', string='Loss Account on Sales')    
