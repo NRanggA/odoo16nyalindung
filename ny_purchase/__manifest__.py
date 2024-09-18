@@ -9,7 +9,6 @@
     'data': [
         'security/ir.model.access.csv',
         'views/purchase_order_views.xml',
-        'wizard/wizard_purchase_order_outstanding_views.xml',
         'views/purchase_order_report_outstanding_views.xml',
         'views/purchase_request_report_outstanding_views.xml',
         # 'reports/cimol.xml',
