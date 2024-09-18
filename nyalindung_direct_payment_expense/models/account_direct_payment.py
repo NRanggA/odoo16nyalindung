@@ -24,7 +24,7 @@ class DirectPayment(models.Model):
     direct_state = fields.Selection([
         ('send', 'Send'),
         ('receive', 'Receive'),
-    ], string='Direct State')
+    ], string='Direct State', default="send")
     employee_expense_id = fields.Many2one('hr.employee.expense', string='Employee Expense')
 
     def _prepare_payable_move_line(self, amount):
