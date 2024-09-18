@@ -7,7 +7,7 @@ class PurchaseRequestReportOutstanding(models.Model):
     _auto = False  
     _order = 'date desc'
 
-    date                    = fields.Datetime('As Of Date', default=fields.Datetime.now)
+    date                     = fields.Datetime('As Of Date', default=fields.Datetime.now)
     purchase_request_id      = fields.Many2one('purchase.request', string='Purchase Request')
     purchase_request_date    = fields.Datetime('PR Date') 
     product_id               = fields.Many2one('product.product', string='Product')
@@ -32,7 +32,6 @@ class PurchaseRequestReportOutstanding(models.Model):
                 LEFT JOIN purchase_request_purchase_order_line_rel rel ON rel.purchase_request_line_id = prl.id
                 WHERE pr.state = 'approved'
                 AND rel.purchase_order_line_id IS NULL
-                AND date_trunc('day', timezone('Asia/Jakarta', now())) = date_trunc('day', pr.date_start)
                 ORDER BY pr.date_start DESC
             )
         """)

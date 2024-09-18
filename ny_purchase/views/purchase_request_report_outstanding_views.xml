@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Definisi Tree View -->
+    <!-- Tree View -->
     <record id="purchase_request_report_outstanding_view_tree" model="ir.ui.view">
         <field name="name">purchase.request.report.outstanding.view.tree</field>
         <field name="model">purchase.request.report.outstanding</field>
@@ -16,7 +16,7 @@
         </field>
     </record>
 
-    <!-- Definisi Action -->
+    <!-- Action -->
     <record id="purchase_request_report_outstanding_action" model="ir.actions.act_window">
         <field name="name">Outstanding Report Purchase Request</field>
         <field name="res_model">purchase.request.report.outstanding</field>
@@ -24,23 +24,15 @@
         <field name="context">{'create': false}</field>
     </record>
 
-    <!-- Definisi Menu -->
-    <!-- <menuitem
-        id="purchase_request_report_outstanding_menu"
-        name="Outstanding Report PR"
-        action="purchase_request_report_outstanding_action"
-        parent="purchase_request.menu_purchase_request"
-        sequence="99"/> -->
-    <menuitem 
-        id="menu_report_outstanding_purchase_request"
-        name="Report"
-        parent="purchase_request.menu_purchase_request_root"
-        sequence="10"/>
-    
-    <menuitem 
-        id="submenu_report_outstanding_purchase_request"
-        name="Outstanding Purchase Request"
-        parent="menu_report_outstanding_purchase_request"
-        action="action_report_outstanding_purchase_request"
-        sequence="10"/>
+    <!-- Menu -->
+    <menuitem id="menu_report_outstanding_purchase_request"
+              name="Report"
+              parent="purchase_request.parent_menu_purchase_request"
+              sequence="10"/>
+
+    <menuitem id="submenu_report_outstanding_purchase_request"
+              name="Outstanding Purchase Request"
+              parent="ny_purchase.menu_report_outstanding_purchase_request"
+              action="purchase_request_report_outstanding_action"
+              sequence="10"/>
 </odoo>
