@@ -23,6 +23,8 @@ class MaterialRequest(models.Model):
                 picking = StockPicking.with_user(SUPERUSER_ID).create(res)
                 moves = request.line_ids._create_stock_moves(picking)
                 moves = moves.filtered(lambda x: x.state not in ('done', 'cancel'))._action_confirm()
+                # print("----------------", moves)
+                # print("---------------", stop)
                 # moves._action_assign()
                 picking.message_post_with_view('mail.message_origin_link',
                     values={'self': picking, 'origin': request},
@@ -100,6 +102,8 @@ class MaterialRequestLine(models.Model):
             if float_compare(line.product_qty, 0.0, precision_rounding=line.uom_id.rounding) > 0:
                 product_uom_qty, product_uom = line.uom_id._adjust_uom_quantities(line.product_qty, line.product_id.uom_id)
                 values.append(line._prepare_stock_move_vals(picking, product_uom_qty, product_uom))
+                # print('----------------', values)
+                # print('----------------', cimolgans)
         return self.env['stock.move'].create(values)
 
     def create_equipment_allocation(self):

@@ -33,7 +33,7 @@
                 </style>
             </head>
             <t t-foreach="docs" t-as="o">
-                <!-- Tabel Pertama (Tanpa Border) -->
+                <!-- Tabel Pertama -->
                 <div class="invoice-table">
                     <h2>NYALINDUNG</h2>
                     <h6>FAKTUR/INVOICE</h6>
@@ -54,20 +54,18 @@
                             <td>Date</td>
                             <td>: </td>
                             <td><t t-esc="o.invoice_date"/></td>
-                            <!-- <td></td> -->
                             <td><t t-esc="o.partner_id.contact_address"/></td>
                         </tr>
                         <tr>
                             <td>Due Date</td>
                             <td>: </td>
                             <td><t t-esc="o.invoice_date_due"/></td>
-                            <!-- <td></td> -->
                             <td><t t-esc="o.partner_id.phone or ''"/></td>
                         </tr>
                     </table>
                 </div>
 
-                <!-- Tabel Kedua (Produk) dengan Border -->
+                <!-- Tabel Kedua -->
                 <table class="bordered">
                     <tr>
                         <th>No.</th>
@@ -97,7 +95,7 @@
                 <t t-set="sub_total" t-value="sum(line.price_unit * line.quantity for line in o.invoice_line_ids)"/>
                 <t t-set="total_discount" t-value="sum(line.price_unit * line.quantity * line.discount / 100 for line in o.invoice_line_ids)"/>
 
-                <!-- Tabel Ketiga (Tanpa Border) -->
+                <!-- Tabel Ketiga -->
                 <table class="no-border2">
                     <tr>
                         <td colspan="4" class="terbilang">Terbilang</td>

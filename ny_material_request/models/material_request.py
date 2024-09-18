@@ -14,16 +14,17 @@ class MaterialRequest(models.Model):
     _inherit = "material.request"
 
     def _create_picking(self):
+        super(MaterialRequest, self)._create_picking()
         StockPicking = self.env['stock.picking']
-        for request in self.filtered(lambda mr: mr.state=='approved'):
-            if any((product.type=='product' and not product.product_asset) for product in request.line_ids.product_id):
+        for request in self.filtered(lambda mr: mr.state == 'approved'):
+            if any((product.type == 'product' and not product.product_asset) for product in request.line_ids.product_id):
                 request = request.with_company(request.company_id)
                 for user in request.line_ids.requested_by:
                     res = request._prepare_picking()
-                    res.update({"partner_id" : user.partner_id.id})
+                    res.update({"partner_id": user.partner_id.id})
                     picking = StockPicking.with_user(SUPERUSER_ID).create(res)
                     for mrlines in request.line_ids:
-                        if user == mrlines.requested_by :
+                        if user == mrlines.requested_by:
                             moves = mrlines._create_stock_moves(picking)
                             moves = moves.filtered(lambda x: x.state not in ('done', 'cancel'))._action_confirm()
                             picking.message_post_with_view('mail.message_origin_link',

@@ -17,32 +17,42 @@ class AccountAssetDisposal(models.Model):
     invoice_id = fields.Many2one('account.move', string="Customer Invoice", help="The disposal invoice is needed in order to generate the closing journal entry.", domain="[('move_type', '=', 'out_invoice'), ('state', '=', 'posted')]")
     invoice_line_id = fields.Many2one('account.move.line', help="There are multiple lines that could be the related to this asset", domain="[('move_id', '=', invoice_id)]") #('exclude_from_invoice_tab', '=', False)
     select_invoice_line_id = fields.Boolean(compute="_compute_select_invoice_line_id")
-    gain_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.account_journal_early_pay_discount_gain_account_id', help="Account used to write the journal item in case of gain", readonly=False)
-    loss_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.account_journal_early_pay_discount_loss_account_id', help="Account used to write the journal item in case of loss", readonly=False)
+    gain_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", string="Gain Account", help="Account used to write the journal item in case of gain", readonly=False)
+    loss_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", string="Loss Account", help="Account used to write the journal item in case of loss", readonly=False)
     # gain_account_id = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.gain_account_id', help="Account used to write the journal item in case of gain", readonly=False)
     # account_journal_early_pay_discount_loss_account_id	 = fields.Many2one('account.account', domain="[('deprecated', '=', False), ('company_id', '=', company_id)]", related='company_id.account_journal_early_pay_discount_loss_account_id	', help="Account used to write the journal item in case of loss", readonly=False)
 
     gain_or_loss = fields.Selection([('gain', 'Gain'), ('loss', 'Loss'), ('no', 'No')], compute='_compute_gain_or_loss', help="Technical field to know is there was a gain or a loss in the selling of the asset")
 
-    sell_value = fields.Float(string='Sell Value', digits=0, compute='_get_sell_value', store=True, readonly=False)
+    gross_value = fields.Float('Gross Value')
+    sell_value = fields.Float(string='Sell Value')
     sell_account_move_id = fields.Many2one('account.move', 'Sell Account Move')
     reason = fields.Text(string="Sell/Dispose Reason")
     value_residual = fields.Float(string="Residual Value")
+    cumulative_depreciation = fields.Float(string="Cumulative Depreciation")
     state = fields.Selection([('draft', 'Draft'), ('closed', 'Closed')], 'Status', readonly=True, copy=False, default='draft')
+    partner_id = fields.Many2one('res.partner', string='Customer')
+    sales_profit = fields.Float(compute='_compute_sales_profit', string='Sales Profit')
+    
+    @api.depends('value_residual', 'sell_value')
+    def _compute_sales_profit(self):
+        for rec in self:
+            rec.sales_profit = rec.sell_value - rec.value_residual
 
     @api.onchange('asset_id')
     def _onchange_asset_id(self):
         for record in self:
+            record.cumulative_depreciation = 0
+            record.value_residual = 0
             if record.asset_id:
+                record.gain_account_id = record.asset_id.gain_account_id.id
+                record.loss_account_id = record.asset_id.loss_account_id.id
                 record.value_residual = record.asset_id.value_residual
-            else:
-                record.value_residual = 0
-
-    @api.depends('invoice_id')
-    def _get_sell_value(self):
-        for record in self:
-            if record.invoice_id:
-                record.sell_value = record.invoice_id.invoice_line_ids[0].price_subtotal
+                record.gross_value = record.asset_id.value
+                try:
+                    record.cumulative_depreciation = record.asset_id.depreciation_line_ids.filtered_domain([('move_check','=',True)])[-1].depreciated_value
+                except:
+                    pass
 
     @api.depends('invoice_id', 'action')
     def _compute_select_invoice_line_id(self):
@@ -186,17 +196,86 @@ class AccountAssetDisposal(models.Model):
         self.state="closed"
         if move_ids:
             return self.asset_id._return_disposal_view(move_ids)
+        
+    def _prepare_sell_invoice_lines(self):
+        if self.gain_or_loss == 'gain':
+            vals = [(0,0, {
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': -self.sell_value,
+                'tax_ids': False,
+                'account_id': self.partner_id.property_account_receivable_id.id
+            }),
+            (0,0,{
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': self.gross_value,
+                'tax_ids': False,
+                'account_id': self.asset_id.category_id.account_asset_id.id
+            }),
+            (0,0,{
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': -self.cumulative_depreciation,
+                'tax_ids': False,
+                'account_id': self.asset_id.category_id.account_depreciation_id.id
+            }),
+            (0,0,{
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': self.sales_profit,
+                'tax_ids': False,
+                'account_id': self.gain_account_id.id
+            })]
+        else:
+            vals = [(0,0, {
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': -self.sell_value,
+                'tax_ids': False,
+                'account_id': self.partner_id.property_account_receivable_id.id
+            }),
+            (0,0,{
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': self.gross_value,
+                'tax_ids': False,
+                'account_id': self.asset_id.category_id.account_asset_id.id
+            }),
+            (0,0,{
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': -self.cumulative_depreciation,
+                'tax_ids': False,
+                'account_id': self.asset_id.category_id.account_depreciation_id.id
+            }),
+            (0,0,{
+                'name'      : self.asset_id.name,
+                'quantity'  : 1,
+                'price_unit': self.sales_profit,
+                'tax_ids': False,
+                'account_id': self.loss_account_id.id
+            })]
+        return vals
 
     def action_create_invoice(self):
-        res = self.env.ref('account.action_move_out_invoice_type').read()[0]
-        res['context'] = {
-            'default_move_type': 'out_invoice',
-            # 'default_invoice_line_ids': [{
-            #     'product_id': False,
-            #     'name'      : self.asset_id.name,
-            #     'quantity'  : 1,
-            #     'price_unit': self.sell_value,
-            #     'account_id': self.loss_account_id.id if self.loss_account_id else self.gain_account_id.id}]
+        move_dict = {
+            'move_type': 'out_invoice',
+            'partner_id': self.partner_id.id,
+            'invoice_date': fields.Date.today(),
         }
-        res['domain']=[('id', '=', False)]
-        return res
+        # Add the prepared invoice lines
+        move_dict['invoice_line_ids'] = self._prepare_sell_invoice_lines()
+        
+        # Create the invoice move
+        invoice = self.env['account.move'].with_context(check_move_validity=False).create(move_dict)
+        self.invoice_id = invoice.id
+        return {
+            'name': _('Invoice'),
+            'view_mode': 'form',
+            'res_model': 'account.move',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'target': 'current',
+            'res_id': invoice.id
+        }
