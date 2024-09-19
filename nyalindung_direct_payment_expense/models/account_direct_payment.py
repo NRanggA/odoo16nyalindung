@@ -24,7 +24,7 @@ class DirectPayment(models.Model):
     direct_state = fields.Selection([
         ('send', 'Send'),
         ('receive', 'Receive'),
-    ], string='Direct State', default="send")
+    ], string='Direct State')
     employee_expense_id = fields.Many2one('hr.employee.expense', string='Employee Expense')
 
     def _prepare_payable_move_line(self, amount):
@@ -80,6 +80,14 @@ class DirectPayment(models.Model):
 
         return True
     
+    def action_cancel(self):
+        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        for payment in self:
+            for payment in self:
+                if payment.account_move_id:
+                    payment.account_move_id.button_cancel()
+            payment.state="cancel"
+    
     def action_confirm(self):
         for payment in self:
             if payment.state!='draft':
@@ -95,9 +103,14 @@ class DirectPayment(models.Model):
         for payment in self:
             if payment.state!='confirm':
                 raise ValidationError(_('You cannot set Post payment that is not in a Confirmed State'))
-            payment.action_create_move()
+            
+            if not payment.account_move_id:
+                payment.action_create_move()
+                payment.name = payment.account_move_id.name
+
+            if payment.account_move_id and payment.account_move_id.state == 'cancel':
+                payment.account_move_id.action_post()
             payment.state="posted"
-            payment.name = payment.account_move_id.name
 
 class DirectPaymentLine(models.Model):
     _inherit = 'account.direct.payment.line'
@@ -116,8 +129,8 @@ class DirectPaymentLine(models.Model):
             'account_id': self.account_id.id,
             # 'analytic_account_id': self.analytic_account_id.id,
             'product_id': self.product_id.id,
-            'debit': (abs(amount) if amount < 0 else 0.0) if self.payment_id.expense_report else (amount if amount > 0 else 0.0),
-            'credit': (amount if amount > 0 else 0.0) if self.payment_id.expense_report else (abs(amount) if amount < 0 else 0.0),
+            'debit': (abs(amount) if amount < 0 else 0.0) if self.payment_id.expense_report or self.payment_id.direct_state == 'receive' else (amount if amount > 0 else 0.0),
+            'credit': (amount if amount > 0 else 0.0) if self.payment_id.expense_report or self.payment_id.direct_state == 'receive' else (abs(amount) if amount < 0 else 0.0),
         }
 
     @api.onchange('plantation_location_type_id')
