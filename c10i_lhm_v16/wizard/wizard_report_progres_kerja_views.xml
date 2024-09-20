@@ -50,7 +50,7 @@
             <field name="arch" type="xml">
                 <form string="Laporan Progres Pekerjaan Harian Material Detail">
                     <header>
-                        <button name="create_report" icon="fa-bar-char" type="object" default_focus="1" string="Print" class="oe_highlight"/>
+                        <button name="create_report" type="object" default_focus="1" string="Print" class="oe_highlight"/>
                     </header>
                     <sheet>
                         <center><h1>Laporan Progres Pekerjaan Harian Material Detail</h1></center>
