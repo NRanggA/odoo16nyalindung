@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.tools.float_utils import float_compare, float_is_zero, float_round
 
 class SaleOrderLines(models.Model):
     _inherit = 'sale.order.line'
