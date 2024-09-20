@@ -43,7 +43,7 @@ class AccountPayment(models.Model):
             
     def action_post(self):
         ''' draft -> posted '''        
-        if self.payment_type != 'outbound':            
+        if self.payment_type != 'outbound': 
             super().action_post()
         else:            
             if self.payment_line_ids:
@@ -118,6 +118,7 @@ class AccountPayment(models.Model):
                 super().action_post()
 
     def _synchronize_from_moves(self, changed_fields):
+        return
         ''' Update the account.payment regarding its related account.move.
         Also, check both models are still consistent.
         :param changed_fields: A set containing all modified fields on account.move.
