@@ -24,7 +24,7 @@ class ReportStockMutation(models.AbstractModel):
             'align': 'center',
             'valign': 'vcenter',
             'font_size': 10,
-            'bg_color': '#FFFFDB',
+            # 'bg_color': '#FFFFDB',
             'font_color': '#000000',
             'border': 1
         })
@@ -129,6 +129,18 @@ class ReportStockMutation(models.AbstractModel):
         workbook = self.add_workbook_format(workbook)
         wbf = self.wbf
 
+        from_date   = obj.from_date.strftime('%d-%m-%Y') if obj.from_date else ''
+        to_date     = obj.to_date.strftime('%d-%m-%Y') if obj.to_date else ''
+
+        if obj.product_ids:
+            products = obj.product_ids
+        else:
+            products = self.env['product.product'].search([])
+        
+
+        # print(f"===== {products}")
+
+
         # Nama worksheet
         sheet = workbook.add_worksheet('Stock Mutation')
 
@@ -140,7 +152,7 @@ class ReportStockMutation(models.AbstractModel):
 
         # Judul Laporan
         sheet.merge_range('D2:H2', 'INVENTORY MUTATION', wbf['title_doc'])
-        sheet.merge_range('D3:H3', '01-01-2020 s/d 31-01-2020', wbf['title_doc'])
+        sheet.merge_range('D3:H3', f'{from_date} s/d {to_date}', wbf['title_doc'])
 
         # Header Produk
         sheet.merge_range('A4:A5', 'Kode', wbf['header'])
@@ -165,26 +177,158 @@ class ReportStockMutation(models.AbstractModel):
 
 
 
-        # #
-        # products = [
-        #     {'code': 'A-012-001-13', 'name': 'Kiserite, MgO 27%, China', 'uom': 'kg', 'opening_qty': 0.0, 'received_qty': 0.0, 'used_qty': 0.0, 'adjust_qty': 0.0, 'closing_qty': 0.0},
-        #     {'code': 'A-022-001-22', 'name': 'UREA NON SUBSIDI', 'uom': 'kg', 'opening_qty': 1350.0, 'received_qty': 0.0, 'used_qty': 0.0, 'adjust_qty': 0.0, 'closing_qty': 1350.0},
-        # ]
 
-        # row = 5  # Mulai dari baris ke-6
-        # for product in products:
-        #     sheet.write(row, 0, product['code'], wbf['content'])  # Kode
-        #     sheet.write(row, 1, product['name'], wbf['content'])  # Nama Produk
-        #     sheet.write(row, 2, product['uom'], wbf['content'])  # Satuan
-        #     sheet.write(row, 3, product['opening_qty'], wbf['content_float'])  # Saldo Awal
-        #     sheet.write(row, 4, '', wbf['content_float'])  # Saldo Awal Kosong (Bisa dihilangkan jika tidak dipakai)
-        #     sheet.write(row, 5, product['received_qty'], wbf['content_float'])  # Penerimaan
-        #     sheet.write(row, 6, '', wbf['content_float'])  # Penerimaan Kosong
-        #     sheet.write(row, 7, product['used_qty'], wbf['content_float'])  # Pengeluaran
-        #     sheet.write(row, 8, '', wbf['content_float'])  # Pengeluaran Kosong
-        #     sheet.write(row, 9, product['adjust_qty'], wbf['content_float'])  # Adjustment
-        #     sheet.write(row, 10, '', wbf['content_float'])  # Adjustment Kosong
-        #     sheet.write(row, 11, product['closing_qty'], wbf['content_float'])  # Saldo Akhir
-        #     sheet.write(row, 12, '', wbf['content_float'])  # Saldo Akhir Kosong
-        #     row += 1
+        row = 5  
+        for product in products:
+            sheet.write(row, 0, product['default_code'], wbf['content'])  # Kode
+            sheet.write(row, 1, product['name'], wbf['content'])  # Nama Produk
+            # sheet.write(row, 2, product['uom'], wbf['content'])  # Satuan
+            sheet.write(row, 2, product['uom_id'].name, wbf['content'])  # Satuan
+            
+            # print(f"==== {product['default_code']}")
+            # print(f"==== {product['name']}")
+            # print(f"==== {product['uom_id'].id}")
+
+            query = """
+                SELECT
+                    pp.id, 
+                    coalesce(opening.qty, 0.0) as opening_qty,
+                    coalesce(incoming.qty, 0.0) as incoming_qty,
+                    coalesce(outgoing.qty, 0.0) as outgoing_qty,
+                    coalesce(adjustment.qty, 0.0) as adjustment_qty
+                FROM
+                    product_product pp
+                    LEFT JOIN (
+                        SELECT
+                            product_id, sum(qty) as qty 
+                        FROM (
+                            (SELECT 
+                                sm.product_id, sm.product_uom_qty as qty 
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND sm.location_dest_id = ldest.id 
+                            AND lsrc.usage != 'internal' 
+                            AND ldest.usage = 'internal'
+                            AND sm.state = 'done' 
+                            AND sm.date < %(date_from)s)
+                            UNION ALL
+                            (SELECT 
+                                sm.product_id, -sm.product_uom_qty as qty 
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND sm.location_dest_id = ldest.id 
+                            AND lsrc.usage = 'internal' 
+                            AND ldest.usage != 'internal'
+                            AND sm.state = 'done' 
+                            AND sm.date < %(date_from)s)
+                        ) sub
+                        GROUP BY product_id
+                    ) opening ON opening.product_id = pp.id
+                    LEFT JOIN (
+                        SELECT product_id, sum(qty) as qty 
+                        FROM (
+                            SELECT 
+                                sm.product_id, sm.product_uom_qty as qty 
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND sm.location_dest_id = ldest.id 
+                            AND lsrc.usage IN ('supplier', 'customer') 
+                            AND ldest.usage = 'internal' 
+                            AND sm.state = 'done' 
+                            AND sm.date BETWEEN %(date_from)s AND %(date_to)s
+                        ) sub
+                        GROUP BY product_id
+                    ) incoming ON incoming.product_id = pp.id
+                    LEFT JOIN (
+                        SELECT product_id, sum(qty) as qty 
+                        FROM (
+                            SELECT 
+                                sm.product_id, sm.product_uom_qty as qty 
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND sm.location_dest_id = ldest.id 
+                            AND lsrc.usage = 'internal' 
+                            AND ldest.usage IN ('supplier', 'customer') 
+                            AND sm.state = 'done' 
+                            AND sm.date BETWEEN %(date_from)s AND %(date_to)s
+                        ) sub
+                        GROUP BY product_id
+                    ) outgoing ON outgoing.product_id = pp.id
+                    LEFT JOIN (
+                        SELECT product_id, sum(qty) as qty 
+                        FROM (
+                            (SELECT 
+                                sm.product_id, sm.product_uom_qty as qty 
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND sm.location_dest_id = ldest.id 
+                            AND lsrc.usage = 'inventory' 
+                            AND ldest.usage = 'internal' 
+                            AND sm.state = 'done' 
+                            AND sm.date BETWEEN %(date_from)s AND %(date_to)s)
+                            UNION ALL
+                            (SELECT 
+                                sm.product_id, -sm.product_uom_qty as qty 
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND sm.location_dest_id = ldest.id 
+                            AND lsrc.usage = 'internal' 
+                            AND ldest.usage = 'inventory' 
+                            AND sm.state = 'done' 
+                            AND sm.date BETWEEN %(date_from)s AND %(date_to)s)
+                        ) sub
+                        GROUP BY product_id
+                    ) adjustment ON adjustment.product_id = pp.id
+                WHERE pp.id = %(product_id)s
+            """
+            params = {
+                'product_id': product.id,
+                'date_from' : obj.from_date.strftime('%Y-%m-%d 00:00:00'),
+                'date_to'   : obj.to_date.strftime('%Y-%m-%d 23:59:59')
+            }
+            self.env.cr.execute(query, params)
+            mutasi_stock = self.env.cr.dictfetchone()
+
+            print(f">>>>>>> {mutasi_stock}")
+            
+            # sheet.write(row, 3, product['opening_qty'], wbf['content_float'])  # Saldo Awal
+            # sheet.write(row, 4, '', wbf['content_float'])  # Saldo Awal Kosong (Bisa dihilangkan jika tidak dipakai)
+            # sheet.write(row, 5, product['received_qty'], wbf['content_float'])  # Penerimaan
+            # sheet.write(row, 6, '', wbf['content_float'])  # Penerimaan Kosong
+            # sheet.write(row, 7, product['used_qty'], wbf['content_float'])  # Pengeluaran
+            # sheet.write(row, 8, '', wbf['content_float'])  # Pengeluaran Kosong
+            # sheet.write(row, 9, product['adjust_qty'], wbf['content_float'])  # Adjustment
+            # sheet.write(row, 10, '', wbf['content_float'])  # Adjustment Kosong
+            # sheet.write(row, 11, product['closing_qty'], wbf['content_float'])  # Saldo Akhir
+            # sheet.write(row, 12, '', wbf['content_float'])  # Saldo Akhir Kosong
+
+            # Menggabungkan kolom 3 dan 4 untuk Saldo Awal
+            opening_qty = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
+            sheet.merge_range(row, 3, row, 4, opening_qty, wbf['content_float'])
+
+            # Menggabungkan kolom 5 dan 6 untuk Penerimaan
+            incoming_qty = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
+            sheet.merge_range(row, 5, row, 6, incoming_qty, wbf['content_float'])
+
+            # Menggabungkan kolom 7 dan 8 untuk Pengeluaran
+            outgoing_qty = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
+            sheet.merge_range(row, 7, row, 8, outgoing_qty, wbf['content_float'])
+
+            # Menggabungkan kolom 9 dan 10 untuk Adjustment
+            adjustment_qty = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
+            sheet.merge_range(row, 9, row, 10, adjustment_qty, wbf['content_float'])
+
+            # Menggabungkan kolom 11 dan 12 untuk Saldo Akhir
+            closing_qty = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
+            sheet.merge_range(row, 11, row, 12, closing_qty, wbf['content_float'])
+
+
+
+            row += 1
 
