@@ -64,7 +64,8 @@ class ReportLpphExcel(models.AbstractModel):
             #             location.append(loc)
             
             for lhm_data in lhm_transaction:
-                location.append(lhm_data.location)
+                if lhm_data.location not in location:
+                    location.append(lhm_data.location)
 
             location_name = ', '.join([loc for loc in location])
 
@@ -100,49 +101,62 @@ class ReportLpphExcel(models.AbstractModel):
             worksheet.set_column(4, 4, 14)
             worksheet.write(next_row + 2, 5, "DESKRIPSI", wbf['header'])
             worksheet.set_column(5, 5, 40)
-            worksheet.merge_range(next_row, 6, next_row + 2, 6, "SATUAN", wbf['header'])
+            worksheet.merge_range(next_row, 6, next_row + 2, 6, "PRODUCT 1", wbf['header'])
             worksheet.set_column(6, 6, 18)
-            worksheet.merge_range(next_row, 7, next_row + 1, 8, "HASIL KERJA", wbf['header'])
-            worksheet.write(next_row + 2, 7, "HI", wbf['header'])
-            worksheet.set_column(7, 7, 14)
-            worksheet.write(next_row + 2, 8, "SHI", wbf['header'])
+            worksheet.merge_range(next_row, 7, next_row + 2, 7, "SATUAN 1", wbf['header'])
+            worksheet.set_column(7, 7, 18)
+            worksheet.merge_range(next_row, 8, next_row + 1, 9, "HASIL KERJA", wbf['header'])
+            worksheet.write(next_row + 2, 8, "HI", wbf['header'])
             worksheet.set_column(8, 8, 14)
-            worksheet.merge_range(next_row, 9, next_row + 2, 9, "VARIANCE\n(+/-)", wbf['header'])
-            worksheet.set_column(9, 9, 18)
-            worksheet.merge_range(next_row, 10, next_row, 15, "BIAYA", wbf['header'])
-            worksheet.merge_range(next_row + 1, 10, next_row + 1, 12, "HI", wbf['header'])
-            worksheet.write(next_row + 2, 10, "HK", wbf['header'])
-            worksheet.set_column(10, 10, 10)
-            worksheet.write(next_row + 2, 11, "PREMI/LEMBUR", wbf['header'])
+            worksheet.write(next_row + 2, 9, "SHI", wbf['header'])
+            worksheet.set_column(9, 9, 14)
+            worksheet.merge_range(next_row, 10, next_row + 2, 10, "VARIANCE\n(+/-)", wbf['header'])
+            worksheet.set_column(10, 10, 18)
+            worksheet.merge_range(next_row, 11, next_row + 2, 11, "PRODUCT 2", wbf['header'])
             worksheet.set_column(11, 11, 18)
-            worksheet.write(next_row + 2, 12, "TOTAL", wbf['header'])
+            worksheet.merge_range(next_row, 12, next_row + 2, 12, "SATUAN 2", wbf['header'])
             worksheet.set_column(12, 12, 18)
-            worksheet.merge_range(next_row + 1, 13, next_row + 1, 15, "SHI", wbf['header'])
-            worksheet.write(next_row + 2, 13, "HK", wbf['header'])
-            worksheet.set_column(13, 13, 10)
-            worksheet.write(next_row + 2, 14, "PREMI/LEMBUR", wbf['header'])
-            worksheet.set_column(14, 14, 18)
-            worksheet.write(next_row + 2, 15, "TOTAL", wbf['header'])
+            worksheet.merge_range(next_row, 13, next_row + 1, 14, "HASIL KERJA", wbf['header'])
+            worksheet.write(next_row + 2, 13, "HI", wbf['header'])
+            worksheet.set_column(13, 13, 14)
+            worksheet.write(next_row + 2, 14, "SHI", wbf['header'])
+            worksheet.set_column(14, 14, 14)
+            worksheet.merge_range(next_row, 15, next_row + 2, 15, "VARIANCE\n(+/-)", wbf['header'])
             worksheet.set_column(15, 15, 18)
-            worksheet.merge_range(next_row, 16, next_row, 23, "PEMAKAIAN MATERIAL", wbf['header'])
-            worksheet.merge_range(next_row + 1, 16, next_row + 1, 18, "SKB", wbf['header'])
-            worksheet.write(next_row + 2, 16, "NO. PBB", wbf['header'])
-            worksheet.set_column(16, 16, 18)
-            worksheet.write(next_row + 2, 17, "TANGGAL", wbf['header'])
+            worksheet.merge_range(next_row, 16, next_row, 21, "BIAYA", wbf['header'])
+            worksheet.merge_range(next_row + 1, 16, next_row + 1, 18, "HI", wbf['header'])
+            worksheet.write(next_row + 2, 16, "HK", wbf['header'])
+            worksheet.set_column(16, 16, 16)
+            worksheet.write(next_row + 2, 17, "PREMI/LEMBUR", wbf['header'])
             worksheet.set_column(17, 17, 18)
-            worksheet.write(next_row + 2, 18, "QTY", wbf['header'])
+            worksheet.write(next_row + 2, 18, "TOTAL", wbf['header'])
             worksheet.set_column(18, 18, 18)
-            worksheet.merge_range(next_row + 1, 19, next_row + 2, 19, "NAMA MATERIAL", wbf['header'])
-            worksheet.set_column(19, 19, 40)
-            worksheet.merge_range(next_row + 1, 20, next_row + 2, 20, "SATUAN", wbf['header'])
+            worksheet.merge_range(next_row + 1, 19, next_row + 1, 21, "SHI", wbf['header'])
+            worksheet.write(next_row + 2, 19, "HK", wbf['header'])
+            worksheet.set_column(19, 19, 10)
+            worksheet.write(next_row + 2, 20, "PREMI/LEMBUR", wbf['header'])
             worksheet.set_column(20, 20, 18)
-            worksheet.merge_range(next_row + 1, 21, next_row + 1, 22, "TOTAL", wbf['header'])
-            worksheet.write(next_row + 2, 21, "HI", wbf['header'])
+            worksheet.write(next_row + 2, 21, "TOTAL", wbf['header'])
             worksheet.set_column(21, 21, 18)
-            worksheet.write(next_row + 2, 22, "SHI", wbf['header'])
+            worksheet.merge_range(next_row, 22, next_row, 29, "PEMAKAIAN MATERIAL", wbf['header'])
+            worksheet.merge_range(next_row + 1, 22, next_row + 1, 24, "SKB", wbf['header'])
+            worksheet.write(next_row + 2, 22, "NO. PBB", wbf['header'])
             worksheet.set_column(22, 22, 18)
-            worksheet.merge_range(next_row + 1, 23, next_row + 2, 23, "VARIANCE\n(+/-)", wbf['header'])
+            worksheet.write(next_row + 2, 23, "TANGGAL", wbf['header'])
             worksheet.set_column(23, 23, 18)
+            worksheet.write(next_row + 2, 24, "QTY", wbf['header'])
+            worksheet.set_column(24, 24, 18)
+            worksheet.merge_range(next_row + 1, 25, next_row + 2, 25, "NAMA MATERIAL", wbf['header'])
+            worksheet.set_column(25, 25, 40)
+            worksheet.merge_range(next_row + 1, 26, next_row + 2, 26, "SATUAN", wbf['header'])
+            worksheet.set_column(26, 26, 18)
+            worksheet.merge_range(next_row + 1, 27, next_row + 1, 28, "TOTAL", wbf['header'])
+            worksheet.write(next_row + 2, 27, "HI", wbf['header'])
+            worksheet.set_column(27, 27, 18)
+            worksheet.write(next_row + 2, 28, "SHI", wbf['header'])
+            worksheet.set_column(28, 28, 18)
+            worksheet.merge_range(next_row + 1, 29, next_row + 2, 29, "VARIANCE\n(+/-)", wbf['header'])
+            worksheet.set_column(29, 29, 18)
 
 
             grouped_lhm = {}
@@ -156,7 +170,18 @@ class ReportLpphExcel(models.AbstractModel):
                         'total_qty': 0,
                     }
                 grouped_lhm[key.id]['progress'].append(line)
+                
                 # grouped_lhm[key.id]['total_qty'] += line.qty
+
+                # found = False
+                # for progress in grouped_lhm[key.id]['progress']:
+                #     if progress['activity_id'] == line.activity_id and progress['location_id'] == line.location_id:
+                #         found = True
+                #         progress['total_qty'] += line.nilai
+                #         break
+
+                # if not found:
+                #     grouped_lhm[key.id]['progress'].append({line})
 
             row_data = next_row + 3
             for lhm_data in grouped_lhm.values():
@@ -167,71 +192,89 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 1, line.location_id.code, wbf['content'])
                     worksheet.set_column(1, 1, 14)
 
-                    worksheet.write(row_data, 2, line.uom_id.name if line.uom_id else '-', wbf['content'])
+                    worksheet.write(row_data, 2, '-', wbf['content'])
                     worksheet.set_column(2, 2, 14)
 
-                    worksheet.write(row_data, 3, line.nilai if line.nilai else '-', wbf['content'])
+                    worksheet.write(row_data, 3, '-', wbf['content'])
                     worksheet.set_column(3, 3, 14)
 
-                    worksheet.write(row_data, 4, "COA", wbf['content'])
+                    worksheet.write(row_data, 4, line.activity_id.code if line.activity_id else '-', wbf['content'])
                     worksheet.set_column(4, 4, 14)
 
                     worksheet.write(row_data, 5, line.name if line.name else '-', wbf['content'])
                     worksheet.set_column(5, 5, 40)
 
-                    worksheet.write(row_data, 6, "SATUAN", wbf['content'])
+                    worksheet.write(row_data, 6, line.product_id.name if line.product_id else '-', wbf['content'])
                     worksheet.set_column(6, 6, 18)
-                    
-                    worksheet.write(row_data, 7, "HI", wbf['content'])
-                    worksheet.set_column(7, 7, 14)
 
-                    worksheet.write(row_data, 8, "SHI", wbf['content'])
+                    worksheet.write(row_data, 7, line.uom_id.name if line.uom_id else '-', wbf['content'])
+                    worksheet.set_column(7, 7, 18)
+                    
+                    worksheet.write(row_data, 8, '-', wbf['content'])
                     worksheet.set_column(8, 8, 14)
 
-                    worksheet.write(row_data, 9, "VARIANCE\n(+/-)", wbf['content'])
-                    worksheet.set_column(9, 9, 18)
-                    
-                    worksheet.write(row_data, 10, "HK", wbf['content'])
-                    worksheet.set_column(10, 10, 10)
+                    worksheet.write(row_data, 9, '-', wbf['content'])
+                    worksheet.set_column(9, 9, 14)
 
-                    worksheet.write(row_data, 11, "PREMI/LEMBUR", wbf['content'])
+                    worksheet.write(row_data, 10, '-', wbf['content'])
+                    worksheet.set_column(10, 10, 18)
+                    
+                    worksheet.write(row_data, 11, line.product_id_2.name if line.product_id_2 else '-', wbf['content'])
                     worksheet.set_column(11, 11, 18)
 
-                    worksheet.write(row_data, 12, "TOTAL", wbf['content'])
+                    worksheet.write(row_data, 12, line.uom2_id.name if line.uom2_id else '-', wbf['content'])
                     worksheet.set_column(12, 12, 18)
                     
-                    worksheet.write(row_data, 13, "HK", wbf['content'])
-                    worksheet.set_column(13, 13, 10)
+                    worksheet.write(row_data, 13, '-', wbf['content'])
+                    worksheet.set_column(13, 13, 14)
 
-                    worksheet.write(row_data, 14, "PREMI/LEMBUR", wbf['content'])
-                    worksheet.set_column(14, 14, 18)
+                    worksheet.write(row_data, 14, '-', wbf['content'])
+                    worksheet.set_column(14, 14, 14)
 
-                    worksheet.write(row_data, 15, "TOTAL", wbf['content'])
+                    worksheet.write(row_data, 15, '-', wbf['content'])
                     worksheet.set_column(15, 15, 18)
+                    
+                    worksheet.write(row_data, 16, '-', wbf['content'])
+                    worksheet.set_column(16, 16, 10)
 
-                    worksheet.write(row_data, 16, "NO. PBB", wbf['content'])
-                    worksheet.set_column(16, 16, 18)
-
-                    worksheet.write(row_data, 17, "TANGGAL", wbf['content'])
+                    worksheet.write(row_data, 17, '-', wbf['content'])
                     worksheet.set_column(17, 17, 18)
 
-                    worksheet.write(row_data, 18, "QTY", wbf['content'])
+                    worksheet.write(row_data, 18, '-', wbf['content'])
                     worksheet.set_column(18, 18, 18)
+                    
+                    worksheet.write(row_data, 19, '-', wbf['content'])
+                    worksheet.set_column(19, 19, 10)
 
-                    worksheet.write(row_data, 19, "NAMA MATERIAL", wbf['content'])
-                    worksheet.set_column(19, 19, 40)
-
-                    worksheet.write(row_data, 20, "SATUAN", wbf['content'])
+                    worksheet.write(row_data, 20, '-', wbf['content'])
                     worksheet.set_column(20, 20, 18)
 
-                    worksheet.write(row_data, 21, "HI", wbf['content'])
+                    worksheet.write(row_data, 21, '-', wbf['content'])
                     worksheet.set_column(21, 21, 18)
 
-                    worksheet.write(row_data, 22, "SHI", wbf['content'])
+                    worksheet.write(row_data, 22, '-', wbf['content'])
                     worksheet.set_column(22, 22, 18)
 
-                    worksheet.write(row_data, 23, "VARIANCE\n(+/-)", wbf['content'])
+                    worksheet.write(row_data, 23, '-', wbf['content'])
                     worksheet.set_column(23, 23, 18)
+
+                    worksheet.write(row_data, 24, '-', wbf['content'])
+                    worksheet.set_column(24, 24, 18)
+
+                    worksheet.write(row_data, 25, '-', wbf['content'])
+                    worksheet.set_column(25, 25, 40)
+
+                    worksheet.write(row_data, 26, '-', wbf['content'])
+                    worksheet.set_column(26, 26, 18)
+
+                    worksheet.write(row_data, 27, '-', wbf['content'])
+                    worksheet.set_column(27, 27, 18)
+
+                    worksheet.write(row_data, 28, '-', wbf['content'])
+                    worksheet.set_column(28, 28, 18)
+
+                    worksheet.write(row_data, 29, '-', wbf['content'])
+                    worksheet.set_column(29, 29, 18)
 
                     row_data += 1
 
