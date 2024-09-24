@@ -59,6 +59,11 @@
                         <span>/ month</span>
                     </div>
                 </group>
+                <group name="bpjs" string="BPJS">
+                    <field name="bpjs_kesehatan" />
+                    <field name="bpjs_ketenagakerjaan" />
+                    <field name="bpjs_tk_pensiun" />
+                </group>
             </xpath>
         </field>
     </record>
