@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_pkp_form" model="ir.ui.view">
+        <field name="name">hr.pkp.form</field>
+        <field name="model">hr.pkp</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sequence" />
+                            <field name="name" />
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="range_start"/>
+                            <field name="range_stop"/>
+                            <field name="percentage"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_pkp_tree" model="ir.ui.view">
+        <field name="name">hr.pkp.tree</field>
+        <field name="model">hr.pkp</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="sequence" />
+                <field name="name" />
+                <field name="range_start" string="From (&gt;)"/>
+                <field name="range_stop" string="From (&lt;=)"/>
+                <field name="percentage"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_pkp_search" model="ir.ui.view">
+        <field name="name">hr.pkp.search</field>
+        <field name="model">hr.pkp</field>
+        <field name="arch" type="xml">
+            <search string="Search Contract">
+                <field name="name" string="PTKP"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="hr_pkp_action" model="ir.actions.act_window">
+        <field name="name">PKP Progresif PPH 21</field>
+        <field name="res_model">hr.pkp</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
+    <menuitem
+        id="menu_hr_pkp"
+        action="hr_pkp_action"
+        parent="hr.menu_human_resources_configuration"
+        sequence="92"/>
+</odoo>

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from . import hr_bpjs
+from . import hr_pkp
 from . import models
 from . import hr
 # from . import hr_public_holidays

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_bpjs_view_form" model="ir.ui.view">
+        <field name="name">hr.bpjs.view.form</field>
+        <field name="model">hr.bpjs</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="type"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="allowance_pct"/>
+                            <field name="deduction_pct"/>
+                            <field name="total_tuition"/>
+                            <field name="plafond_salary"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_bpjs_view_tree" model="ir.ui.view">
+        <field name="name">hr.bpjs.view.tree</field>
+        <field name="model">hr.bpjs</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="type"/>
+                <field name="allowance_pct"/>
+                <field name="deduction_pct"/>
+                <field name="total_tuition"/>
+                <field name="plafond_salary"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_bpjs_view_search" model="ir.ui.view">
+        <field name="name">hr.bpjs.view.search</field>
+        <field name="model">hr.bpjs</field>
+        <field name="arch" type="xml">
+            <search>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Type" name="groupby_type" context="{'group_by': 'type'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="hr_bpjs_action" model="ir.actions.act_window">
+        <field name="name">BPJS</field>
+        <field name="res_model">hr.bpjs</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_hr_bpjs"
+        action="hr_bpjs_action"
+        parent="hr.menu_human_resources_configuration"
+        sequence="90"/>
+    
+</odoo>

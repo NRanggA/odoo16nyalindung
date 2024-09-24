@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ny_hr_contract_view_form" model="ir.ui.view">
+        <field name="name">ny.hr.contract.view.form</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="c10i_hr_payroll.hr_contract_form_inherit"/>
+        <field name="arch" type="xml">
+            <field name="bpjs_kesehatan" position="after">
+                <field name="base_amount_bpjs_kes" />
+            </field>
+            <field name="bpjs_ketenagakerjaan" position="after">
+                <field name="base_amount_bpjs_tk" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_api_client_list_search" model="ir.ui.view">
+            <field name="name">c10i_base_api.client.list.search</field>
+            <field name="model">c10i_base_api.client.list</field>
+            <field name="arch" type="xml">
+                <search string="Client Address">
+                    <field name="name" string="Client Address" filter_domain="[('name', 'ilike', self)]"/>
+                    <filter name="blacklist" string="Blacklisted" domain="[('blacklist','=',True)]" help="Show blacklisted Client Address"/>
+                    <filter name="temp_blacklist" string="Temporary Blacklisted" domain="[('number_of_error_half_hour_allowed','=',0),('blacklist','=',False)]" help="Show temporary blocked Client Address"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_api_client_list_tree" model="ir.ui.view">
+            <field name="name">c10i_base_api.client.list.tree</field>
+            <field name="model">c10i_base_api.client.list</field>
+            <field name="arch" type="xml">
+                <tree string="API Client Address" decoration-muted="blacklist" editable="top">
+                    <field name="name"/>
+                    <field name="number_of_error_half_hour_allowed"/>
+                    <field name="next_temp_blacklist_reset"/>
+                    <field name="number_of_error_allowed"/>
+                    <field name="blacklist"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_api_client_list_form" model="ir.ui.view">
+            <field name="name">c10i_base_api.client.list.form</field>
+            <field name="model">c10i_base_api.client.list</field>
+            <field name="arch" type="xml">
+                <form string="API Client Address">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="number_of_error_half_hour_allowed"/>
+                                <field name="next_temp_blacklist_reset"/>
+                                <field name="number_of_error_allowed"/>
+                                <field name="blacklist"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_api_client_list_form" model="ir.actions.act_window">
+            <field name="name">API Client Address</field>
+            <field name="res_model">c10i_base_api.client.list</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_api_client_list_search"/>
+        </record>
+
+    </data>
+</odoo>

@@ -16,9 +16,9 @@
 
     # any module necessary for this one to work correctly
     'depends': [
+        'ny_plantation',
         'c10i_hr_payroll',
         'c10i_hr_payroll_other_inputs',
-        # 'c10i_plantation_payroll'
     ],
 
     # always loaded
@@ -27,6 +27,7 @@
 
         'data/other_input_type_data.xml',
         
+        'views/hr_contract_view.xml',
         'views/ny_premi_penyadap_view.xml',
     ],
     # only loaded in demonstration mode

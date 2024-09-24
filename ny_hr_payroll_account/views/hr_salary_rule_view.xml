@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ny_hr_salary_rule_form" model="ir.ui.view">
+        <field name="name">ny.hr.salary.rule.view.form</field>
+        <field name="model">hr.salary.rule</field>
+        <field name="inherit_id" ref="c10i_hr_payroll.hr_salary_rule_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="accounting" string="Accounting Configuration" groups="base.group_no_one">
+                    <field name="config_account_ids" >
+                        <tree editable="bottom">
+                            <field name="partner_id" />
+                            <field name="is_map_from_lhm" attrs="{'readonly': ['|',('default_debit_account_id','!=',False),('default_credit_account_id','!=',False)]}" />
+                            <field name="default_debit_account_id" attrs="{'readonly': ['|',('is_map_from_lhm','=',True),('default_credit_account_id','!=',False)]}" />
+                            <field name="default_credit_account_id" attrs="{'readonly': ['|',('is_map_from_lhm','=',True),('default_debit_account_id','!=',False)]}" />
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
