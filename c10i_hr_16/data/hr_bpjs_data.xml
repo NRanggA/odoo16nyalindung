@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="hr_bpjs_kesehatan" model="hr.bpjs">
+            <field name="type">bpjs_kesehatan</field>
+            <field name="allowance_pct">4.0</field>
+            <field name="deduction_pct">1.0</field>
+            <field name="plafond_salary">12000000</field>
+        </record>
+
+        <record id="hr_bpjs_jkm" model="hr.bpjs">
+            <field name="type">bpjs_tk_jkm</field>
+            <field name="allowance_pct">0.3</field>
+        </record>
+
+        <record id="hr_bpjs_jp" model="hr.bpjs">
+            <field name="type">bpjs_tk_pensiun</field>
+            <field name="allowance_pct">2.0</field>
+            <field name="deduction_pct">1.0</field>
+            <field name="plafond_salary">10042300</field>
+        </record>
+
+        <record id="hr_bpjs_jkk" model="hr.bpjs">
+            <field name="type">bpjs_tk_jkk</field>
+            <field name="allowance_pct">9.24</field>
+        </record>
+
+        <record id="hr_bpjs_jht" model="hr.bpjs">
+            <field name="type">bpjs_tk_jht</field>
+            <field name="allowance_pct">3.7</field>
+            <field name="deduction_pct">2.0</field>
+        </record>
+    </data>
+</odoo>

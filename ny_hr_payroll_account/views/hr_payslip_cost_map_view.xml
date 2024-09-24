@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_cost_map_view_form" model="ir.ui.view">
+        <field name="name">hr_payslip_cost_map.view.form</field>
+        <field name="model">hr.payslip.cost.map</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <h2>
+                        <field name="slip_id"/>
+                    </h2>
+                    <group>
+                        <group>
+                            <field name="partner_id" />
+                            <field name="rule_id" />
+                        </group>
+                        <group>
+                            <field name="account_id" />
+                            <field name="debit_amount"/>
+                            <field name="credit_amount"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_payslip_cost_map_view_tree" model="ir.ui.view">
+        <field name="name">hr_payslip_cost_map.view.tree</field>
+        <field name="model">hr.payslip.cost.map</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="slip_id" optional="hide"/>
+                <field name="partner_id" />
+                <field name="rule_id" />
+                <field name="plantation_location_type_id" optional="show"/>
+                <field name="plantation_location_id" optional="show"/>
+                <field name="plantation_activity_id" optional="show"/>
+                <field name="account_id" />
+                <field name="debit_amount" sum="debit_amount" />
+                <field name="credit_amount" sum="credit_amount" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_payslip_cost_map_view_search" model="ir.ui.view">
+        <field name="name">hr_payslip_cost_map.view.search</field>
+        <field name="model">hr.payslip.cost.map</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="slip_id" />
+                <field name="rule_id" />
+                <field name="partner_id" />
+
+                <filter name="groupby_rule" string="Salary Rule" context="{'group_by': 'rule_id'}" />
+                <filter name="groupby_partner" string="Partner" context="{'group_by': 'partner_id'}" />
+                <filter name="groupby_slip" string="Payslip" context="{'group_by': 'slip_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="hr_payslip_cost_map_action" model="ir.actions.act_window">
+        <field name="name">Payslip Cost Mapping</field>
+        <field name="res_model">hr.payslip.cost.map</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

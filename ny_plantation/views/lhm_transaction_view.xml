@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="lhm_transaction_view_form" model="ir.ui.view">
+        <field name="name">lhm.transaction.view.form</field>
+        <field name="model">lhm.transaction</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_transaction_form" />
+        <field name="arch" type="xml">
+            <field name="afdeling_id" position="replace"/>
+            <field name="foreman_id_1" position="replace"/>
+            <field name="foreman_id" position="replace"/>
+            <field name="admin_id_1" position="replace"/>
+            <field name="admin_id" position="replace"/>
+            
+            <field name="code" position="after">
+                <field name="assisten_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+                <field name="kepala_mandor_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+                <field name="mandor_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+                <field name="tap_kontrol_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

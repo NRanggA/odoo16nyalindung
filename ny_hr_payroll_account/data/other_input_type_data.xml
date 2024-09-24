@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="oth_input_type_premi_penyadap" model="hr.payslip.other.input.type">
+            <field name="name">Premi Penyadap</field>
+            <field name="code">PREMIPENYADAP</field>
+        </record>
+    </data>
+</odoo>

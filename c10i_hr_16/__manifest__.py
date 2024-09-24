@@ -25,11 +25,17 @@
     'data': [
         # 'data/base_data.xml',
         # 'data/hide_menu_data.xml',
+        'views/hr_bpjs_view.xml',
+        'views/hr_pkp_view.xml',
         'views/hr_views.xml',
         # 'views/hr_contract_views.xml',
         # 'views/hr_public_holidays_view.xml',
         'views/res_company_views.xml',
         'security/ir.model.access.csv',
+
+        'data/hr_bpjs_data.xml',
+        'data/hr_pkp_data.xml',
+        'data/hr_ptkp_data.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

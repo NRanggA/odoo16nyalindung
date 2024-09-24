@@ -89,9 +89,10 @@ class hr_ptkp(models.Model):
                         ('single', 'Tidak Menikah'),
                         ('married', 'Menikah'),
                         ], string='Status Pernikahan')
+    pp58_tier_type = fields.Selection([('tier_a','Tier A'),('tier_b','Tier B'),('tier_c','Tier C')], string='Kategori Tier PP 58')
     children        = fields.Integer('Jumlah Anak')
     value           = fields.Float('Nilai', required=True)
-    company_id      = fields.Many2one('res.company', string='Company', default=lambda self: self.env['res.company']._company_default_get())
+    # company_id      = fields.Many2one('res.company', string='Company', default=lambda self: self.env['res.company']._company_default_get())
     active          = fields.Boolean('Aktif', required=True, default=True)
 
 class hr_ptkp_history(models.Model):

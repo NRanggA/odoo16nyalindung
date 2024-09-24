@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="hr_ptkp_tk0" model="hr.ptkp">
+            <field name="name">Tidak Kawin tanpa Tanggungan</field>
+            <field name="code">TK/0</field>
+            <field name="marital">single</field>
+            <field name="pp58_tier_type">tier_a</field>
+            <field name="value">54000000</field>
+        </record>
+        
+        <record id="hr_ptkp_tk1" model="hr.ptkp">
+            <field name="name">Tidak Kawin dengan 1 Tanggungan</field>
+            <field name="code">TK/1</field>
+            <field name="marital">single</field>
+            <field name="pp58_tier_type">tier_a</field>
+            <field name="value">58500000</field>
+        </record>
+
+        <record id="hr_ptkp_tk2" model="hr.ptkp">
+            <field name="name">Tidak Kawin dengan 2 Tanggungan</field>
+            <field name="code">TK/2</field>
+            <field name="marital">single</field>
+            <field name="pp58_tier_type">tier_b</field>
+            <field name="value">63000000</field>
+        </record>
+
+        <record id="hr_ptkp_tk3" model="hr.ptkp">
+            <field name="name">Tidak Kawin dengan 3 Tanggungan</field>
+            <field name="code">TK/3</field>
+            <field name="marital">single</field>
+            <field name="pp58_tier_type">tier_b</field>
+            <field name="value">67500000</field>
+        </record>
+
+        <record id="hr_ptkp_k0" model="hr.ptkp">
+            <field name="name">Kawin tanpa Tanggungan</field>
+            <field name="code">K/0</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_a</field>
+            <field name="value">58500000</field>
+        </record>
+
+        <record id="hr_ptkp_k1" model="hr.ptkp">
+            <field name="name">Kawin dengan 1 Tanggungan</field>
+            <field name="code">K/1</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_b</field>
+            <field name="value">63000000</field>
+        </record>
+
+        <record id="hr_ptkp_k2" model="hr.ptkp">
+            <field name="name">Kawin dengan 2 Tanggungan</field>
+            <field name="code">K/2</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_b</field>
+            <field name="value">67500000</field>
+        </record>
+
+        <record id="hr_ptkp_k3" model="hr.ptkp">
+            <field name="name">Kawin dengan 3 Tanggungan</field>
+            <field name="code">K/3</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_c</field>
+            <field name="value">72000000</field>
+        </record>
+
+        <record id="hr_ptkp_ki0" model="hr.ptkp">
+            <field name="name">Penghasilan Suami dan Istri digabung tanpa Tanggungan</field>
+            <field name="code">K/I/0</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_c</field>
+            <field name="value">112500000</field>
+        </record>
+
+        <record id="hr_ptkp_ki1" model="hr.ptkp">
+            <field name="name">Penghasilan Suami dan Istri digabung dengan 1 Tanggungan</field>
+            <field name="code">K/I/1</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_c</field>
+            <field name="value">117000000</field>
+        </record>
+
+        <record id="hr_ptkp_ki2" model="hr.ptkp">
+            <field name="name">Penghasilan Suami dan Istri digabung dengan 2 Tanggungan</field>
+            <field name="code">K/I/2</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_c</field>
+            <field name="value">121500000</field>
+        </record>
+
+        <record id="hr_ptkp_ki3" model="hr.ptkp">
+            <field name="name">Penghasilan Suami dan Istri digabung dengan 3 Tanggungan</field>
+            <field name="code">K/I/3</field>
+            <field name="marital">married</field>
+            <field name="pp58_tier_type">tier_c</field>
+            <field name="value">126000000</field>
+        </record>
+    </data>
+</odoo>

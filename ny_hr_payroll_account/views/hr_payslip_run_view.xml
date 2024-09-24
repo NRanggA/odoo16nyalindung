@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ny_hr_payslip_run_form" model="ir.ui.view">
+        <field name="name">ny.hr.payslip.run.view.form</field>
+        <field name="model">hr.payslip.run</field>
+        <field name="inherit_id" ref="c10i_hr_payroll.hr_payslip_run_form"/>
+        <field name="arch" type="xml">
+            <button name="draft_payslip_run" position="before">
+                <button string="Cost Mapping" name="action_map_cost" type="object" class="oe_highlight" states="close" />
+                <button string="Create Bill" name="create_account_move" type="object" class="oe_highlight" states="close,done" groups="base.group_no_one" />
+            </button>
+            <xpath expr="//sheet/label[@for='name']" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button string="Cost Map" name="action_view_cost_map" type="object" class="oe_stat_button" icon="fa-search" />
+                    <button string="Bills" name="action_view_bill_moves" type="object" class="oe_stat_button" icon="fa-dollar" groups="base.group_no_one"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

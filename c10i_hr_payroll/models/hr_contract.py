@@ -33,6 +33,10 @@ class HrContract(models.Model):
     type_id = fields.Many2one('hr.contract.type', string="Employee Category",
                               required=True, help="Employee category",
                               default=lambda self: self.env['hr.contract.type'].search([], limit=1))
+    
+    bpjs_kesehatan = fields.Boolean('BPJS Kesehatan', default=True)
+    bpjs_ketenagakerjaan = fields.Boolean('BPJS Ketenagakerjaan', default=True)
+    bpjs_tk_pensiun = fields.Boolean('BPJS TK Pensiun', default=True)
 
     def get_all_structures(self):
         """
@@ -56,6 +60,31 @@ class HrContract(models.Model):
             else:
                 contract[code] = 0.0
 
+    def get_amount_bpjs(self, type, base_amount):
+        self.ensure_one()
+        res = {'tunjangan': 0.0, 'potongan': 0.0, 'iuran': 0.0}
+        proceed_compute = False
+        if type=='bpjs_kesehatan' and self.bpjs_kesehatan:
+            proceed_compute = True
+        elif type in ('bpjs_ketenagakerjaan','bpjs_tk_jht', 'bpjs_tk_jkm', 'bpjs_tk_jkk') and self.bpjs_ketenagakerjaan:
+            proceed_compute = True
+        elif type=='bpjs_tk_pensiun' and self.bpjs_tk_pensiun:
+            proceed_compute = True
+        
+        if proceed_compute:
+            bpjs_found = self.env['hr.bpjs'].search([('type','=',type)
+                # ,('date','<=',fields.Date.today())
+                ], limit=1)
+            if bpjs_found:
+                if bpjs_found.plafond_salary:
+                    base_bpjs = base_amount if base_amount<=bpjs_found.plafond_salary else bpjs_found.plafond_salary
+                else:
+                    base_bpjs = base_amount
+                
+                res['tunjangan'] = base_bpjs * bpjs_found.allowance_pct/100.0
+                res['potongan'] = base_bpjs * bpjs_found.deduction_pct/100.0
+                res['iuran'] = res['tunjangan'] + res['potongan']
+        return res
 
 class HrContractAdvantageTemplate(models.Model):
     _name = 'hr.contract.advantage.template'

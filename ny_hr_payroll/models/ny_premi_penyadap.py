@@ -2,6 +2,8 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
+from datetime import datetime, time
+
 class NyPremiPenyadap(models.Model):
     _name = 'ny.premi.penyadap'
     _description = 'Premi Penyadap'
@@ -13,6 +15,7 @@ class NyPremiPenyadap(models.Model):
 
     other_input_type_id = fields.Many2one('hr.payslip.other.input.type', string='Other Input Type', default=_default_other_input_type, required=True)
     line_ids = fields.One2many('ny.premi.penyadap.line','ref_id')
+    mandor_line_ids = fields.One2many('ny.premi.penyadap.mandor','ref_id')
     date_from = fields.Date('From', required=True)
     date_to = fields.Date('To', required=True)
     batch_other_input_id = fields.Many2one('hr.payslip.batch.other.input', string='Batch Other Input')
@@ -21,10 +24,109 @@ class NyPremiPenyadap(models.Model):
         ('confirm', 'Confirm')
     ], default='draft', string='Status')
 
+    base_premi_rate_assisten = fields.Float("Basis Produksi Asisten")
+    base_premi_rate_mandor = fields.Float("Basis Produksi Mandor")
+    base_premi_rate_kepala_mandor = fields.Float("Basis Produksi Kepala mandor")
+    base_premi_rate_tap_kontrol = fields.Float("Basis Produksi Tap Kontrol")
+    surplus_premi_rate_assisten = fields.Float("Lebih Produksi Asisten")
+    surplus_premi_rate_mandor = fields.Float("Lebih Produksi Mandor")
+    surplus_premi_rate_kepala_mandor = fields.Float("Lebih Produksi Kepala Mandor")
+    surplus_premi_rate_tap_kontrol = fields.Float("Lebih Produksi Tap Kontrol")
+
+    def compute_base_production(self):
+        self.line_ids.unlink()
+
+        domain = [('lhm_id.state','=','done'), \
+                  ('lhm_transaction_line_id.date','>=',self.date_from), \
+                  ('lhm_transaction_line_id.date','<=',self.date_to), \
+                  '|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump')]
+        result = self.env['lhm.transaction.nap.line'].search(domain)
+        to_create = []
+        for employee in result.employee_id:
+            karet_kering = sum(result.filtered(lambda n: n.employee_id.id==employee.id).mapped('hasil_convert_latex'))
+            karet_kering += sum(result.filtered(lambda n: n.employee_id.id==employee.id).mapped('hasil_convert_lump'))
+
+            # target = (HK total sebulan - ABSENSI yang tipenya L) * Target per orang
+            day_from = datetime.combine(fields.Date.from_string(self.date_from), time.min)
+            day_to = datetime.combine(fields.Date.from_string(self.date_to), time.max)
+            base_hk = employee._get_work_days_data(
+                day_from,
+                day_to,
+                calendar=employee.contract_id.resource_calendar_id,
+                compute_leaves=False,
+            )
+            base_libur = (self.date_to - self.date_from).days+1 - base_hk['days']
+            att_domain = [('employee_id','=',employee.id),('date','>=',self.date_from),('date','<=',self.date_to)]
+            act_hk = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','KJ')])
+            act_libur = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','L')])
+
+            vals = {
+                'employee_id': employee.id,
+                'karet_kering_qty': karet_kering,
+                'kemandoran_id': employee.kemandoran_id.id,
+                'block_tanam_id': employee.kemandoran_id.blok_tanam_id.id,
+                'base_hk': base_hk['days'],
+                'base_libur': base_libur,
+                'act_hk': act_hk,
+                'act_libur': act_libur,
+                # 'target_qty': (31 - 5) * employee.kemandoran_id.block_tanam_id.production_daily_target,
+            }
+            to_create.append((0,0,vals))
+        if to_create:
+            self.line_ids = to_create
+        return True
+
+    def compute_mandor_production(self):
+        self.mandor_line_ids.unlink()
+        to_create = []
+        for kemandoran in self.line_ids.kemandoran_id:
+            target_qty = sum(self.line_ids.filtered(lambda x: x.kemandoran_id.id==kemandoran.id).mapped('target_qty'))
+            produce_qty = sum(self.line_ids.filtered(lambda x: x.kemandoran_id.id==kemandoran.id).mapped('karet_kering_qty'))
+            if kemandoran.assisten_id:
+                to_create.append((0,0,{
+                    'employee_id': kemandoran.assisten_id.id,
+                    'position': 'assisten',
+                    'kemandoran_id': kemandoran.id,
+                    'block_tanam_id': kemandoran.blok_tanam_id.id,
+                    'total_karet_kering_qty': produce_qty,
+                    'target_qty': target_qty,
+                }))
+            if kemandoran.kepala_mandor_id:
+                to_create.append((0,0,{
+                    'employee_id': kemandoran.kepala_mandor_id.id,
+                    'position': 'kepala_mandor',
+                    'kemandoran_id': kemandoran.id,
+                    'block_tanam_id': kemandoran.blok_tanam_id.id,
+                    'total_karet_kering_qty': produce_qty,
+                    'target_qty': target_qty,
+                }))
+            if kemandoran.mandor_id:
+                to_create.append((0,0,{
+                    'employee_id': kemandoran.mandor_id.id,
+                    'position': 'mandor',
+                    'kemandoran_id': kemandoran.id,
+                    'block_tanam_id': kemandoran.blok_tanam_id.id,
+                    'total_karet_kering_qty': produce_qty,
+                    'target_qty': target_qty,
+                }))
+            if kemandoran.tap_kontrol_id:
+                to_create.append((0,0,{
+                    'employee_id': kemandoran.tap_kontrol_id.id,
+                    'position': 'tap_kontrol',
+                    'kemandoran_id': kemandoran.id,
+                    'block_tanam_id': kemandoran.blok_tanam_id.id,
+                    'total_karet_kering_qty': produce_qty,
+                    'target_qty': target_qty,
+                }))
+        if to_create:
+            self.mandor_line_ids = to_create
+        return True
+
     def action_compute(self):
-        # TODO: create ke hr.payslip.other.income
-        pass
-    
+        self.compute_base_production()
+        self.compute_mandor_production()
+        return True
+
     def action_confirm(self):
         for rec in self:
             if not rec.batch_other_input_id:
@@ -38,7 +140,7 @@ class NyPremiPenyadap(models.Model):
                 new_batch_oth_input = rec.batch_other_input_id
             
             for line in rec.line_ids:
-                if not line.other_input_id:
+                if not line.other_input_id and line.premi_amount:
                     line_values = {
                         'batch_id': new_batch_oth_input.id,
                         'employee_id': line.employee_id.id,
@@ -50,6 +152,20 @@ class NyPremiPenyadap(models.Model):
                     })
                 else:
                     line.other_input_id.amount = line.premi_amount
+            
+            for mline in rec.mandor_line_ids:
+                if not mline.other_input_id and mline.premi_amount:
+                    line_values = {
+                        'batch_id': new_batch_oth_input.id,
+                        'employee_id': mline.employee_id.id,
+                        'amount': mline.premi_amount
+                    }
+                    new_oth_input_line = self.env['hr.payslip.other.input'].create(line_values)
+                    line.write({
+                        'other_input_id': new_oth_input_line.id
+                    })
+                else:
+                    line.other_input_id.amount = mline.premi_amount
 
             rec.write({
                 'batch_other_input_id': new_batch_oth_input.id,

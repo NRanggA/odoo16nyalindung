@@ -26,18 +26,64 @@
                             <field name="batch_other_input_id" invisible="0" groups="base.group_no_one" readonly="1"/>
                         </group>
                     </group>
-                    <field name="line_ids" attrs="{'readonly': [('state','!=','draft')]}">
-                        <tree editable="bottom">
-                            <field name="employee_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}"/>
-                            <field name="karet_kering_qty" />
-                            <field name="target_qty" />
-                            <field name="lebih_target_qty" />
-                            <field name="grade_id" />
-                            <field name="rate" />
-                            <field name="premi_amount" />
-                            <field name="other_input_id" invisible="1" readonly="1"/>
-                        </tree>
-                    </field>
+                    <notebook>
+                        <page name="employee" string="Karyawan">
+                            <field name="line_ids" attrs="{'readonly': [('state','!=','draft')]}">
+                                <tree editable="bottom">
+                                    <field name="employee_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}"/>
+                                    <field name="block_tanam_id" readonly="1" />
+                                    <field name="base_hk" optional="hide"/>
+                                    <field name="base_libur" optional="hide"/>
+                                    <field name="base_total_days" optional="hide"/>
+                                    <field name="act_hk" optional="hide"/>
+                                    <field name="act_libur" optional="hide"/>
+                                    <field name="act_total_days" optional="hide"/>
+                                    <field name="karet_kering_qty" />
+                                    <field name="target_qty" />
+                                    <field name="lebih_target_qty" />
+                                    <field name="grade_id" />
+                                    <field name="rate" />
+                                    <field name="premi_amount" />
+                                    <field name="other_input_id" invisible="1" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="mandor" string="Mandor">
+                            <group>
+                                <group string="Rate Premi Produksi">
+                                    <field name="base_premi_rate_assisten" />
+                                    <field name="base_premi_rate_mandor" />
+                                    <field name="base_premi_rate_kepala_mandor" />
+                                    <field name="base_premi_rate_tap_kontrol" />
+                                </group>
+                                <group string="Rate Premi Lebih Produksi">
+                                    <field name="surplus_premi_rate_assisten" />
+                                    <field name="surplus_premi_rate_mandor" />
+                                    <field name="surplus_premi_rate_kepala_mandor" />
+                                    <field name="surplus_premi_rate_tap_kontrol" />
+                                </group>
+                            </group>
+
+                            <field name="mandor_line_ids" attrs="{'readonly': [('state','!=','draft')]}">
+                                <tree editable="bottom">
+                                    <field name="kemandoran_id" readonly="1" />
+                                    <field name="position" readonly="1" />
+                                    <field name="employee_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}"/>
+                                    <field name="block_tanam_id" readonly="1" />
+                                    <field name="total_karet_kering_qty" />
+                                    <field name="target_qty" />
+                                    <field name="karet_kering_qty" />
+                                    <field name="lebih_target_qty" />
+                                    <field name="base_rate" />
+                                    <field name="premi_produksi_amount" />
+                                    <field name="surplus_rate" />
+                                    <field name="premi_lebih_target_amount" />
+                                    <field name="premi_amount" />
+                                    <field name="other_input_id" invisible="1" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -66,7 +112,7 @@
     </record> -->
 
     <record id="ny_premi_penyadap_action" model="ir.actions.act_window">
-        <field name="name">Hitung Premi Penyadap</field>
+        <field name="name">Premi Produksi</field>
         <field name="res_model">ny.premi.penyadap</field>
         <field name="view_mode">tree,form</field>
     </record>

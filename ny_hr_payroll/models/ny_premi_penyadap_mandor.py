@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
+
+class NyPremiPenyadapMandor(models.Model):
+    _name = 'ny.premi.penyadap.mandor'
+    _description = 'Premi Penyadap Mandor'
+
+    ref_id = fields.Many2one('ny.premi.penyadap', string='Reference')
+    kemandoran_id = fields.Many2one('hr.foreman', string='Kemandoran')
+    position = fields.Char('Jabatan')
+    employee_id = fields.Many2one('hr.employee', string='Employee', ondelete='restrict', required=False)
+    block_tanam_id = fields.Many2one('lhm.plant.block', string='Blok Tanam')
+
+    # base qty
+    total_karet_kering_qty = fields.Float("Total Produksi")
+    target_qty = fields.Float("Target Produksi")
+    karet_kering_qty = fields.Float(compute='compute_qty', string='Produksi Karet Kering')
+    lebih_target_qty = fields.Float(compute='compute_qty', string='Lebih Target')
+    
+    # base rate
+    base_rate = fields.Float(compute='compute_amount', store=True, string='Rate Basis')
+    surplus_rate = fields.Float(compute='compute_amount', store=True, string='Rate Lebih')
+    premi_produksi_amount = fields.Float(compute='compute_amount', string='Premi Basis', store=True)
+    premi_lebih_target_amount = fields.Float(compute='compute_amount', string='Premi Lebih Basis', store=True)
+    premi_amount = fields.Float(compute='compute_amount', string='Total Premi', store=True)
+
+    other_input_id = fields.Many2one('hr.payslip.other.input', string='Other Input')
+
+    @api.depends('base_hk','base_libur','act_hk','act_libur')
+    def compute_days(self):
+        for line in self:
+            line.base_total_days = line.base_hk + line.base_libur
+            line.act_total_days = line.act_hk + line.act_libur
+
+    @api.depends('total_karet_kering_qty','target_qty')
+    def compute_qty(self):
+        for line in self:
+            line.karet_kering_qty = line.total_karet_kering_qty if line.total_karet_kering_qty < line.target_qty else line.target_qty
+            line.lebih_target_qty = line.total_karet_kering_qty - line.target_qty if line.total_karet_kering_qty > line.target_qty else 0.0
+
+    @api.depends('lebih_target_qty',
+                 'position',
+                 'ref_id.base_premi_rate_assisten',
+                 'ref_id.base_premi_rate_mandor',
+                 'ref_id.base_premi_rate_kepala_mandor',
+                 'ref_id.base_premi_rate_tap_kontrol',
+                 'ref_id.surplus_premi_rate_assisten',
+                 'ref_id.surplus_premi_rate_mandor',
+                 'ref_id.surplus_premi_rate_kepala_mandor',
+                 'ref_id.surplus_premi_rate_tap_kontrol',
+                 )
+    def compute_amount(self):
+        for line in self:
+            base_rate = surplus_rate = 0.0
+            if line.position=='assisten':
+                base_rate = line.ref_id.base_premi_rate_assisten
+                surplus_rate = line.ref_id.surplus_premi_rate_assisten
+            elif line.position=='mandor':
+                base_rate = line.ref_id.base_premi_rate_mandor
+                surplus_rate = line.ref_id.surplus_premi_rate_mandor
+            elif line.position=='kepala_mandor':
+                base_rate = line.ref_id.base_premi_rate_kepala_mandor
+                surplus_rate = line.ref_id.surplus_premi_rate_kepala_mandor
+            elif line.position=='tap_kontrol':
+                base_rate = line.ref_id.base_premi_rate_tap_kontrol
+                surplus_rate = line.ref_id.surplus_premi_rate_tap_kontrol
+            line.base_rate = base_rate
+            line.surplus_rate = surplus_rate
+            line.premi_produksi_amount = line.karet_kering_qty * line.base_rate
+            line.premi_lebih_target_amount = line.lebih_target_qty * line.surplus_rate
+            line.premi_amount = line.premi_produksi_amount + line.premi_lebih_target_amount
+    
+    @api.onchange('grade_id')
+    def onchange_grade(self):
+        self.rate = self.grade_id.rate
+    
+    def unlink(self):
+        for rec in self:
+            if rec.ref_id.batch_other_input_id and rec.ref_id.batch_other_input_id.state!='draft':
+                raise ValidationError(_("Cannot delete other input which is the state of its Batch are not in draft state"))
+            if rec.other_input_id.payslip_id and rec.other_input_id.payslip_id.state!='draft':
+                raise ValidationError(_("Cannot delete other input batch which is already linked with Payslip"))
+        return super().unlink()
