@@ -169,23 +169,33 @@ class ReportLpphExcel(models.AbstractModel):
                         'progress': [],
                         'total_qty': 0,
                     }
-                grouped_lhm[key.id]['progress'].append(line)
+    
+                existing_line = next((progress_line for progress_line in grouped_lhm[key.id]['progress']
+                                    if progress_line['activity_id'] == line.activity_id and 
+                                    progress_line['location_id'] == line.location_id), None)
+                
+                if existing_line:
+                    break
+                else:
+                    grouped_lhm[key.id]['progress'].append(line)
+
+                total_material = self.env['lhm.transaction.material.line'].search([
+                        ('progress_id', 'in', [progress_line.id for progress_line in grouped_lhm[key.id]['progress']]),
+                    ])
+                
+                grouped_lhm[key.id]['total_qty'] += sum([total_material.realization])
                 
                 # grouped_lhm[key.id]['total_qty'] += line.qty
-
-                # found = False
-                # for progress in grouped_lhm[key.id]['progress']:
-                #     if progress['activity_id'] == line.activity_id and progress['location_id'] == line.location_id:
-                #         found = True
-                #         progress['total_qty'] += line.nilai
-                #         break
-
-                # if not found:
-                #     grouped_lhm[key.id]['progress'].append({line})
 
             row_data = next_row + 3
             for lhm_data in grouped_lhm.values():
                 for line in lhm_data['progress']:
+
+                    get_material = self.env['lhm.transaction.material.line'].search([
+                        ('progress_id', '=', line.id),
+                        ('realization', '>', 0)
+                    ])
+
                     worksheet.write(row_data, 0, lhm_data['key'].code, wbf['content'])
                     worksheet.set_column(0, 0, 18)
 
@@ -252,19 +262,19 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 21, '-', wbf['content'])
                     worksheet.set_column(21, 21, 18)
 
-                    worksheet.write(row_data, 22, '-', wbf['content'])
+                    worksheet.write(row_data, 22, get_material.name if get_material else '-', wbf['content'])
                     worksheet.set_column(22, 22, 18)
 
-                    worksheet.write(row_data, 23, '-', wbf['content'])
+                    worksheet.write(row_data, 23, get_material.date.strftime('%d-%m-%Y') if get_material else '-', wbf['content'])
                     worksheet.set_column(23, 23, 18)
 
-                    worksheet.write(row_data, 24, '-', wbf['content'])
+                    worksheet.write(row_data, 24, get_material.realization if get_material else '-', wbf['content'])
                     worksheet.set_column(24, 24, 18)
 
-                    worksheet.write(row_data, 25, '-', wbf['content'])
+                    worksheet.write(row_data, 25, get_material.product_id.name if get_material else '-', wbf['content'])
                     worksheet.set_column(25, 25, 40)
 
-                    worksheet.write(row_data, 26, '-', wbf['content'])
+                    worksheet.write(row_data, 26, get_material.product_uom_id.name if get_material else '-', wbf['content'])
                     worksheet.set_column(26, 26, 18)
 
                     worksheet.write(row_data, 27, '-', wbf['content'])
@@ -278,7 +288,36 @@ class ReportLpphExcel(models.AbstractModel):
 
                     row_data += 1
 
-                worksheet.write(row_data, 0, "Subtotal ", wbf['total'])
+                worksheet.write(row_data, 0, "Subtotal", wbf['total'])
+                worksheet.write(row_data, 1, "", wbf['total'])
+                worksheet.write(row_data, 2, "", wbf['total'])
+                worksheet.write(row_data, 3, "", wbf['total'])
+                worksheet.write(row_data, 4, "", wbf['total'])
+                worksheet.write(row_data, 5, "", wbf['total'])
+                worksheet.write(row_data, 6, "", wbf['total'])
+                worksheet.write(row_data, 7, "", wbf['total'])
+                worksheet.write(row_data, 8, "", wbf['total'])
+                worksheet.write(row_data, 9, "", wbf['total'])
+                worksheet.write(row_data, 10, "", wbf['total'])
+                worksheet.write(row_data, 11, "", wbf['total'])
+                worksheet.write(row_data, 12, "", wbf['total'])
+                worksheet.write(row_data, 13, "", wbf['total'])
+                worksheet.write(row_data, 14, "", wbf['total'])
+                worksheet.write(row_data, 15, "", wbf['total'])
+                worksheet.write(row_data, 16, "", wbf['total'])
+                worksheet.write(row_data, 17, "", wbf['total'])
+                worksheet.write(row_data, 18, "", wbf['total'])
+                worksheet.write(row_data, 19, "", wbf['total'])
+                worksheet.write(row_data, 20, "", wbf['total'])
+                worksheet.write(row_data, 21, "", wbf['total'])
+                worksheet.write(row_data, 22, "", wbf['total'])
+                worksheet.write(row_data, 23, "", wbf['total'])
+                worksheet.write(row_data, 24, lhm_data['total_qty'], wbf['total'])
+                worksheet.write(row_data, 25, "", wbf['total'])
+                worksheet.write(row_data, 26, "", wbf['total'])
+                worksheet.write(row_data, 27, "", wbf['total'])
+                worksheet.write(row_data, 28, "", wbf['total'])
+                worksheet.write(row_data, 29, "", wbf['total'])
                 # worksheet.merge_range(row_data, 1, row_data, 4, "", wbf['subtotal'])  # Merge cells for subtotal
                 # worksheet.write(row_data, 5, sum(line.qty for line in lhm_data['progress']), wbf['subtotal'])  # Total QTY
 
