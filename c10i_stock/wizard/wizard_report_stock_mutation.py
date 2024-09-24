@@ -6,15 +6,15 @@ class WizardReportStockMutation(models.TransientModel):
     _name           = 'wizard.report.stock.mutation'
     _description    = 'Wizard Report Stock Mutation'
     
-    from_date       = fields.Date('From Date')
-    to_date         = fields.Date('To Date')
-    location_id     = fields.Many2one('stock.location', string='Location')
+    from_date       = fields.Date('From Date', required=True)
+    to_date         = fields.Date('To Date', required=True)
+    location_id     = fields.Many2one('stock.location', string='Location', required=True)
     username        = fields.Char('Username', default=lambda self: self.env.user.name)
     company_id      = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
     show_value      = fields.Selection([
                         ('cost', 'With Value'),
                         ('no', 'Just Stock Mutation'),
-                    ], string='Show Value')
+                    ], string='Show Value', default='no')
     
     product_ids = fields.Many2many('product.product', string='Product')
 

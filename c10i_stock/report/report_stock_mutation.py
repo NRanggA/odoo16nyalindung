@@ -16,7 +16,6 @@ class ReportStockMutation(models.AbstractModel):
             'valign': 'vcenter',
             'font_size': 14,
             'font_color': '#000000',
-            'bg_color': '#D9D9D9'
         })
         # Format untuk header kolom tabel
         self.wbf['header'] = workbook.add_format({
@@ -24,11 +23,10 @@ class ReportStockMutation(models.AbstractModel):
             'align': 'center',
             'valign': 'vcenter',
             'font_size': 10,
-            # 'bg_color': '#FFFFDB',
             'font_color': '#000000',
             'border': 1
         })
-        self.wbf['header'].set_text_wrap()  # Membuat teks menjadi wrap agar bisa masuk dalam sel
+        self.wbf['header'].set_text_wrap() 
         self.wbf['header'].set_border()
         
         # Format untuk footer (biasanya penutup dokumen, misal total atau sum)
@@ -137,10 +135,6 @@ class ReportStockMutation(models.AbstractModel):
         else:
             products = self.env['product.product'].search([])
         
-
-        # print(f"===== {products}")
-
-
         # Nama worksheet
         sheet = workbook.add_worksheet('Stock Mutation')
 
@@ -164,123 +158,162 @@ class ReportStockMutation(models.AbstractModel):
         sheet.merge_range('J4:K4', 'Adjustment', wbf['header'])
         sheet.merge_range('L4:M4', 'Saldo Akhir', wbf['header'])
 
-        sheet.merge_range('D5:E5', 'Qty', wbf['header'])
-        # sheet.write('E5', '', wbf['header'])
-        sheet.merge_range('F5:G5', 'Qty', wbf['header'])
-        # sheet.write('G5', '', wbf['header'])
-        sheet.merge_range('H5:I5', 'Qty', wbf['header'])
-        # sheet.write('I5', '', wbf['header'])
-        sheet.merge_range('J5:K5', 'Qty', wbf['header'])
-        # sheet.write('K5', '', wbf['header'])
-        sheet.merge_range('L5:M5', 'Qty', wbf['header'])
-        # sheet.write('M5', '', wbf['header'])
-
-
+        if obj.show_value == 'cost':
+            sheet.write('D5', 'Qty', wbf['header'])
+            sheet.write('E5', 'Rupiah', wbf['header'])
+            sheet.write('F5', 'Qty', wbf['header'])
+            sheet.write('G5', 'Rupiah', wbf['header'])
+            sheet.write('H5', 'Qty', wbf['header'])
+            sheet.write('I5', 'Rupiah', wbf['header'])
+            sheet.write('J5', 'Qty', wbf['header'])
+            sheet.write('K5', 'Rupiah', wbf['header'])
+            sheet.write('L5', 'Qty', wbf['header'])
+            sheet.write('M5', 'Rupiah', wbf['header'])
+        else:
+            sheet.merge_range('D5:E5', 'Qty', wbf['header'])
+            sheet.merge_range('F5:G5', 'Qty', wbf['header'])
+            sheet.merge_range('H5:I5', 'Qty', wbf['header'])
+            sheet.merge_range('J5:K5', 'Qty', wbf['header'])
+            sheet.merge_range('L5:M5', 'Qty', wbf['header'])
 
 
         row = 5  
         for product in products:
-            sheet.write(row, 0, product['default_code'], wbf['content'])  # Kode
-            sheet.write(row, 1, product['name'], wbf['content'])  # Nama Produk
-            # sheet.write(row, 2, product['uom'], wbf['content'])  # Satuan
-            sheet.write(row, 2, product['uom_id'].name, wbf['content'])  # Satuan
+            sheet.write(row, 0, product['default_code'], wbf['content']) 
+            sheet.write(row, 1, product['name'], wbf['content']) 
+            sheet.write(row, 2, product['uom_id'].name, wbf['content']) 
             
-            # print(f"==== {product['default_code']}")
-            # print(f"==== {product['name']}")
-            # print(f"==== {product['uom_id'].id}")
-
             query = """
                 SELECT
                     pp.id, 
                     coalesce(opening.qty, 0.0) as opening_qty,
+                    coalesce(opening.value, 0.0) as opening_value,
                     coalesce(incoming.qty, 0.0) as incoming_qty,
+                    coalesce(incoming.value, 0.0) as incoming_value,
                     coalesce(outgoing.qty, 0.0) as outgoing_qty,
-                    coalesce(adjustment.qty, 0.0) as adjustment_qty
+                    coalesce(outgoing.value, 0.0) as outgoing_value,
+                    coalesce(adjustment.qty, 0.0) as adjustment_qty,
+                    coalesce(adjustment.value, 0.0) as adjustment_value
                 FROM
                     product_product pp
                     LEFT JOIN (
                         SELECT
-                            product_id, sum(qty) as qty 
+                            product_id, 
+                            sum(qty) as qty,
+                            sum(value) as value
                         FROM (
                             (SELECT 
-                                sm.product_id, sm.product_uom_qty as qty 
+                                sm.product_id, 
+                                sm.product_uom_qty as qty,
+                                svl.value
                             FROM 
-                                stock_move sm, stock_location lsrc, stock_location ldest
+                                stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id 
+                            AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage != 'internal' 
                             AND ldest.usage = 'internal'
-                            AND sm.state = 'done' 
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s
                             AND sm.date < %(date_from)s)
                             UNION ALL
                             (SELECT 
-                                sm.product_id, -sm.product_uom_qty as qty 
+                                sm.product_id, 
+                                -sm.product_uom_qty as qty,
+                                svl.value
                             FROM 
-                                stock_move sm, stock_location lsrc, stock_location ldest
+                                stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id 
+                            AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
                             AND ldest.usage != 'internal'
-                            AND sm.state = 'done' 
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s 
                             AND sm.date < %(date_from)s)
                         ) sub
                         GROUP BY product_id
                     ) opening ON opening.product_id = pp.id
                     LEFT JOIN (
-                        SELECT product_id, sum(qty) as qty 
+                        SELECT 
+                            product_id, 
+                            sum(qty) as qty,
+                            sum(value) as value
                         FROM (
                             SELECT 
-                                sm.product_id, sm.product_uom_qty as qty 
+                                sm.product_id, 
+                                sm.product_uom_qty as qty,
+                                svl.value
                             FROM 
-                                stock_move sm, stock_location lsrc, stock_location ldest
+                                stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id 
+                            AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage IN ('supplier', 'customer') 
                             AND ldest.usage = 'internal' 
-                            AND sm.state = 'done' 
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s 
                             AND sm.date BETWEEN %(date_from)s AND %(date_to)s
                         ) sub
                         GROUP BY product_id
                     ) incoming ON incoming.product_id = pp.id
                     LEFT JOIN (
-                        SELECT product_id, sum(qty) as qty 
+                        SELECT 
+                            product_id, 
+                            sum(qty) as qty,
+                            sum(value * -1) as value
                         FROM (
                             SELECT 
-                                sm.product_id, sm.product_uom_qty as qty 
+                                sm.product_id, 
+                                sm.product_uom_qty as qty,
+                                svl.value
                             FROM 
-                                stock_move sm, stock_location lsrc, stock_location ldest
+                                stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id 
+                            AND svl.stock_move_id = sm.id
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
                             AND ldest.usage IN ('supplier', 'customer') 
-                            AND sm.state = 'done' 
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s  
                             AND sm.date BETWEEN %(date_from)s AND %(date_to)s
                         ) sub
                         GROUP BY product_id
                     ) outgoing ON outgoing.product_id = pp.id
                     LEFT JOIN (
-                        SELECT product_id, sum(qty) as qty 
+                        SELECT 
+                            product_id, 
+                            sum(qty) as qty,
+                            sum(value) as value 
                         FROM (
                             (SELECT 
-                                sm.product_id, sm.product_uom_qty as qty 
+                                sm.product_id, 
+                                sm.product_uom_qty as qty,
+                                svl.value 
                             FROM 
-                                stock_move sm, stock_location lsrc, stock_location ldest
-                            WHERE sm.location_id = lsrc.id 
+                                stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+                            WHERE sm.location_id = lsrc.id
+                            AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'inventory' 
                             AND ldest.usage = 'internal' 
-                            AND sm.state = 'done' 
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s  
                             AND sm.date BETWEEN %(date_from)s AND %(date_to)s)
                             UNION ALL
                             (SELECT 
-                                sm.product_id, -sm.product_uom_qty as qty 
+                                sm.product_id, 
+                                -sm.product_uom_qty as qty,
+                                svl.value
                             FROM 
-                                stock_move sm, stock_location lsrc, stock_location ldest
+                                stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id 
+                            AND svl.stock_move_id = sm.id
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
                             AND ldest.usage = 'inventory' 
                             AND sm.state = 'done' 
+                            AND sm.product_id = %(product_id)s 
                             AND sm.date BETWEEN %(date_from)s AND %(date_to)s)
                         ) sub
                         GROUP BY product_id
@@ -294,41 +327,67 @@ class ReportStockMutation(models.AbstractModel):
             }
             self.env.cr.execute(query, params)
             mutasi_stock = self.env.cr.dictfetchone()
-
-            print(f">>>>>>> {mutasi_stock}")
             
-            # sheet.write(row, 3, product['opening_qty'], wbf['content_float'])  # Saldo Awal
-            # sheet.write(row, 4, '', wbf['content_float'])  # Saldo Awal Kosong (Bisa dihilangkan jika tidak dipakai)
-            # sheet.write(row, 5, product['received_qty'], wbf['content_float'])  # Penerimaan
-            # sheet.write(row, 6, '', wbf['content_float'])  # Penerimaan Kosong
-            # sheet.write(row, 7, product['used_qty'], wbf['content_float'])  # Pengeluaran
-            # sheet.write(row, 8, '', wbf['content_float'])  # Pengeluaran Kosong
-            # sheet.write(row, 9, product['adjust_qty'], wbf['content_float'])  # Adjustment
-            # sheet.write(row, 10, '', wbf['content_float'])  # Adjustment Kosong
-            # sheet.write(row, 11, product['closing_qty'], wbf['content_float'])  # Saldo Akhir
-            # sheet.write(row, 12, '', wbf['content_float'])  # Saldo Akhir Kosong
+            if obj.show_value == 'cost':
+                # Opening
+                opening_qty = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
+                sheet.write(row, 3, opening_qty, wbf['content_float']) 
 
-            # Menggabungkan kolom 3 dan 4 untuk Saldo Awal
-            opening_qty = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
-            sheet.merge_range(row, 3, row, 4, opening_qty, wbf['content_float'])
+                opening_value = mutasi_stock.get('opening_value') if mutasi_stock else 0.0
+                sheet.write(row, 4, opening_value, wbf['content_float'])  
+                
+                # Incoming
+                incoming_qty = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
+                sheet.write(row, 5, incoming_qty, wbf['content_float']) 
+                
+                incoming_value = mutasi_stock.get('incoming_value') if mutasi_stock else 0.0
+                sheet.write(row, 6, incoming_value, wbf['content_float'])  
+                
+                # Outgoing
+                outgoing_qty = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
+                sheet.write(row, 7, outgoing_qty, wbf['content_float'])  
+                
+                outgoing_value = mutasi_stock.get('outgoing_value') if mutasi_stock else 0.0
+                sheet.write(row, 8, outgoing_value, wbf['content_float'])  
+                
+                # Adjustment
+                adjustment_qty = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
+                sheet.write(row, 9, adjustment_qty, wbf['content_float'])  
+                
+                adjustment_value = mutasi_stock.get('adjustment_value') if mutasi_stock else 0.0
+                sheet.write(row, 10, adjustment_value, wbf['content_float'])  
+                
+                # Closing
+                closing_qty = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
+                sheet.write(row, 11, closing_qty, wbf['content_float'])  
+                
+                closing_value = opening_value + incoming_value - outgoing_value + adjustment_value
+                sheet.write(row, 12, closing_value, wbf['content_float'])  
 
-            # Menggabungkan kolom 5 dan 6 untuk Penerimaan
-            incoming_qty = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
-            sheet.merge_range(row, 5, row, 6, incoming_qty, wbf['content_float'])
+            else:
+                opening_qty = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
+                sheet.merge_range(row, 3, row, 4, opening_qty, wbf['content_float'])
 
-            # Menggabungkan kolom 7 dan 8 untuk Pengeluaran
-            outgoing_qty = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
-            sheet.merge_range(row, 7, row, 8, outgoing_qty, wbf['content_float'])
+                incoming_qty = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
+                sheet.merge_range(row, 5, row, 6, incoming_qty, wbf['content_float'])
 
-            # Menggabungkan kolom 9 dan 10 untuk Adjustment
-            adjustment_qty = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
-            sheet.merge_range(row, 9, row, 10, adjustment_qty, wbf['content_float'])
+                outgoing_qty = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
+                sheet.merge_range(row, 7, row, 8, outgoing_qty, wbf['content_float'])
 
-            # Menggabungkan kolom 11 dan 12 untuk Saldo Akhir
-            closing_qty = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
-            sheet.merge_range(row, 11, row, 12, closing_qty, wbf['content_float'])
+                adjustment_qty = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
+                sheet.merge_range(row, 9, row, 10, adjustment_qty, wbf['content_float'])
 
-
+                closing_qty = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
+                sheet.merge_range(row, 11, row, 12, closing_qty, wbf['content_float'])
 
             row += 1
+        
+        
+        # Page Layout
+        sheet.set_landscape()
+        sheet.set_paper(9) # A4
+        # sheet.set_header()
+        sheet.repeat_rows(1, 4)
+        sheet.print_area(0, 0, row, 13)
+        sheet.set_print_scale(78)
 
