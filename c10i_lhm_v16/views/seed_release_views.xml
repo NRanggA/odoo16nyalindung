@@ -24,11 +24,16 @@
                         <page string="Detail Pengeluaran Bibit">
                             <field name="line_ids" nolabel="1">
                                 <tree editable="bottom">
-                                    <field name="product_id" readonly="1" />
-                                    <field name="mutation_type_id" domain="[('mutation', '=', 'kurang')]"/>
-                                    <field name="location_id" />
+                                    <field name="date" readonly="1" />
+                                    <field name="product_id"/>
+                                    <field name="mutation_type_id"/>
+                                    <field name="nursery_id" />
+                                    <field name="location_src_id" domain="[('id', 'in', fil_location_src_ids)]"/>
+                                    <field name="location_dest_id" domain="[('id', 'in', fil_location_dest_ids)]"/>
                                     <field name="qty" />
                                     <field name="satuan_id" />
+                                    <field name="fil_location_src_ids" invisible="1"/>
+                                    <field name="fil_location_dest_ids" invisible="1"/>
                                 </tree>
                             </field>
                         </page>
