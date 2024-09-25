@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'c10i_payment', 'account'],
+    'depends': ['base', 'c10i_payment', 'account', 'om_account_asset'],
 
     # always loaded
     'data': [
@@ -33,6 +33,7 @@
         'report/report_payment_cash_template.xml',
         'report/action_report_payment.xml',
         'views/account_payment_views.xml',
+        'views/account_asset_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
