@@ -20,13 +20,17 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'c10i_lhm_v16', 'stock'],
+    'depends': ['base', 'c10i_lhm_v16', 'stock', 'report_xlsx', 'account'],
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         'views/seed_move_views.xml',
+        
+        'report/report_seed_mutation_action.xml',
+        'wizard/wizard_seed_mutation_report_views.xml',
+
         # 'views/views.xml',
         # 'views/templates.xml',
     ],

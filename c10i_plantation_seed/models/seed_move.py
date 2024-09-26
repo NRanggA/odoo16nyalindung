@@ -11,6 +11,24 @@ class SeedMove(models.Model):
     line_ids           = fields.One2many('seed.move.line', 'seed_move_id', string='Bibitan Line')
     product_id         = fields.Many2one('product.product', string='Product', required=True, ondelete="restrict")
     mutation_type_id   = fields.Many2one('mutation.type', string='Jenis Mutasi', ondelete="cascade")
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('confirm', 'Confirm'),
+        ('close', 'Close'),
+    ], string='state', default='draft')
+
+    def button_confirm(self):
+        for rec in self:
+            rec.state = 'confirm'
+
+    def button_draft(self):
+        for rec in self:
+            rec.state = 'draft'
+
+    def button_close(self):
+        for rec in self:
+            rec.state = 'close'
+
 
     @api.model
     def create(self, vals):
@@ -36,11 +54,14 @@ class SeedMoveLine(models.Model):
     _description    = 'Pembibitan Line'
 
     product_id                   = fields.Many2one(related='seed_move_id.product_id', string='Product', store=True)
+    location_type_id            = fields.Many2one('lhm.location.type', string='Tipe Lokasi')
+    location_id                 = fields.Many2one('lhm.location', string='Lokasi')
+    activity_id                 = fields.Many2one('lhm.activity', string="Aktivitas")
     seed_move_id                 = fields.Many2one('seed.move', string="Pembibitan", ondelete="cascade")
     date                         = fields.Date(related='seed_move_id.date', string='Tanggal', store=True)
     nursery_id                   = fields.Many2one('lhm.nursery', string='Blok Bibit', ondelete="cascade")
     satuan_id                    = fields.Many2one(related='seed_move_id.product_id.uom_id', string='Satuan', store=True)
-    mutation_type_id             = fields.Many2one(related='seed_move_id.mutation_type_id', string='Jenis Mutasi', ondelete="cascade")
+    mutation_type_id             = fields.Many2one(related='seed_move_id.mutation_type_id', string='Jenis Mutasi', ondelete="cascade", store=True)
     qty                          = fields.Integer('Qty')
     location_src_id              = fields.Many2one('lhm.location', string='From', ondelete="cascade")
     location_dest_id             = fields.Many2one('lhm.location', string='To', ondelete="cascade")

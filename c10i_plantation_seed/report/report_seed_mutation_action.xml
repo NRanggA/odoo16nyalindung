@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_seed_mutation_report_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Seed Mutation XLSX</field>
+        <field name="model">wizard.seed.mutation.report</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">c10i_plantation_seed.seed_mutation_xlsx</field>
+        <field name="report_file">c10i_plantation_seed.seed_mutation_xlsx</field>
+        <field name="print_report_name">'(LAPORAN SEED MUTATION XLSX)'</field>
+        <field name="binding_model_id" ref="c10i_plantation_seed.model_wizard_seed_mutation_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

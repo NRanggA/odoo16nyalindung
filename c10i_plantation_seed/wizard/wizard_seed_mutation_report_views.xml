@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_seed_mutation_report_view_form" model="ir.ui.view">
+        <field name="name">wizard.seed.mutation.report.view.form</field>
+        <field name="model">wizard.seed.mutation.report</field>
+        <field name="arch" type="xml">
+            <form string="Laporan Mutasi Bibitan">
+                <sheet>
+                    <group>
+                        <!-- <field name="date_type" widget="radio"/> -->
+                        <!-- <field name="period_id" attrs="{'invisible': [('date_type', '!=', 'period')]}" /> -->
+                        <field name="product_id" />
+                        <field name="date_start" />
+                        <field name="date_end" />
+                        <field name="location_id" />
+                        <!-- <field name="location_ids" widget="many2many_tags" /> -->
+                    </group>
+                    <footer>
+                        <button string="Print" type="object" name="create_report" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_seed_mutation_report_action" model="ir.actions.act_window">
+        <field name="name">Wizard Seed Mutasi Report</field>
+        <field name="res_model">wizard.seed.mutation.report</field>
+        <field name="view_mode">form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu Mutasi Bibit -->
+    <menuitem
+        id="seed_mutation_report_menu"
+        name="Mutasi Bibitan Report"
+        action="wizard_seed_mutation_report_action"
+        parent="c10i_lhm_v16.menu_bibitan"/>
+
+
+</odoo>
