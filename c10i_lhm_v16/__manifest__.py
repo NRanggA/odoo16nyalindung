@@ -105,8 +105,8 @@
 
         # Bibitan
         'views/mutation_type_views.xml',
-        'views/seed_release_views.xml',
-        'views/seed_semai_views.xml',
+        # 'views/seed_release_views.xml',
+        # 'views/seed_semai_views.xml',
         'views/seed_mutation_views.xml',
         
         # wizard seed mutasi
