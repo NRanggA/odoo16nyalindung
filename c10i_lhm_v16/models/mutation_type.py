@@ -11,4 +11,11 @@ class MutationType(models.Model):
                     ('kurang', '-'),
                 ], string='Mutasi')
 
+    type = fields.Selection([
+        ('incoming', 'Pemasukan'),
+        ('outgoing', 'Pengeluaran'),
+        ('transfer', 'Transfer'),
+        ('adj_in', 'Adjusment In'),
+        ('adj_out', 'Adjusment Out'),
+    ], string='Type')
 

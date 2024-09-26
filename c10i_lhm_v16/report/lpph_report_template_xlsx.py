@@ -1,4 +1,5 @@
 from odoo import fields, models, api
+from datetime import datetime
 
 class ReportLpphExcel(models.AbstractModel):
     _name = 'report.c10i_lhm_v16.report_lpph_excel'
@@ -33,6 +34,18 @@ class ReportLpphExcel(models.AbstractModel):
         self.wbf['total'].set_text_wrap()
         self.wbf['total'].set_align('vcenter')
         self.wbf['total'].set_font_size(8)
+        
+        self.wbf['number_content'] = workbook.add_format({'align': 'right', 'num_format': '#,##0.00'})
+        self.wbf['number_content'].set_border()
+        self.wbf['number_content'].set_text_wrap()
+        self.wbf['number_content'].set_align('vcenter')
+        self.wbf['number_content'].set_font_size(8)
+        
+        self.wbf['number_total'] = workbook.add_format({'bold': 1, 'align': 'right', 'bg_color': '#F5F4F4', 'num_format': '#,##0.00'})
+        self.wbf['number_total'].set_border()
+        self.wbf['number_total'].set_text_wrap()
+        self.wbf['number_total'].set_align('vcenter')
+        self.wbf['number_total'].set_font_size(8)
 
         return workbook
 
@@ -50,24 +63,28 @@ class ReportLpphExcel(models.AbstractModel):
             date = date_from if date_from == date_to else f"{(date_from) + ' s/d ' + (date_to)}"
 
             lhm_transaction = self.env['lhm.transaction'].search([
-                                ('date','>=',o.date_start),
-                                ('date','<=',o.date_end),
+                                ('date','=',o.date_start),
+                                # ('date','<=',o.date_end),
+                                ('state','=','done')
+                            ])
+            
+            shi_month = o.date_start.month
+            shi_year = o.date_start.year
+            shi_date_from = datetime(shi_year, shi_month, 1)
+
+            shi_lhm_transaction = self.env['lhm.transaction'].search([
+                                ('date','>=',shi_date_from),
+                                ('date','<=',o.date_start),
                                 ('state','=','done')
                             ])
             
 
-            location = []
-            # for lhm_data in lhm_transaction:                
-            #     lhm_key = lhm_data.process_line_ids.mapped('location_id')
-            #     for loc in lhm_key:
-            #         if loc.id not in [l.id for l in location]:
-            #             location.append(loc)
-            
+            locations = []
             for lhm_data in lhm_transaction:
-                if lhm_data.location not in location:
-                    location.append(lhm_data.location)
+                if lhm_data.location not in locations:
+                    locations.append(lhm_data.location)
 
-            location_name = ', '.join([loc for loc in location])
+            location_name = ', '.join([location for location in locations])
 
 
             row = 0
@@ -167,39 +184,196 @@ class ReportLpphExcel(models.AbstractModel):
                     grouped_lhm[key.id] = {
                         'key': key,
                         'progress': [],
-                        'total_qty': 0,
+                        'subtotal_realization': 0.0,
+                        'subtotal_real_stock_qty': 0.0,
+                        'subtotal_nilai': 0.0,
+                        'subtotal_nilai_1': 0.0,
+                        'subtotal_workday': 0.0,
+                        'subtotal_premi': 0.0,
+                        'shi_subtotal_realization': 0.0,
+                        'shi_subtotal_nilai': 0.0,
+                        'shi_subtotal_nilai_1': 0.0,
+                        'shi_subtotal_workday': 0.0,
+                        'shi_subtotal_premi': 0.0,
+                        'realization': 0.0,
+                        'real_stock_qty': 0.0,
+                        'shi_realization': 0.0,
                     }
+
     
-                existing_line = next((progress_line for progress_line in grouped_lhm[key.id]['progress']
-                                    if progress_line['activity_id'] == line.activity_id and 
-                                    progress_line['location_id'] == line.location_id), None)
+                materials = self.env['lhm.transaction.material.line'].search([
+                    ('progress_id', '=', line.id),
+                    ('realization', '>', 0)
+                ])
+                material_realization_sum = sum(m.realization for m in materials)
+                real_stock_qty_sum = sum(m.real_stock_qty for m in materials)
                 
-                if existing_line:
-                    break
+                existing_progress = next((progress for progress in grouped_lhm[key.id]['progress'] 
+                    if progress['activity_id'] == line.activity_id and progress['location_id'] == line.location_id),None)
+
+                if existing_progress:
+                    existing_progress['realization'] += material_realization_sum
+                    existing_progress['real_stock_qty'] += real_stock_qty_sum
+                    existing_progress['nilai'] += line.nilai
+                    existing_progress['nilai2'] += line.nilai2
+                    existing_progress['work_day'] += line.work_day
+                    existing_progress['premi'] += line.premi
                 else:
-                    grouped_lhm[key.id]['progress'].append(line)
+                    grouped_lhm[key.id]['progress'].append({
+                        'progress_id': line.id,
+                        'name': line.name,
+                        'product_id': line.product_id,
+                        'uom_id': line.uom_id,
+                        'product_id_2': line.product_id_2,
+                        'uom2_id': line.uom2_id,
+                        'activity_id': line.activity_id,
+                        'location_id': line.location_id,
+                        'work_day': line.work_day,
+                        'premi': line.premi,
+                        'realization': material_realization_sum,                        
+                        'real_stock_qty': real_stock_qty_sum,
+                        'nilai': line.nilai,
+                        'nilai2': line.nilai2,
+                    })
+                    grouped_lhm[key.id]['subtotal_realization'] += material_realization_sum
+                    grouped_lhm[key.id]['subtotal_real_stock_qty'] += real_stock_qty_sum
+                    grouped_lhm[key.id]['subtotal_nilai'] += line.nilai
+                    grouped_lhm[key.id]['subtotal_nilai_1'] += line.nilai2
+                    grouped_lhm[key.id]['subtotal_workday'] += line.work_day
+                    grouped_lhm[key.id]['subtotal_premi'] += line.premi
 
-                total_material = self.env['lhm.transaction.material.line'].search([
-                        ('progress_id', 'in', [progress_line.id for progress_line in grouped_lhm[key.id]['progress']]),
-                    ])
-                
-                grouped_lhm[key.id]['total_qty'] += sum([total_material.realization])
-                
-                # grouped_lhm[key.id]['total_qty'] += line.qty
+            if lhm_transaction:
+                for line in shi_lhm_transaction.process_line_ids:
+                    key = line.location_id.type_id
 
+                    if key.id not in grouped_lhm:
+                        grouped_lhm[key.id] = {
+                            'key': key,
+                            'progress': [],
+                            'subtotal_realization': 0.0,
+                            'realization': 0.0,
+                            'subtotal_real_stock_qty': 0.0,
+                            'real_stock_qty': 0.0,
+                            'nilai': 0.0,
+                            'nilai_1': 0.0,
+                            'subtotal_nilai': 0.0,
+                            'subtotal_nilai_1': 0.0,
+                            'subtotal_workday': 0.0,
+                            'subtotal_premi': 0.0,
+                            'shi_subtotal_realization': 0.0,
+                            'shi_realization': 0.0,
+                            'shi_nilai': 0.0,
+                            'shi_nilai_1': 0.0,
+                            'shi_subtotal_nilai': 0.0,
+                            'shi_subtotal_nilai_1': 0.0,
+                            'shi_subtotal_workday': 0.0,
+                            'shi_subtotal_premi': 0.0,
+                        }
+                    
+                    materials = self.env['lhm.transaction.material.line'].search([
+                            ('progress_id', '=', line.id),
+                            ('realization', '>', 0)
+                        ])
+                    material_realization_sum = sum(m.realization for m in materials)
+                    real_stock_qty_sum = sum(m.real_stock_qty for m in materials)
+                    
+                    existing_progress = next((progress for progress in grouped_lhm[key.id]['progress'] 
+                        if progress['activity_id'] == line.activity_id and progress['location_id'] == line.location_id),None)
+        
+                    if existing_progress:
+                        existing_progress['shi_realization'] = existing_progress.get('shi_realization', 0.0) + material_realization_sum
+                        existing_progress['shi_nilai'] = existing_progress.get('shi_nilai', 0.0) + line.nilai
+                        existing_progress['shi_nilai_1'] = existing_progress.get('shi_nilai_1', 0.0) + line.nilai2
+                        existing_progress['shi_work_day'] = existing_progress.get('shi_work_day', 0.0) + line.work_day
+                        existing_progress['shi_premi'] = existing_progress.get('shi_premi', 0.0) + line.premi
+                    else:
+                        grouped_lhm[key.id]['progress'].append({
+                            'progress_id': line.id,
+                            'name': line.name,
+                            'product_id': line.product_id,
+                            'uom_id': line.uom_id,
+                            'product_id_2': line.product_id_2,
+                            'uom2_id': line.uom2_id,
+                            'activity_id': line.activity_id,
+                            'location_id': line.location_id,
+                            'work_day': line.work_day,
+                            'premi': line.premi,
+                            'realization': material_realization_sum,
+                            'real_stock_qty': real_stock_qty_sum,
+                            'nilai': line.nilai,
+                            'nilai2': line.nilai2,
+                            'shi_work_day': line.work_day,
+                            'shi_premi': line.premi,
+                            'shi_realization': material_realization_sum,
+                            'shi_nilai': line.nilai,
+                            'shi_nilai_1': line.nilai2,
+                        })
+                        grouped_lhm[key.id]['subtotal_realization'] += sum(m.realization for m in materials)
+                        grouped_lhm[key.id]['subtotal_real_stock_qty'] += sum(m.real_stock_qty for m in materials)
+                        grouped_lhm[key.id]['subtotal_nilai'] += line.nilai
+                        grouped_lhm[key.id]['subtotal_nilai_1'] += line.nilai2
+                        grouped_lhm[key.id]['subtotal_workday'] += line.work_day
+                        grouped_lhm[key.id]['subtotal_premi'] += line.premi
+                        
+
+                shi_subtotal_nilai = 0.0
+                shi_subtotal_nilai_1 = 0.0
+                shi_subtotal_workday = 0.0
+                shi_subtotal_premi = 0.0
+                shi_subtotal_realization = 0.0
+                
+                total_realization = 0.0
+                total_real_stock_qty = 0.0
+                total_nilai = 0.0
+                total_nilai_1 = 0.0
+                total_workday = 0.0
+                total_premi = 0.0
+                total_shi_realization = 0.0
+                total_shi_total_nilai = 0.0
+                total_shi_total_nilai_1 = 0.0
+                total_shi_total_workday = 0.0
+                total_shi_total_premi = 0.0
+
+                for key, data in grouped_lhm.items():
+                    shi_subtotal_realization = sum(progress['shi_realization'] for progress in data['progress'])
+                    shi_subtotal_nilai = sum(progress['shi_nilai'] for progress in data['progress'])
+                    shi_subtotal_nilai_1 = sum(progress['shi_nilai_1'] for progress in data['progress'])
+                    shi_subtotal_workday = sum(progress['shi_work_day'] for progress in data['progress'])
+                    shi_subtotal_premi = sum(progress['shi_premi'] for progress in data['progress'])
+
+                    grouped_lhm[key]['shi_subtotal_realization'] = shi_subtotal_realization
+                    grouped_lhm[key]['shi_subtotal_nilai'] = shi_subtotal_nilai
+                    grouped_lhm[key]['shi_subtotal_nilai_1'] = shi_subtotal_nilai_1
+                    grouped_lhm[key]['shi_subtotal_workday'] = shi_subtotal_workday
+                    grouped_lhm[key]['shi_subtotal_premi'] = shi_subtotal_premi
+                    
+                    total_realization += data.get('subtotal_realization', 0.0)
+                    total_real_stock_qty += data.get('subtotal_real_stock_qty', 0.0)
+                    total_nilai += data.get('subtotal_nilai', 0.0)
+                    total_nilai_1 += data.get('subtotal_nilai_1', 0.0)
+                    total_workday += data.get('subtotal_workday', 0.0)
+                    total_premi += data.get('subtotal_premi', 0.0)
+
+                    total_shi_realization += data.get('shi_subtotal_realization', 0.0)
+                    total_shi_total_nilai += data.get('shi_subtotal_nilai', 0.0)
+                    total_shi_total_nilai_1 += data.get('shi_subtotal_nilai_1', 0.0)
+                    total_shi_total_workday += data.get('shi_subtotal_workday', 0.0)
+                    total_shi_total_premi += data.get('shi_subtotal_premi', 0.0)
+            
             row_data = next_row + 3
+
             for lhm_data in grouped_lhm.values():
                 for line in lhm_data['progress']:
 
                     get_material = self.env['lhm.transaction.material.line'].search([
-                        ('progress_id', '=', line.id),
+                        ('progress_id', '=', line['progress_id']),
                         ('realization', '>', 0)
                     ])
 
                     worksheet.write(row_data, 0, lhm_data['key'].code, wbf['content'])
                     worksheet.set_column(0, 0, 18)
 
-                    worksheet.write(row_data, 1, line.location_id.code, wbf['content'])
+                    worksheet.write(row_data, 1, line['location_id'].code, wbf['content'])
                     worksheet.set_column(1, 1, 14)
 
                     worksheet.write(row_data, 2, '-', wbf['content'])
@@ -208,55 +382,55 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 3, '-', wbf['content'])
                     worksheet.set_column(3, 3, 14)
 
-                    worksheet.write(row_data, 4, line.activity_id.code if line.activity_id else '-', wbf['content'])
+                    worksheet.write(row_data, 4, line['activity_id'].code if line['activity_id'] else '-', wbf['content'])
                     worksheet.set_column(4, 4, 14)
 
-                    worksheet.write(row_data, 5, line.name if line.name else '-', wbf['content'])
+                    worksheet.write(row_data, 5, line['name'] if line['name'] else '-', wbf['content'])
                     worksheet.set_column(5, 5, 40)
 
-                    worksheet.write(row_data, 6, line.product_id.name if line.product_id else '-', wbf['content'])
+                    worksheet.write(row_data, 6, line['product_id'].name if line['product_id'] else '-', wbf['content'])
                     worksheet.set_column(6, 6, 18)
 
-                    worksheet.write(row_data, 7, line.uom_id.name if line.uom_id else '-', wbf['content'])
+                    worksheet.write(row_data, 7, line['uom_id'].name if line['uom_id'] else '-', wbf['content'])
                     worksheet.set_column(7, 7, 18)
                     
-                    worksheet.write(row_data, 8, '-', wbf['content'])
+                    worksheet.write(row_data, 8, line['nilai'] if line['nilai'] else 0.0, wbf['number_content'])
                     worksheet.set_column(8, 8, 14)
 
-                    worksheet.write(row_data, 9, '-', wbf['content'])
+                    worksheet.write(row_data, 9, line['shi_nilai'] if line['shi_nilai'] else 0.0, wbf['number_content'])
                     worksheet.set_column(9, 9, 14)
 
                     worksheet.write(row_data, 10, '-', wbf['content'])
                     worksheet.set_column(10, 10, 18)
                     
-                    worksheet.write(row_data, 11, line.product_id_2.name if line.product_id_2 else '-', wbf['content'])
+                    worksheet.write(row_data, 11, line['product_id_2'].name if line['product_id_2'] else '-', wbf['content'])
                     worksheet.set_column(11, 11, 18)
 
-                    worksheet.write(row_data, 12, line.uom2_id.name if line.uom2_id else '-', wbf['content'])
+                    worksheet.write(row_data, 12, line['uom2_id'].name if line['uom2_id'].name else '-', wbf['content'])
                     worksheet.set_column(12, 12, 18)
                     
-                    worksheet.write(row_data, 13, '-', wbf['content'])
+                    worksheet.write(row_data, 13, line['nilai2'] if line['nilai2'] else 0.0, wbf['number_content'])
                     worksheet.set_column(13, 13, 14)
 
-                    worksheet.write(row_data, 14, '-', wbf['content'])
+                    worksheet.write(row_data, 14, line['shi_nilai_1'] if line['shi_nilai_1'] else 0.0, wbf['number_content'])
                     worksheet.set_column(14, 14, 14)
 
                     worksheet.write(row_data, 15, '-', wbf['content'])
                     worksheet.set_column(15, 15, 18)
                     
-                    worksheet.write(row_data, 16, '-', wbf['content'])
+                    worksheet.write(row_data, 16, line['work_day'] if line['work_day'] else 0.0, wbf['number_content'])
                     worksheet.set_column(16, 16, 10)
 
-                    worksheet.write(row_data, 17, '-', wbf['content'])
+                    worksheet.write(row_data, 17, line['premi'] if line['premi'] else 0.0, wbf['number_content'])
                     worksheet.set_column(17, 17, 18)
 
                     worksheet.write(row_data, 18, '-', wbf['content'])
                     worksheet.set_column(18, 18, 18)
                     
-                    worksheet.write(row_data, 19, '-', wbf['content'])
+                    worksheet.write(row_data, 19, line['shi_work_day'] if line['shi_work_day'] else 0.0, wbf['number_content'])
                     worksheet.set_column(19, 19, 10)
 
-                    worksheet.write(row_data, 20, '-', wbf['content'])
+                    worksheet.write(row_data, 20, line['shi_premi'] if line['shi_premi'] else 0.0, wbf['number_content'])
                     worksheet.set_column(20, 20, 18)
 
                     worksheet.write(row_data, 21, '-', wbf['content'])
@@ -268,7 +442,7 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 23, get_material.date.strftime('%d-%m-%Y') if get_material else '-', wbf['content'])
                     worksheet.set_column(23, 23, 18)
 
-                    worksheet.write(row_data, 24, get_material.realization if get_material else '-', wbf['content'])
+                    worksheet.write(row_data, 24, line['real_stock_qty'] if line['real_stock_qty'] else 0.0, wbf['number_content'])
                     worksheet.set_column(24, 24, 18)
 
                     worksheet.write(row_data, 25, get_material.product_id.name if get_material else '-', wbf['content'])
@@ -277,10 +451,10 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 26, get_material.product_uom_id.name if get_material else '-', wbf['content'])
                     worksheet.set_column(26, 26, 18)
 
-                    worksheet.write(row_data, 27, '-', wbf['content'])
+                    worksheet.write(row_data, 27, line['realization'] if line['realization'] else 0.0, wbf['number_content'])
                     worksheet.set_column(27, 27, 18)
 
-                    worksheet.write(row_data, 28, '-', wbf['content'])
+                    worksheet.write(row_data, 28, line['shi_realization'] if line['shi_realization'] else 0.0, wbf['number_content'])
                     worksheet.set_column(28, 28, 18)
 
                     worksheet.write(row_data, 29, '-', wbf['content'])
@@ -296,29 +470,58 @@ class ReportLpphExcel(models.AbstractModel):
                 worksheet.write(row_data, 5, "", wbf['total'])
                 worksheet.write(row_data, 6, "", wbf['total'])
                 worksheet.write(row_data, 7, "", wbf['total'])
-                worksheet.write(row_data, 8, "", wbf['total'])
-                worksheet.write(row_data, 9, "", wbf['total'])
+                worksheet.write(row_data, 8, lhm_data['subtotal_nilai'], wbf['number_total'])
+                worksheet.write(row_data, 9, lhm_data['shi_subtotal_nilai'], wbf['number_total'])
                 worksheet.write(row_data, 10, "", wbf['total'])
                 worksheet.write(row_data, 11, "", wbf['total'])
                 worksheet.write(row_data, 12, "", wbf['total'])
-                worksheet.write(row_data, 13, "", wbf['total'])
-                worksheet.write(row_data, 14, "", wbf['total'])
+                worksheet.write(row_data, 13, lhm_data['subtotal_nilai_1'], wbf['number_total'])
+                worksheet.write(row_data, 14, lhm_data['shi_subtotal_nilai_1'], wbf['number_total'])
                 worksheet.write(row_data, 15, "", wbf['total'])
-                worksheet.write(row_data, 16, "", wbf['total'])
-                worksheet.write(row_data, 17, "", wbf['total'])
+                worksheet.write(row_data, 16, lhm_data['subtotal_workday'], wbf['number_total'])
+                worksheet.write(row_data, 17, lhm_data['subtotal_premi'], wbf['number_total'])
                 worksheet.write(row_data, 18, "", wbf['total'])
-                worksheet.write(row_data, 19, "", wbf['total'])
-                worksheet.write(row_data, 20, "", wbf['total'])
+                worksheet.write(row_data, 19, lhm_data['shi_subtotal_workday'], wbf['number_total'])
+                worksheet.write(row_data, 20, lhm_data['shi_subtotal_premi'], wbf['number_total'])
                 worksheet.write(row_data, 21, "", wbf['total'])
                 worksheet.write(row_data, 22, "", wbf['total'])
                 worksheet.write(row_data, 23, "", wbf['total'])
-                worksheet.write(row_data, 24, lhm_data['total_qty'], wbf['total'])
+                worksheet.write(row_data, 24, lhm_data['subtotal_real_stock_qty'], wbf['number_total'])
                 worksheet.write(row_data, 25, "", wbf['total'])
                 worksheet.write(row_data, 26, "", wbf['total'])
-                worksheet.write(row_data, 27, "", wbf['total'])
-                worksheet.write(row_data, 28, "", wbf['total'])
+                worksheet.write(row_data, 27, lhm_data['subtotal_realization'], wbf['number_total'])
+                worksheet.write(row_data, 28, lhm_data['shi_subtotal_realization'], wbf['number_total'])
                 worksheet.write(row_data, 29, "", wbf['total'])
-                # worksheet.merge_range(row_data, 1, row_data, 4, "", wbf['subtotal'])  # Merge cells for subtotal
-                # worksheet.write(row_data, 5, sum(line.qty for line in lhm_data['progress']), wbf['subtotal'])  # Total QTY
 
                 row_data += 1
+
+                worksheet.write(row_data, 0, "Grand Total", wbf['total'])
+                worksheet.write(row_data, 1, "", wbf['total'])
+                worksheet.write(row_data, 2, "", wbf['total'])
+                worksheet.write(row_data, 3, "", wbf['total'])
+                worksheet.write(row_data, 4, "", wbf['total'])
+                worksheet.write(row_data, 5, "", wbf['total'])
+                worksheet.write(row_data, 6, "", wbf['total'])
+                worksheet.write(row_data, 7, "", wbf['total'])
+                worksheet.write(row_data, 8, total_nilai, wbf['number_total'])
+                worksheet.write(row_data, 9, total_shi_total_nilai, wbf['number_total'])
+                worksheet.write(row_data, 10, "", wbf['total'])
+                worksheet.write(row_data, 11, "", wbf['total'])
+                worksheet.write(row_data, 12, "", wbf['total'])
+                worksheet.write(row_data, 13, total_nilai_1, wbf['number_total'])
+                worksheet.write(row_data, 14, total_shi_total_nilai_1, wbf['number_total'])
+                worksheet.write(row_data, 15, "", wbf['total'])
+                worksheet.write(row_data, 16, total_workday, wbf['number_total'])
+                worksheet.write(row_data, 17, total_premi, wbf['number_total'])
+                worksheet.write(row_data, 18, "", wbf['total'])
+                worksheet.write(row_data, 19, total_shi_total_workday, wbf['number_total'])
+                worksheet.write(row_data, 20, total_shi_total_premi, wbf['number_total'])
+                worksheet.write(row_data, 21, "", wbf['total'])
+                worksheet.write(row_data, 22, "", wbf['total'])
+                worksheet.write(row_data, 23, "", wbf['total'])
+                worksheet.write(row_data, 24, total_real_stock_qty, wbf['number_total'])
+                worksheet.write(row_data, 25, "", wbf['total'])
+                worksheet.write(row_data, 26, "", wbf['total'])
+                worksheet.write(row_data, 27, total_realization, wbf['number_total'])
+                worksheet.write(row_data, 28, total_shi_realization, wbf['number_total'])
+                worksheet.write(row_data, 29, "", wbf['total'])

@@ -5,7 +5,7 @@
         <field name="name">seed.semai.view.form</field>
         <field name="model">seed.semai</field>
         <field name="arch" type="xml">
-            <form string="Form Semai/Sisit Bibitan">
+            <form string="Form Pemasukan Bibitan">
                 <header>
                     <!-- <button name="button_approve" states="draft" string="Approve" type="object" class="btn-default btn-primary"/>
                     <button name="button_draft" states="approve" string="Set to draft" type="object" class="btn-default"/>
@@ -24,11 +24,16 @@
                         <page string="Detail">
                             <field name="line_ids" nolabel="1">
                                 <tree editable="bottom">
-                                    <field name="product_id" readonly="1" />
-                                    <field name="mutation_type_id" domain="[('mutation', '=', 'tambah')]"/>
-                                    <field name="location_id" />
+                                    <field name="date" readonly="1" />
+                                    <field name="product_id" />
+                                    <field name="mutation_type_id"/>
+                                    <field name="nursery_id" />
+                                    <field name="location_src_id" domain="[('id', 'in', fil_location_src_ids)]"/>
+                                    <field name="location_dest_id" domain="[('id', 'in', fil_location_dest_ids)]"/>
                                     <field name="qty" />
                                     <field name="satuan_id" />
+                                    <field name="fil_location_src_ids" invisible="1"/>
+                                    <field name="fil_location_dest_ids" invisible="1"/>
                                 </tree>
                             </field>
                         </page>
@@ -42,7 +47,7 @@
         <field name="name">seed.semai.view.tree</field>
         <field name="model">seed.semai</field>
         <field name="arch" type="xml">
-            <tree string="List Semai/Sisit Bibitan">
+            <tree string="List Pemasukan Bibitan">
                 <field name="name" />
                 <field name="product_id" />
                 <field name="date" />
@@ -51,7 +56,7 @@
     </record>
 
     <record id="seed_semai_action" model="ir.actions.act_window">
-        <field name="name">Form Semai/Sisit Bibitan</field>
+        <field name="name">Form Pemasukan Bibitan</field>
         <field name="res_model">seed.semai</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[]</field>
