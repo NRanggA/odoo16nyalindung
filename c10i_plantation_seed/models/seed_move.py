@@ -14,12 +14,9 @@ class SeedMove(models.Model):
 
     @api.model
     def create(self, vals):
-        # Jika nama tidak diberikan, buat sequence berdasarkan mutation_type_id
         if not vals.get('name'):
-            # Ambil tahun saat ini
             current_year = datetime.now().year
             
-            # Ambil mutation_type_id dari vals
             mutation_type = self.env['mutation.type'].browse(vals.get('mutation_type_id'))
             
             if mutation_type and mutation_type.code:
@@ -27,8 +24,9 @@ class SeedMove(models.Model):
             else:
                 sequence_code = f"-/{current_year}/"
 
-            # Ambil nomor sequence berikutnya
-            vals['name'] = self.env['ir.sequence'].next_by_code('seed.move') or f"{sequence_code}001"
+            next_seq = self.env['ir.sequence'].next_by_code('seed.move') or '001'
+
+            vals['name'] = f"{sequence_code}{next_seq}"
 
         return super(SeedMove, self).create(vals)
 
