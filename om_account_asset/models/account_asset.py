@@ -486,6 +486,7 @@ class AccountAssetAsset(models.Model):
         depreciation_ids = self.env['account.asset.depreciation.line'].search([
             ('asset_id', 'in', self.ids), ('depreciation_date', '<=', date),
             ('move_check', '=', False)])
+
         if group_entries:
             return depreciation_ids.create_grouped_move()
         return depreciation_ids.create_move()

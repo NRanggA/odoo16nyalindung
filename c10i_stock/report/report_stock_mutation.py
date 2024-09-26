@@ -176,7 +176,6 @@ class ReportStockMutation(models.AbstractModel):
             sheet.merge_range('J5:K5', 'Qty', wbf['header'])
             sheet.merge_range('L5:M5', 'Qty', wbf['header'])
 
-
         row = 5  
         for product in products:
             sheet.write(row, 0, product['default_code'], wbf['content']) 
@@ -211,6 +210,7 @@ class ReportStockMutation(models.AbstractModel):
                             WHERE sm.location_id = lsrc.id 
                             AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id 
+                            AND sm.location_dest_id = %(location_id)s
                             AND lsrc.usage != 'internal' 
                             AND ldest.usage = 'internal'
                             AND sm.state = 'done'
@@ -223,7 +223,8 @@ class ReportStockMutation(models.AbstractModel):
                                 svl.value
                             FROM 
                                 stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
-                            WHERE sm.location_id = lsrc.id 
+                            WHERE sm.location_id = lsrc.id
+                            AND sm.location_id = %(location_id)s 
                             AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
@@ -248,7 +249,8 @@ class ReportStockMutation(models.AbstractModel):
                                 stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id 
                             AND svl.stock_move_id = sm.id 
-                            AND sm.location_dest_id = ldest.id 
+                            AND sm.location_dest_id = ldest.id
+                            AND sm.location_dest_id = %(location_id)s 
                             AND lsrc.usage IN ('supplier', 'customer') 
                             AND ldest.usage = 'internal' 
                             AND sm.state = 'done'
@@ -269,7 +271,8 @@ class ReportStockMutation(models.AbstractModel):
                                 svl.value
                             FROM 
                                 stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
-                            WHERE sm.location_id = lsrc.id 
+                            WHERE sm.location_id = lsrc.id
+                            AND sm.location_id = %(location_id)s 
                             AND svl.stock_move_id = sm.id
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
@@ -294,7 +297,8 @@ class ReportStockMutation(models.AbstractModel):
                                 stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
                             WHERE sm.location_id = lsrc.id
                             AND svl.stock_move_id = sm.id 
-                            AND sm.location_dest_id = ldest.id 
+                            AND sm.location_dest_id = ldest.id
+                            AND sm.location_dest_id = %(location_id)s  
                             AND lsrc.usage = 'inventory' 
                             AND ldest.usage = 'internal' 
                             AND sm.state = 'done'
@@ -307,7 +311,8 @@ class ReportStockMutation(models.AbstractModel):
                                 svl.value
                             FROM 
                                 stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
-                            WHERE sm.location_id = lsrc.id 
+                            WHERE sm.location_id = lsrc.id
+                            AND sm.location_id = %(location_id)s 
                             AND svl.stock_move_id = sm.id
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
@@ -321,9 +326,10 @@ class ReportStockMutation(models.AbstractModel):
                 WHERE pp.id = %(product_id)s
             """
             params = {
-                'product_id': product.id,
-                'date_from' : obj.from_date.strftime('%Y-%m-%d 00:00:00'),
-                'date_to'   : obj.to_date.strftime('%Y-%m-%d 23:59:59')
+                'product_id' : product.id,
+                'location_id': obj.location_id.id,
+                'date_from'  : obj.from_date.strftime('%Y-%m-%d 00:00:00'),
+                'date_to'    : obj.to_date.strftime('%Y-%m-%d 23:59:59')
             }
             self.env.cr.execute(query, params)
             mutasi_stock = self.env.cr.dictfetchone()

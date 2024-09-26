@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_asset_form_inherit" model="ir.ui.view">
+        <field name="name">Account Asset Form Inherit</field>
+        <field name="model">account.asset.asset</field>
+        <field name="inherit_id" ref="om_account_asset.view_account_asset_asset_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='analytic_distribution']" position="after">
+                <field name="charge_to_activity" />
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page name="charge_to_activity" string="Charge To Activity" attrs="{'invisible': [('charge_to_activity', '=', False)]}">
+                    <group string="Plantation">
+                        <field name="location_type_id" />
+                        <field name="location_id" domain="[('type_id', '=', location_type_id)]"/>
+                        <field name="activity_id" domain="[('type_id', '=', location_type_id)]"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
