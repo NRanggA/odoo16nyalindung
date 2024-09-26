@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seed_move_view_form" model="ir.ui.view">
+        <field name="name">seed.move.view.form</field>
+        <field name="model">seed.move</field>
+        <field name="arch" type="xml">
+            <form string="Form Bibitan">
+                <header>
+                    <button name="button_confirm" states="draft" string="Approve" type="object" class="btn-default btn-primary"/>
+                    <button name="button_draft" states="approve" string="Set to draft" type="object" class="btn-default"/>
+                    <button name="button_close" states="close" string="Close" type="object" class="btn-default"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,close"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Nama" class="oe_edit_only"/>
+                        <h1><field name="name" readonly="1" force_save="1"/></h1>
+                    </div>
+                    <group>
+                        <field name="product_id" />
+                        <field name="date" />
+                        <field name="mutation_type_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Detail">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="date" readonly="1" />
+                                    <field name="product_id" />
+                                    <field name="mutation_type_id"/>
+
+                                    <field name="location_type_id" />
+                                    <field name="location_id" domain="[('type_id', '=', location_type_id)]"/>
+                                    <field name="activity_id" domain="[('type_id', '=', location_type_id)]"/>
+
+                                    <field name="nursery_id" />
+                                    <field name="location_src_id" domain="[('id', 'in', fil_location_src_ids)]" attrs="{'readonly': [('fil_location_src_ids', '=', [])]}"/>
+                                    <field name="location_dest_id" domain="[('id', 'in', fil_location_dest_ids)]" attrs="{'readonly': [('fil_location_src_ids', '=', [])]}"/>
+                                    <field name="qty" />
+                                    <field name="satuan_id" />
+                                    <field name="fil_location_src_ids" invisible="1"/>
+                                    <field name="fil_location_dest_ids" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="seed_move_view_tree" model="ir.ui.view">
+        <field name="name">seed.move.view.tree</field>
+        <field name="model">seed.move</field>
+        <field name="arch" type="xml">
+            <tree string="List Bibitan">
+                <field name="name" />
+                <field name="product_id" />
+                <field name="date" />
+                <field name="mutation_type_id" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="seed_move_action" model="ir.actions.act_window">
+        <field name="name">Form Bibitan</field>
+        <field name="res_model">seed.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="seed_move_menu"
+        name="Form Pembibitan"
+        action="seed_move_action"
+        parent="c10i_lhm_v16.menu_bibitan"/>
+
+</odoo>
