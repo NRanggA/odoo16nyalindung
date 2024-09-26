@@ -8,7 +8,7 @@
     'website': "http://konsaltenindonesia.com",
     'version': '14.1.0',
     'depends': [
-        'base', 'account', 'c10i_lhm_v16'
+        'base', 'account', 'c10i_lhm_v16'   
     ],
     'data': [
                 # 'data/sequences.xml',

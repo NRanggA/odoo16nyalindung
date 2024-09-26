@@ -12,6 +12,7 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
                     <button string="Validate" name="button_validate" type="object" class="oe_highlight" states="draft"/>
                     <button string="Set to Draft" name="button_draft" type="object" states="validated"/>
+                    <button string="Get Payment" name="button_get_payments" type="object" attrs="{'invisible': [('type','!=','cash')]}"/>
                 </xpath>
                 <xpath expr="//div[@name='button_box']" position="inside">
                     <button name="button_reconcile" type="object" class="oe_stat_button" icon="fa-bars" string="Reconcile Items"/>
