@@ -11,11 +11,19 @@ class ReportLpphExcel(models.AbstractModel):
     def add_workbook_format(self, workbook):
         self.wbf['title'] = workbook.add_format({'bold': 1, 'align': 'left'})
         self.wbf['title'].set_align('vcenter')
+
         self.wbf['header'] = workbook.add_format({'bold': 1, 'align': 'center', 'font_color': '#000000'})
         self.wbf['header'].set_border()
         self.wbf['header'].set_text_wrap()
         self.wbf['header'].set_align('vcenter')
         self.wbf['header'].set_font_size(10)
+        
+        self.wbf['signature'] = workbook.add_format({'align': 'center', 'font_color': '#000000'})
+        self.wbf['signature'].set_border()
+        self.wbf['signature'].set_text_wrap()
+        self.wbf['signature'].set_align('center')
+        self.wbf['signature'].set_align('top')
+        self.wbf['signature'].set_font_size(10)
 
         self.wbf['date'] = workbook.add_format({'align': 'center', 'num_format': 'mm/dd/yyyy'})
         self.wbf['date'].set_border()
@@ -87,7 +95,7 @@ class ReportLpphExcel(models.AbstractModel):
             location_name = ', '.join([location for location in locations])
 
 
-            row = 0
+            row = 1
             worksheet.write(row, 0, (o.company_id.name), wbf['title'])
             worksheet.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
             worksheet.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
@@ -102,8 +110,13 @@ class ReportLpphExcel(models.AbstractModel):
             worksheet.set_column(row + 2, 0, 20)
             worksheet.set_row(row + 3, 18)
             worksheet.set_row(row + 4, 18)
+            
+            worksheet.merge_range(row, 25, row + 3, 26, "Diperiksa Oleh,", wbf['signature'])
+            worksheet.merge_range(row + 4, 25, row + 4, 26, "Ka. Afdeling/Kabag", wbf['header'])
+            worksheet.merge_range(row, 27, row + 3, 29, "Disetujui Oleh,", wbf['signature'])
+            worksheet.merge_range(row + 4, 27, row + 4, 29, "Asisten Kepala", wbf['header'])
 
-            next_row = row + 5
+            next_row = row + 6
             worksheet.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
             worksheet.set_column(0, 0, 18)
             worksheet.merge_range(next_row, 1, next_row + 1, 3, "LOKASI", wbf['header'])
