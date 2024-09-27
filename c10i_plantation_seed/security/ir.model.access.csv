@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_seed_move,access_seed_move,c10i_plantation_seed.model_seed_move,base.group_user,1,1,1,1
 access_seed_move_line,access_seed_move_line,c10i_plantation_seed.model_seed_move_line,base.group_user,1,1,1,1
+access_wizard_seed_mutation_report,access_wizard_seed_mutation_report,c10i_plantation_seed.model_wizard_seed_mutation_report,base.group_user,1,1,1,1

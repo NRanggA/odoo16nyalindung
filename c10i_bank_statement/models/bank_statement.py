@@ -12,6 +12,12 @@ class AccountBankStatement(models.Model):
         ('draft', 'Draft'),
         ('validated', 'Validated'),
     ], string='Status', default='draft')
+    
+    journal_id = fields.Many2one(
+        comodel_name='account.journal',
+        compute=False, store=True,
+        check_company=True,
+    )
 
     def unlink(self):
         if any(self.filtered(lambda rec: rec.state != 'draft')):
@@ -48,3 +54,31 @@ class AccountBankStatement(models.Model):
     def onchange_ending_balance(self):
         total = sum(rec.cash_type_id.amount * rec.amount for rec in self.cash_count_line_ids)
         self.write({'balance_end_real': total})
+        
+    # Overide Function
+    # Note: removed the code that changes the field date
+    @api.depends('line_ids.internal_index', 'line_ids.state')
+    def _compute_date_index(self):
+        for stmt in self:
+            sorted_lines = stmt.line_ids.sorted('internal_index')
+            stmt.first_line_index = sorted_lines[:1].internal_index
+            # stmt.date = sorted_lines.filtered(lambda l: l.state == 'posted')[-1:].date
+        
+    def button_get_payments(self):
+        self=self.sudo()
+        self.line_ids = [(5,0,0)]
+        payments = self.env["account.direct.payment"].search([("date","=",self.date), ("state", "=", "posted")])
+        for i in payments:
+            for a in i.line_ids:
+                if i.direct_state == 'send':
+                    amount_payment = -a.amount
+                elif i.direct_state == 'receive':
+                    amount_payment = a.amount
+                    
+                self.line_ids = [(0,0,{
+                        'journal_id': i.journal_id.id,
+						'date': i.date,
+						'payment_ref' : a.name,
+						'partner_id' : i.partner_id.id,
+						'amount': amount_payment,
+					})]
