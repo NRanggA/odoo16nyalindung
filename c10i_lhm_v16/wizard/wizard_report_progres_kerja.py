@@ -58,25 +58,14 @@ class WizardReportProgresKerjaMaterialDetail(models.TransientModel):
 
     def create_report(self):
         return self.env.ref('c10i_lhm_v16.lpph_report_xlsx_action').report_action(self)
-    
-    # @api.multi
-        # data            = self.read()[-1]
-        # listing         = []
-        # listing         = listing + [(x.name).encode("utf-8") for x in self.group_ids]
-        # if listing == []:
-        #     listing = listing + [(x.name).encode("utf-8") for x in self.env['plantation.location.reference'].search([])]
-        # listing         = str(listing).replace('[', '').replace(']', '')
-        # return {
-        #     'type'          : 'ir.actions.report.xml',
-        #     'report_name'   : 'report_progres_kerja_harian_material_detail',
-        #     'datas'         : {
-        #         'model'         : 'wizard.report.progres.kerja.material.detail',
-        #         'id'            : self._context.get('active_ids') and self._context.get('active_ids')[0] or self.id,
-        #         'ids'           : self._context.get('active_ids') and self._context.get('active_ids') or [],
-        #         'report_type'   : data['report_type'],
-        #         'form'          : data,
-        #         'listing'       : listing.replace("'",'').replace(",", ", "),
-        #         'user_print'    : self.env.user.partner_id.name,
-        #     },
-        #     'nodestroy'     : False
-        # }
+
+class WizardReportProgresKerjaMaterialDetailBulanan(models.TransientModel):
+    _name           = "wizard.report.progres.kerja.material.detail.bulanan"
+    _description    = "Laporan Progres Pekerjaan Bulanan Material Detail"
+
+    name            = fields.Char(default="Laporan Progres Pekerjaan Bulanan Material Detail")
+    period_id       = fields.Many2one('account.period', string='Period')
+    company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
+
+    def create_report(self):
+        return self.env.ref('c10i_lhm_v16.lppb_report_xlsx_action').report_action(self)

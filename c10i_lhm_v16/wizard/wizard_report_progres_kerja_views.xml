@@ -82,6 +82,41 @@
         </record>
 
         <menuitem id="menu_report_progres_kerja_harian_material_detail" name="LPPH Material Detail" action="action_report_progres_kerja_harian_material_detail" parent="menu_plantation_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="21"/>
+        
+        <!-- Form -->
+        <record model='ir.ui.view' id='wizard_report_progres_kerja_material_detail_form_bulanan'>
+            <field name="name">Laporan Progres Kerja Bulanan Material Detail</field>
+            <field name="model">wizard.report.progres.kerja.material.detail.bulanan</field>
+            <field name="arch" type="xml">
+                <form string="Laporan Progres Pekerjaan Bulanan Material Detail">
+                    <header>
+                        <button name="create_report" type="object" default_focus="1" string="Print" class="oe_highlight"/>
+                    </header>
+                    <sheet>
+                        <center><h1>Laporan Progres Pekerjaan Bulanan Material Detail</h1></center>
+                        <group>
+                            <group>
+                                <field name="period_id" required="1"/>
+                                <field name="company_id" readonly="1"/>
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.actions.act_window' id='action_report_progres_kerja_harian_material_detail_bulanan'>
+            <field name="name">Laporan Progres Pekerjaan Bulanan Material Detail</field>
+            <field name="res_model">wizard.report.progres.kerja.material.detail.bulanan</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_report_progres_kerja_material_detail_form_bulanan"/>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_report_progres_kerja_material_detail_bulanan" name="LPPB Material Detail" action="action_report_progres_kerja_harian_material_detail_bulanan" parent="menu_plantation_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="21"/>
 
         <!-- Reporting -->
         <!-- <report string  = "Laporan Progres Pekerjaan Harian"
