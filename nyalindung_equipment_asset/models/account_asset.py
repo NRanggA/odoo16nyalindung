@@ -52,15 +52,24 @@ class AccountAssetDisposal(models.Model):
                     record.gain_account_id = product.gain_on_asset_sales_account_id if product else False
                     record.loss_account_id = product.loss_on_asset_sales_account_id if product else False
                     record.write_on_asset_sales_account_id = product.write_on_asset_sales_account_id if product else False
+                else:
+                    record.gain_account_id = record.asset_id.gain_account_id.id
+                    record.loss_account_id = record.asset_id.loss_account_id.id
 
     @api.onchange('asset_id')
     def _onchange_asset_id(self):
         for record in self:
+            record.cumulative_depreciation = 0
+            record.value_residual = 0
             if record.asset_id:
-                move_posted_check = any(line.move_posted_check for line in record.asset_id.depreciation_line_ids)
-                record.value_residual = record.asset_id.value_residual if move_posted_check else record.asset_id.value
-            else:
-                record.value_residual = 0
+                # record.gain_account_id = record.asset_id.gain_account_id.id
+                # record.loss_account_id = record.asset_id.loss_account_id.id
+                record.value_residual = record.asset_id.value_residual
+                record.gross_value = record.asset_id.value
+                try:
+                    record.cumulative_depreciation = record.asset_id.depreciation_line_ids.filtered_domain([('move_check','=',True)])[-1].depreciated_value
+                except:
+                    pass
 
     def do_action(self):
         self.ensure_one()
