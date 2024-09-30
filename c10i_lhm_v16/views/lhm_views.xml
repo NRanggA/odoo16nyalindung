@@ -1268,6 +1268,7 @@
                                 <field name="planted"/>
                                 <field name="plantable"/>
                                 <field name="total_plant"/>
+                                <field name="opening"/>
                                 <field name="koefisien_luas"/>
                                 <field name="date_start" readonly="1"/>
                                 <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -1292,6 +1293,18 @@
                                 <field name="tm_category_id" attrs="{'invisible': [('status','=','tbm')]}"/>
                             </group>
                         </group>
+                        <notebook>
+                            <page string="SPH Related">
+                                <field name="sph_move_ids"  nolabel="1" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="type"/>
+                                        <field name="date" />
+                                        <field name="qty" />
+                                        <!-- <field name="uom_id" /> -->
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>
@@ -1457,6 +1470,7 @@
                                 <field name="qty"/>
                                 <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="account_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="product_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                         </group>
                     </sheet>
@@ -2059,6 +2073,16 @@
                                 </group>
                             </page>
                         </notebook>
+                        <separator string="SPH Related"/>
+                        <field name="sph_move_ids"  nolabel="1" context="{'default_date':date}">
+                            <tree editable="bottom">
+                                <field name="type"/>
+                                <field name="date" invisible="1"/>
+                                <field name="location_type_id" />
+                                <field name="block_tanam_id" />
+                                <field name="qty" />
+                            </tree>
+                        </field>
                         <field name="note" placeholder="Tulis Catatan Disini..." nolabel="1" colspan="8"/>
                     </sheet>
                     <div class="oe_chatter">
