@@ -96,7 +96,7 @@
                         <center><h1>Laporan Progres Pekerjaan Bulanan Material Detail</h1></center>
                         <group>
                             <group>
-                                <field name="period_id" required="1"/>
+                                <field name="period_id" required="1" domain="[('special','!=',True)]" options="{'no_open': True, 'no_create': True}"/>
                                 <field name="company_id" readonly="1"/>
                             </group>
                             <group>
