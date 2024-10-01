@@ -83,7 +83,7 @@ class HrAttendanceBatch(models.Model):
             for index, row in df.iterrows():
                 employee = self.env['hr.employee'].search([('no_induk', '=', str(int(row['Nik']))), ('name', '=', row['Nama'])], limit=1)
                 if not employee:
-                    raise ValidationError(f"Karyawan dengan nip {row['Nik']} tidak ditemukan!")
+                    raise ValidationError(f"Karyawan dengan nip {str(int(row['Nik']))} tidak ditemukan!")
 
                 try:
                     check_in_str = None
@@ -174,7 +174,7 @@ class HrAttendanceBatch(models.Model):
             for index, row in df.iterrows():
                 employee = self.env['hr.employee'].search([('no_induk', '=', str(int(row['Nik']))), ('name', '=', row['Nama'])], limit=1)
                 if not employee:
-                    raise ValidationError(f"Karyawan dengan nik {row['Nik']} dan nama {row['Nama']} tidak ditemukan!")
+                    raise ValidationError(f"Karyawan dengan nik {str(int(row['Nik']))} dan nama {row['Nama']} tidak ditemukan!")
 
                 try:
                     check_in_str = None
