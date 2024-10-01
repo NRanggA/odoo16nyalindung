@@ -10,6 +10,7 @@
 				<field name="type_id"/>
 	            <field name="check_in" />
 	            <field name="check_out" />
+	            <field name="is_holiday" />
 	        </tree>
 	    </field>
 	</record>
@@ -26,6 +27,7 @@
                         <field name="type_id"/>
                         <field name="check_in" />
                         <field name="check_out" />
+	                    <field name="is_holiday" />
                     </group>
                 </sheet>
             </form>
