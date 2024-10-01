@@ -368,10 +368,10 @@
 
     <menuitem id="menu_account_direct_payment_expense_id" name="Expenses" sequence="45"
         web_icon="c10i_direct_payment_employee_expense,static/description/icon.png"/>
-    <menuitem id="menu_employee_my_expense_root_id" parent="menu_account_direct_payment_expense_id" name="My Expenses" sequence="5"/>
+    <menuitem id="menu_employee_my_expense_root_id" action="account_employee_advance_action" parent="menu_account_direct_payment_expense_id" name="My Advance" sequence="5"/>
     <menuitem id="menu_employee_expense_report_root_id" parent="menu_account_direct_payment_expense_id" name="Expense Reports" sequence="6"/>
     <menuitem action="hr_account_employee_expense_action" id="menu_employee_my_expense" parent="menu_employee_expense_report_root_id" sequence="10"/>
-    <menuitem action="account_employee_advance_action" id="menu_employee_my_advance" parent="menu_employee_my_expense_root_id" sequence="11"/>
+    <!-- <menuitem action="account_employee_advance_action" id="menu_employee_my_advance" parent="menu_employee_my_expense_root_id" sequence="11"/> -->
     <menuitem action="hr_account_employee_expense_action_to_approve" id="menu_employee_expense_to_approve" parent="menu_employee_expense_report_root_id" sequence="10"/>
     <!-- <menuitem action="hr_account_employee_expense_action_to_post" id="menu_employee_expense_to_post" parent="menu_employee_expense_report_root_id" sequence="11" groups="account.group_account_invoice"/> -->
     <!-- <menuitem action="hr_account_employee_expense_action_to_pay" id="menu_employee_expense_to_pay" parent="menu_employee_expense_report_root_id" sequence="12" groups="account.group_account_invoice"/> -->
