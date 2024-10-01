@@ -25,6 +25,7 @@
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'security/rule_security.xml',
         'views/hr_employee_expense.xml',
         'views/account_direct_payment.xml',
         'views/res_config_settings_view.xml',
