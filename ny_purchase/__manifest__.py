@@ -11,6 +11,7 @@
         'views/purchase_order_views.xml',
         'views/purchase_order_report_outstanding_views.xml',
         'views/purchase_request_report_outstanding_views.xml',
+        'views/purchase_order_monitoring_views.xml',
         # 'reports/cimol.xml',
         # 'reports/report_outstanding_purchase_request.xml',
     ],

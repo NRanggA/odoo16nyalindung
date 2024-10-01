@@ -126,8 +126,6 @@ class MaterialRequest(models.Model):
                 picking = StockPicking.with_user(SUPERUSER_ID).create(res)
                 moves = request.line_ids._create_stock_moves(picking)
                 moves = moves.filtered(lambda x: x.state not in ('done', 'cancel'))._action_confirm()
-                # print("----------------", moves)
-                # print("---------------", stop) stoper nya pun gk berfungsi, bukan fungsi ini yg berjalan (note from cimol)
                 # moves._action_assign()
                 picking.message_post_with_view('mail.message_origin_link',
                     values={'self': picking, 'origin': request},
@@ -292,12 +290,9 @@ class MaterialRequestLine(models.Model):
 
     def _prepare_stock_move_vals(self, picking, product_uom_qty, product_uom):
         self.ensure_one()
-        # print("----------------", self)
-        # print("----------------", disinidatanya)
         return {
             # truncate to 2000 to avoid triggering index limit error
             # TODO: remove index in master?
-            # 'requested_by' : self.mr_id.requested_by,
             'name': (self.name or '')[:2000],
             'product_id': self.product_id.id,
             'date': self.mr_id.date_request,

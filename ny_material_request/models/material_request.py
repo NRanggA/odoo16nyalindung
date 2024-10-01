@@ -1,27 +1,27 @@
 from odoo import models, fields, api, SUPERUSER_ID, _
 from datetime import datetime
-from odoo.tools.float_utils import float_is_zero, float_compare
-from odoo.exceptions import ValidationError, UserError
 from itertools import groupby
 
 
-class StockMove(models.Model):
-    _inherit = 'stock.move'
+# class StockMove(models.Model):
+#     _inherit = 'stock.move'
 
-    requested_by = fields.Many2one('res.users', string='Requested by')
 
 class MaterialRequest(models.Model):
     _inherit = "material.request"
 
+    requested_by_2 = fields.Many2one('hr.employee', string='Requested by')
+
     def _create_picking(self):
-        super(MaterialRequest, self)._create_picking()
         StockPicking = self.env['stock.picking']
+        if not any(line.requested_by for line in self.line_ids):
+            return super(MaterialRequest, self)._create_picking()
         for request in self.filtered(lambda mr: mr.state == 'approved'):
             if any((product.type == 'product' and not product.product_asset) for product in request.line_ids.product_id):
                 request = request.with_company(request.company_id)
                 for user in request.line_ids.requested_by:
                     res = request._prepare_picking()
-                    res.update({"partner_id": user.partner_id.id})
+                    # res.update({"partner_id": user.partner_id.id})
                     picking = StockPicking.with_user(SUPERUSER_ID).create(res)
                     for mrlines in request.line_ids:
                         if user == mrlines.requested_by:
@@ -35,8 +35,8 @@ class MaterialRequest(models.Model):
 class MaterialRequestLine(models.Model):
     _inherit = "material.request.line"
 
-    requested_by = fields.Many2one("res.users", string="Requested by")
-    product_asset = fields.Boolean(related='product_id.product_asset', string='Asset Equipment')
+    requested_by = fields.Many2one("hr.employee", string="Requested by")
+    # product_asset = fields.Boolean(related='product_id.product_asset', string='Asset Equipment')
 
     
 
