@@ -60,11 +60,12 @@
         # 'views/account_payment_views.xml',            # C10i_account di ubah menjadi account
 
 
-        'wizard/stock_backorder_confirmation_views.xml',
+        # 'wizard/stock_backorder_confirmation_views.xml',
         'wizard/wizard_nab_generate_invoice_views.xml',
         'wizard/wizard_nap_generate_invoice_views.xml',
         'wizard/wizard_report_progres_kerja_views.xml',
         'report/lpph_report_action.xml',
+        'report/lppb_report_action.xml',
         'wizard/wizard_report_export_data_views.xml',
         'wizard/wizard_report_monitor_views.xml',
         'wizard/wizard_report_invoice_views.xml',

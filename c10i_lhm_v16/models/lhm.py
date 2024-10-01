@@ -748,7 +748,7 @@ class lhm_plant_block(models.Model):
     planted             = fields.Float("Planted")
     plantable           = fields.Float("Plantable")
     koefisien_luas      = fields.Float("Koefisien Luasan")
-    total_plant         = fields.Float("Jumlah Pokok")
+    total_plant         = fields.Float("Jumlah Pokok",  compute="_compute_total_plant", store=True)
     status              = fields.Selection(selection=[('tbm','Tanaman Belum Menghasilkan'),('tm','Tanaman Menghasilkan')],string="Status", compute="_compute_time_plant", store=True)
     need_to_be_approved = fields.Boolean('Butuh Approval untuk masuk ke Kategori Tanaman Menghasilkan', compute='_compute_time_plant', store=True)
     tm_year             = fields.Integer(string='Tahun Menjadi TM')
@@ -765,11 +765,31 @@ class lhm_plant_block(models.Model):
     section             = fields.Char("Seksi")
     active              = fields.Boolean("Active", default=True)
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
+    sph_move_ids        = fields.One2many('sph.move', 'block_tanam_id', string='SPH Move')
+
+    opening             = fields.Float('Opening')
 
     # POC Nyalindung
     target_panen_perhari = fields.Float('Target Panen per Hari (kg)')
     
     _sql_constraints = [('name_company_uniq', 'unique (name, company_id)', "Blok Tanam Sudah ada percompany!"),]
+
+    @api.depends('sph_move_ids.qty', 'sph_move_ids.type')
+    def _compute_total_plant(self):
+        for block in self:
+            total_awal = 0.0
+            total_pokok_mati = 0.0
+            total_sisip = 0.0
+
+            for sph_move in block.sph_move_ids:
+                if sph_move.type == 'awal':
+                    total_awal += sph_move.qty
+                elif sph_move.type == 'pokok_mati':
+                    total_pokok_mati += sph_move.qty
+                elif sph_move.type == 'sisip':
+                    total_sisip += sph_move.qty
+
+            block.total_plant = total_awal - total_pokok_mati + total_sisip
 
     @api.model
     def _get_rate_bjr(self):
@@ -789,6 +809,14 @@ class lhm_plant_block(models.Model):
 
     @api.model
     def create(self, values):
+        opening             = values.get('opening', False)
+        opening_vals       = {
+            'type': 'saldo_awal',
+            'date': fields.Date.today,
+            'qty' : opening or False,
+        }
+        self.env['sph.move'].create(opening_vals)
+        
         location_name       = values.get('name', False)
         location_code       = values.get('code', False)
         location_type_id    = values.get('location_type_id', False)
@@ -805,9 +833,28 @@ class lhm_plant_block(models.Model):
             new_location = self.env['lhm.location'].create(location_values)
         if new_location:
             location.location_id = new_location.id
+        
         return location
 
     def write(self, values):
+        opening             = values.get('opening', False)
+        if opening:
+            sph_awal = self.sph_move_ids.filtered(lambda x: x.type == 'awal')
+            if sph_awal:
+                opening_vals       = {
+                    'date': fields.Date.today(),
+                    'qty' : opening or False,
+                }
+                sph_awal.write(opening_vals)
+            else:
+                opening_vals       = {
+                    'type': 'awal',
+                    'date': fields.Date.today(),
+                    'qty' : opening or False,
+                    'block_tanam_id': self.id
+                }
+                self.env['sph.move'].create(opening_vals)
+
         if 'name' in values and self.location_id:
             self.location_id.write({'name': values.get('name', False)})
         if 'code' in values and self.location_id:
@@ -886,6 +933,7 @@ class lhm_nursery(models.Model):
     group_progress_id   = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     account_id          = fields.Many2one("account.account", "Cost Account")
+    product_id          = fields.Many2one('product.product', string='Product')
 
     @api.model
     def create(self, values):
@@ -1330,6 +1378,7 @@ class lhm_transaction(models.Model):
     invoice_id          = fields.Many2one('account.move', 'Payroll Invoice')
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
     pending_nap_link    = fields.Boolean('LHM belum sama dengan NAP', compute='_check_pending_nap_link', store=True)
+    sph_move_ids        = fields.One2many('sph.move', 'lhm_id', string='Sph Move')
 
     @api.depends('lhm_line_ids.activity_id.is_panen')
     def _compute_is_nap(self):
@@ -2039,7 +2088,6 @@ class lhm_transaction(models.Model):
     def create(self, values):
         kemandoran = self.env['hr.foreman'].search([('id', '=', values.get('kemandoran_id'))])
         date = values.get('date')
-
         if kemandoran:
             values['name'] = f"{kemandoran.code or ''}/{date}"
         else:
@@ -2062,6 +2110,7 @@ class lhm_transaction(models.Model):
 
             date = date or record.date
             values['name'] = f"{kemandoran.code or ''}/{date}"
+        
         return super(lhm_transaction, self).write(values)
 
 class lhm_transaction_line(models.Model):
@@ -2638,9 +2687,6 @@ class lhm_transaction_nap_line(models.Model):
     #         ])
     #         employee_ids = nap_lines.mapped('employee_id')
     #         return {'domain': {'employee_id': [('id', 'in', employee_ids.ids)]}}
-
-
-    
 
 class lhm_transaction_process_line(models.Model):
     _name           = 'lhm.transaction.process.line'

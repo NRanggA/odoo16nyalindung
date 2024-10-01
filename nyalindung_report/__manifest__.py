@@ -19,11 +19,11 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'sale', 'product', 'purchase', 'purchase_request'],
+    'depends': ['base', 'sale', 'product', 'purchase', 'purchase_request', 'c10i_lhm_v16'],
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/sale_order_view.xml',
         'views/purchase_order_view.xml',
         'report/sales_quotation_karet.xml',
@@ -36,6 +36,8 @@
         'report/purchase_order_report_action.xml',
         'report/purchase_request_report_action.xml',
         'report/surat_jalan_action.xml',
+        'report/report_summary_bkm_action.xml',
+        'wizard/wizard_report_summary_bkm_view.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

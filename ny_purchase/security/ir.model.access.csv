@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_purchase_order_report_outstanding,access_purchase_order_report_outstanding,ny_purchase.model_purchase_order_report_outstanding,base.group_user,1,1,1,1
 access_purchase_request_report_outstanding,access_purchase_request_report_outstanding,ny_purchase.model_purchase_request_report_outstanding,base.group_user,1,1,1,1
+access_purchase_order_monitoring,access_purchase_order_monitoring,ny_purchase.model_purchase_order_monitoring,base.group_user,1,1,1,1

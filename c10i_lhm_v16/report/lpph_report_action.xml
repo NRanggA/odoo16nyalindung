@@ -4,7 +4,7 @@
     <data>
 
         <record id="lpph_report_xlsx_action" model="ir.actions.report">
-            <field name="name">Export to Excel</field>
+            <field name="name">LPPH Excel</field>
             <field name="model">wizard.report.progres.kerja.material.detail</field>
             <field name="report_type">xlsx</field>
             <field name="report_name">c10i_lhm_v16.report_lpph_excel</field>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_monitoring_view_tree" model="ir.ui.view">
+        <field name="name">purchase.order.monitoring.view.tree</field>
+        <field name="model">purchase.order.monitoring</field>
+        <field name="arch" type="xml">
+            <tree string="Purchase Order Monitoring">
+                <field name="product_id" />
+                <field name="purchase_request_id" />
+                <field name="purchase_order_id" />
+                <field name="grn_id" />
+                <field name="vb_id" />
+                <field name="po_minus_pr_days" decoration-danger="po_minus_pr_days &lt; 0" decoration-success="po_minus_pr_days &gt;= 0" />
+                <field name="grn_minus_po_days" decoration-danger="grn_minus_po_days &lt; 0" decoration-success="grn_minus_po_days &gt;= 0" />
+                <field name="vb_minus_grn_days" decoration-danger="vb_minus_grn_days &lt; 0" decoration-success="vb_minus_grn_days &gt;= 0" />
+                <field name="vb_minus_po_days" decoration-danger="vb_minus_po_days &lt; 0" decoration-success="vb_minus_po_days &gt;= 0" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="purchase_order_monitoring_action" model="ir.actions.act_window">
+        <field name="name">Purchase Order Monitoring</field>
+        <field name="res_model">purchase.order.monitoring</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="context">{'create': false}</field>
+    </record>
+
+    <menuitem
+        id="purchase_order_monitoring_menu"
+        name="Purchase Order Monitoring"
+        action="purchase_order_monitoring_action"
+        parent="purchase.purchase_report_main"
+        sequence="20"/>
+</odoo>
