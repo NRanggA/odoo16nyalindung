@@ -356,6 +356,8 @@ class PurchaseRequestLine(models.Model):
         else:
             for prl in po_line.purchase_request_lines:
                 for alloc in prl.purchase_request_allocation_ids:
+                    if alloc.purchase_line_id.id!=po_line.id:
+                        continue
                     rl_qty += alloc.product_uom_id._compute_quantity(
                         alloc.requested_product_uom_qty, purchase_uom
                     )
