@@ -6,7 +6,7 @@ class WizardSeedMutationReport(models.TransientModel):
     _name           = 'wizard.seed.mutation.report'
     _description    = 'Wizard Mutasi Bibit Report'
 
-    product_id      = fields.Many2one('product.product', string='Product')
+    # product_id      = fields.Many2one('product.product', string='Product')
     date_start      = fields.Date('Date Start')
     date_end        = fields.Date('Date End')
     location_id     = fields.Many2one('lhm.nursery', string='location', ondelete="cascade", required=True)

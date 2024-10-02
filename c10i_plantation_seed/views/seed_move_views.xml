@@ -8,8 +8,8 @@
             <form string="Form Bibitan">
                 <header>
                     <button name="button_confirm" states="draft" string="Approve" type="object" class="btn-default btn-primary"/>
-                    <button name="button_draft" states="approve" string="Set to draft" type="object" class="btn-default"/>
-                    <button name="button_close" states="close" string="Close" type="object" class="btn-default"/>
+                    <button name="button_draft" states="confirm,close" string="Set to draft" type="object" class="btn-default"/>
+                    <button name="button_close" states="confirm" string="Close" type="object" class="btn-default"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,close"/>
                 </header>
                 <sheet>
@@ -18,25 +18,23 @@
                         <h1><field name="name" readonly="1" force_save="1"/></h1>
                     </div>
                     <group>
-                        <field name="product_id" />
                         <field name="date" />
-                        <field name="mutation_type_id"/>
+                        <field name="mutation_type_id" domain="[('type', '!=', 'transfer')]" options="{'no_create': True}"/>
                     </group>
                     <notebook>
                         <page string="Detail">
-                            <field name="line_ids" nolabel="1">
+                            <field name="line_ids" nolabel="1" attrs="{'readonly': ['|', ('state', 'in', ['confirm', 'close']), '|', ('date', '=', False), ('mutation_type_id', '=', False)]}"  context="{'default_date': date, 'default_mutation_type_id': mutation_type_id}">
                                 <tree editable="bottom">
-                                    <field name="date" readonly="1" />
-                                    <field name="product_id" />
+                                    <field name="date" readonly="1" force_save="1"/>
                                     <field name="mutation_type_id"/>
-
-                                    <field name="location_type_id" />
-                                    <field name="location_id" domain="[('type_id', '=', location_type_id)]"/>
-                                    <field name="activity_id" domain="[('type_id', '=', location_type_id)]"/>
-
+                                    <field name="mutation_type" invisible="1"/>
+                                    <field name="location_type_id" attrs="{'invisible': [('mutation_type', '!=', 'outgoing')]}"/>
+                                    <field name="location_id" domain="[('type_id', '=', location_type_id)]" attrs="{'invisible': [('mutation_type', '!=', 'outgoing')]}"/>
+                                    <field name="activity_id" domain="[('type_id', '=', location_type_id)]" attrs="{'invisible': [('mutation_type', '!=', 'outgoing')]}"/>
                                     <field name="nursery_id" />
-                                    <field name="location_src_id" domain="[('id', 'in', fil_location_src_ids)]" attrs="{'readonly': [('fil_location_src_ids', '=', [])]}"/>
-                                    <field name="location_dest_id" domain="[('id', 'in', fil_location_dest_ids)]" attrs="{'readonly': [('fil_location_src_ids', '=', [])]}"/>
+                                    <field name="product_id" />
+                                    <field name="location_src_id" domain="[('id', 'in', fil_location_src_ids)]" attrs="{'readonly': [('fil_location_src_ids', '=', [])]}" invisible="1"/>
+                                    <field name="location_dest_id" domain="[('id', 'in', fil_location_dest_ids)]" attrs="{'readonly': [('fil_location_dest_ids', '=', [])]}" invisible="1"/>
                                     <field name="qty" />
                                     <field name="satuan_id" />
                                     <field name="fil_location_src_ids" invisible="1"/>
@@ -50,15 +48,49 @@
         </field>
     </record>
 
+    <!-- untuk seed.transfer -->
+    <record id="seed_move_line_transfer_view_tree" model="ir.ui.view">
+        <field name="name">seed.move.transfer.line.view.tree</field>
+        <field name="model">seed.move.line</field>
+        <field name="arch" type="xml">
+            <tree string="Seed Move line">
+                <field name="seed_transfer_id" />
+                <field name="mutation_type_id" />
+                <field name="nursery_id" />
+                <field name="location_src_id" />
+                <field name="location_dest_id" />
+                <field name="qty" />
+                <field name="date" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- Untuk lhm nursary -->
+    <record id="seed_move_line_nursery_view_tree" model="ir.ui.view">
+        <field name="name">seed.move.line.nursery.view.tree</field>
+        <field name="model">seed.move.line</field>
+        <field name="arch" type="xml">
+            <tree string="List Transaksi">
+                <field name="date"/>
+                <field name="mutation_type_id"/>
+                <field name="nursery_id" />
+                <field name="product_id" />
+                <field name="qty" />
+                <field name="satuan_id" />
+            </tree>
+        </field>
+    </record>
+
+
     <record id="seed_move_view_tree" model="ir.ui.view">
         <field name="name">seed.move.view.tree</field>
         <field name="model">seed.move</field>
         <field name="arch" type="xml">
             <tree string="List Bibitan">
                 <field name="name" />
-                <field name="product_id" />
                 <field name="date" />
                 <field name="mutation_type_id" />
+                <field name="state" widget="badge"/>
             </tree>
         </field>
     </record>
