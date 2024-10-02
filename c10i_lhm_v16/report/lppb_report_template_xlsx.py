@@ -73,8 +73,6 @@ class ReportLpphExcel(models.AbstractModel):
                                 ('account_period_id','=',o.period_id.id),
                                 ('state','=','done')
                             ])
-            
-            print("====================", lhm_transaction)
 
             shi_month = o.period_id.date_start.month
             shi_year = o.period_id.date_start.year

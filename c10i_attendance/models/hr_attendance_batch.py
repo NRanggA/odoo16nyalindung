@@ -6,6 +6,7 @@ import io
 import pandas as pd
 import pytz
 import json
+import numpy as np
 
 
 class HrAttendance(models.Model):
@@ -58,6 +59,13 @@ class HrAttendanceBatch(models.Model):
         }
 
     def do_import(self):
+        def cell_to_string(cell_value):
+            # print("..................str", cell_value, type(cell_value), isinstance(cell_value, (int, np.integer)))
+            if cell_value and (isinstance(cell_value, (float, np.floating)) or isinstance(cell_value, (int, np.integer))):
+                return str(int(cell_value)) if not np.isnan(cell_value) else ''
+            else:
+                return cell_value.strip()
+        
         if not self.file:
             raise UserError(_("Upload File Terlebih Dahulu"))
         
@@ -80,7 +88,7 @@ class HrAttendanceBatch(models.Model):
         if existing_batch:
             # Mengumpulkan data check-in dan check-out dari file Excel
             for index, row in df.iterrows():
-                employee = self.env['hr.employee'].search([('no_induk', '=', row['Nik']), ('name', '=', row['Nama'])], limit=1)
+                employee = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik'])), ('name', '=', row['Nama'])], limit=1)
                 if not employee:
                     raise ValidationError(f"Karyawan dengan nip {row['Nik']} tidak ditemukan!")
 
@@ -171,7 +179,7 @@ class HrAttendanceBatch(models.Model):
         else:
             # Jika tidak ada batch lain, buat batch baru dan absensi
             for index, row in df.iterrows():
-                employee = self.env['hr.employee'].search([('no_induk', '=', row['Nik']), ('name', '=', row['Nama'])], limit=1)
+                employee = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik'])), ('name', '=', row['Nama'])], limit=1)
                 if not employee:
                     raise ValidationError(f"Karyawan dengan nik {row['Nik']} dan nama {row['Nama']} tidak ditemukan!")
 
