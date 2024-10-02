@@ -2077,7 +2077,7 @@
                         <field name="sph_move_ids"  nolabel="1" context="{'default_date':date}">
                             <tree editable="bottom">
                                 <field name="type"/>
-                                <field name="date" invisible="1"/>
+                                <field name="date" invisible="1" force_save="1"/>
                                 <field name="location_type_id" />
                                 <field name="block_tanam_id" />
                                 <field name="qty" />
