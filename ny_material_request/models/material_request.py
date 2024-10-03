@@ -22,6 +22,7 @@ class MaterialRequest(models.Model):
                 for user in request.line_ids.requested_by:
                     res = request._prepare_picking()
                     # res.update({"partner_id": user.partner_id.id})
+                    res.update({"employee_id": user.id})
                     picking = StockPicking.with_user(SUPERUSER_ID).create(res)
                     for mrlines in request.line_ids:
                         if user == mrlines.requested_by:
