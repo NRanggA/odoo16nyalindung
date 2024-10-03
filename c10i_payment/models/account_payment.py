@@ -14,21 +14,27 @@ class AccountPayment(models.Model):
             if rec.payment_line_ids:
                 amount = sum([line.amount_to_pay for line in rec.payment_line_ids])
                 rec.amount = amount
+                # amount += sum([line.write_off_amount for line in rec.payment_line_ids if line.write_off_amount != 0 and line.write_off_account_id])
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
         self.payment_line_ids = [(5, 0, 0)]        
 
     def get_bills(self):
-        for rec in self:
+        for rec in self.filtered(lambda x: x.state=='draft'):
             if rec.partner_id:
                 existing = rec.payment_line_ids.mapped('move_id')
-                moves = self.env['account.move'].search([
+                domain = [
                     ('partner_id', '=', rec.partner_id.id),
                     ('state', '=', 'posted'),
                     ('payment_state', 'in', ['not_paid', 'in_payment', 'partial']),
-                    ('move_type', '=', 'in_invoice')
-                ])
+                ]
+                if rec.payment_type == 'outbound':
+                    domain.append(('move_type', '=', 'in_invoice'))
+                elif rec.payment_type == 'inbound':
+                    domain.append(('move_type', '=', 'out_invoice'))
+
+                moves = self.env['account.move'].search(domain)
                 for move in moves:
                     if move not in existing:
                         rec.payment_line_ids = [(0, 0, {
@@ -43,79 +49,149 @@ class AccountPayment(models.Model):
             
     def action_post(self):
         ''' draft -> posted '''        
-        if self.payment_type != 'outbound': 
-            super().action_post()
-        else:            
-            if self.payment_line_ids:
-                payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
-                debit_tot = credit_tot = 0
-                amount_total = 0.0
-                
-                for pline in self.payment_line_ids:
-                    if pline.amount_to_pay > 0:
-                        debit = credit = 0
-                        amount = self.currency_id._convert(pline.amount_to_pay, self.move_id.company_currency_id, self.company_id, self.date)
-                        debit = amount
-                        amount_currency = pline.amount_to_pay
+        if self.payment_type=='inbound' and self.payment_line_ids:
+            payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
+            debit_tot = credit_tot = 0
+            amount_total = 0.0
+            
+            for pline in self.payment_line_ids:
+                if pline.amount_to_pay > 0:
+                    debit = credit = 0
+                    amount_receivable_to_pay = pline.amount_to_pay
+                    if pline.write_off_amount and pline.write_off_account_id:
+                        amount_receivable_to_pay += pline.write_off_amount
+                    amount = self.currency_id._convert(amount_receivable_to_pay, self.move_id.company_currency_id, self.company_id, self.date)
+                    credit = amount
+                    amount_currency = amount_receivable_to_pay
 
-                        bill_line = pline.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
+                    bill_line = pline.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')
+                    line_vals = {
+                        'account_id': bill_line.account_id.id,
+                        'debit': debit,
+                        'credit': credit,
+                        'amount_currency': -amount_currency,
+                        'partner_id': self.partner_id.id,
+                    }
+
+                    amount_total += amount
+                    payment_lines.append((0, 0, line_vals))
+
+                    if pline.write_off_amount and pline.write_off_account_id:
+                        write_off_amount = self.currency_id._convert(pline.write_off_amount, self.move_id.company_currency_id, self.company_id, self.date)
+                        wo_debit = wo_kredit = 0
+                        if write_off_amount > 0:
+                            wo_debit = write_off_amount
+                        else:
+                            wo_kredit = abs(write_off_amount)
                         
-                        line_vals = {
-                            'account_id': bill_line.account_id.id,
-                            'debit': debit,
-                            'credit': credit,
-                            'amount_currency': amount_currency,
+                        write_off_vals = {
+                            'account_id': pline.write_off_account_id.id,
+                            'debit': wo_debit,
+                            'credit': wo_kredit,
+                            'amount_currency': pline.write_off_amount,
                             'partner_id': self.partner_id.id,
                         }
-
-                        amount_total += amount
-                        payment_lines.append((0, 0, line_vals))
-
-                        if pline.write_off_amount != 0 and pline.write_off_account_id:
-                            write_off_amount = self.currency_id._convert(pline.write_off_amount, self.move_id.company_currency_id, self.company_id, self.date)
-                            wo_debit = wo_kredit = 0
-                            if write_off_amount > 0:
-                                wo_debit = write_off_amount
-                            else:
-                                wo_kredit = abs(write_off_amount)
-                            
-                            write_off_vals = {
-                                'account_id': pline.write_off_account_id,
-                                'debit': wo_debit,
-                                'credit': wo_kredit,
-                                'amount_currency': amount_currency,
-                                'partner_id': self.partner_id.id,
-                            }
-                        
-                            amount_total += write_off_amount
-                            payment_lines.append((0, 0, write_off_vals))
-                    else:
-                        pline.unlink()
-
-                if amount_total > 0:
-                    credit_tot = amount_total
-                else:
-                    debit_tot = abs(amount_total)
                     
-                bank_line_vals = {
-                    # 'account_id': self.journal_id.default_account_id.id,
-                    'account_id': self.outstanding_account_id.id,
-                    'debit': debit_tot,
-                    'credit': credit_tot,
-                    'partner_id': self.partner_id.id,
-                }
+                        amount_total += -write_off_amount
+                        payment_lines.append((0, 0, write_off_vals))
+                else:
+                    pline.unlink()
 
-                payment_lines.append((0, 0, bank_line_vals))
-
-                self.move_id.write({'line_ids': payment_lines})            
-                
-                self.move_id._post(soft=False)
-
-                for bill, payment_move_line in zip(self.payment_line_ids.move_id, self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')):
-                    bill_line_dua = bill.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
-                    (bill_line_dua + payment_move_line).reconcile()
+            if amount_total > 0:
+                debit_tot = amount_total
             else:
-                super().action_post()
+                credit_tot = abs(amount_total)
+                
+            bank_line_vals = {
+                # 'account_id': self.journal_id.default_account_id.id,
+                'account_id': self.outstanding_account_id.id,
+                'debit': debit_tot,
+                'credit': credit_tot,
+                'partner_id': self.partner_id.id,
+            }
+
+            payment_lines.append((0, 0, bank_line_vals))
+
+            self.move_id.write({'line_ids': payment_lines})            
+            
+            self.move_id._post(soft=False)
+
+            for bill, payment_move_line in zip(self.payment_line_ids.move_id, self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')):
+                bill_line_dua = bill.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')
+                (bill_line_dua + payment_move_line).reconcile()
+        elif self.payment_type=='outbound' and self.payment_line_ids:
+            payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
+            debit_tot = credit_tot = 0
+            amount_total = 0.0
+            
+            for pline in self.payment_line_ids:
+                if pline.amount_to_pay > 0:
+                    debit = credit = 0
+                    amount_payable_to_pay = pline.amount_to_pay
+                    if pline.write_off_amount != 0 and pline.write_off_account_id:
+                        amount_payable_to_pay += pline.write_off_amount
+                    amount = self.currency_id._convert(amount_payable_to_pay, self.move_id.company_currency_id, self.company_id, self.date)
+                    debit = amount
+                    amount_currency = amount_payable_to_pay
+
+                    bill_line = pline.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
+                    
+                    line_vals = {
+                        'account_id': bill_line.account_id.id,
+                        'debit': debit,
+                        'credit': credit,
+                        'amount_currency': amount_currency,
+                        'partner_id': self.partner_id.id,
+                    }
+
+                    amount_total += amount
+                    payment_lines.append((0, 0, line_vals))
+
+                    if pline.write_off_amount != 0 and pline.write_off_account_id:
+                        write_off_amount = self.currency_id._convert(pline.write_off_amount, self.move_id.company_currency_id, self.company_id, self.date)
+                        wo_debit = wo_kredit = 0
+                        if write_off_amount > 0:
+                            wo_kredit = write_off_amount
+                        else:
+                            wo_debit = abs(write_off_amount)
+                        
+                        write_off_vals = {
+                            'account_id': pline.write_off_account_id.id,
+                            'debit': wo_debit,
+                            'credit': wo_kredit,
+                            'amount_currency': -pline.write_off_amount,
+                            'partner_id': self.partner_id.id,
+                        }
+                    
+                        amount_total += -write_off_amount
+                        payment_lines.append((0, 0, write_off_vals))
+                else:
+                    pline.unlink()
+
+            if amount_total > 0:
+                credit_tot = amount_total
+            else:
+                debit_tot = abs(amount_total)
+                
+            bank_line_vals = {
+                # 'account_id': self.journal_id.default_account_id.id,
+                'account_id': self.outstanding_account_id.id,
+                'debit': debit_tot,
+                'credit': credit_tot,
+                'partner_id': self.partner_id.id,
+            }
+
+            payment_lines.append((0, 0, bank_line_vals))
+
+            self.move_id.write({'line_ids': payment_lines})            
+            
+            self.move_id._post(soft=False)
+
+            for bill, payment_move_line in zip(self.payment_line_ids.move_id, self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')):
+                bill_line_dua = bill.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
+                (bill_line_dua + payment_move_line).reconcile()
+        else:
+            super().action_post()
 
     def _synchronize_from_moves(self, changed_fields):
         return

@@ -14,9 +14,9 @@
             </xpath>
 
             <xpath expr="//field[@name='payment_method_line_id']" position="after">
-                <field name="amount_charge" />
-                <field name="memo_charge"/>
-                <field name="charge_account_id"/>
+                <field name="amount_charge" attrs="{'invisible': ['|',('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier')], 'readonly': [('state','!=','draft')]}"/>
+                <field name="memo_charge" attrs="{'invisible': ['|',('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier')], 'readonly': [('state','!=','draft')]}"/>
+                <field name="charge_account_id" attrs="{'invisible': ['|',('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier')], 'readonly': [('state','!=','draft')]}"/>
                 <field name="no_memo" />
                 <field name="date_memo" />
             </xpath>

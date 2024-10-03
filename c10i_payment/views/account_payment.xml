@@ -18,7 +18,7 @@
         <xpath expr="sheet" position="inside">
           <notebook>
             <page name="name" string="Invoices">
-              <field name="payment_line_ids">
+              <field name="payment_line_ids" attrs="{'readonly': [('state','!=','draft')]}">
                 <tree create="false" editable="top">
                   <field name="move_id" readonly="1"/>
                   <field name="origin" readonly="1"/>
