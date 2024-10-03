@@ -137,32 +137,37 @@ class lhm_plant_block(models.Model):
 
     @api.model
     def create(self, values):
-        opening             = values.get('opening', False)
-        opening_vals       = {
-            'type': 'saldo_awal',
-            'date': fields.Date.today,
-            'qty' : opening or False,
-        }
-        self.env['sph.move'].create(opening_vals)
-        
         location_name       = values.get('name', False)
         location_code       = values.get('code', False)
         location_type_id    = values.get('location_type_id', False)
         group_progress_id   = values.get('group_progress_id', False)
+
         location_values     = {
             'name'              : location_name or "(NoName)",
             'code'              : location_code or "(NoCode)",
             'type_id'           : location_type_id or False,
             'group_progress_id' : group_progress_id,
         }
-        new_location    = False
-        location        = super(lhm_plant_block, self).create(values)
+
+        location = super(lhm_plant_block, self).create(values)
+        
         if location:
             new_location = self.env['lhm.location'].create(location_values)
-        if new_location:
-            location.location_id = new_location.id
-        
+            if new_location:
+                location.location_id = new_location.id
+
+        opening = values.get('opening', False)
+        if opening:
+            opening_vals = {
+                'type': 'awal',
+                'date': fields.Date.today(),
+                'qty': opening,
+                'block_tanam_id': location.id  
+            }
+            self.env['sph.move'].create(opening_vals)
+
         return location
+
 
     def write(self, values):
         opening             = values.get('opening', False)
