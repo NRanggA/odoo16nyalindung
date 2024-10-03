@@ -676,7 +676,7 @@ class TimbanganPabrik(models.Model):
 
         if not self.stock_picking_id:
             picking_vals = {
-                'partner_id': self.lhm_nab_id.partner_id.id if self.lhm_nab_id else False,
+                'partner_id': self.lhm_nap_id.partner_id.id if self.lhm_nap_id else False,
                 'location_id': self.block_id.location_id.id if self.block_id else False,
                 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                 'move_ids_without_package': [(0, 0, {
