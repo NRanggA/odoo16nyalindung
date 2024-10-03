@@ -8,7 +8,8 @@
                         <table width="100%" style="border-collapse: collapse;" border="1">
                             <tr>
                                 <td width="20%" style="padding : 10px">
-                                    <img src="/nyalindung_report/static/img/ny_logo.jpg" width="180px" height="44px"/>
+                                    <!-- <img src="/nyalindung_report/static/img/ny_logo.jpg" width="180px" height="44px"/> -->
+                                    <img t-att-src="'%s/nyalindung_report/static/img/ny_logo.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="180px" height="44px" alt="Logo"/>
                                 </td>
                                 <td style="font-size : 28px; text-align : center; font-style : italic; vertical-align : center; padding : 10px">
                                     PURCHASE REQUEST
