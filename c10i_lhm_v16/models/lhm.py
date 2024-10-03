@@ -1892,43 +1892,6 @@ class lhm_transaction_line(models.Model):
     is_hasil_2      = fields.Boolean("Is Hasil 2", default=False)
     is_borong       = fields.Boolean("Is Borong", default=False)
 
-    # Fungsi untuk memasukkan gaji employee yang borong panen
-    # def get_wage_borong_panen(self):
-    #     for record in self:
-    #         if record.is_borong and record.activity_id.is_nap:
-    #             # panggil fungsi untuk mengecek employee ini bulanan atau bukan
-    #             record._check_employee_bulanan()
-    #             lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
-                
-    #             if record.is_hasil_2:
-                    
-    #                 # Product 1 = Latex
-    #                 drc_latex             = lhm_nap_line.drc_latex_nap 
-    #                 price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
-    #                 convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
-    #                 hasil_latex           = convert_hasil_latex * price_1
-
-    #                 # Product 2 = Lump
-    #                 drc_lump            = lhm_nap_line.drc_lump_nap
-    #                 price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
-    #                 convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
-    #                 hasil_lump          = convert_hasil_lump * price_2
-                    
-    #                 hasil           = hasil_latex + hasil_lump
-                    
-    #                 lhm_nap_line.write({
-    #                     'hasil_convert_latex': convert_hasil_latex,
-    #                     'hasil_convert_lump': convert_hasil_lump
-    #                     })
-                    
-    #                 record.write({'contract_wage_value' : hasil})
-
-    #             else:
-    #                 # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
-    #                 price_1      = record.activity_id.get_price_borongan()
-    #                 wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
-    #                 record.write({'contract_wage_value': wage_hasil_1})
-
     # Fungsi untuk menghitung konversi latex dan lump
     def compute_conversion(self, lhm_nap_line, is_hasil_2):
         """
@@ -1969,9 +1932,6 @@ class lhm_transaction_line(models.Model):
                 # Dapatkan harga borongan berdasarkan DRC
                 price_1     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_latex_nap, product=record.product_id)
                 price_2     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_lump_nap, product=record.product_id_2)
-                print("::::::::::::::::::::::::::::", record.employee_id.name)
-                print(":::::::::::::::::::::::::::: latex", lhm_nap_line.drc_latex_nap, price_1)
-                print(":::::::::::::::::::::::::::: lump", lhm_nap_line.drc_lump_nap, price_2)
                 
                 # Menghitung hasil akhir
                 hasil_latex = convert_hasil_latex * price_1
@@ -2025,12 +1985,8 @@ class lhm_transaction_line(models.Model):
                         ('is_lhm', '=', True ),
                     ], limit=1)
                 if not contract:
-                    return {
-                        'warning': {
-                            'title': _('Kesalahan Input Data'),
-                            'message': _(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.type_id.name}, tidak ditemukan !"),
-                        },
-                    }
+                    raise ValidationError(_(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.type_id.name}, tidak ditemukan !"))
+
                 values = {
                     'contract_id'           : contract and contract.id or False,
                     'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
