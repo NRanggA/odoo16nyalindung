@@ -10,18 +10,16 @@
                     font-family: arial, sans-serif;
                     border-collapse: collapse;
                     width: 100%;
-                    font-size: 10px;
+                    font-size: 8px;
                 }
 
                 td, th {
                     <!-- border: 1px solid #181C14; -->
                     text-align: left;
-                    padding: 5px;
+                    padding: 4px;
+                    padding: 2;
                 }
-                .header-1 {
-                    width: 50%;
-                }
-                .header-2 {
+                .header-1, .header-2 {
                     width: 50%;
                 }
                 .header-logo {
@@ -31,6 +29,7 @@
                 .content-table td {
                     border: 1px solid #181C14;
                     text-align:center;
+                    padding: 2;
                 }
                 </style>
             </head>
@@ -44,12 +43,12 @@
                                     <tr>
                                         <th rowspan="4" width="20%">
                                             <!-- <img src="" width="170px" height="40px" alt="Logo"/> -->
-                                            <img t-att-src="'%s/nyalindung_report/static/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="190px" height="50px" alt="Logo"/>
+                                            <img t-att-src="'%s/nyalindung_report/static/img/ny_logo.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="150px" height="40px" alt="Logo"/>
                                         </th>
-                                        <th>KASBON KELUAR</th>
+                                        <th>SURAT JALAN</th>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">PT. Nyalindung</td>
+                                        <td style="font-weight: bold;">PT. NYALINDUNG</td>
                                     </tr>
                                     <tr>
                                         <td>Jl. Raya Purwakarta No. 625 Km.9</td>
@@ -170,7 +169,7 @@
         <field name="orientation">Landscape</field>
         <field name="page_height">165</field>
         <field name="page_width">110</field>
-        <field name="margin_top">1</field>
+        <field name="margin_top">0</field>
         <field name="margin_bottom">0</field>
         <field name="margin_right">0</field>
         <field name="margin_left">0</field>
