@@ -197,12 +197,11 @@ class HrAttendanceBatch(models.Model):
 
     def push_to_sheet(self):
         attendance_sheets = []
-        attendance_data = json.loads(self.attendance_data)
+        # attendance_data = json.loads(self.attendance_data)
 
-
-        for attendance, data in zip(self.attendance_ids, attendance_data):
-            employee_id = data.get('employee_id')
-            date    = data.get('date')
+        for attendance in self.attendance_ids:
+            employee_id = attendance.employee_id.id
+            date        = self.date
 
             # Tentukan jenis kehadiran berdasarkan kehadiran Check-in dan Check-out
             if attendance.check_in and attendance.check_out:
