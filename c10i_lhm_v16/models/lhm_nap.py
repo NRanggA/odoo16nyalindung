@@ -189,6 +189,7 @@ class lhm_nap(models.Model):
         return nap
     
     def create_material_receipt(self):
+        # self.state = 'done'
         for record in self:
             for line in record.pabrik_line_ids:
                 line._create_or_update_stock_picking()
@@ -676,7 +677,7 @@ class TimbanganPabrik(models.Model):
 
         if not self.stock_picking_id:
             picking_vals = {
-                'partner_id': self.lhm_nap_id.partner_id.id if self.lhm_nap_id else False,
+                # 'partner_id': self.lhm_nap_id.partner_id.id if self.lhm_nap_id else False,
                 'location_id': self.env.ref('stock.stock_location_suppliers').id,
                 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                 'move_ids_without_package': [(0, 0, {
