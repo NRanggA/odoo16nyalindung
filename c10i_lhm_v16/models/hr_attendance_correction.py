@@ -45,7 +45,14 @@ class HrAttendanceCorrection(models.Model):
             # Cari absensi dari hr.attendance.sheet berdasarkan tanggal absensi
             attendance_records = self.env['hr.attendance.sheet'].search([
                 ('date', '=', self.date_attendance),
-                ('employee_id', 'in', self.kemandoran_id.employee_ids.ids)
+                ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
+                '|',
+                '&',
+                ('check_in', '!=', False),  
+                ('check_out', '=', False),  
+                '&',
+                ('check_in', '=', False),   
+                ('check_out', '!=', False) 
             ])
             
             print("Attendance Records: %s", attendance_records)

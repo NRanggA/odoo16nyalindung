@@ -13,6 +13,7 @@ class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
 
     check_in = fields.Datetime(string='Check In', required=False, default=False)
+    # (TODO) menambahkan field relasi Many2one ke dalam database attendance.sheet
 
 
     @api.constrains('employee_id', 'check_in', 'check_out')
@@ -124,9 +125,10 @@ class HrAttendanceBatch(models.Model):
                     excel_check_out_date_str = check_out_localized.strftime('%Y-%m-%d')
                     if excel_check_out_date_str != date_str:
                         raise ValidationError(f"Tanggal Check-out pada Excel ({excel_check_out_date_str}) tidak sesuai dengan tanggal yang diinput ({date_str}).")
-
+                
             except ValueError as e:
                 raise ValueError(f"Kesalahan format tanggal: {e}")
+            
             query = """select ha.id from hr_attendance ha, hr_employee he where 
                 ha.employee_id=he.id
                 and he.no_induk = '%(nik)s'
@@ -226,6 +228,17 @@ class HrAttendanceBatch(models.Model):
             else:
                 employee = self.env['hr.employee'].search([('id', '=', employee_id)], limit=1)
                 raise ValidationError(f"Data absensi untuk user {employee.name} pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
+                # Membuat data attendance.sheet baru ketika datanya tidak di temukan
+                # new_attendance_sheet = {
+                #     'employee_id' : employee_id,
+                #     'type'        : type_id,
+                #     'date'        : date,
+                #     'check_in'    : attendance.check_in if attendance.check_in else False,
+                #     'check_out'   : attendance.check_out if attendance.check_out else False
+                # }
+                # attendance_sheets.append(new_attendance_sheet.id)
+
+
         
         self.write({'state': 'processed'})
         self.attendance_sheet_ids = [(6, 0, attendance_sheets)]
@@ -236,3 +249,9 @@ class HrAttendanceBatch(models.Model):
 
     def set_to_draft(self):
         self.state = 'draft'
+
+    def unlink(self):
+        for rec in self:
+            if rec.state == 'valid':
+                raise UserError("Data tidak dapat dihapus. Untuk menghapus, set status menjadi Draft terlebih dahulu.")
+        return super(HrAttendanceBatch, self).unlink()
