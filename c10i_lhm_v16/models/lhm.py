@@ -1019,7 +1019,7 @@ class lhm_transaction(models.Model):
     date                = fields.Date("Tanggal", tracking=True)
     kemandoran_code     = fields.Char("Kode Kemandoran", related="kemandoran_id.code", readonly=True)
     mandor_id           = fields.Many2one("hr.employee", string="Mandor", ondelete="restrict", related="kemandoran_id.foreman_id", readonly=True, store=True)
-    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor 1", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True)
+    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor Besar", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True)
     kerani_id           = fields.Many2one("hr.employee", string="Kerani", ondelete="restrict", related="kemandoran_id.admin_id", readonly=True, store=True)
     location            = fields.Char("Afdeling/ Divisi", compute="_compute_location", readonly=True, store=True)
     nik_mandor          = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
