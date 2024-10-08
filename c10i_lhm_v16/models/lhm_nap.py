@@ -196,78 +196,44 @@ class lhm_nap(models.Model):
 
     def button_confirm(self):
         self.state = 'confirmed'
-        transaction_draft = self.env['lhm.transaction'].search([
-            ('date', '=', self.date_nap),
-            ('state', '=', 'draft')
-        ])
-        if transaction_draft:
-            raise ValidationError(
-                _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
-            )
+        # transaction_draft = self.env['lhm.transaction'].search([
+        #     ('date', '=', self.date_nap),
+        #     ('state', '=', 'draft')
+        # ])
+        # if transaction_draft:
+        #     raise ValidationError(
+        #         _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
+        #     )
+        # for nap_line in self.line_ids.lhm_transaction_line_id
+
         self.confirmed = True
         for record in self:
-            employee_data = {}
-
             for nap_line in record.line_ids:
-                employee_id = nap_line.employee_id.id
-                product = nap_line.product_id
-
-                if employee_id not in employee_data:
-                    employee_data[employee_id] = {
-                        'employee_id': employee_id,
-                        'product_1': None,
-                        'hasil_1_nap': None,
-                        'drc_latex': None,
-                        'satuan_1_nap': None,
-                        'product_2': None,
-                        'hasil_2_nap': None,
-                        'drc_lump': None,
-                        'satuan_2_nap': None,
-                    }
-
-                if employee_data[employee_id]['product_1'] is None:
-                    employee_data[employee_id]['product_1'] = product.id
-                    employee_data[employee_id]['hasil_1_nap'] = nap_line.qty_nap
-                    employee_data[employee_id]['drc_latex'] = nap_line.drc
-                    employee_data[employee_id]['satuan_1_nap'] = nap_line.uom_id.id
-                else:
-                    employee_data[employee_id]['product_2'] = product.id
-                    employee_data[employee_id]['hasil_2_nap'] = nap_line.qty_nap
-                    employee_data[employee_id]['drc_lump'] = nap_line.drc
-                    employee_data[employee_id]['satuan_2_nap'] = nap_line.uom_id.id
-
-            for employee_id, data in employee_data.items():
-                existing_transaction_nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('lhm_transaction_line_id.employee_id', '=', data['employee_id']),
-                    ('lhm_transaction_line_id.lhm_id.date', '=', nap_line.tgl_panen),
-                ], limit=1)
-
-                if not existing_transaction_nap_line:
-                    self.env['lhm.transaction.nap.line'].create({
-                        'lhm_nap_line_id': record.id,
-                        'employee_id': data['employee_id'],
-                        'product_id': data['product_1'],
-                        'hasil_1_nap': data['hasil_1_nap'],
-                        'drc_latex_nap': data['drc_latex'],
-                        'satuan_1_nap': data['satuan_1_nap'],
-                        'product_id_2': data['product_2'],
-                        'hasil_2_nap': data['hasil_2_nap'],
-                        'drc_lump_nap': data['drc_lump'],
-                        'satuan_2_nap': data['satuan_2_nap'],
+                if nap_line.lhm_transaction_nap_id.lhm_id.state == 'draft':
+                       raise ValidationError(
+                    _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
+                )
+                if nap_line.product_id.name == "Lateks":
+                    nap_line.lhm_transaction_nap_id.write({
+                        'product_id': nap_line.product_id.id,
+                        'hasil_1_nap': nap_line.qty_nap,
+                        'satuan_1_nap': nap_line.uom_id.id,
+                        'drc_latex_nap': nap_line.drc,
+                    })
+                elif nap_line.product_id.name == "Lump":
+                    nap_line.lhm_transaction_nap_id.write({
+                        'product_id_2': nap_line.product_id.id,
+                        'hasil_2_nap': nap_line.qty_nap,
+                        'satuan_2_nap': nap_line.uom_id.id,
+                        'drc_lump_nap': nap_line.drc,
                     })
                 else:
-                    existing_transaction_nap_line.write({
-                        'product_id': data['product_1'],
-                        'hasil_1_nap': data['hasil_1_nap'],
-                        'drc_latex_nap': data['drc_latex'],
-                        'satuan_1_nap': data['satuan_1_nap'],
-                        'product_id_2': data['product_2'],
-                        'hasil_2_nap': data['hasil_2_nap'],
-                        'drc_lump_nap': data['drc_lump'],
-                        'satuan_2_nap': data['satuan_2_nap'],
+                    nap_line.lhm_transaction_nap_id.write({
+                        'product_id': nap_line.product_id.id,
+                        'hasil_1_nap': nap_line.qty_nap,
+                        'satuan_1_nap': nap_line.uom_id.id,
                     })
-                # Panggil fungsi untuk mengupdate nilai upah untuk yang borongan panen
-                existing_transaction_nap_line.lhm_transaction_line_id.get_wage_borong_panen()
+                nap_line.lhm_transaction_nap_id.lhm_transaction_line_id.get_wage_borong_panen()
 
     def button_draft(self):
         for nap in self:
@@ -324,11 +290,12 @@ class lhm_nap(models.Model):
                 ], limit=1)
 
                 if kebun_line:
-                    nap_lines = self.env['lhm.transaction.line'].search([
-                        ('location_id', '=', pabrik_line.block_id.location_id.id),
-                        ('date', '=', pabrik_line.tgl_panen),
-                        ('activity_id.is_nap', '=', True),
+                    nap_lines = self.env['lhm.transaction.nap.line'].search([
+                        ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
+                        ('lhm_transaction_line_id.date', '=', pabrik_line.tgl_panen),
+                        ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
                     ])
+                    print("LLLLLLLLLLLLLLLLLLLL", nap_lines)
 
                     for nap_line in nap_lines:
                         employee_id = nap_line.employee_id.id
@@ -345,17 +312,18 @@ class lhm_nap(models.Model):
                                 'hasil_2_nap': None,
                                 'drc_lump': None,
                                 'uom_2': None,
+                                'lhm_transaction_nap_id' : nap_line.id,
                             }
 
-                        if nap_line.product_id.id == product_id:
+                        if nap_line.lhm_transaction_line_id.product_id.id == product_id:
                             if employee_data[employee_id]['product_1'] is None:
-                                employee_data[employee_id]['product_1'] = nap_line.product_id.id
-                                employee_data[employee_id]['hasil_1_nap'] = (nap_line.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
+                                employee_data[employee_id]['product_1'] = nap_line.lhm_transaction_line_id.product_id.id
+                                employee_data[employee_id]['hasil_1_nap'] = (nap_line.lhm_transaction_line_id.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
                                 employee_data[employee_id]['drc_latex'] = pabrik_line.drc
                                 employee_data[employee_id]['uom_1'] = pabrik_line.uom_id.id
-                        elif nap_line.product_id_2.id == product_id:
-                            employee_data[employee_id]['product_2'] = nap_line.product_id_2.id
-                            employee_data[employee_id]['hasil_2_nap'] = (nap_line.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
+                        elif nap_line.lhm_transaction_line_id.product_id_2.id == product_id:
+                            employee_data[employee_id]['product_2'] = nap_line.lhm_transaction_line_id.product_id_2.id
+                            employee_data[employee_id]['hasil_2_nap'] = (nap_line.lhm_transaction_line_id.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
                             employee_data[employee_id]['drc_lump'] = pabrik_line.drc
                             employee_data[employee_id]['uom_2'] = pabrik_line.uom_id.id
 
@@ -363,6 +331,7 @@ class lhm_nap(models.Model):
                 if data['hasil_1_nap']:
                     self.env['lhm.nap.line'].create({
                         'lhm_nap_id': record.id,
+                        # 'lhm_transaction_nap_line_id': 
                         'block_id': pabrik_line.block_id.id,
                         'employee_id': data['employee_id'],
                         'product_id': data['product_1'],
@@ -370,6 +339,7 @@ class lhm_nap(models.Model):
                         'qty_nap': data['hasil_1_nap'],
                         'drc': data['drc_latex'],
                         'uom_id': data['uom_1'],
+                        'lhm_transaction_nap_id' : data['lhm_transaction_nap_id'],
                     })
                 if data['product_2'] and data['hasil_2_nap']:
                     self.env['lhm.nap.line'].create({
@@ -381,6 +351,7 @@ class lhm_nap(models.Model):
                         'qty_nap': data['hasil_2_nap'],
                         'drc': data['drc_lump'],
                         'uom_id': data['uom_2'],
+                        'lhm_transaction_nap_id' : data['lhm_transaction_nap_id'],
                     })
 
 
@@ -455,6 +426,7 @@ class lhm_nap_line(models.Model):
     pemanen                  = fields.Char(string='Pemanen')
     employee_id              = fields.Many2one("hr.employee", string="Pemanen", ondelete="restrict")
     drc                      = fields.Float(string='DRC')
+    lhm_transaction_nap_id   = fields.Many2one('lhm.transaction.nap.line', string='Nap Line LHM')
 
     @api.onchange('block_id', 'tgl_panen')
     def _onchange_block_tgl_panen(self):
@@ -692,6 +664,8 @@ class TimbanganPabrik(models.Model):
             }
             picking = self.env['stock.picking'].create(picking_vals)
             self.stock_picking_id = picking.id
+            # print(">>>>>>>>>>>>>>>>", self.block_id.location_id)
+            # print(">>>>>>>>>>>>>>>>", stop)
         else:
             self.stock_picking_id.move_ids_without_package[0].write({
                 'product_uom_qty': self.product_qty,
