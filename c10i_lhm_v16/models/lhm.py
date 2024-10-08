@@ -1184,9 +1184,16 @@ class lhm_transaction(models.Model):
                 ('check_in', '<', end_date)
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
+            
+            absensi_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
 
             for employee in self.kemandoran_id.employee_ids:
                 if employee.id in absensi_employee_ids:
+
+                    employee_absensi = absensi.filtered(lambda a: a.employee_id.id == employee.id)
+                    
+                    attendance = employee_absensi.filtered(lambda a: a.type_id == absensi_kj)
+
                     values = {
                         'sequence'              : seq,
                         'date'                  : self.date or False,
@@ -1201,6 +1208,7 @@ class lhm_transaction(models.Model):
                         'penalty'               : 0.0,
                         'name'                  : employee and employee.no_induk or False,
                         'employee_id'           : employee and employee.id or False,
+                        'attendance_id'         : attendance.type_id.id if attendance else False, 
                         # 'contract_id'           : contract and contract.id or False,
                         # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                         'contract_id'           : 0.0,
@@ -1829,7 +1837,6 @@ class lhm_transaction_line(models.Model):
 
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
-
 
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")

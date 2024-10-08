@@ -1906,7 +1906,8 @@
 
                                         <!-- pembaharuan -->
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="attendance_id" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         
                                         <!-- diubah menjadi 0 supaya muncul activity_id nya -->
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
@@ -2065,12 +2066,10 @@
                                 </field>
                             </page>
                             <page string="History" attrs="{'invisible': [('emp_out_ids','=',[]),('emp_in_ids','=',[])]}">
-                                <group string="Keluar">
-                                    <field name="emp_out_ids" nolabel="1" readonly="1"/>
-                                </group>
-                                <group string="Masuk">
-                                    <field name="emp_in_ids" nolabel="1" readonly="1"/>
-                                </group>
+                                <separator string="Keluar"/>
+                                <field name="emp_out_ids" nolabel="1" readonly="1"/>
+                                <separator string="Masuk"/>
+                                <field name="emp_in_ids" nolabel="1" readonly="1"/>
                             </page>
                         </notebook>
                         <separator string="SPH Related"/>
