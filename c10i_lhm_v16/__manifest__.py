@@ -31,7 +31,7 @@
         'data/location_type_data.xml',
         # 'data/product_data.xml',
         'data/ir_sequence_data.xml',
-        # 'data/ir_cron_data.xml',
+        'data/ir_cron_data.xml',
         'data/user_data.xml',
         'data/operating_unit_data.xml',
         # 'data/stock_data.xml',
