@@ -333,7 +333,7 @@ class ReportStockMutation(models.AbstractModel):
                 WHERE pp.id = %(product_id)s
             """
             
-            if obj.include_exhaust:
+            if obj.exclude_exhaust:
                 query += """
                     GROUP BY 
                         pp.id, 

@@ -16,7 +16,7 @@ class WizardReportStockMutation(models.TransientModel):
                         ('no', 'Just Stock Mutation'),
                     ], string='Show Value', default='no')
 
-    include_exhaust = fields.Boolean('Include Exhaust Product', default=False)
+    exclude_exhaust = fields.Boolean('Exclude Exhaust Product', default=False)
 
     product_ids     = fields.Many2many('product.product', string='Product')
 
