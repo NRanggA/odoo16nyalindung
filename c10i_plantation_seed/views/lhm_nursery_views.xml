@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="lhm_nursery_inherit_c10i_plantaion_seed" model="ir.ui.view">
+        <field name="name">lhm.nursery.view.form.inherit</field>
+        <field name="model">lhm.nursery</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_nursery_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button string="Transaksi Bibit" type="object" name="action_show_transaction_bibitan" class="btn-secondary" icon="fa-exchange"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

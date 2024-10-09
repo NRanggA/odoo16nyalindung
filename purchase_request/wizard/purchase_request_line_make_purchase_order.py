@@ -224,6 +224,8 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
 
         for item in self.item_ids:
             line = item.line_id
+            print(">>>>>>>>>>>>>>>>> product ", line.product_id.name)
+            print(">>>>>>>>>>>>>>>>> PR ", line.request_id.name)
             if item.product_qty <= 0.0:
                 raise UserError(_("Enter a positive quantity."))
             if self.purchase_order_id:
@@ -236,7 +238,8 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
                     line.origin,
                 )
                 purchase = purchase_obj.create(po_data)
-
+            print(">>>>>>>>>>>>>>>>>", purchase)
+            print(">>>>>>>>>>>>>>>>>", purchase.order_line)
             # Look for any other PO line in the selected PO with same
             # product and UoM to sum quantities instead of creating a new
             # po line
@@ -250,6 +253,7 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
             alloc_uom = line.product_uom_id
             wizard_uom = item.product_uom_id
             if available_po_lines and not item.keep_description:
+                print(">>>>>>>>>>>>>>>>> available_po_lines")
                 new_pr_line = False
                 po_line = available_po_lines[0]
                 po_line.purchase_request_lines = [(4, line.id)]
@@ -257,12 +261,17 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
                 po_line_product_uom_qty = po_line.product_uom._compute_quantity(
                     po_line.product_uom_qty, alloc_uom
                 )
+                print(">>>>>>>>>>>>>>>>> po_line_product_uom_qty", po_line_product_uom_qty)
                 wizard_product_uom_qty = wizard_uom._compute_quantity(
                     item.product_qty, alloc_uom
                 )
+                print(">>>>>>>>>>>>>>>>> wizard_product_uom_qty", wizard_product_uom_qty)
                 all_qty = min(po_line_product_uom_qty, wizard_product_uom_qty)
-                self.create_allocation(po_line, line, all_qty, alloc_uom)
+                print(">>>>>>>>>>>>>>>>>", all_qty)
+                # self.create_allocation(po_line, line, all_qty, alloc_uom)
+                self.create_allocation(po_line, line, wizard_product_uom_qty, alloc_uom)
             else:
+                print(">>>>>>>>>>>>>>>>> not available_po_lines")
                 po_line_data = self._prepare_purchase_order_line(purchase, item)
                 if item.keep_description:
                     po_line_data["name"] = item.name
@@ -270,16 +279,20 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
                 po_line_product_uom_qty = po_line.product_uom._compute_quantity(
                     po_line.product_uom_qty, alloc_uom
                 )
+                print(">>>>>>>>>>>>>>>>> po_line_product_uom_qty", po_line_product_uom_qty)
                 wizard_product_uom_qty = wizard_uom._compute_quantity(
                     item.product_qty, alloc_uom
                 )
+                print(">>>>>>>>>>>>>>>>> wizard_product_uom_qty", wizard_product_uom_qty)
                 all_qty = min(po_line_product_uom_qty, wizard_product_uom_qty)
-                self.create_allocation(po_line, line, all_qty, alloc_uom)
+                print(">>>>>>>>>>>>>>>>>", all_qty)
+                # self.create_allocation(po_line, line, wizard_product_uom_qty, alloc_uom)
+                self.create_allocation(po_line, line, wizard_product_uom_qty, alloc_uom)
             # TODO: Check propagate_uom compatibility:
-            # new_qty = pr_line_obj._calc_new_qty(
-            #     line, po_line=po_line, new_pr_line=new_pr_line
-            # )
-            # po_line.product_qty = new_qty
+            new_qty = pr_line_obj._calc_new_qty(
+                line, po_line=po_line, new_pr_line=new_pr_line
+            )
+            po_line.product_qty = new_qty
             
             # The quantity update triggers a compute method that alters the
             # unit price (which is what we want, to honor graduate pricing)

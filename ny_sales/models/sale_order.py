@@ -3,7 +3,7 @@ from odoo import models, fields, api
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    # pricelist_id_2 = fields.Many2one('product.pricelist', string='Grade')
+    # pricelist_id_2 = fields.Many2one('product.pricelist', string='Grading')
 
     def _create_invoices(self, grouped=False, final=False):
         invoices = super(SaleOrder, self)._create_invoices(grouped=grouped, final=final)

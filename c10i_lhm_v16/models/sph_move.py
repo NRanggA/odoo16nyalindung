@@ -5,7 +5,7 @@ class SphMove(models.Model):
     _description = 'SPH Move'
 
     lhm_id              = fields.Many2one('lhm.transaction', string='LHM')
-    date                = fields.Date('Tanggal')
+    date                = fields.Date('Tanggal', store=True)
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     # location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     qty                 = fields.Float('Qty')

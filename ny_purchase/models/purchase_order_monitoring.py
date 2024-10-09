@@ -14,7 +14,7 @@ class PurchaseOrderMonitoring(models.Model):
     po_minus_pr_days         = fields.Integer('PR > PO (Days)')
     grn_minus_po_days        = fields.Integer('PO > GRN (Days)')
     vb_minus_grn_days        = fields.Integer('GRN > VB (Days)')
-    vb_minus_po_days         = fields.Integer('VB > PO (Days)')
+    vb_minus_po_days         = fields.Integer('PO > VB (Days)')
 
     @api.model
     def init(self):

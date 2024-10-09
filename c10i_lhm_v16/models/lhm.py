@@ -677,333 +677,6 @@ class lhm_quality_pabrik(models.Model):
         lhm_quality_pabrik = self.search(domain + args, limit=limit)
         return lhm_quality_pabrik.name_get()
 ############################################# End Of Master Quality Pabrik ####################################################
-################################################## Master Blok Tanam ##########################################################
-class lhm_plant_block(models.Model):
-    _name           = 'lhm.plant.block'
-    _description    = 'LHM Planting Block'
-
-    def _default_location_type(self):
-        location_type_ids   = self.env['lhm.location.type'].search([('oil_palm','=',True)])
-        if location_type_ids:
-            return location_type_ids[0].id
-        else:
-            return False
-
-    def _default_year(self):
-        return int(time.strftime('%Y'))
-
-    @api.depends('year', 'tm_year')
-    def _compute_time_plant(self):
-        for block in self:
-            current_year = int(time.strftime('%Y'))
-            block_age    = int(time.strftime('%Y')) - block.year
-            if block.tm_year:
-                block.status                = 'tm'
-                block.tm_age                = 'TM%s'%str(current_year - block.tm_year + 1)
-                block.tbm_age               = 'TBM%s'%str(block.tm_year - block.year - 1)
-                block.planting_time         = block_age 
-
-                tm_category = self.env['lhm.tm.category'].search([
-                    ('min_age', '<=', block_age),
-                    ('max_age', '>=', block_age)
-                ], limit=1)
-
-                # if not tm_category and block_age >= 19:
-                #     tm_category = self.env['lhm.tm.category'].search([
-                #         ('min_age', '>=', block_age),
-                #         '|',
-                #         # '|',
-                #         # ('max_age', '<=', block_age),
-                #         ('max_age', '<=', False),
-                #         ('max_age', '=', 0),
-                #     ], limit=1)
-
-                tm_category = self.env['lhm.tm.category'].search([
-                    ('min_age', '<=', block_age + 1),
-                    '|',
-                    ('max_age', '>=', block_age + 1),
-                    ('max_age', '=', 0)
-                ], limit=1)
-
-                block.tm_category_id        = tm_category.id if tm_category else False
-                block.need_to_be_approved   = False
-            else:
-                block.status                = 'tbm'
-                block.planting_time         = block_age 
-                block.tm_age                = ''
-                block.tbm_age               = 'TBM%s'%str(block_age and 0 or block_age - 1)
-                block.tm_category_id        = False
-                if block_age >= 4:
-                    block.need_to_be_approved = True
-            
-    name                = fields.Char("Deskripsi")
-    code                = fields.Char("Kode")
-    land_block_id       = fields.Many2one("lhm.land.block", string="Blok Tanah", ondelete="restrict")
-    afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict")
-    owner_type          = fields.Selection([('inti','Inti'),('plasma','Plasma')], 'Tipe Kepemilikan')
-    plasma_pricelist_id = fields.Many2one('product.pricelist', 'Harga TBS Plasma')
-    location_id         = fields.Many2one("lhm.location", string="Lokasi")
-    location_type_id    = fields.Many2one("lhm.location.type", string="Type Lokasi", ondelete="restrict", default=_default_location_type)
-    group_progress_id   = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
-    planted             = fields.Float("Planted")
-    plantable           = fields.Float("Plantable")
-    koefisien_luas      = fields.Float("Koefisien Luasan")
-    total_plant         = fields.Float("Jumlah Pokok",  compute="_compute_total_plant", store=True)
-    status              = fields.Selection(selection=[('tbm','Tanaman Belum Menghasilkan'),('tm','Tanaman Menghasilkan')],string="Status", compute="_compute_time_plant", store=True)
-    need_to_be_approved = fields.Boolean('Butuh Approval untuk masuk ke Kategori Tanaman Menghasilkan', compute='_compute_time_plant', store=True)
-    tm_year             = fields.Integer(string='Tahun Menjadi TM')
-    # tm_category         = fields.Selection([('young', 'Young'), ('prime', 'Prime'), ('old','Old')], string='TM Category', compute='_compute_time_plant', store=True)
-    tm_category_id      = fields.Many2one('lhm.tm.category', string='TM Category', compute='_compute_time_plant', store=True)
-    tm_age              = fields.Char('Umur TM', compute='_compute_time_plant', store=True)
-    tbm_age             = fields.Char('Umur TBM', compute='_compute_time_plant', store=True)
-    planting_time       = fields.Integer(string="Lama Tanam", compute="_compute_time_plant", store=True)
-    block_uom           = fields.Many2one('uom.uom', string="Satuan")
-    date_start          = fields.Date('Tanggal Awal Tanam')
-    year                = fields.Integer(string='Tahun Tanam', default=fields.Datetime.now().year)
-    land_class_id       = fields.Many2one("lhm.land.class", string="Kelas Lahan", ondelete="restrict")
-    sprouts_id          = fields.Many2one("lhm.palm.oil.sprouts", string="Kecambah Kelapa Sawit", ondelete="restrict")
-    section             = fields.Char("Seksi")
-    active              = fields.Boolean("Active", default=True)
-    company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    sph_move_ids        = fields.One2many('sph.move', 'block_tanam_id', string='SPH Move')
-
-    opening             = fields.Float('Opening')
-
-    # POC Nyalindung
-    target_panen_perhari = fields.Float('Target Panen per Hari (kg)')
-    
-    _sql_constraints = [('name_company_uniq', 'unique (name, company_id)', "Blok Tanam Sudah ada percompany!"),]
-
-    @api.depends('sph_move_ids.qty', 'sph_move_ids.type')
-    def _compute_total_plant(self):
-        for block in self:
-            total_awal = 0.0
-            total_pokok_mati = 0.0
-            total_sisip = 0.0
-
-            for sph_move in block.sph_move_ids:
-                if sph_move.type == 'awal':
-                    total_awal += sph_move.qty
-                elif sph_move.type == 'pokok_mati':
-                    total_pokok_mati += sph_move.qty
-                elif sph_move.type == 'sisip':
-                    total_sisip += sph_move.qty
-
-            block.total_plant = total_awal - total_pokok_mati + total_sisip
-
-    @api.model
-    def _get_rate_bjr(self):
-        context = self.env.context
-        rate = self.env['lhm.bjr'].search([('block_id','=',self.id), ('date','<=', context.get('date', time.strftime('%Y-%m-%d')))])
-        return rate and rate[-1].value or 0.0
-
-    @api.onchange('afdeling_id')
-    def _onchange_afdeling_id(self):
-        if self.afdeling_id:
-            print("Error Karena field block tidak ada di model ini !")
-            # self.block = self.afdeling_id.code or False
-
-    def button_set_as_tm(self):
-        self.status = 'tm'
-        self.tm_year = int(time.strftime('%Y'))
-
-    @api.model
-    def create(self, values):
-        opening             = values.get('opening', False)
-        opening_vals       = {
-            'type': 'saldo_awal',
-            'date': fields.Date.today,
-            'qty' : opening or False,
-        }
-        self.env['sph.move'].create(opening_vals)
-        
-        location_name       = values.get('name', False)
-        location_code       = values.get('code', False)
-        location_type_id    = values.get('location_type_id', False)
-        group_progress_id   = values.get('group_progress_id', False)
-        location_values     = {
-            'name'              : location_name or "(NoName)",
-            'code'              : location_code or "(NoCode)",
-            'type_id'           : location_type_id or False,
-            'group_progress_id' : group_progress_id,
-        }
-        new_location    = False
-        location        = super(lhm_plant_block, self).create(values)
-        if location:
-            new_location = self.env['lhm.location'].create(location_values)
-        if new_location:
-            location.location_id = new_location.id
-        
-        return location
-
-    def write(self, values):
-        opening             = values.get('opening', False)
-        if opening:
-            sph_awal = self.sph_move_ids.filtered(lambda x: x.type == 'awal')
-            if sph_awal:
-                opening_vals       = {
-                    'date': fields.Date.today(),
-                    'qty' : opening or False,
-                }
-                sph_awal.write(opening_vals)
-            else:
-                opening_vals       = {
-                    'type': 'awal',
-                    'date': fields.Date.today(),
-                    'qty' : opening or False,
-                    'block_tanam_id': self.id
-                }
-                self.env['sph.move'].create(opening_vals)
-
-        if 'name' in values and self.location_id:
-            self.location_id.write({'name': values.get('name', False)})
-        if 'code' in values and self.location_id:
-            self.location_id.write({'code': values.get('code', False)})
-        if 'location_type_id' in values and self.location_id:
-            self.location_id.write({'type_id': values.get('location_type_id', False)})
-        if 'group_progress_id' in values and self.location_id:
-            self.location_id.write({'group_progress_id' : values.get('group_progress_id',False)})
-        if 'active' in values and self.location_id:
-            self.location_id.write({'active': values.get('active', False)})
-        return super(lhm_plant_block, self).write(values)
-
-    def unlink(self):
-        for location in self:
-            if location.location_id:
-                location.location_id.unlink()
-        location = super(lhm_plant_block, self).unlink()
-        return location
-
-    def name_get(self):
-        result = []
-        for record in self:
-            if record.name and record.code:
-                result.append((record.id, record.code))
-            if record.name and not record.code:
-                result.append((record.id, record.name))
-        return result
-
-    def _name_get(self):
-        result = []
-        for record in self:
-            if record.name and record.code:
-                result.append((record.id, record.code + " - " + record.name))
-            if record.name and not record.code:
-                result.append((record.id, record.name))
-        return result
-
-    @api.model
-    def name_search(self, name, args=None, operator='ilike', limit=100):
-        args = args or []
-        domain = []
-        if name:
-            domain = ['|', ('code', '=ilike', name + '%'), ('name', operator, name)]
-            if operator in expression.NEGATIVE_TERM_OPERATORS:
-                domain = ['&', '!'] + domain[1:]
-        lhm_location_type = self.search(domain + args, limit=limit)
-        return lhm_location_type._name_get()
-
-    @api.model
-    def _cron_update_tahun_tanam(self):
-        blocks_to_check = self.search([('id','>',0)])
-        for block in blocks_to_check:
-            # Triggering Function Field to be Executed to check and update Block Status
-            block.write({'year': block.year})
-################################################## End Of Master Blok Tanam #################################################
-#################################################### Master Blok Bibitan ####################################################
-class lhm_nursery(models.Model):
-    _name           = 'lhm.nursery'
-    _description    = 'LHM Nursery'
-
-    def _default_location_type(self):
-        location_type_ids = self.env['lhm.location.type'].search([('nursery', '=', True)])
-        if location_type_ids:
-            return location_type_ids[0].id
-        else:
-            return False
-
-    name                = fields.Char("Deskripsi")
-    code                = fields.Char("Kode Batch")
-    location_id         = fields.Many2one("lhm.location", string="Lokasi")
-    location_type_id    = fields.Many2one("lhm.location.type", string="Type Lokasi", ondelete="restrict", default=_default_location_type)
-    date                = fields.Date("Periode Batch")
-    varietas            = fields.Char("Varietas")
-    qty                 = fields.Float("Jumlah")
-    active              = fields.Boolean("Active", default=True)
-    group_progress_id   = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
-    company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    account_id          = fields.Many2one("account.account", "Cost Account")
-    product_id          = fields.Many2one('product.product', string='Product')
-
-    @api.model
-    def create(self, values):
-        location_name       = values.get('name', False)
-        location_code       = values.get('code', False)
-        location_type_id    = values.get('location_type_id', False)
-        group_progress_id   = values.get('group_progress_id', False)
-        location_values     = {
-                                'name'              : location_name or "(NoName)",
-                                'code'              : location_code or "(NoCode)",
-                                'type_id'           : location_type_id or False,
-                                'group_progress_id' : group_progress_id,
-                            }
-        new_location    = False
-        location        = super(lhm_nursery, self).create(values)
-        if location:
-            new_location = self.env['lhm.location'].create(location_values)
-        if new_location:
-            location.location_id = new_location.id
-        return location
-
-    def write(self, values):
-        if 'name' in values and self.location_id:
-            self.location_id.write({'name': values.get('name', False)})
-        if 'code' in values and self.location_id:
-            self.location_id.write({'code': values.get('code', False)})
-        if 'location_type_id' in values and self.location_id:
-            self.location_id.write({'type_id': values.get('location_type_id', False)})
-        if 'group_progress_id' in values and self.location_id:
-            self.location_id.write({'group_progress_id' : values.get('group_progress_id',False)})
-        if 'active' in values and self.location_id:
-            self.location_id.write({'active': values.get('active', False)})
-        return super(lhm_nursery, self).write(values)
-
-    def unlink(self):
-        for location in self:
-            if location.location_id:
-                location.location_id.unlink()
-        location = super(lhm_nursery, self).unlink()
-        return location
-
-    def name_get(self):
-        result = []
-        for record in self:
-            if record.name and record.code:
-                result.append((record.id, record.code))
-            if record.name and not record.code:
-                result.append((record.id, record.name))
-        return result
-
-    def _name_get(self):
-        result = []
-        for record in self:
-            if record.name and record.code:
-                result.append((record.id, record.code + " - " + record.name))
-            if record.name and not record.code:
-                result.append((record.id, record.name))
-        return result
-
-    @api.model
-    def name_search(self, name, args=None, operator='ilike', limit=100):
-        args = args or []
-        domain = []
-        if name:
-            domain = ['|', ('code', '=ilike', name + '%'), ('name', operator, name)]
-            if operator in expression.NEGATIVE_TERM_OPERATORS:
-                domain = ['&', '!'] + domain[1:]
-        lhm_location_type = self.search(domain + args, limit=limit)
-        return lhm_location_type._name_get()
-################################################# End Of Master Blok Bibitan ################################################
 #################################################### Master Infrastruktur ###################################################
 class lhm_infrastruktur(models.Model):
     _name           = 'lhm.infrastruktur'
@@ -1346,7 +1019,7 @@ class lhm_transaction(models.Model):
     date                = fields.Date("Tanggal", tracking=True)
     kemandoran_code     = fields.Char("Kode Kemandoran", related="kemandoran_id.code", readonly=True)
     mandor_id           = fields.Many2one("hr.employee", string="Mandor", ondelete="restrict", related="kemandoran_id.foreman_id", readonly=True, store=True)
-    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor 1", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True)
+    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor Besar", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True)
     kerani_id           = fields.Many2one("hr.employee", string="Kerani", ondelete="restrict", related="kemandoran_id.admin_id", readonly=True, store=True)
     location            = fields.Char("Afdeling/ Divisi", compute="_compute_location", readonly=True, store=True)
     nik_mandor          = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
@@ -1390,91 +1063,91 @@ class lhm_transaction(models.Model):
         for record in self:
             record.skb = any(line.activity_id.skb for line in record.lhm_line_ids)
 
-    def button_regenerate(self):
-        self.check_missing_employees()
+    # def button_regenerate(self):
+    #     self.check_missing_employees()
 
     # Belum di ganti ke contract untuk pengecekkan nya (sudah dibuat belum di testing)
-    def check_missing_employees(self):
-        # Ambil employee yang sudah ada di lhm_line_ids
-        existing_employee_ids = [line.employee_id.id for line in self.lhm_line_ids]
-        print(f"=== Existing Employee IDs: {existing_employee_ids}")
+    # def check_missing_employees(self):
+    #     # Ambil employee yang sudah ada di lhm_line_ids
+    #     existing_employee_ids = [line.employee_id.id for line in self.lhm_line_ids]
+    #     print(f"=== Existing Employee IDs: {existing_employee_ids}")
 
-        # Ambil semua employee dari kemandoran yang dipilih
-        kemandoran_employee_ids = self.kemandoran_id.employee_ids.ids
-        print(f"=== Kemandoran Employee IDs: {kemandoran_employee_ids}")
+    #     # Ambil semua employee dari kemandoran yang dipilih
+    #     kemandoran_employee_ids = self.kemandoran_id.employee_ids.ids
+    #     print(f"=== Kemandoran Employee IDs: {kemandoran_employee_ids}")
 
-        # Cek employee yang tertinggal
-        missing_employees = set(kemandoran_employee_ids) - set(existing_employee_ids)
-        print(f"=== Missing Employees: {missing_employees}")
+    #     # Cek employee yang tertinggal
+    #     missing_employees = set(kemandoran_employee_ids) - set(existing_employee_ids)
+    #     print(f"=== Missing Employees: {missing_employees}")
 
-        if missing_employees:
-            # Cari absensi karyawan yang tertinggal
-            start_date = datetime.combine(self.date, datetime.min.time())
-            end_date = start_date + timedelta(days=1)
-            absensi = self.env['hr.attendance.sheet'].search([
-                ('employee_id', 'in', list(missing_employees)),
-                ('check_in', '>=', start_date),
-                ('check_in', '<', end_date)
-            ])
-            absensi_employee_ids = absensi.mapped('employee_id.id')
-            print(f"=== Employees with Attendance: {absensi_employee_ids}")
+    #     if missing_employees:
+    #         # Cari absensi karyawan yang tertinggal
+    #         start_date = datetime.combine(self.date, datetime.min.time())
+    #         end_date = start_date + timedelta(days=1)
+    #         absensi = self.env['hr.attendance.sheet'].search([
+    #             ('employee_id', 'in', list(missing_employees)),
+    #             ('check_in', '>=', start_date),
+    #             ('check_in', '<', end_date)
+    #         ])
+    #         absensi_employee_ids = absensi.mapped('employee_id.id')
+    #         print(f"=== Employees with Attendance: {absensi_employee_ids}")
             
-            # Dapatkan nama employee yang belum memperbaiki absensinya
-            missing_employee_names = self.env['hr.employee'].search([
-                ('id', 'in', list(missing_employees - set(absensi_employee_ids)))
-            ]).mapped('name')
-            print(f"=== Missing Employee Names: {missing_employee_names}")
+    #         # Dapatkan nama employee yang belum memperbaiki absensinya
+    #         missing_employee_names = self.env['hr.employee'].search([
+    #             ('id', 'in', list(missing_employees - set(absensi_employee_ids)))
+    #         ]).mapped('name')
+    #         print(f"=== Missing Employee Names: {missing_employee_names}")
 
-            if missing_employee_names:
-                raise ValidationError(f"Employee yang belum memperbaiki absensinya: {', '.join(missing_employee_names)}")
+    #         if missing_employee_names:
+    #             raise ValidationError(f"Employee yang belum memperbaiki absensinya: {', '.join(missing_employee_names)}")
 
-            # Tambahkan karyawan yang sudah absen ke lhm_line_ids
-            new_lines = []
-            for emp_id in absensi_employee_ids:
-                employee = self.env['hr.employee'].browse(emp_id)
-                # contract = False
-                # if employee.basic_salary_type == 'employee':
-                #     contract = self.env['hr.contract'].search([
-                #         ('employee_id', '=', employee.id),
-                #         ('date_start', '<=', self.date),
-                #         ('date_end', '>=', self.date),
-                #         ('state', '=', 'open'),
-                #         ('is_lhm', '=', True ),
-                #     ], limit=1)
-                # elif employee.basic_salary_type == 'employee_type':
-                #     contract = self.env['hr.contract'].search([
-                #         ('employee_id', '=', employee.id),
-                #         ('date_start', '<=', self.date),
-                #         ('date_end', '>=', self.date),
-                #         ('state', '=', 'open'),
-                #         ('is_lhm', '=', True ),
-                #     ], limit=1)
-                # if not contract:
-                #     print(f"=== Minimum wage not found for employee {employee.name}")
-                #     continue
-                values = {
-                    'sequence': len(self.lhm_line_ids) + 1,
-                    'date': self.date or False,
-                    'work_day': 0.0,
-                    'non_work_day': 0.0,
-                    'total_hke': 0.0,
-                    'total_hkne': 0.0,
-                    'min_wage_value_date': 0.0,
-                    'work_result': 0.0,
-                    'premi': 0.0,
-                    'overtime_value': 0.0,
-                    'penalty': 0.0,
-                    'name': employee.no_induk or False,
-                    'employee_id': employee.id or False,
-                    'contract_id'           : 0.0,
-                    'contract_wage_value'   : 0.0,
-                }
-                new_lines.append((0, 0, values))
-                print(f"=== Added Employee: {employee.name}, ID: {employee.id}")
+    #         # Tambahkan karyawan yang sudah absen ke lhm_line_ids
+    #         new_lines = []
+    #         for emp_id in absensi_employee_ids:
+    #             employee = self.env['hr.employee'].browse(emp_id)
+    #             # contract = False
+    #             # if employee.basic_salary_type == 'employee':
+    #             #     contract = self.env['hr.contract'].search([
+    #             #         ('employee_id', '=', employee.id),
+    #             #         ('date_start', '<=', self.date),
+    #             #         ('date_end', '>=', self.date),
+    #             #         ('state', '=', 'open'),
+    #             #         ('is_lhm', '=', True ),
+    #             #     ], limit=1)
+    #             # elif employee.basic_salary_type == 'employee_type':
+    #             #     contract = self.env['hr.contract'].search([
+    #             #         ('employee_id', '=', employee.id),
+    #             #         ('date_start', '<=', self.date),
+    #             #         ('date_end', '>=', self.date),
+    #             #         ('state', '=', 'open'),
+    #             #         ('is_lhm', '=', True ),
+    #             #     ], limit=1)
+    #             # if not contract:
+    #             #     print(f"=== Minimum wage not found for employee {employee.name}")
+    #             #     continue
+    #             values = {
+    #                 'sequence': len(self.lhm_line_ids) + 1,
+    #                 'date': self.date or False,
+    #                 'work_day': 0.0,
+    #                 'non_work_day': 0.0,
+    #                 'total_hke': 0.0,
+    #                 'total_hkne': 0.0,
+    #                 'min_wage_value_date': 0.0,
+    #                 'work_result': 0.0,
+    #                 'premi': 0.0,
+    #                 'overtime_value': 0.0,
+    #                 'penalty': 0.0,
+    #                 'name': employee.no_induk or False,
+    #                 'employee_id': employee.id or False,
+    #                 'contract_id'           : 0.0,
+    #                 'contract_wage_value'   : 0.0,
+    #             }
+    #             new_lines.append((0, 0, values))
+    #             print(f"=== Added Employee: {employee.name}, ID: {employee.id}")
 
-            if new_lines:
-                # Update lhm_line_ids dengan data baru
-                self.write({'lhm_line_ids': new_lines})
+    #         if new_lines:
+    #             # Update lhm_line_ids dengan data baru
+    #             self.write({'lhm_line_ids': new_lines})
 
     # Menggunakan contract_id Contract
     @api.onchange('date', 'kemandoran_id')
@@ -1511,9 +1184,16 @@ class lhm_transaction(models.Model):
                 ('check_in', '<', end_date)
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
+            
+            absensi_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
 
             for employee in self.kemandoran_id.employee_ids:
                 if employee.id in absensi_employee_ids:
+
+                    employee_absensi = absensi.filtered(lambda a: a.employee_id.id == employee.id)
+                    
+                    attendance = employee_absensi.filtered(lambda a: a.type_id == absensi_kj)
+
                     values = {
                         'sequence'              : seq,
                         'date'                  : self.date or False,
@@ -1528,6 +1208,7 @@ class lhm_transaction(models.Model):
                         'penalty'               : 0.0,
                         'name'                  : employee and employee.no_induk or False,
                         'employee_id'           : employee and employee.id or False,
+                        'attendance_id'         : attendance.type_id.id if attendance else False, 
                         # 'contract_id'           : contract and contract.id or False,
                         # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                         'contract_id'           : 0.0,
@@ -2157,7 +1838,6 @@ class lhm_transaction_line(models.Model):
             if not line.doc_activity_ids:
                 line.doc_activity_ids = [(6, 0, [])]
 
-
     name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
     date                = fields.Date("Date")
     sequence            = fields.Integer()
@@ -2178,6 +1858,7 @@ class lhm_transaction_line(models.Model):
     min_wage_value_date = fields.Float(string="Upah Tanggal")
     min_wage_value_hkne = fields.Float(string="Upah HKNE")
     # Contract
+    contract_id         = fields.Many2one('hr.contract', string='Contract', ondelete="restrict")
     contract_wage_value = fields.Float(string="Upah")
     contract_value_date = fields.Float(string="Upah Tanggal Contract")
     contract_value_hkne = fields.Float(string="Upah HKNE Contract")
@@ -2200,7 +1881,6 @@ class lhm_transaction_line(models.Model):
     lhm_nap_ids         = fields.One2many('lhm.transaction.line.nap.line', 'lhm_line_id', 'LHM Detail')
     lhm_id              = fields.Many2one("lhm.transaction", string="LHM", ondelete="cascade")
     state               = fields.Selection(related='lhm_id.state', string='Status', store=True)
-    contract_id         = fields.Many2one('hr.contract', string='Contract', ondelete="restrict")
     transaction_nap_line_ids = fields.One2many('lhm.transaction.nap.line', 'lhm_transaction_line_id', string="Transaction NAP Lines")
     # POC Nyalindung
     # Penyadap
@@ -2218,43 +1898,6 @@ class lhm_transaction_line(models.Model):
     satuan_2        = fields.Many2one('uom.uom', string='Satuan 2', ondelete="restrict")
     is_hasil_2      = fields.Boolean("Is Hasil 2", default=False)
     is_borong       = fields.Boolean("Is Borong", default=False)
-
-    # Fungsi untuk memasukkan gaji employee yang borong panen
-    # def get_wage_borong_panen(self):
-    #     for record in self:
-    #         if record.is_borong and record.activity_id.is_nap:
-    #             # panggil fungsi untuk mengecek employee ini bulanan atau bukan
-    #             record._check_employee_bulanan()
-    #             lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
-                
-    #             if record.is_hasil_2:
-                    
-    #                 # Product 1 = Latex
-    #                 drc_latex             = lhm_nap_line.drc_latex_nap 
-    #                 price_1               = record.activity_id.get_price_borongan(drc=drc_latex)
-    #                 convert_hasil_latex   = lhm_nap_line.hasil_1_nap * drc_latex / 100
-    #                 hasil_latex           = convert_hasil_latex * price_1
-
-    #                 # Product 2 = Lump
-    #                 drc_lump            = lhm_nap_line.drc_lump_nap
-    #                 price_2             = record.activity_id.get_price_borongan(drc=drc_lump)
-    #                 convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
-    #                 hasil_lump          = convert_hasil_lump * price_2
-                    
-    #                 hasil           = hasil_latex + hasil_lump
-                    
-    #                 lhm_nap_line.write({
-    #                     'hasil_convert_latex': convert_hasil_latex,
-    #                     'hasil_convert_lump': convert_hasil_lump
-    #                     })
-                    
-    #                 record.write({'contract_wage_value' : hasil})
-
-    #             else:
-    #                 # # Menghitung gaji menggunakan data dari get_price_borongan tanpa DRC
-    #                 price_1      = record.activity_id.get_price_borongan()
-    #                 wage_hasil_1 = lhm_nap_line.hasil_1_nap * price_1
-    #                 record.write({'contract_wage_value': wage_hasil_1})
 
     # Fungsi untuk menghitung konversi latex dan lump
     def compute_conversion(self, lhm_nap_line, is_hasil_2):
@@ -2283,7 +1926,7 @@ class lhm_transaction_line(models.Model):
     def get_wage_borong_panen(self):
         for record in self:
             if not record.activity_id.is_nap:
-                continue  # Langsung lanjut ke loop berikutnya jika bukan aktivitas NAP
+                continue
 
             # Panggil fungsi untuk mengecek apakah employee ini bulanan atau bukan
             record._check_employee_bulanan()
@@ -2296,9 +1939,6 @@ class lhm_transaction_line(models.Model):
                 # Dapatkan harga borongan berdasarkan DRC
                 price_1     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_latex_nap, product=record.product_id)
                 price_2     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_lump_nap, product=record.product_id_2)
-                print("::::::::::::::::::::::::::::", record.employee_id.name)
-                print(":::::::::::::::::::::::::::: latex", lhm_nap_line.drc_latex_nap, price_1)
-                print(":::::::::::::::::::::::::::: lump", lhm_nap_line.drc_lump_nap, price_2)
                 
                 # Menghitung hasil akhir
                 hasil_latex = convert_hasil_latex * price_1
@@ -2326,7 +1966,6 @@ class lhm_transaction_line(models.Model):
                         'contract_wage_value': wage_hasil
                     }
                     record.write(values)
-                    # print(f"==== Gaji Borongan Rawat : {record.employee_id.name}")
 
     # Fungsi untuk mendapatkan gaji
     def get_wage_value_employee(self):
@@ -2352,12 +1991,8 @@ class lhm_transaction_line(models.Model):
                         ('is_lhm', '=', True ),
                     ], limit=1)
                 if not contract:
-                    return {
-                        'warning': {
-                            'title': _('Kesalahan Input Data'),
-                            'message': _(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.type_id.name}, tidak ditemukan !"),
-                        },
-                    }
+                    raise ValidationError(_(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.type_id.name}, tidak ditemukan !"))
+
                 values = {
                     'contract_id'           : contract and contract.id or False,
                     'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
@@ -2430,6 +2065,7 @@ class lhm_transaction_line(models.Model):
             wizard_action = self.buka_wizard()
             return wizard_action
 
+    # (TODO) akan di hapus, namun harus di cek terlebih dahulu impact nya akan kemana 
     @api.onchange('hasil_latex','drc_latex', 'hasil_lump', 'drc_lump')
     def onchange_hasil_karet(self):
         self.work_result = (self.hasil_latex * self.drc_latex / 100.0) + (self.hasil_lump * self.drc_lump / 100.0)
@@ -2445,7 +2081,7 @@ class lhm_transaction_line(models.Model):
             self.location_type_id   = False
             self.location_id        = False
             self.activity_id        = False
-            self.satuan_id          = False
+            # self.satuan_id          = False
             self.work_day           = 0.0
             self.work_result        = 0.0
             self.premi              = 0.0
@@ -2458,7 +2094,7 @@ class lhm_transaction_line(models.Model):
             self.location_type_id   = False
             self.location_id        = False
             self.activity_id        = False
-            self.satuan_id          = False
+            # self.satuan_id          = False
             self.work_day           = 0.0
             self.work_result        = 0.0
             self.premi              = 0.0
@@ -2473,22 +2109,24 @@ class lhm_transaction_line(models.Model):
         if self.location_type_id:
             self.location_id    = False
             self.activity_id    = False
-            self.satuan_id      = False
+            # self.satuan_id      = False
 
     @api.onchange('location_id')
     def _onchange_location_id(self):
         if self.location_id:
             self.activity_id    = False
-            self.satuan_id      = False
+            # self.satuan_id      = False
 
     @api.onchange('activity_id')
     def _onchange_activity_id(self):
         if self.activity_id:
-            self.satuan_id      = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            # (TODO) Pengecekkan untuk mengambil satuan dari aktivitas atau memilih sendiri
+            # self.satuan_id      = self.activity_id.uom_id and self.activity_id.uom_id.id or False
             if self.activity_id.is_panen:
                 lokasi = self.env['lhm.plant.block'].search([('location_id','=',self.location_id.id)], limit=1)
                 self.target_panen = lokasi.target_panen_perhari if lokasi else 0.0
 
+    # (TODO) Pengecekan Lebih lannjut terkait transfer employee
     def _check_transfer_employee(self):
         for transfer in self:
             transfer_data   = transfer.transfer_id
@@ -2526,6 +2164,7 @@ class lhm_transaction_line(models.Model):
         self._check_work_day()
         return line
 
+    # (TODO) Pengencekan lebih dalam menganai hapus daftar karyawan di LHM
     def unlink(self):
         for transaction_line in self:
             if transaction_line.transfer_id:

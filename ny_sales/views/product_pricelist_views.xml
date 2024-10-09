@@ -1,5 +1,5 @@
 <odoo>
-    <record id="view_order_form_inherit" model="ir.ui.view">
+    <record id="product_pricelist_view_inherit2" model="ir.ui.view">
         <field name="name">product.pricelist.form.inherit</field>
         <field name="model">product.pricelist</field>
         <field name="inherit_id" ref="product.product_pricelist_view"/>

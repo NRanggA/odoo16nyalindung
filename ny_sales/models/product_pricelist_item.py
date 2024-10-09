@@ -8,7 +8,7 @@ class ProductPricelistItem(models.Model):
 class ProductPricelistCostumer(models.Model):
     _inherit = 'product.pricelist'
     partner_id = fields.Many2one('res.partner', string='Costumer')
-    is_grade = fields.Boolean('is Grade')
+    is_grade = fields.Boolean('Grading')
 
     state = fields.Selection([
         ('draft', 'Draft'),

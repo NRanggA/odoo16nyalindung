@@ -32,7 +32,7 @@ class HrAttendanceSheet(models.Model):
         today_date = fields.Date.context_today(self)
 
         if kwargs.get("force_date"):
-            today_date = kwargs['force_date']
+            today_date = fields.Date.from_string(kwargs['force_date'])
         
         # print("====== DATA hr attendance sheet : {today_date} ", today_date)
 
@@ -57,7 +57,6 @@ class HrAttendanceSheet(models.Model):
                 if schedule_end:
                     schedule_end = schedule_end.astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
             
-            # Check if there's already an attendance sheet for the current date
             existing_sheet = self.env['hr.attendance.sheet'].search([
                 ('employee_id', '=', employee.id),
                 ('date', '=', today_date)

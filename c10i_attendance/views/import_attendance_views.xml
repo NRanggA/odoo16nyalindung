@@ -19,7 +19,7 @@
             <field name="arch" type="xml">
                 <form string="Import Data Absensi">
                     <header>
-                        <button string="Process" type="object" name="push_to_sheet" class="btn-secondary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                        <button string="Process" type="object" name="push_to_sheet" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
                         <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'processed')]}"/>
                         <button string="Set To Draft" type="object" name="set_to_draft" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,processed,valid"/>
@@ -35,7 +35,7 @@
                         </group>
                         <notebook>
                             <page string="Attendance">
-                                <field name="attendance_ids" attrs="{'readonly': [('state', '=', 'valid')]}">
+                                <field name="attendance_ids" attrs="{'readonly': [('state', 'in', ['processed','valid'])]}">
                                     <tree string="Attendance">
                                         <field name="employee_id"/>
                                         <field name="check_in"/>

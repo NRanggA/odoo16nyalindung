@@ -27,6 +27,8 @@
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         'views/seed_move_views.xml',
+        'views/seed_transfer_views.xml',
+        'views/lhm_nursery_views.xml',
         
         'report/report_seed_mutation_action.xml',
         'wizard/wizard_seed_mutation_report_views.xml',

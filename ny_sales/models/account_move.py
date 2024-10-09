@@ -3,7 +3,7 @@ from odoo import models, fields, api
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    pricelist_id = fields.Many2one('product.pricelist', string='Grade')
+    pricelist_id = fields.Many2one('product.pricelist', string='Grading')
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):

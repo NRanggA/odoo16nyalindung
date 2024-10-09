@@ -151,10 +151,7 @@ class StockPickingType(models.Model):
     _inherit        = 'stock.picking.type'
 
     skb             = fields.Boolean("Is SKB?")
-    code            = fields.Selection([('incoming', 'Vendors'),
-                             ('outgoing', 'Customers'),
-                             ('internal', 'Internal'),
-                             ('plantation', 'Plantation'), ('plantation_return', 'Plantation Return')], 'Type of Operation', required=True)
+    code            = fields.Selection(selection_add=[('plantation', 'Plantation'), ('plantation_return', 'Plantation Return')], ondelete={'plantation': 'cascade', 'plantation_return': 'cascade'})
 
 # class StockQuant(models.Model):
 #     _inherit = 'stock.quant'

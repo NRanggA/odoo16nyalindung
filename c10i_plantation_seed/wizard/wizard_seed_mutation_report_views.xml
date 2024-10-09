@@ -10,7 +10,7 @@
                     <group>
                         <!-- <field name="date_type" widget="radio"/> -->
                         <!-- <field name="period_id" attrs="{'invisible': [('date_type', '!=', 'period')]}" /> -->
-                        <field name="product_id" />
+                        <!-- <field name="product_id" /> -->
                         <field name="date_start" />
                         <field name="date_end" />
                         <field name="location_id" />

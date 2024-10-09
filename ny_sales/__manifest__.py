@@ -8,9 +8,9 @@
     'depends': ['base','product','sale','account', 'l10n_id_efaktur'],
     'data': [
         'security/ir.model.access.csv',
-        # 'views/sale_order_views.xml',
         'views/product_pricelist_views.xml',
         'views/accountview_move_form.xml',
+        'views/sale_order_views.xml',
         # 'views/menu_views.xml',
     ],
     'installable': True,

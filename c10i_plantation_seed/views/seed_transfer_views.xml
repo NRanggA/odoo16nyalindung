@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seed_transfer_view_form" model="ir.ui.view">
+        <field name="name">seed.transfer.view.form</field>
+        <field name="model">seed.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Form Transfer Bibitan">
+                <header>
+                    <button name="button_confirm" states="draft" string="Approve" type="object" class="btn-default btn-primary"/>
+                    <button name="button_draft" states="confirm,close" string="Set to draft" type="object" class="btn-default"/>
+                    <button name="button_close" states="confirm" string="Close" type="object" class="btn-default"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,close"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button string="Move Line" type="object" name="action_show_move" class="btn-secondary" icon="fa-exchange"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Nama" class="oe_edit_only"/>
+                        <h1><field name="name" readonly="1" force_save="1"/></h1>
+                    </div>
+                    <group>
+                        <field name="date" />
+                        <field name="mutation_type_id" domain="[('type', '=', 'transfer')]" options="{'no_create': True}"/>
+                    </group>
+                    <notebook>
+                        <page string="Detail">
+                            <field name="line_ids" nolabel="1" attrs="{'readonly': ['|', ('state', 'in', ['confirm', 'close']), '|', ('date', '=', False), ('mutation_type_id', '=', False)]}" context="{'default_date':date}">
+                                <tree editable="bottom">
+                                    <field name="date" readonly="1" force_save="1"/>
+                                    <field name="mutation_type_id"/>
+                                    <field name="mutation_type" invisible="1"/>
+                                    <field name="location_src_id" domain="[('id', '!=', location_dest_id)]"/>
+                                    <field name="location_dest_id" domain="[('id', '!=', location_src_id)]"/>
+                                    <field name="qty" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="seed_transfer_view_tree" model="ir.ui.view">
+        <field name="name">seed.transfer.view.tree</field>
+        <field name="model">seed.transfer</field>
+        <field name="arch" type="xml">
+            <tree string="List Bibitan">
+                <field name="name" />
+                <field name="date" />
+                <field name="mutation_type_id" />
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="seed_transfer_action" model="ir.actions.act_window">
+        <field name="name">Form Transfer Bibitan</field>
+        <field name="res_model">seed.transfer</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="seed_transfer_menu"
+        name="Form Transfer Pembibitan"
+        action="seed_transfer_action"
+        sequence="2"
+        parent="c10i_lhm_v16.menu_bibitan"/>
+
+</odoo>

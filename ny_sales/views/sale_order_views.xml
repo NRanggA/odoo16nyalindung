@@ -4,8 +4,21 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='company_id']" position="before">
-                <field name="pricelist_id_2"/>
+            <field name="pricelist_id" position="attributes">
+                <attribute name="domain">[('is_grade', '=', False), '|', ('company_id', '=', False), ('company_id', '=', company_id)]</attribute>
+            </field>
+        </field>
+    </record>
+    <record id="view_order_form_inherit_date_order" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.date.order</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_order']" position="attributes">
+                <attribute name="groups"/>
+            </xpath>
+            <xpath expr="//div[label[@for='date_order'] and @class='o_td_label']" position="attributes">
+                <attribute name="groups"/>
             </xpath>
         </field>
     </record>

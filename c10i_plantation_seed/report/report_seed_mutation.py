@@ -140,87 +140,123 @@ class ReportSeedkMutation(models.AbstractModel):
         sheet.set_column('D:H', 15) 
 
         # Judul Laporan
-        sheet.merge_range('D2:H2', 'SEED MUTATION', wbf['title_doc'])
+        sheet.merge_range('D2:H2', 'Mutasi bibitan', wbf['title_doc'])
         sheet.merge_range('D3:H3', f'{from_date} s/d {to_date}', wbf['title_doc'])
+        sheet.merge_range('D4:H4', obj.location_id.name, wbf['title_doc'])
 
         # Header Produk
-        sheet.merge_range('A4:A5', 'Kode Transaksi', wbf['header'])
-        sheet.merge_range('B4:B5', 'Nama Product', wbf['header'])
-        sheet.merge_range('C4:C5', 'Satuan', wbf['header'])
-        sheet.merge_range('D4:E4', 'Saldo Awal', wbf['header'])
-        sheet.merge_range('F4:G4', 'Penerimaan', wbf['header'])
-        sheet.merge_range('H4:I4', 'Pengeluaran', wbf['header'])
-        sheet.merge_range('J4:K4', 'Adjustment', wbf['header'])
-        sheet.merge_range('L4:M4', 'Saldo Akhir', wbf['header'])
+        sheet.merge_range('A5:A6', 'Kode Transaksi', wbf['header'])
+        sheet.merge_range('B5:B6', 'Nama Product', wbf['header'])
+        sheet.merge_range('C5:C6', 'Satuan', wbf['header'])
+        sheet.merge_range('D5:E5', 'Saldo Awal', wbf['header'])
+        sheet.merge_range('F5:G5', 'Penerimaan', wbf['header'])
+        sheet.merge_range('H5:I5', 'Pengeluaran', wbf['header'])
+        sheet.merge_range('J5:K5', 'Adjustment', wbf['header'])
+        sheet.merge_range('L5:M5', 'Saldo Akhir', wbf['header'])
 
-        sheet.merge_range('D5:E5', 'Qty', wbf['header'])
-        sheet.merge_range('F5:G5', 'Qty', wbf['header'])
-        sheet.merge_range('H5:I5', 'Qty', wbf['header'])
-        sheet.merge_range('J5:K5', 'Qty', wbf['header'])
-        sheet.merge_range('L5:M5', 'Qty', wbf['header'])
+        sheet.merge_range('D6:E6', 'Qty', wbf['header'])
+        sheet.merge_range('F6:G6', 'Qty', wbf['header'])
+        sheet.merge_range('H6:I6', 'Qty', wbf['header'])
+        sheet.merge_range('J6:K6', 'Qty', wbf['header'])
+        sheet.merge_range('L6:M6', 'Qty', wbf['header'])
 
-
-        transactions = self.env['seed.move.line'].search([('product_id', '=', obj.product_id.id)])
-
-
-        row = 5  
-        for transaction in transactions:
-            sheet.write(row, 0, transaction.seed_move_id.name, wbf['content']) 
-            sheet.write(row, 1, transaction.product_id.name, wbf['content']) 
-            sheet.write(row, 2, transaction.product_id.uom_id.name, wbf['content']) 
-
-            query = """
-                    SELECT sml.id, 
-                        sml.product_id, 
-                        sml.qty, 
-                        sml.nursery_id, 
-                        sml.location_src_id, 
-                        sml.location_dest_id, 
-                        sml.date
-                    FROM seed_move_line AS sml
-                    JOIN seed_move AS sm 
-                    ON sml.seed_move_id = sm.id
-                    WHERE sml.nursery_id = %(location_id)s
-                    AND sml.product_id = %(product_id)s
-                    AND sm.date BETWEEN %(date_start)s AND %(date_end)s;
-                """
-            params = {
-                'product_id'    : transaction.product_id.id,
-                'location_id'   : obj.location_id.id,
-                'date_start'    : obj.date_start.strftime('%Y-%m-%d 00:00:00'),
-                'date_end'      : obj.date_end.strftime('%Y-%m-%d 23:59:59')
-            }
-            self.env.cr.execute(query, params)
-            mutasi_stock = self.env.cr.dictfetchone()
-
-            print(f"====== {mutasi_stock}")
-            # print(f"====== {t}")
+        SeedMoveLine = self.env['seed.move.line']
         
+        # Opening
+        all_in_moves 	= SeedMoveLine.search([
+                            ('nursery_id', '=', obj.location_id.id),
+                            ('location_dest_id', '=', obj.location_id.location_id.id),
+                            ('mutation_type_id.type', 'in', ['incoming', 'adj_in', 'transfer']),
+                            ('date', '<', obj.date_start)
+                        ])
+        all_out_moves   = SeedMoveLine.search([('nursery_id','=',obj.location_id.id),
+                            ('location_src_id','=',obj.location_id.location_id.id),
+                            ('mutation_type_id.type','in',['outgoing','adj_out','transfer']),
+                            ('date', '<', obj.date_start)
+                        ])
+        
+        # Incoming
+        in_moves = SeedMoveLine.search([
+            ('nursery_id', '=', obj.location_id.id),
+            ('location_dest_id', '=', obj.location_id.location_id.id),
+            ('mutation_type_id.type', 'in', ['incoming', 'transfer']),
+            ('date', '>=', obj.date_start),
+            ('date', '<=', obj.date_end),
+        ])
+
+        # Outgoing
+        out_moves = SeedMoveLine.search([
+            ('nursery_id', '=', obj.location_id.id),
+            ('location_src_id', '=', obj.location_id.location_id.id),
+            ('mutation_type_id.type', 'in', ['outgoing', 'transfer']),
+            ('date', '>=', obj.date_start),
+            ('date', '<=', obj.date_end),
+        ])
+
+        # Adjustment
+        adj_in_moves = SeedMoveLine.search([
+            ('nursery_id', '=', obj.location_id.id),
+            ('location_dest_id', '=', obj.location_id.location_id.id),
+            ('mutation_type_id.type', '=', 'adj_in'),
+            ('date', '>=', obj.date_start),
+            ('date', '<=', obj.date_end),
+        ])
+        
+        adj_out_moves = SeedMoveLine.search([
+            ('nursery_id', '=', obj.location_id.id),
+            ('location_src_id', '=', obj.location_id.location_id.id),
+            ('mutation_type_id.type', '=', 'adj_out'),
+            ('date', '>=', obj.date_start),
+            ('date', '<=', obj.date_end),
+        ])
+        
+        # Gabung semua produk
+        product_ids = set(in_moves.mapped('product_id.id')).union(
+            set(out_moves.mapped('product_id.id')),
+            set(adj_in_moves.mapped('product_id.id')),
+            set(adj_out_moves.mapped('product_id.id')),
+            set(all_in_moves.mapped('product_id.id')),
+            set(all_out_moves.mapped('product_id.id'))
+        )
+        
+        row = 6
+
+        for product_id in product_ids:
+            product = self.env['product.product'].browse(product_id)
+
+            # Hitung penerimaan
+            incoming_qty        = sum(in_moves.filtered(lambda m: m.product_id.id == product_id).mapped('qty')) or 0.0
+
+            # Hitung pengeluaran 
+            outgoing_qty        = sum(out_moves.filtered(lambda m: m.product_id.id == product_id).mapped('qty')) or 0.0
+
+            # Hitung penyesuaian
+            adjustment_in_qty   = sum(adj_in_moves.filtered(lambda m: m.product_id.id == product_id).mapped('qty')) or 0.0
+            adjustment_out_qty  = sum(adj_out_moves.filtered(lambda m: m.product_id.id == product_id).mapped('qty')) or 0.0
+            adjustment_qty      = adjustment_in_qty - adjustment_out_qty
+
+            # Hitung saldo awal 
+            opening_qty         = sum(all_in_moves.filtered(lambda m: m.product_id.id == product_id).mapped('qty')) - \
+                                sum(all_out_moves.filtered(lambda m: m.product_id.id == product_id).mapped('qty')) or 0.0
+
+            # Hitung saldo akhir 
+            closing_qty         = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
+
             
-            
-            # opening_qty = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
-            # sheet.merge_range(row, 3, row, 4, opening_qty, wbf['content_float'])
+            sheet.write(row, 0, '-', wbf['content'])  
+            sheet.write(row, 1, product.name, wbf['content']) 
+            sheet.write(row, 2, product.uom_id.name, wbf['content']) 
+            sheet.merge_range(row, 3, row, 4, opening_qty, wbf['content_float'])
+            sheet.merge_range(row, 5, row, 6, incoming_qty, wbf['content_float'])
+            sheet.merge_range(row, 7, row, 8, outgoing_qty, wbf['content_float'])
+            sheet.merge_range(row, 9, row, 10, adjustment_qty, wbf['content_float'])
+            sheet.merge_range(row, 11, row, 12, closing_qty, wbf['content_float'])
 
-            # incoming_qty = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
-            # sheet.merge_range(row, 5, row, 6, incoming_qty, wbf['content_float'])
 
-            # outgoing_qty = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
-            # sheet.merge_range(row, 7, row, 8, outgoing_qty, wbf['content_float'])
+            row += 1  # Pindah ke baris berikutnya
 
-            # adjustment_qty = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
-            # sheet.merge_range(row, 9, row, 10, adjustment_qty, wbf['content_float'])
-
-            # closing_qty = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
-            # sheet.merge_range(row, 11, row, 12, closing_qty, wbf['content_float'])
-
-            row += 1
-        
-        
         # Page Layout
         sheet.set_landscape()
-        sheet.set_paper(9) # A4
-        # sheet.set_header()
+        sheet.set_paper(9)  # A4
         sheet.repeat_rows(1, 4)
-        # sheet.print_area(0, 0, row, 13)
-        sheet.set_print_scale(78)
 
