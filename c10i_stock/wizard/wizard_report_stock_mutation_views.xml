@@ -12,6 +12,7 @@
                             <field name="from_date" />
                             <field name="location_id" />
                             <field name="company_id" />
+                            <field name="include_exhaust" attrs="{'invisible': [('product_ids', '!=', [])]}"/>
                         </group>
                         <group>
                             <field name="to_date" />

@@ -15,8 +15,10 @@ class WizardReportStockMutation(models.TransientModel):
                         ('cost', 'With Value'),
                         ('no', 'Just Stock Mutation'),
                     ], string='Show Value', default='no')
-    
-    product_ids = fields.Many2many('product.product', string='Product')
+
+    include_exhaust = fields.Boolean('Include Exhaust Product', default=False)
+
+    product_ids     = fields.Many2many('product.product', string='Product')
 
     def create_report(self):
         if not self.from_date or not self.to_date:
