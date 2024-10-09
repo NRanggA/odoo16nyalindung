@@ -1,0 +1,24 @@
+<odoo>
+    <data>
+        <record id="view_change_password_inherit" model="ir.ui.view">
+            <field name="name">view.change.password.inherit</field>
+            <field name="model">change.password.own</field>
+            <field name="inherit_id" ref="base.change_password_own_form"/>
+            <field name="arch" type="xml">
+                <field name="new_password" position="attributes">
+                    <attribute name="widget">showpassword</attribute>
+                </field>
+                <field name="confirm_password" position="attributes">
+                    <attribute name="widget">showpassword</attribute>
+                </field>
+                <!-- <xpath expr="//field[@name='confirm_password']" position="after">
+                    <div class="btn btn-secondary"
+                         id="toggle-password-visibility"
+                         style="margin-left: 10px; cursor: pointer;">
+                        <span class="fa fa-eye" title="Toggle Password Visibility"></span>
+                    </div>
+                </xpath> -->
+            </field>
+        </record>
+    </data>
+</odoo>
