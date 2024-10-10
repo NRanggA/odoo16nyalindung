@@ -10,6 +10,15 @@
                 <field name="charge_to_activity" />
             </xpath>
 
+            <xpath expr="//field[@name='currency_id']" position="before">
+                <field name="beginning_balance" />
+            </xpath>
+            
+            <xpath expr="//field[@name='value']" position="after">
+                <field name="accumulated_depreciation" attrs="{'invisible': [('beginning_balance', '=', False)]}"/>
+            </xpath>
+
+
             <xpath expr="//notebook" position="inside">
                 <page name="charge_to_activity" string="Charge To Activity" attrs="{'invisible': [('charge_to_activity', '=', False)]}">
                     <group string="Plantation">
