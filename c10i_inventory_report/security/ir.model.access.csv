@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wizard_inventory_turnover,c10i_inventory_report.wizard.inventory.turnover,model_wizard_inventory_turnover,base.group_user,1,1,1,1
+access_inventory_turnover_line,c10i_inventory_report.inventory.turnover.line,model_inventory_turnover_line,base.group_user,1,1,1,1

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+
+
+        <record id="inventory_turnover_report_view" model="ir.ui.view">
+            <field name="name">wizard.inventory.turnover.form</field>
+            <field name="model">wizard.inventory.turnover</field>
+            <field name="arch" type="xml">
+                <form string="Inventory Turnover Report">
+                    <group col='4'>
+                        <field name="period_from" required="1" />
+                        <field name="period_to" required="1" />
+                        <field name="company_id" invisible="1" />
+                    </group>
+                    <!-- <notebook>
+                        <page string="Inventory List">
+                            <field name="line_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="start_balance"/>
+                                    <field name="end_balance"/>
+                                    <field name="cogs"/>
+                                    <field name="doi"/>
+                                    <field name="ito"/>
+                                    <field name="stock_availability"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook> -->
+                    <footer>
+                        <button name="generate_line" string="Generate" type="object" class="btn-primary"/>
+                        <button name="action_download_report" string="Print" type="object" class="btn-primary"/>
+                        <button string="Cancel" special="cancel" class="btn-default"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="inventory_turnover_report_action" model="ir.actions.act_window">
+            <field name="name">Inventory Turnover Report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.inventory.turnover</field>
+            <field name="view_id" ref="inventory_turnover_report_view"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="inventory_turnover_report_menu" name="Inventory Turnover Report" sequence="2" parent="stock.menu_warehouse_report" action="inventory_turnover_report_action" />
+
+
+
+    </data>
+
+</odoo>

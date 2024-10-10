@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- List View -->
+        <record model="ir.ui.view" id="inventory_turnover_line_tree">
+            <field name="name">inventory.turnover.line.tree</field>
+            <field name="model">inventory.turnover.line</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="start_balance"/>
+                    <field name="end_balance"/>
+                    <field name="cogs"/>
+                    <field name="doi"/>
+                    <field name="ito"/>
+                    <field name="stock_availability"/>
+                </tree>
+            </field>
+        </record>
+        
+
+        <record model="ir.actions.act_window" id="inventory_turnover_line_action">
+            <field name="name">Inventory Turn Over</field>
+            <field name="res_model">inventory.turnover.line</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+    </data>
+</odoo>

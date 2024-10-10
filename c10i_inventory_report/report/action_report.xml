@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report id="inventory_turnover_xlsx" model="wizard.inventory.turnover" string="Inventory Turnover Report" report_type="xlsx" name="c10i_inventory_report.inventory_turnover_xlsx" file="Inventory Turnover Report" attachment_use="False"/>
+    </data>
+</odoo>
