@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+    
+        <record id="attendance_type_kj" model="hr.attendance.type">
+            <field name="name">KJ - Hari Kerja Dinas/Biasa</field>
+            <field name="code">KJ</field>
+            <field name="special">True</field>
+            <field name="type">kj</field>
+            <field name="type_hk">hke</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="active">True</field>
+        </record>
+        
+        <record id="attendance_type_mangkir" model="hr.attendance.type">
+            <field name="name">M - MANGKIR (Tidak masuk tanpa alasan yang jelas)</field>
+            <field name="code">M</field>
+            <field name="special">False</field> 
+            <!-- <field name="type"></field> -->
+            <field name="type_hk">hkne</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="active">True</field>
+        </record>
+    
+    </data>
+    
+
+</odoo>
+
+

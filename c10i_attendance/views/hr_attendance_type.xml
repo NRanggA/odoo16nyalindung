@@ -56,14 +56,15 @@
         <field name="model">hr.attendance.type</field>
         <field name="arch" type="xml">
             <search string="Tipe Absensi">
-                <!-- <field name="name" string="Tipe Absensi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                <field name="name" string="Tipe Absensi"/>
+                <field name="code" string="Code"/>
                 <separator/>
                 <filter name="active" string="Active" domain="[('active','=',True)]"/>
                 <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
                 <filter name="special" string="Spesial" domain="[('special','=',True)]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Type" domain="[]" context="{'group_by':'type'}"/>
-                    <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
+                <!-- <group expand="0" string="Group By">
+                    <filter string="Type" context="{'group_by':'type'}"/>
+                    <filter string="Company" context="{'group_by':'company_id'}"/>
                 </group> -->
             </search>
         </field>

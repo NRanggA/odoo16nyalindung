@@ -14,7 +14,13 @@ class HrAttendance(models.Model):
 
     check_in = fields.Datetime(string='Check In', required=False, default=False)
     # (TODO) menambahkan field relasi Many2one ke dalam database attendance.sheet
+    # sheet_id = fields.Many2one('hr.attendance.sheet', string='Attendance Sheet', ondelete="restrict")
 
+    # @api.constrains('sheet_id')
+    # def _check_attendance_sheet(self):
+    #     for record in self:
+    #         if record.sheet_id:
+    #             raise ValidationError(_('Kamu tidak dapat menghapus data absensi ini lagi jika sudah tercatat di dalam sheet absensi.'))
 
     @api.constrains('employee_id', 'check_in', 'check_out')
     def _check_validity(self):

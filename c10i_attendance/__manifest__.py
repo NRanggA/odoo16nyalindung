@@ -33,6 +33,7 @@
         'views/menu_views.xml',
         'data/sequence_data.xml',
         'data/cron_attendance.xml',
+        'data/attendance_data.xml',
 
  
         # 'views/views.xml',
