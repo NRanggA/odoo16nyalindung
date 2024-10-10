@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+import os
 import re
 import binascii
 
@@ -8,6 +9,7 @@ class wizardImportPrepopulatedData(models.TransientModel):
     _description = 'Wizard Import Prepopulated Data'
 
     file_import = fields.Binary('File Import')
+    filename = fields.Char('Filename')
 
     def button_upload(self):
         if not self.file_import:
@@ -16,8 +18,10 @@ class wizardImportPrepopulatedData(models.TransientModel):
         imp = self.env['import.excel']
         if not self.file_import:
             return True
+        
+        file_extension = os.path.splitext(self.filename)[1].lower()
             
-        df = imp.get_row_excel(self.file_import)
+        df = imp.get_row_file(self.file_import, self.filename)
         datas = []
         data_npwp = []
 
@@ -52,14 +56,14 @@ class wizardImportPrepopulatedData(models.TransientModel):
                 if not nomor_faktur:
                     datas.append({
                         'name': row.get('Nama'),
-                        'npwp': row.get('NPWP'),
+                        'npwp': row.get('NPWP').split('.')[0],
                         'jenis_transaksi': row.get('Jenis Transaksi'),
                         'status_pengganti': row.get('Status Pengganti'),
                         'nomor_faktur': row.get('Nomor Faktur'),
                         'tanggal_faktur': row.get('Tanggal Faktur'),
-                        'dpp': float(row.get('DPP') or 0),
-                        'ppn': float(row.get('PPN') or 0),
-                        'ppnbm': float(row.get('PPnBM') or 0),
+                        'dpp': float(row.get('DPP').replace(',', '') if file_extension == '.csv' else row.get('DPP') or 0),
+                        'ppn': float(row.get('PPN').replace(',', '') if file_extension == '.csv' else row.get('PPN') or 0),
+                        'ppnbm': float(row.get('PPnBM').replace(',', '') if file_extension == '.csv' else row.get('PPnBM') or 0),
                         'is_dikreditkan': row.get('Dikreditkan'),
                     })
 
@@ -76,7 +80,7 @@ class wizardImportPrepopulatedData(models.TransientModel):
         if data_npwp:
             npwp_list = []
             for list in data_npwp:
-                npwp_list.append(list['npwp'])
+                npwp_list.append(list['npwp'].split('.')[0])
 
             if len(npwp_list) > 1:
                 raise ValidationError(f"Please register these NPWPs as partners first:\n{npwp_list}")

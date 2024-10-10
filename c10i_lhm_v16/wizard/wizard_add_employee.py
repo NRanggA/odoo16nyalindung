@@ -49,25 +49,24 @@ class WizardAddEmployee(models.TransientModel):
     @api.onchange('employee_id')
     def onchange_employee_id(self):
         if self.employee_id and not self.attendance_id:
-            return {
-                'value'     : {'employee_id': False},
-                'warning'   : {'title': _('Kesalahan Input Data'), 'message': _("Isi Absensi Terlebih Dahulu")},
-            }
+            self.employee_id = False
+            raise UserError(_("Isi Absensi Terlebih Dahulu"))
+
         elif self.employee_id and self.attendance_id:
             if self.attendance_id.type == 'kj':
-                list_line       = self.env['lhm.transaction.line'].search([('employee_id','=',self.employee_id.id),('date','=',self.date)])
+                list_line = self.env['lhm.transaction.line'].search([
+                    ('employee_id', '=', self.employee_id.id),
+                    ('date', '=', self.date)
+                ])
+                
                 if list_line:
-                    residual_hk     = 1
+                    residual_hk = 1
                     for line in list_line:
                         if line.lhm_id and line.lhm_id.state not in ['close']:
-                            residual_hk = residual_hk - line.work_day
-                    return {
-                        'value' : {'residual_hk': residual_hk},
-                    }
+                            residual_hk -= line.work_day
+                    self.residual_hk = residual_hk
                 else:
-                    return {
-                        'value': {'residual_hk' : 1},
-                    }
+                    self.residual_hk = 1
 
     @api.onchange('attendance_id')
     def onchange_attendance_id(self):
@@ -78,34 +77,29 @@ class WizardAddEmployee(models.TransientModel):
             self.kemandoran_from_id = False
             self.kemandoran_to_id   = False
             if self.attendance_type in ['na']:
-                # list_employee       = []
-                # self.employee_id    = False
-                # for lhm_line in lhm_transaction_data.lhm_line_ids:
-                #     if lhm_line.attendance_id.type not in ['in', 'out']:
-                #         list_employee.append(lhm_line.employee_id and lhm_line.employee_id.id)
-                # res['domain']   = {
-                #     'employee_id'       : [('id','in',list_employee)],
-                #     'kemandoran_to_id'  : [('id','!=',lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or [])]
-                # }
-                # return res
-                list_employee       = [x.id for x in self.env['hr.employee'].search([('is_lhm', '=', True)])]
+                # list_employee       = [x.id for x in self.env['hr.employee'].search([('is_lhm', '=', True)])]
+                list_employee       = [x.id for x in self.env['hr.employee'].search([])]
                 self.employee_id    = False
                 res['domain'] = {
-                    'employee_id': [('id', 'in', list_employee),('is_lhm','=',True)],
+                    # 'employee_id': [('id', 'in', list_employee),('is_lhm','=',True)],
+                    'employee_id': [('id', 'in', list_employee)],
                 }
                 return res
             elif self.attendance_type in ['kj']:
-                list_employee       = [x.id for x in self.env['hr.employee'].search([('is_lhm','=',True)])]
+                # list_employee       = [x.id for x in self.env['hr.employee'].search([('is_lhm','=',True)])]
+                list_employee       = [x.id for x in self.env['hr.employee'].search([])]
                 self.employee_id    = False
                 res['domain']   = {
-                    'employee_id'       : [('id','in',list_employee),('is_lhm','=',True)],
+                    # 'employee_id'       : [('id','in',list_employee),('is_lhm','=',True)],
+                    'employee_id'       : [('id','in',list_employee)],
                 }
                 return res
             elif self.attendance_type in ['in']:
                 self.employee_id        = False
                 self.kemandoran_to_id   = lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or False
                 res['domain'] = {
-                    'employee_id'       : [('id', 'in', []),('is_lhm','=',True)],
+                    # 'employee_id'       : [('id', 'in', []),('is_lhm','=',True)],
+                    'employee_id'       : [('id', 'in', [])],
                     'kemandoran_from_id': [('id', '!=', lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or [])]
                 }
                 return res
@@ -113,7 +107,8 @@ class WizardAddEmployee(models.TransientModel):
                 self.employee_id        = False
                 self.kemandoran_from_id = lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or False
                 res['domain'] = {
-                    'employee_id'       : [('id', 'in', []),('is_lhm','=',True)],
+                    # 'employee_id'       : [('id', 'in', []),('is_lhm','=',True)],
+                    'employee_id'       : [('id', 'in', [])],
                     'kemandoran_to_id'  : [('id', '!=', lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or [])]
                 }
                 return res
@@ -124,7 +119,6 @@ class WizardAddEmployee(models.TransientModel):
             self.kemandoran_from_id = False
             self.kemandoran_to_id   = False
             self.employee_id        = False
-
 
     @api.onchange('kemandoran_from_id', 'kemandoran_to_id')
     def onchange_kemandoran_from_id(self):
@@ -142,7 +136,8 @@ class WizardAddEmployee(models.TransientModel):
             if self.kemandoran_from_id and not dest_lhm_data:
                 list_employee = self.kemandoran_from_id.employee_ids.ids
             res['domain'] = {
-                'employee_id'       : [('id', 'in', list_employee),('is_lhm','=',True)],
+                # 'employee_id'       : [('id', 'in', list_employee),('is_lhm','=',True)],
+                'employee_id'       : [('id', 'in', list_employee)],
                 'kemandoran_from_id': [('id', '!=', lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or [])]
             }
             return res
@@ -154,7 +149,8 @@ class WizardAddEmployee(models.TransientModel):
                     if lhm_line.attendance_id.type not in ['na', 'in', 'out']:
                         list_employee.append(lhm_line and lhm_line.employee_id and lhm_line.employee_id.id or False)
             res['domain'] = {
-                'employee_id'       : [('id', 'in', list_employee),('is_lhm','=',True)],
+                # 'employee_id'       : [('id', 'in', list_employee),('is_lhm','=',True)],
+                'employee_id'       : [('id', 'in', list_employee)],
                 'kemandoran_to_id'  : [('id', '!=', lhm_transaction_data and lhm_transaction_data.kemandoran_id and lhm_transaction_data.kemandoran_id.id or [])]
             }
             return res
@@ -166,13 +162,27 @@ class WizardAddEmployee(models.TransientModel):
         record_ids              = self._context.get('active_ids')
         lhm_transaction_data    = self.env['lhm.transaction'].browse(record_ids)
         employee                = self.employee_id
-        min_wage = False
+        contract                = False
+        
         if employee and employee.basic_salary_type == 'employee':
-            min_wage = self.env['hr.minimum.wage'].search([('employee_id', '=', employee.id), ('date_from', '<=', lhm_transaction_data.date), ('date_to', '>=', lhm_transaction_data.date)], limit=1)
+            contract = self.env['hr.contract'].search([
+                ('employee_id', '=', employee.id),
+                ('date_start', '<=', lhm_transaction_data.date),
+                '|',('date_end', '=', False),('date_end', '>=', lhm_transaction_data.date),
+                ('state', '=', 'open'),
+                ('is_lhm', '=', True ),
+            ], limit=1)
         elif employee and employee.basic_salary_type == 'employee_type':
-            min_wage = self.env['hr.minimum.wage'].search([('employee_type_id', '=', employee.type_id.id), ('date_from', '<=', lhm_transaction_data.date), ('date_to', '>=', lhm_transaction_data.date)], limit=1)
-        if not min_wage:
-            raise ValidationError(_("UMR belum dibuat untuk tanggal dan karyawan ini!"))
+            contract = self.env['hr.contract'].search([
+                ('employee_type_id', '=', employee.type_id.id),
+                ('date_start', '<=', lhm_transaction_data.date),
+                ('date_end', '>=', lhm_transaction_data.date),
+                ('state', '=', 'open'),
+                ('is_lhm', '=', True ),
+            ], limit=1)
+        if not contract:
+            raise ValidationError(_(f"Contract pada Karyawan : { employee.name } dengan Tipe Karyawan : {employee.type_id.name}, tidak ditemukan !"))
+        
         if self.attendance_type == 'na' and employee and lhm_transaction_data:
             values = {
                 'sequence'              : self.next_number,
@@ -180,8 +190,10 @@ class WizardAddEmployee(models.TransientModel):
                 'date'                  : self.date,
                 'attendance_id'         : self.attendance_id and self.attendance_id.id or False,
                 'employee_id'           : employee.id,
-                'min_wage_id'           : min_wage and min_wage.id or False,
-                'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                # 'min_wage_id'           : min_wage and min_wage.id or False,
+                # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                'contract_id'           : contract and contract.id or False,
+                'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                 'lhm_id'                : lhm_transaction_data.id,
                 'work_day'              : 0.0,
                 'work_result'           : 0.0,
@@ -192,7 +204,8 @@ class WizardAddEmployee(models.TransientModel):
                 'non_work_day'          : 0.0,
                 'total_hke'             : 0.0,
                 'total_hkne'            : 0.0,
-                'min_wage_value_date'   : 0.0,
+                # 'min_wage_value_date'   : 0.0,
+                'contract_value_date'   : 0.0,
             }
             self.env['lhm.transaction.line'].create(values)
         elif self.attendance_type == 'in' and employee and lhm_transaction_data:
@@ -222,8 +235,10 @@ class WizardAddEmployee(models.TransientModel):
                 'attendance_id'         : self.attendance_id and self.attendance_id.id or False,
                 'transfer_id'           : new_transfer and new_transfer.id or False,
                 'employee_id'           : employee.id,
-                'min_wage_id'           : min_wage and min_wage.id or False,
-                'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                # 'min_wage_id'           : min_wage and min_wage.id or False,
+                # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                'contract_id'           : contract and contract.id or False,
+                'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                 'lhm_id'                : lhm_transaction_data.id,
                 'work_day'              : 0.0,
                 'work_result'           : 0.0,
@@ -234,7 +249,8 @@ class WizardAddEmployee(models.TransientModel):
                 'non_work_day'          : 0.0,
                 'total_hke'             : 0.0,
                 'total_hkne'            : 0.0,
-                'min_wage_value_date'   : 0.0,
+                # 'min_wage_value_date'   : 0.0,
+                'contract_value_date'   : 0.0,
             }
             new_trans_line  = self.env['lhm.transaction.line'].create(values)
             new_transfer.write({'lhm_line_id' : new_trans_line and new_trans_line.id or False})
@@ -287,7 +303,7 @@ class WizardAddEmployee(models.TransientModel):
             other_lhm   = self.env['lhm.transaction'].search([('date', '=', self.date), ('kemandoran_id', '=', self.kemandoran_to_id.id)], order='id asc', limit=1)
             if other_lhm:
                 year_lhm    = int(datetime.datetime.strptime(other_lhm.date, '%Y-%m-%d').strftime('%Y'))
-                min_wage    = self.env['hr.minimum.wage'].search([('year', '=', year_lhm)])
+                # min_wage    = self.env['hr.minimum.wage'].search([('year', '=', year_lhm)])
             attn_spec   = [x.id for x in self.env['hr.attendance.type'].search([('type','in',['in','out','na'])])]
             this_line   = self.env['lhm.transaction.line'].search([('date', '=', self.date), ('employee_id', '=', self.employee_id.id), ('attendance_id','not in',attn_spec)], order='id asc', limit=1)
             attn_in     = self.env['hr.attendance.type'].search([('type', '=', 'in')], limit=1)
@@ -312,7 +328,7 @@ class WizardAddEmployee(models.TransientModel):
                 value_update_this   = {
                     'attendance_id'     : self.attendance_id and self.attendance_id.id or False,
                     'transfer_id'       : new_transfer_in and new_transfer_in.id or False,
-                    'satuan_id'         : False,
+                    # 'satuan_id'         : False,
                     'activity_id'       : False,
                     'location_id'       : False,
                     'location_type_id'  : False,
@@ -344,8 +360,10 @@ class WizardAddEmployee(models.TransientModel):
                     'attendance_id'         : attn_in and attn_in.id or False,
                     'transfer_id'           : new_transfer_in and new_transfer_in.id or False,
                     'employee_id'           : employee and employee.id or False,
-                    'min_wage_id'           : min_wage and min_wage.id or False,
-                    'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                    # 'min_wage_id'           : min_wage and min_wage.id or False,
+                    # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                    'contract_id'           : contract and contract.id or False,
+                    'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                     'lhm_id'                : other_lhm.id,
                     'work_day'              : 0.0,
                     'work_result'           : 0.0,
@@ -356,7 +374,9 @@ class WizardAddEmployee(models.TransientModel):
                     'non_work_day'          : 0.0,
                     'total_hke'             : 0.0,
                     'total_hkne'            : 0.0,
-                    'min_wage_value_date'   : 0.0,
+                    # 'min_wage_value_date'   : 0.0,
+                    'contract_value_date'   : 0.0,
+
                 }
                 new_trans_line = self.env['lhm.transaction.line'].create(values_other)
                 new_transfer_in.write({
@@ -370,8 +390,10 @@ class WizardAddEmployee(models.TransientModel):
                 'date'                  : self.date,
                 'attendance_id'         : self.attendance_id and self.attendance_id.id or False,
                 'employee_id'           : employee.id,
-                'min_wage_id'           : min_wage and min_wage.id or False,
-                'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                # 'min_wage_id'           : min_wage and min_wage.id or False,
+                # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
+                'contract_id'           : contract and contract.id or False,
+                'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                 'lhm_id'                : lhm_transaction_data.id,
                 'work_day'              : self.residual_hk,
                 'work_result'           : 0.0,
@@ -382,7 +404,8 @@ class WizardAddEmployee(models.TransientModel):
                 'non_work_day'          : 0.0,
                 'total_hke'             : 0.0,
                 'total_hkne'            : 0.0,
-                'min_wage_value_date'   : 0.0,
+                # 'min_wage_value_date'   : 0.0,
+                'contract_value_date'   : 0.0,
             }
             self.env['lhm.transaction.line'].create(values)
         else:

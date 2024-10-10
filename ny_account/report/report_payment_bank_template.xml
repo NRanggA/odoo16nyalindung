@@ -106,7 +106,9 @@
                                 <table class="logo" style="border: none; font-size: 10px; text-align: left;">
                                     <tr>
                                         <th rowspan="4" width="40%">
-                                            <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
+                                            <!-- (TODO) Ubah logo ini menggunakan gambar yang telah dikirim -->
+                                            <!-- <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/> -->
+                                            <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                             <!-- <img t-att-src="'http://localhost:8069/ny_account/static/src/img/logo.jpg'" width="170px" height="40px" alt="Logo"/> -->
                                         </th>
                                         <th style="font-size: 13px;">BUKTI PENGELUARAN BANK</th>
@@ -256,6 +258,7 @@
                         </tr>
                     </table>
 
+                    <!-- (TODO) Kasih kondisi agar muncul di halaman ke dua -->
                     <table class="footer-table" style="font-size: 10px;">
                         <tr class="signature-table">
                             <td>Dibuat oleh</td>
@@ -282,7 +285,7 @@
         <field name="margin_left">0</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
-        <field name="dpi">50</field>
+        <field name="dpi">90</field>
     </record>
 
 </odoo>

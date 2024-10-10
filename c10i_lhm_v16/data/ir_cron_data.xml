@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <record model="ir.cron" id="move_employee_cron">
+    <data noupdate="1">
+
+        <!-- <record model="ir.cron" id="move_employee_cron">
             <field name="name">Move Plantation Employee</field>
             <field name="interval_number">1</field>
             <field name="interval_type">months</field>
             <field name="numbercall">-1</field>
-            <field name="doall" eval="True"/>
-            <field name="model" eval="'hr.foreman.movement'"/>
-            <field name="function" eval="'cron_move_employee'"/>
-            <field name="args" eval="'()'" />
-        </record>
-        <record model="ir.cron" id="lhm_plant_block_cron">
+            <field name="model_id" ref="c10i_lhm_v16.model_hr_foreman_movement"/>
+            <field name="state">code</field> 
+            <field name="code">model.cron_move_employee()</field>
+        </record> -->
+
+        <!-- <record model="ir.cron" id="lhm_plant_block_cron">
             <field name="name">Automatic Update Block Status</field>
             <field name="interval_number">1</field>
             <field name="interval_type">months</field>
             <field name="numbercall">-1</field>
-            <field name="doall" eval="True"/>
-            <field name="model" eval="'lhm.plant.block'"/>
-            <field name="function" eval="'_cron_update_tahun_tanam'"/>
-            <field name="args" eval="'()'" />
-        </record>
-        <record model="ir.cron" id="lhm_nap_cron">
+            <field name="model_id" ref="c10i_lhm_v16.model_lhm_plant_block"/>
+            <field name="code">model._cron_update_tahun_tanam()</field>
+            <field name="state">code</field> 
+        </record> -->
+
+        <!-- <record model="ir.cron" id="lhm_nap_cron">
             <field name="name">Automatic Update Link between NAP and LHM</field>
             <field name="interval_number">1</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
-            <field name="doall" eval="True"/>
-            <field name="model" eval="'lhm.nap.line'"/>
-            <field name="function" eval="'_cron_linked_to_nap'"/>
-            <field name="args" eval="'()'" />
-        </record>
-        <record model="ir.cron" id="lhm_nap_afkir_cron">
+            <field name="model_id" ref="c10i_lhm_v16.model_lhm_nap_line"/>
+            <field name="code">model._cron_linked_to_nap()</field>
+            <field name="state">code</field> 
+        </record> -->
+
+        <!-- <record model="ir.cron" id="lhm_nap_afkir_cron">
             <field name="name">Automatic Update Link between NAP Afkir and LHM</field>
             <field name="interval_number">1</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
-            <field name="doall" eval="True"/>
-            <field name="model" eval="'lhm.nap.afkir.line'"/>
-            <field name="function" eval="'_cron_linked_to_nap'"/>
-            <field name="args" eval="'()'" />
-        </record>
+            <field name="model_id" ref="c10i_lhm_v16.model_lhm_nap_afkir_line"/>
+            <field name="code">model._cron_linked_to_nap()</field>
+            <field name="state">code</field> 
+        </record> -->
     </data>
 </odoo>
