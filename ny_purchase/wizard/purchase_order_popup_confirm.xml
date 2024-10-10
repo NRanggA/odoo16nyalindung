@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wizard_confirm_purchase_confirm" model="ir.ui.view">
+        <field name="name">purchase.confirm.wizard.form</field>
+        <field name="model">purchase.confirm.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirm Purchase Order">
+                <group>
+                    <div style="white-space: nowrap; font-weight: bold; text-align: center;">
+                        Ada Product yang Price Unit Belum Diisi. Mohon Diperiksa Kembali!
+                    </div>
+                </group>
+                <footer>
+                    <!-- <button string="Lanjut" type="object" name="action_confirm" class="btn-primary"/> -->
+                    <button string="Edit" type="object" name="action_edit" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wizard_confirm_purchase_confirm" model="ir.actions.act_window">
+        <field name="name">Purchase Confirm Wizard</field>
+        <field name="res_model">purchase.confirm.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
