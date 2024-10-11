@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_ny_attendance_log"
+        sequence="10"
+        action="ny_hr_attendance.ny_attendance_log_action"
+        parent="c10i_attendance.menu_root_absensi"
+        />
+</odoo>
