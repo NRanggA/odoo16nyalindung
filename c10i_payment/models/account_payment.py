@@ -28,6 +28,8 @@ class AccountPayment(models.Model):
                     ('partner_id', '=', rec.partner_id.id),
                     ('state', '=', 'posted'),
                     ('payment_state', 'in', ['not_paid', 'in_payment', 'partial']),
+                    ('amount_residual', '>', 0), # Kondisi baru yang di tambahkan, kalo 0 tidak usah ditampilkan lagi 
+                    
                 ]
                 if rec.payment_type == 'outbound':
                     domain.append(('move_type', '=', 'in_invoice'))

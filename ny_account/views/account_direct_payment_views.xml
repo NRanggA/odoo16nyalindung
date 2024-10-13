@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ny_account_inherit_direct_payment" model="ir.ui.view">
+        <field name="name">Direct Payment Form Inherit</field>
+        <field name="model">account.direct.payment</field>
+        <field name="inherit_id" ref="c10i_direct_payment.account_direct_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="report_data" type="object"
+                string="Print Direct Payment Report" class="btn-primary"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
