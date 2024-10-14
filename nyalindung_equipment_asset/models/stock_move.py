@@ -53,7 +53,7 @@ class StockMove(models.Model):
 
                 # Create additional debit and credit lines
                 additional_debit_line_vals = {
-                    'name': description + ' - Expense',
+                    'name': description,
                     'product_id': self.product_id.id,
                     'quantity': qty,
                     'product_uom_id': self.product_id.uom_id.id,
@@ -63,7 +63,7 @@ class StockMove(models.Model):
                     'account_id': expense_account_id,
                 }
                 additional_credit_line_vals = {
-                    'name': description + ' - Expense',
+                    'name': description,
                     'product_id': self.product_id.id,
                     'quantity': qty,
                     'product_uom_id': self.product_id.uom_id.id,
