@@ -25,8 +25,8 @@ class ResConfigSettings(models.TransientModel):
         # self.env.company.write_on_asset_sales_account_id = self.write_on_asset_sales_account_id
         self.env.company.income_from_lva_sales_account_id = self.income_from_lva_sales_account_id
         params = self.env['ir.config_parameter'].sudo()
-        params.set_param('ny_equipment.threshold_from', self.threshold or 0.0)
-        params.set_param('ny_equipment.threshold_to', self.threshold or 0.0)
+        params.set_param('ny_equipment.threshold_from', self.threshold_from or 0.0)
+        params.set_param('ny_equipment.threshold_to', self.threshold_to or 0.0)
 
 
     @api.model
