@@ -6,58 +6,96 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     def _generate_valuation_lines_data(self, partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description):
-        # Panggil method asli dari Odoo menggunakan super()
-        valuation_lines = super(StockMove, self)._generate_valuation_lines_data(
-            partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description
-        )
+        self.ensure_one()
 
-        # Tambahkan logika custom di sini
-        threshold_param_from = float(self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_from', default=0.0))
+        # Get the threshold value from settings
+        threshold = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_from', default=0)
 
-        # Cek apakah move terkait dengan purchase order dan stock picking type 'incoming'
-        if self.picking_id.purchase_id and self.picking_id.picking_type_id.code == 'incoming':
-            purchase_order = self.picking_id.purchase_id
+        # Prepare debit and credit line values
+        debit_line_vals = {
+            'name': description,
+            'product_id': self.product_id.id,
+            'quantity': qty,
+            'product_uom_id': self.product_id.uom_id.id,
+            'ref': description,
+            'partner_id': partner_id,
+            'balance': debit_value,
+            'account_id': debit_account_id,
+        }
 
-            for line in purchase_order.order_line:
-                product = line.product_id
-                price = line.price_unit
+        credit_line_vals = {
+            'name': description,
+            'product_id': self.product_id.id,
+            'quantity': qty,
+            'product_uom_id': self.product_id.uom_id.id,
+            'ref': description,
+            'partner_id': partner_id,
+            'balance': -credit_value,
+            'account_id': credit_account_id,
+        }
 
-                # Cek jika harga produk di bawah threshold
-                if price < threshold_param_from:
-                    expense_account = product.categ_id.property_account_expense_categ_id
-                    if not expense_account:
-                        raise UserError(f"Expense account tidak ditemukan untuk kategori produk {product.categ_id.name}")
+        # Initialize the result dictionary
+        rslt = {'credit_line_vals': credit_line_vals, 'debit_line_vals': debit_line_vals}
 
-                    # Tambahan debit line
-                    extra_debit_line = {
-                        'name': f"{description} (Expense Account)",
-                        'product_id': product.id,
-                        'quantity': qty,
-                        'product_uom_id': product.uom_id.id,
-                        'ref': description,
-                        'partner_id': partner_id,
-                        'balance': debit_value,
-                        'account_id': expense_account.id,
-                    }
-                    valuation_lines['debit_line_vals'].append(extra_debit_line)
+        # Get the associated purchase order line if available
+        purchase_order_line = self.purchase_line_id
 
-                    # Tambahan credit line
-                    extra_credit_line = {
-                        'name': f"{description} (Expense Account)",
-                        'product_id': product.id,
-                        'quantity': qty,
-                        'product_uom_id': product.uom_id.id,
-                        'ref': description,
-                        'partner_id': partner_id,
-                        'balance': -credit_value,
-                        'account_id': expense_account.id,
-                    }
-                    valuation_lines['credit_line_vals'].append(extra_credit_line)
 
-        # Print untuk debugging jika diperlukan
-        print("=============================== Custom Valuation Lines", valuation_lines)
+        # Check if there is an associated purchase order line and retrieve the product price
+        if purchase_order_line:
+            order_line_price = purchase_order_line.price_unit  # Get the price from the order line
 
-        return valuation_lines
+            # Check if the order line price is below the threshold
+            if order_line_price < float(threshold):
+                expense_account_id = self.product_id.categ_id.property_account_expense_categ_id.id
+                if not expense_account_id:
+                    raise UserError(_('No expense account defined for this product category.'))
+
+                # Create additional debit and credit lines
+                additional_debit_line_vals = {
+                    'name': description + ' - Expense',
+                    'product_id': self.product_id.id,
+                    'quantity': qty,
+                    'product_uom_id': self.product_id.uom_id.id,
+                    'ref': description,
+                    'partner_id': partner_id,
+                    'balance': debit_value,  # You may want to set a specific value for expense
+                    'account_id': expense_account_id,
+                }
+                additional_credit_line_vals = {
+                    'name': description + ' - Expense',
+                    'product_id': self.product_id.id,
+                    'quantity': qty,
+                    'product_uom_id': self.product_id.uom_id.id,
+                    'ref': description,
+                    'partner_id': partner_id,
+                    'balance': -credit_value,  # You may want to set a specific value for expense
+                    'account_id': expense_account_id,
+                }
+
+                rslt['additional_debit_line_vals'] = additional_debit_line_vals
+                rslt['additional_credit_line_vals'] = additional_credit_line_vals
+
+        # Handle price difference if needed
+        if credit_value != debit_value:
+            diff_amount = debit_value - credit_value
+            price_diff_account = self.env.context.get('price_diff_account')
+            if not price_diff_account:
+                raise UserError(_('Configuration error. Please configure the price difference account on the product or its category to process this operation.'))
+
+            rslt['price_diff_line_vals'] = {
+                'name': self.name,
+                'product_id': self.product_id.id,
+                'quantity': qty,
+                'product_uom_id': self.product_id.uom_id.id,
+                'ref': description,
+                'partner_id': partner_id,
+                'credit': diff_amount > 0 and diff_amount or 0,
+                'debit': diff_amount < 0 and -diff_amount or 0,
+                'account_id': price_diff_account.id,
+            }
+
+        return rslt
 
 
     def _get_accounting_data_for_valuation(self):
