@@ -13,9 +13,11 @@ class EquipmentRegister(models.Model):
 	@api.depends()
 	def get_lva_threshold(self):
 		for record in self:
-			threshold_param = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold', default=0.0)
-			threshold = float(threshold_param) if threshold_param else 0.0
-			record.lva_threshold = bool(any(line.purchase_line_id.price_unit <= threshold for line in record.register_line_ids))
+			threshold_param_from = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_from', default=0.0)
+			threshold_param_to = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_to', default=0.0)
+			threshold_from = float(threshold_param_from) if threshold_param_from else 0.0
+			threshold_to = float(threshold_param_to) if threshold_param_to else 0.0
+			record.lva_threshold = bool(any((line.purchase_line_id.price_unit >= threshold_from and line.purchase_line_id.price_unit <= threshold_to) for line in record.register_line_ids))
 	
 	def _get_count_move_equip(self):
 		for record in self:

@@ -46,7 +46,8 @@
                         <div class="col-12 col-lg-6 o_setting_box" id="nyalindung_lva_threshold_equipment">
                             <div class="content-group">
                                 <group>
-                                    <field name="threshold" string="LVA Threshold"/>
+                                    <field name="threshold_from" string="LVA Threshold From"/>
+                                    <field name="threshold_to" string="LVA Threshold To"/>
                                     <field name="income_from_lva_sales_account_id" />
                                 </group>
                             </div>

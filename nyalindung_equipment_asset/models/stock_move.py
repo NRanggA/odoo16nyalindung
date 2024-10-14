@@ -5,6 +5,60 @@ from odoo.exceptions import UserError
 class StockMove(models.Model):
     _inherit = "stock.move"
 
+    def _generate_valuation_lines_data(self, partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description):
+        # Panggil method asli dari Odoo menggunakan super()
+        valuation_lines = super(StockMove, self)._generate_valuation_lines_data(
+            partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description
+        )
+
+        # Tambahkan logika custom di sini
+        threshold_param_from = float(self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_from', default=0.0))
+
+        # Cek apakah move terkait dengan purchase order dan stock picking type 'incoming'
+        if self.picking_id.purchase_id and self.picking_id.picking_type_id.code == 'incoming':
+            purchase_order = self.picking_id.purchase_id
+
+            for line in purchase_order.order_line:
+                product = line.product_id
+                price = line.price_unit
+
+                # Cek jika harga produk di bawah threshold
+                if price < threshold_param_from:
+                    expense_account = product.categ_id.property_account_expense_categ_id
+                    if not expense_account:
+                        raise UserError(f"Expense account tidak ditemukan untuk kategori produk {product.categ_id.name}")
+
+                    # Tambahan debit line
+                    extra_debit_line = {
+                        'name': f"{description} (Expense Account)",
+                        'product_id': product.id,
+                        'quantity': qty,
+                        'product_uom_id': product.uom_id.id,
+                        'ref': description,
+                        'partner_id': partner_id,
+                        'balance': debit_value,
+                        'account_id': expense_account.id,
+                    }
+                    valuation_lines['debit_line_vals'].append(extra_debit_line)
+
+                    # Tambahan credit line
+                    extra_credit_line = {
+                        'name': f"{description} (Expense Account)",
+                        'product_id': product.id,
+                        'quantity': qty,
+                        'product_uom_id': product.uom_id.id,
+                        'ref': description,
+                        'partner_id': partner_id,
+                        'balance': -credit_value,
+                        'account_id': expense_account.id,
+                    }
+                    valuation_lines['credit_line_vals'].append(extra_credit_line)
+
+        # Print untuk debugging jika diperlukan
+        print("=============================== Custom Valuation Lines", valuation_lines)
+
+        return valuation_lines
+
 
     def _get_accounting_data_for_valuation(self):
         """ Return the accounts and journal to use to post Journal Entries for
