@@ -39,6 +39,7 @@ class StockMove(models.Model):
 
         # Get the associated purchase order line if available
         purchase_order_line = self.purchase_line_id
+        asset_category = self.purchase_line_id.product_id.categ_id.asset
 
 
         # Check if there is an associated purchase order line and retrieve the product price
@@ -46,7 +47,7 @@ class StockMove(models.Model):
             order_line_price = purchase_order_line.price_unit  # Get the price from the order line
 
             # Check if the order line price is below the threshold
-            if order_line_price < float(threshold):
+            if asset_category and order_line_price < float(threshold):
                 expense_account_id = self.product_id.categ_id.property_account_expense_categ_id.id
                 if not expense_account_id:
                     raise UserError(_('No expense account defined for this product category.'))
