@@ -83,7 +83,7 @@
                                     </tr>
                                     <tr>
                                         <th>No. Payment</th>
-                                        <!-- <td> : <span t-field="o.name"/></td> -->
+                                        <td> : <span t-field="o.name"/></td>
                                     </tr>
                                 </table>
                             </th>
