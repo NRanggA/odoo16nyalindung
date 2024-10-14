@@ -2,6 +2,8 @@
 <odoo>
 
     <data>
+
+        <!-- Vendor Payment -->
         <record id="action_report_payment_vendor_bank" model="ir.actions.report">
             <field name="name">Report Payment Vendor Bank</field>
             <field name="model">account.payment</field>
@@ -11,7 +13,6 @@
             <field name="print_report_name">('Report Payment Vendor Bank')</field>
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
-
         <record id="action_report_payment_vendor_cash" model="ir.actions.report">
             <field name="name">Report Payment Vendor (Cash)</field>
             <field name="model">account.payment</field>
@@ -22,15 +23,27 @@
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
 
-        <!-- <record id="action_print_vendor_payment_report" model="ir.actions.server">
-            <field name="name">Print Payment Report</field>
-            <field name="model_id" ref="account.model_account_payment"/>
-            <field name="binding_model_id" ref="account.model_account_payment"/>
-            <field name="state">code</field>
-            <field name="code">
-                action = env.ref('ny_account.action_report_payment_vendor_bank').report_action(record)
-            </field>
-        </record> -->
+        <!-- Direct Payment -->
+        <record id="action_report_direct_payment_bank" model="ir.actions.report">
+            <field name="name">Report Direct Payment Bank</field>
+            <field name="model">account.direct.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_direct_payment_bank</field>
+            <field name="report_file">ny_account.report_direct_payment_bank</field>
+            <field name="print_report_name">('Report Direct Payment Bank')</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+        <record id="action_report_direct_payment_cash" model="ir.actions.report">
+            <field name="name">Report Payment Vendor (Cash)</field>
+            <field name="model">account.direct.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_direct_payment_cash</field>
+            <field name="report_file">ny_account.report_direct_payment_cash</field>
+            <field name="print_report_name">('Report Direct Payment (Cash)')</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+
+
     </data>
     
 

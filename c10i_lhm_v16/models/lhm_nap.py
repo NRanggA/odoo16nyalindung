@@ -213,7 +213,7 @@ class lhm_nap(models.Model):
                        raise ValidationError(
                     _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
                 )
-                if nap_line.product_id.name == "Lateks":
+                if nap_line.product_id.name == "Latex":
                     nap_line.lhm_transaction_nap_id.write({
                         'product_id': nap_line.product_id.id,
                         'hasil_1_nap': nap_line.qty_nap,

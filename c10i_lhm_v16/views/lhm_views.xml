@@ -1904,12 +1904,10 @@
                                         <field name="date" invisible="1"/>
                                         <field name="state" invisible="1"/>
 
-                                        <!-- pembaharuan -->
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="attendance_id" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         
-                                        <!-- diubah menjadi 0 supaya muncul activity_id nya -->
                                         <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
                                         <field name="no_line" invisible="1" />
@@ -1950,12 +1948,10 @@
                                         <field name="premi" optional="show"/>
 
                                         <!-- BEGIN : POC Nyalindung -->
-                                            <!-- <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}"/> -->
                                         <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
                                         <field name="overtime_value" invisible="0" groups="base.group_no_one" optional="show"/>
                                         <!-- BEGIN : POC Nyalindung -->
-                                            <!-- <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}"/> -->
                                         <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
 
@@ -1963,35 +1959,31 @@
                                         <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/> -->
                                         <field name="panen" invisible="1" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
 
-                                        <!-- error yang saya karena groups -->
-                                        <!-- <field name="overtime" invisible="0" string="O" groups="base.group_no_one"/> -->
                                         <field name="overtime" invisible="1" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-
                                         <field name="progressive" invisible="0" string="M" groups="base.group_no_one" optional="show"/>
                                         
-                                        <!-- Dikomen karena error groups nya -->
-                                        <!-- <field name="attendance_type" invisible="0" string="A" groups="base.group_no_one"/> -->
                                         <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
-                                        
                                         <field name="valid" invisible="0" string="V" groups="base.group_no_one" optional="show"/>
                                         <field name="kontanan" invisible="1"/>
                                         <field name="transfer_id" invisible="1"/>
-                                        <!-- <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
                                         
                                         <!-- Menggunakan contract -->
-                                        <field name="contract_id" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <!-- <field name="contract_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_id" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16. group_plantation_manager,c10i_lhm_v16.group_plantation_super" optional="show"/>
                                         
                                         <field name="total_hke" invisible="0" groups="base.group_no_one" optional="show"/>
-                                        <!-- <field name="total_hkne" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="total_hkne" invisible="1" groups="base.group_no_one" optional="show"/>
                                         
-                                        <!-- <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <field name="contract_wage_value" invisible="0" groups="base.group_no_one" optional="show"/>
-
-                                        <!-- <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <!-- <field name="contract_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_wage_value" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_manager,c10i_lhm_v16.group_plantation_super" optional="show"/>
                                         <field name="contract_value_date" invisible="0" groups="base.group_no_one" optional="show"/>
-                                        
+                                        <field name="contract_value_hkne" invisible="1" groups="base.group_no_one" optional="show"/>
+
+
+                                        <!-- <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <!-- <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <!-- <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="show"/> -->
                                         <!-- <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <!-- <field name="contract_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/> -->
                                     </tree>
                                 </field>
                             </page>

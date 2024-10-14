@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'c10i_payment', 'account', 'om_account_asset'],
+    'depends': ['base', 'c10i_payment', 'account', 'om_account_asset', 'c10i_direct_payment'],
 
     # always loaded
     'data': [
@@ -31,9 +31,17 @@
         # Report Payment
         'report/report_payment_bank_template.xml',
         'report/report_payment_cash_template.xml',
-        'report/action_report_payment.xml',
         'views/account_payment_views.xml',
         'views/account_asset_views.xml',
+
+        # Direct Payment
+        'views/account_direct_payment_views.xml',
+        'report/report_direct_payment_bank_template.xml',
+        'report/report_direct_payment_cash_template.xml',
+
+        'report/action_report_payment.xml',
+
+
     ],
     # only loaded in demonstration mode
     'demo': [
