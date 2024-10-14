@@ -9,6 +9,16 @@ class NyAttendanceLog(models.Model):
     latitude = fields.Char()
     waktu = fields.Datetime() # 2024-09-19 14:53:53 
     # version = fields.Char()
-    foto = fields.Binary()
+    foto = fields.Binary(attachment=True)
     keterangan = fields.Text()
     statusmasuk = fields.Char() # WFO// isi dengan WFO,WFH
+
+    attendance_sheet_id = fields.Many2one('hr.attendance.sheet', ondelete='restrict', string='Attendance Sheet')
+
+    def find_attendance_sheet(self):
+        for rec in self:
+            att_found = self.env['hr.attendance.sheet'].search([('employee_id','=',rec.employee_id.id),
+                                            ('date','=',rec.waktu.date())])
+            if att_found:
+                rec.attendance_sheet_id = att_found.id
+                att_found.update_sheet_from_log()
