@@ -34,6 +34,7 @@ class ResConfigSettings(models.TransientModel):
         res = super(ResConfigSettings, self).get_values()
         params = self.env['ir.config_parameter'].sudo()
         res.update({
-            'threshold': float(params.get_param('ny_equipment.threshold', default=0.0)),
+            'threshold_from': float(params.get_param('ny_equipment.threshold_from', default=0.0)),
+            'threshold_to': float(params.get_param('ny_equipment.threshold_to', default=0.0)),
         })
         return res
