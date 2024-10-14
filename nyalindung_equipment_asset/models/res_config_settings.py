@@ -11,7 +11,8 @@ class ResCompany(models.Model):
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    threshold = fields.Float('Threshold')
+    threshold_from = fields.Float('Threshold From', default=0)
+    threshold_to = fields.Float('Threshold To', default=0)
     gain_on_asset_sales_account_id = fields.Many2one('account.account',string='Gain on Asset Sales Account',related='company_id.gain_on_asset_sales_account_id', readonly=False)
     loss_on_asset_sales_account_id = fields.Many2one('account.account',string='Loss on Asset Sales Account',related='company_id.loss_on_asset_sales_account_id', readonly=False)
     write_on_asset_sales_account_id = fields.Many2one('account.account',string='Write-Off Asset Account',related='company_id.write_on_asset_sales_account_id', readonly=False)
@@ -24,7 +25,8 @@ class ResConfigSettings(models.TransientModel):
         # self.env.company.write_on_asset_sales_account_id = self.write_on_asset_sales_account_id
         self.env.company.income_from_lva_sales_account_id = self.income_from_lva_sales_account_id
         params = self.env['ir.config_parameter'].sudo()
-        params.set_param('ny_equipment.threshold', self.threshold or 0.0)
+        params.set_param('ny_equipment.threshold_from', self.threshold or 0.0)
+        params.set_param('ny_equipment.threshold_to', self.threshold or 0.0)
 
 
     @api.model
