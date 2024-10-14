@@ -7,8 +7,9 @@
     'author': 'Cimol KSI',
     'depends': ['base','product','sale','account', 'c10i_equipment_register'],
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/purchase_equipment_view.xml',
+        'views/maintenance_equipment_views.xml',
     ],
     'installable': True,
     'application': False,
