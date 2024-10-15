@@ -27,6 +27,8 @@
         'security/ir.model.access.csv',
         'wizard/wizard_report_stock_mutation_views.xml',
         'report/report_stock_mutation_action.xml',
+
+        'views/stock_picking_views.xml',
         
         # 'views/views.xml',
         # 'views/templates.xml',
