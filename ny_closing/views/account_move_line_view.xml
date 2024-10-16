@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="plantation_closing_move_line_tree" model="ir.ui.view">
+        <field name="name">plantation.closing.account.move.line.tree</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <tree string="Journal Items" create="false" edit="false" delete="false">
+                <field name="move_id" invisible="1"/>
+                <field name="date" readonly="1"/>
+                <field name="journal_id" readonly="1" options='{"no_open":True}' optional="hide"/>
+                <field name="move_name" string="Journal Entry" widget="open_move_widget"/>
+                <field name="plantation_src_journal_id" />
+                <field name="plantation_location_type_id" />
+                <field name="plantation_location_id" />
+                <field name="plantation_activity_id" />
+                <field name="account_id" />
+                <field name="partner_id" optional="hide" />
+                <field name="ref" optional="hide" />
+                <field name="product_id" optional="hide"/>
+                <field name="name" optional="show"/>
+                <field name="debit" sum="Total Debit" readonly="1"/>
+                <field name="credit" sum="Total Credit" readonly="1"/>
+                <field name="date_maturity" readonly="1" optional="hide"/>
+                <field name="balance" sum="Total Balance" optional="hide" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="plantation_closing_aml_action" model="ir.actions.act_window">
+        <field name="name">Source Journal Items</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="plantation_closing_aml_action_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="act_window_id" ref="plantation_closing_aml_action"/>
+        <field name="view_id" ref="plantation_closing_move_line_tree"/>
+    </record>
+</odoo>

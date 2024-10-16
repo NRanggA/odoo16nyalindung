@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="closing_process_view_form" model="ir.ui.view">
+        <field name="name">closing.process.view.form</field>
+        <field name="model">closing.process</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Start" name="button_start" type="object" class="oe_highlight" states="draft"/>
+                    <button string="Continue" name="button_start" type="object" class="oe_highlight" states="draft"/>
+                    <button string="Continue" name="button_continue_to_running_vehicle" type="object" class="oe_highlight" states="running_workshop"/>
+                    <button string="Continue" name="button_continue_to_running_machine" type="object" class="oe_highlight" states="running_vehicle"/>
+                    <button string="Continue" name="button_continue_to_closing_project" type="object" class="oe_highlight" states="running_machine"/>
+                    <button string="Continue" name="button_continue_to_closing_nursery" type="object" class="oe_highlight" states="closing_project"/>
+                    <button string="Continue" name="button_continue_to_closing_plantation" type="object" class="oe_highlight" states="closing_nursery"/>
+                    <button string="Continue" name="button_continue_to_closing_production" type="object" class="oe_highlight" states="closing_plantation"/>
+                    <button string="Done" name="action_done" type="object" class="oe_highlight" states="closing_production"/>
+                    <button string="Back" name="button_back" type="object" states="draft"/>
+                    <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="draft,running_workshop,running_vehicle,running_machine,closing_project,closing_nursery,closing_plantation,closing_production"/>
+                    <button string="Set to New" name="button_set_new" type="object" states="cancel"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,running_workshop,running_vehicle,running_machine,closing_project,closing_nursery,closing_plantation,closing_production,done" />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="ws" string="Workshop" attrs="{'invisible': [('state','not in',['running_workshop','running_vehicle','running_machine','closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_running_workshop" type="object" class="oe_stat_button" icon="fa-search"/>
+                                <button string="Journal Entries" name="action_open_output_journal_workshop" type="object" class="oe_stat_button" icon="fa-list"/>
+                                <button string="All Journal Items" name="action_open_all_move_line_workshop" type="object" class="oe_stat_button" icon="fa-list"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_running_workshop_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="running_workshop_ids"/>
+                        </page>
+                        <page name="vh" string="Vehicle" attrs="{'invisible': [('state','not in',['running_vehicle','running_machine','closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_running_vehicle" type="object" class="oe_stat_button" icon="fa-search"/>
+                                <button string="Journal Entries" name="action_open_output_journal_vehicle" type="object" class="oe_stat_button" icon="fa-list"/>
+                                <button string="All Journal Items" name="action_open_all_move_line_vehicle" type="object" class="oe_stat_button" icon="fa-list"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_running_vehicle_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="running_vehicle_ids"/>
+                        </page>
+                        <page name="ma" string="Machine" attrs="{'invisible': [('state','not in',['running_machine','closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_running_machine" type="object" class="oe_stat_button" icon="fa-search"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_running_machine_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="running_machine_ids"/>
+                        </page>
+                        <page name="pj" string="Project" attrs="{'invisible': [('state','not in',['closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_closing_project" type="object" class="oe_stat_button" icon="fa-search"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_closing_project_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="closing_project_ids"/>
+                        </page>
+                        <page name="ns" string="Nursery" attrs="{'invisible': [('state','not in',['closing_nursery','closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_closing_nursery" type="object" class="oe_stat_button" icon="fa-search"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_closing_nursery_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="closing_nursery_ids"/>
+                        </page>
+                        <page name="plant" string="Plantation" attrs="{'invisible': [('state','not in',['closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_closing_plantation" type="object" class="oe_stat_button" icon="fa-search"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_closing_plantation_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="closing_plantation_ids"/>
+                        </page>
+                        <page name="prod" string="Production" attrs="{'invisible': [('state','not in',['closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open Detail" name="action_open_closing_production" type="object" class="oe_stat_button" icon="fa-search"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_closing_production_is_done" string="Mark as Done"/></group>
+                                <group></group>
+                            </group>
+                            <field name="closing_production_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="closing_process_view_tree" model="ir.ui.view">
+        <field name="name">closing.process.view.tree</field>
+        <field name="model">closing.process</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="state" widget="badge"
+                    decoration-info="state=='draft'"
+                    decoration-warning="state not in ['draft','done']"
+                    decoration-success="state=='done'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_process_action" model="ir.actions.act_window">
+        <field name="name">Closing Procedure</field>
+        <field name="res_model">closing.process</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

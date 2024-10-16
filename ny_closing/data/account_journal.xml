@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="plantation_running_workshop_journal" model="account.journal">
+        <field name="name">Running Workshop</field>
+        <field name="type">general</field>
+        <field name="code">RWS</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">51</field>
+    </record>
+
+    <record id="plantation_running_vehicle_journal" model="account.journal">
+        <field name="name">Running Vehicle</field>
+        <field name="type">general</field>
+        <field name="code">RVH</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">52</field>
+    </record>
+
+    <record id="plantation_running_machine_journal" model="account.journal">
+        <field name="name">Running Machine</field>
+        <field name="type">general</field>
+        <field name="code">RMA</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">53</field>
+    </record>
+
+    <record id="plantation_closing_nursery_journal" model="account.journal">
+        <field name="name">Closing Nursery</field>
+        <field name="type">general</field>
+        <field name="code">CNS</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">54</field>
+    </record>
+
+    <record id="plantation_closing_gc_journal" model="account.journal">
+        <field name="name">Closing General Charge</field>
+        <field name="type">general</field>
+        <field name="code">CGC</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">61</field>
+    </record>
+
+    <record id="plantation_closing_idc_plasma_journal" model="account.journal">
+        <field name="name">Closing Indirect Cost to Plasma</field>
+        <field name="type">general</field>
+        <field name="code">CIDCP</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">62</field>
+    </record>
+
+    <record id="plantation_closing_plantation" model="account.journal">
+        <field name="name">Closing Plantation</field>
+        <field name="type">general</field>
+        <field name="code">CP</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">65</field>
+    </record>
+
+    <record id="plantation_closing_production" model="account.journal">
+        <field name="name">Closing Manufacture</field>
+        <field name="type">general</field>
+        <field name="code">CMO</field>
+        <!-- <field name="company_id">Running Journal</field> -->
+        <!-- <field name="default_account_id">Running Journal</field> -->
+        <field name="show_on_dashboard" eval="False"/>
+        <field name="sequence">70</field>
+    </record>
+</odoo>

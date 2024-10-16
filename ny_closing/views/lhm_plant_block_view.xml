@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="lhm_plant_block_view_form_inhrt" model="ir.ui.view">
+        <field name="name">lhm.plant.block.view.form.inhrt</field>
+        <field name="model">lhm.plant.block</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_plant_block_form" />
+        <field name="arch" type="xml">
+            <field name="code" position="after">
+                <field name="type_of_plant" required="1" />
+            </field>
+
+            <field name="owner_type" position="after">
+                <field name="tbm_account_id" 
+                    attrs="{'invisible': [('type_of_plant','not in',['longterm_tbm_tm','longterm_seasonal'])],
+                        'required': [('type_of_plant','in',['longterm_tbm_tm','longterm_seasonal'])]}" 
+                    options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                <field name="plasma_account_id" 
+                    attrs="{'invisible': [('owner_type','!=','plasma')]}" 
+                    options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                <field name="deferred_account_id" 
+                    attrs="{'invisible': [('type_of_plant','not in',['shorterm','longterm_seasonal'])],
+                        'required': [('type_of_plant','=','shorterm')]}" 
+                    options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+            </field>
+        </field>
+    </record>
+</odoo>
