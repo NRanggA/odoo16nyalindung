@@ -1022,7 +1022,7 @@ class lhm_transaction(models.Model):
     kerani_id           = fields.Many2one("hr.employee", string="Kerani", ondelete="restrict", related="kemandoran_id.admin_id", readonly=True, store=True)
     location            = fields.Char("Afdeling/ Divisi", compute="_compute_location", readonly=True, store=True)
     nik_mandor          = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
-    nik_mandor_1        = fields.Char("NIK Mandor 1", related="kemandoran_id.nik_mandor_1", readonly=True)
+    nik_mandor_1        = fields.Char("NIK Mandor Besar", related="kemandoran_id.nik_mandor_1", readonly=True)
     nik_kerani          = fields.Char("NIK Kerani", related="kemandoran_id.nik_kerani", readonly=True)
     lhm_line_ids        = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM")
     lhm_nap_line_ids    = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
