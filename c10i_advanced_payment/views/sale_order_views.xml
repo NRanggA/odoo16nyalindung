@@ -7,9 +7,9 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//button[@name='action_draft']" position="after">
+            <!-- <xpath expr="//button[@name='action_draft']" position="after">
                 <button string="Create Advanced" name="action_create_advanced_payment" type="object" states="sale" class="oe_highlight"/>
-            </xpath>
+            </xpath> -->
 
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_advanced_sales" type="object" class="oe_stat_button" icon="fa-money" attrs="{'invisible':[('count_advanced_customer','&lt;=',0)]}">
