@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_partner_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group/group" position="inside">
+                    <field name="is_skb"/>
+                    <field name="no_skb" attrs="{'invisible': [('is_skb', '!=', True)]}"/>
+                    <field name="masa_berlaku" attrs="{'invisible': [('is_skb', '!=', True)]}"/>
+                    <!-- <field name="taxes_exclude" attrs="{'invisible': [('is_skb', '!=', True)]}"/> -->
+                    <field name="taxes_exclude" widget="many2many_tags" attrs="{'invisible': [('is_skb', '!=', True)]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
