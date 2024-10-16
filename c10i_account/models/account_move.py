@@ -6,9 +6,13 @@ from odoo.exceptions import RedirectWarning, UserError, ValidationError, AccessE
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    period_id = fields.Many2one('account.period', string='Period', compute="_get_account_period", store=True)
-    closing_period = fields.Boolean(string="Closing Period", default=False)
-    closing_period_journal = fields.Boolean(string="Closing Period Journal", default=False)
+    period_id               = fields.Many2one('account.period', string='Period', compute="_get_account_period", store=True)
+    closing_period          = fields.Boolean(string="Closing Period", default=False)
+    closing_period_journal  = fields.Boolean(string="Closing Period Journal", default=False)
+
+    # Menambahkan default tanggal hari ini
+    invoice_date            = fields.Date(string='Invoice/Bill Date', readonly=True, states={'draft': [('readonly', False)]}, index=True, copy=False, default=fields.Date.today)
+
     # invoice_advance_allocate_ids = fields.One2many('account.invoice.advance.allocated', 'move_id', string='Advance Allocated')
     # invoice_advance_allocate_ids = fields.One2many('account.move.line', 'move_id', string='Advance Allocated',
     #     copy=False, readonly=True,

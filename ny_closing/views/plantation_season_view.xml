@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="plantation_season_view_form" model="ir.ui.view">
+        <field name="name">plantation.season.view.form</field>
+        <field name="model">plantation.season</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <h2>
+                        <field name="name" nolabel="1" placeholder="Title"/>
+                    </h2>
+                    <group>
+                        <group>
+                            <field name="date_start" />
+                            <field name="date_end" />
+                            <field name="harvest_date_schedule" />
+                        </group>
+                        <group>
+                            <field name="location_type_id" />
+                            <field name="block_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="plantation_season_view_tree" model="ir.ui.view">
+        <field name="name">plantation.season.view.tree</field>
+        <field name="model">plantation.season</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="date_start" />
+                <field name="date_end" />
+                <field name="harvest_date_schedule" />
+                <field name="location_type_id" />
+                <field name="block_ids" widget="many2many_tags"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="plantation_season_view_search" model="ir.ui.view">
+        <field name="name">plantation.season.view.search</field>
+        <field name="model">plantation.season</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="location_type_id" />
+
+                <separator/>
+                <filter name="filter_non_active" string="Archived" domain="[('active', '=', False)]" />
+                <group name="name" string="Group By">
+                    <filter name="Harvest Date" string="groupby_schedule" context="{'group_by': 'harvest_date_schedule'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="plantation_season_action" model="ir.actions.act_window">
+        <field name="name">Season</field>
+        <field name="res_model">plantation.season</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            
+        </field>
+    </record>
+</odoo>

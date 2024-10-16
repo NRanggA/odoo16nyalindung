@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="closing_plantation_view_form" model="ir.ui.view">
+        <field name="name">closing.plantation.view.form</field>
+        <field name="model">closing.plantation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Test Summarize" name="summarize_move_line" type="object" groups="base.group_no_one"/>
+                    <button string="Test Create Journal Entry" name="create_account_move" type="object" groups="base.group_no_one"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="plant_block_id"/>
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group>
+                            <label for="current_period_cost" />
+                            <div>
+                                <field name="current_period_cost" readonly="1" nolable="1"/>
+                                <button string="View Journals" name="action_view_src_move_lines" type="object" class="btn-info" icon="fa-search"/>
+                            </div>
+                            <label for="accumulated_deferred_cost" attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}"/>
+                            <div>
+                                <field name="accumulated_deferred_cost" readonly="1" nolable="1"/>
+                                <button string="View Journals" name="action_view_deferred_move_lines" type="object" class="btn-info" icon="fa-search"/>
+                            </div>
+                            <field name="tbm_account_id"/>
+                            <field name="deferred_account_id"/>
+                            <field name="closing_account_id"/>
+                            <field name="closing_move_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="type_of_plant" invisible="1"/>
+                    <field name="status" invisible="1"/>
+                    <notebook>
+                        <page name="cost_line" string="Current Period Cost">
+                            <field name="cost_line_ids">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_jourcnal_id" />
+                                    <field name="total_cost" sum="total_cost"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="deferred_cost_line" string="Last Deferred Cost" 
+                                attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}">
+                            <field name="deferred_cost_line_ids">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_jourcnal_id" />
+                                    <field name="accumulated_cost" sum="accumulated_cost"/>
+                                    <field name="pct_cost_to_post" />
+                                    <field name="cost_to_post" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="closing_plantation_view_tree" model="ir.ui.view">
+        <field name="name">closing.plantation.view.tree</field>
+        <field name="model">closing.plantation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="plant_block_id" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="current_period_cost" />
+                <field name="accumulated_deferred_cost" optional="hide"/>
+                <field name="closing_move_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_plantation_view_search" model="ir.ui.view">
+        <field name="name">closing.plantation.view.search</field>
+        <field name="model">closing.plantation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="plant_block_id" />
+            </search>
+        </field>
+    </record>
+
+    <record id="closing_plantation_action" model="ir.actions.act_window">
+        <field name="name">Closing Plantation</field>
+        <field name="res_model">closing.plantation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

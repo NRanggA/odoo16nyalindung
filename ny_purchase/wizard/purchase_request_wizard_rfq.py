@@ -20,15 +20,17 @@ class PurchaseRequestMakePurchaseOrder(models.TransientModel):
                 line = item.line_id
                 if item.product_qty <= 0.0:
                     raise UserError(_("Enter a positive quantity."))
-
-                po_data = self._prepare_purchase_order(
-                    line.request_id.picking_type_id,
-                    line.request_id.group_id,
-                    line.company_id,
-                    line.origin,
-                )
-                po_data.update({'partner_id': supplier.id})
-                purchase = purchase_obj.create(po_data)
+                if self.purchase_order_id:
+                    purchase = self.purchase_order_id
+                if not purchase:
+                    po_data = self._prepare_purchase_order(
+                        line.request_id.picking_type_id,
+                        line.request_id.group_id,
+                        line.company_id,
+                        line.origin,
+                    )
+                    po_data.update({'partner_id': supplier.id})
+                    purchase = purchase_obj.create(po_data)
 
                 domain = self._get_order_line_search_domain(purchase, item)
                 available_po_lines = po_line_obj.search(domain)

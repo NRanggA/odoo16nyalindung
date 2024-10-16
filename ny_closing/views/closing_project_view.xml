@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="closing_project_view_form" model="ir.ui.view">
+        <field name="name">closing.project.view.form</field>
+        <field name="model">closing.project</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Test Summarize" name="summarize_move_line" type="object" groups="base.group_no_one"/>
+                    <button string="Test Create Journal Entry" name="create_account_move" type="object" groups="base.group_no_one"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_id" />
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group>
+                            <label for="total_cost" />
+                            <div>
+                                <field name="total_cost" readonly="1" nolable="1"/>
+                                <button string="View Journals" name="action_view_src_move_lines" type="object" class="btn-info" icon="fa-search"/>
+                            </div>
+                            <field name="dest_account_id" />
+                            <field name="closing_account_id" />
+                            <field name="closing_move_id" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="closing_project_view_tree" model="ir.ui.view">
+        <field name="name">closing.project.view.tree</field>
+        <field name="model">closing.project</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="project_id" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="total_cost" />
+                <field name="closing_account_id" />
+                <field name="dest_account_id" />
+                <field name="closing_move_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_project_view_search" model="ir.ui.view">
+        <field name="name">closing.project.view.search</field>
+        <field name="model">closing.project</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="project_id" />
+            </search>
+        </field>
+    </record>
+
+    <record id="closing_project_action" model="ir.actions.act_window">
+        <field name="name">Closing Project</field>
+        <field name="res_model">closing.project</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

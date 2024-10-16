@@ -988,7 +988,6 @@ class lhm_transaction(models.Model):
         for plantation_transaction in self:
             if plantation_transaction.date:
                 period_id = self.env['account.period'].search([('date_start', '<=', plantation_transaction.date), ('date_stop', '>=', plantation_transaction.date), ('special','=',False)])
-                print("======>", period_id)
                 if period_id:
                     plantation_transaction.account_period_id = period_id
 
@@ -1019,11 +1018,11 @@ class lhm_transaction(models.Model):
     date                = fields.Date("Tanggal", tracking=True)
     kemandoran_code     = fields.Char("Kode Kemandoran", related="kemandoran_id.code", readonly=True)
     mandor_id           = fields.Many2one("hr.employee", string="Mandor", ondelete="restrict", related="kemandoran_id.foreman_id", readonly=True, store=True)
-    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor Besar", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True)
+    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor Besar", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True, store=True)
     kerani_id           = fields.Many2one("hr.employee", string="Kerani", ondelete="restrict", related="kemandoran_id.admin_id", readonly=True, store=True)
     location            = fields.Char("Afdeling/ Divisi", compute="_compute_location", readonly=True, store=True)
     nik_mandor          = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
-    nik_mandor_1        = fields.Char("NIK Mandor 1", related="kemandoran_id.nik_mandor_1", readonly=True)
+    nik_mandor_1        = fields.Char("NIK Mandor Besar", related="kemandoran_id.nik_mandor_1", readonly=True)
     nik_kerani          = fields.Char("NIK Kerani", related="kemandoran_id.nik_kerani", readonly=True)
     lhm_line_ids        = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM")
     lhm_nap_line_ids    = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
@@ -1062,92 +1061,6 @@ class lhm_transaction(models.Model):
     def _compute_is_skb(self):
         for record in self:
             record.skb = any(line.activity_id.skb for line in record.lhm_line_ids)
-
-    # def button_regenerate(self):
-    #     self.check_missing_employees()
-
-    # Belum di ganti ke contract untuk pengecekkan nya (sudah dibuat belum di testing)
-    # def check_missing_employees(self):
-    #     # Ambil employee yang sudah ada di lhm_line_ids
-    #     existing_employee_ids = [line.employee_id.id for line in self.lhm_line_ids]
-    #     print(f"=== Existing Employee IDs: {existing_employee_ids}")
-
-    #     # Ambil semua employee dari kemandoran yang dipilih
-    #     kemandoran_employee_ids = self.kemandoran_id.employee_ids.ids
-    #     print(f"=== Kemandoran Employee IDs: {kemandoran_employee_ids}")
-
-    #     # Cek employee yang tertinggal
-    #     missing_employees = set(kemandoran_employee_ids) - set(existing_employee_ids)
-    #     print(f"=== Missing Employees: {missing_employees}")
-
-    #     if missing_employees:
-    #         # Cari absensi karyawan yang tertinggal
-    #         start_date = datetime.combine(self.date, datetime.min.time())
-    #         end_date = start_date + timedelta(days=1)
-    #         absensi = self.env['hr.attendance.sheet'].search([
-    #             ('employee_id', 'in', list(missing_employees)),
-    #             ('check_in', '>=', start_date),
-    #             ('check_in', '<', end_date)
-    #         ])
-    #         absensi_employee_ids = absensi.mapped('employee_id.id')
-    #         print(f"=== Employees with Attendance: {absensi_employee_ids}")
-            
-    #         # Dapatkan nama employee yang belum memperbaiki absensinya
-    #         missing_employee_names = self.env['hr.employee'].search([
-    #             ('id', 'in', list(missing_employees - set(absensi_employee_ids)))
-    #         ]).mapped('name')
-    #         print(f"=== Missing Employee Names: {missing_employee_names}")
-
-    #         if missing_employee_names:
-    #             raise ValidationError(f"Employee yang belum memperbaiki absensinya: {', '.join(missing_employee_names)}")
-
-    #         # Tambahkan karyawan yang sudah absen ke lhm_line_ids
-    #         new_lines = []
-    #         for emp_id in absensi_employee_ids:
-    #             employee = self.env['hr.employee'].browse(emp_id)
-    #             # contract = False
-    #             # if employee.basic_salary_type == 'employee':
-    #             #     contract = self.env['hr.contract'].search([
-    #             #         ('employee_id', '=', employee.id),
-    #             #         ('date_start', '<=', self.date),
-    #             #         ('date_end', '>=', self.date),
-    #             #         ('state', '=', 'open'),
-    #             #         ('is_lhm', '=', True ),
-    #             #     ], limit=1)
-    #             # elif employee.basic_salary_type == 'employee_type':
-    #             #     contract = self.env['hr.contract'].search([
-    #             #         ('employee_id', '=', employee.id),
-    #             #         ('date_start', '<=', self.date),
-    #             #         ('date_end', '>=', self.date),
-    #             #         ('state', '=', 'open'),
-    #             #         ('is_lhm', '=', True ),
-    #             #     ], limit=1)
-    #             # if not contract:
-    #             #     print(f"=== Minimum wage not found for employee {employee.name}")
-    #             #     continue
-    #             values = {
-    #                 'sequence': len(self.lhm_line_ids) + 1,
-    #                 'date': self.date or False,
-    #                 'work_day': 0.0,
-    #                 'non_work_day': 0.0,
-    #                 'total_hke': 0.0,
-    #                 'total_hkne': 0.0,
-    #                 'min_wage_value_date': 0.0,
-    #                 'work_result': 0.0,
-    #                 'premi': 0.0,
-    #                 'overtime_value': 0.0,
-    #                 'penalty': 0.0,
-    #                 'name': employee.no_induk or False,
-    #                 'employee_id': employee.id or False,
-    #                 'contract_id'           : 0.0,
-    #                 'contract_wage_value'   : 0.0,
-    #             }
-    #             new_lines.append((0, 0, values))
-    #             print(f"=== Added Employee: {employee.name}, ID: {employee.id}")
-
-    #         if new_lines:
-    #             # Update lhm_line_ids dengan data baru
-    #             self.write({'lhm_line_ids': new_lines})
 
     # Menggunakan contract_id Contract
     @api.onchange('date', 'kemandoran_id')
@@ -1685,8 +1598,6 @@ class lhm_transaction(models.Model):
         # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
         mismatch_names = []
 
-        print(f"==== Fungsi approve dijalankan !")
-
         for line in self.lhm_line_ids:
             # Cari sheet absensi yang sesuai untuk setiap karyawan
             attendance_sheet = self.env['hr.attendance.sheet'].search([
@@ -1696,9 +1607,6 @@ class lhm_transaction(models.Model):
             # Jika tidak ada catatan absensi yang ditemukan, lanjutkan ke karyawan berikutnya
             if not attendance_sheet:
                 continue
-
-            print(f"=== attendance lhm : {line.attendance_id.code}")
-            print(f"=== attendance di sheet : {attendance_sheet.type_id.code}")
 
             # Cek apakah kode tipe absensi tidak sesuai
             if line.attendance_id.code != attendance_sheet.type_id.code:
@@ -3297,6 +3205,7 @@ class lhm_contractor(models.Model):
                     'partner_id'        : buku_kontraktor.supplier_id.id,
                     'date'              : buku_kontraktor.date_end,
                     'amount'            : -1*total_lines,
+                    'plantation_src_journal_id': journal_id.id,
                     })))
             move = AccountMove.create({
                 'journal_id'    : journal_id.id,

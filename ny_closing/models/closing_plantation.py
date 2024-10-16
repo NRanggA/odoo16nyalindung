@@ -1,0 +1,488 @@
+from odoo import models, fields, api, Command, _
+from odoo.exceptions import UserError, ValidationError
+
+import logging
+_logger = logging.getLogger(__name__)
+
+class ClosingPlantation(models.Model):
+    _name = 'closing.plantation.deferred' 
+    _description = 'Closing Plantation - Deffered Cost'
+
+    closing_id = fields.Many2one('closing.plantation', string='Closing Plantation')
+    plantation_location_type_id = fields.Many2one('lhm.location.type', string='Tipe Lokasi', ondelete='restrict')
+    plantation_location_id = fields.Many2one('lhm.location', string='Lokasi', ondelete='restrict')
+    plantation_activity_id = fields.Many2one('lhm.activity', string='Aktivitas', ondelete='restrict')
+    plantation_src_jourcnal_id = fields.Many2one('account.journal', string='Asal Jurnal', ondelete='restrict')
+    dest_account_id = fields.Many2one('account.account', string='Dest. Cost Account', ondelete='restrict')
+    accumulated_cost = fields.Float()
+    pct_cost_to_post = fields.Float("Pct (%)")
+    cost_to_post = fields.Float("Cost tobe Posted")
+
+    def _get_domain_deferred_move_lines(self):
+        src_account_id = self.plant_block_id.deferred_account_id
+        if not src_account_id:
+            raise ValidationError(_(f"Could not find defered account inside Blok Tanam {self.plant_block_id.code}"))
+        domain = [('plantation_location_type_id','=',self.plant_block_id.location_type_id.id),
+                ('plantation_location_id','=',self.plant_block_id.location_id.id),
+                ('parent_state','=','posted'),('date','<',self.date_from),
+                ('account_id','=',src_account_id)]
+        return domain
+
+    def action_view_deferred_move_lines(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
+        action['domain'] = self._get_domain_deferred_move_lines()
+        return action
+
+class ClosingPlantation(models.Model):
+    _name = 'closing.plantation.line' 
+    _description = 'Closing Plantation - Current Cost'
+
+    closing_id = fields.Many2one('closing.plantation', string='Closing Plantation')
+    plantation_location_type_id = fields.Many2one('lhm.location.type', string='Tipe Lokasi', ondelete='restrict')
+    plantation_location_id = fields.Many2one('lhm.location', string='Lokasi', ondelete='restrict')
+    plantation_activity_id = fields.Many2one('lhm.activity', string='Aktivitas', ondelete='restrict')
+    plantation_src_jourcnal_id = fields.Many2one('account.journal', string='Asal Jurnal', ondelete='restrict')
+    dest_account_id = fields.Many2one('account.account', string='Dest. Cost Account', ondelete='restrict')
+    total_cost = fields.Float()
+
+    def _get_domain_source_move_lines(self):
+        src_account_ids = self.plant_block_id.location_id.type_id.activity_ids.account_id.ids
+        if not src_account_ids:
+            raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        domain = [('plantation_location_id','=',self.plant_block_id.location_id.id),
+                ('parent_state','=','posted'),('date','>=',self.date_from),('date','<=',self.date_to)]
+        if len(src_account_ids)==1:
+            domain.append(('account_id','=',src_account_ids[0]))
+        else:
+            domain.append(('account_id','in',src_account_ids))
+        return domain
+    
+    def action_view_src_move_lines(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
+        action['domain'] = self._get_domain_source_move_lines()
+        return action
+
+class ClosingPlantation(models.Model):
+    _name = 'closing.plantation' 
+    _description = 'Closing Plantation'
+
+    closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
+    
+    date_from = fields.Date('Date From', required=True)
+    date_to = fields.Date('Date To', required=True)
+    plant_block_id = fields.Many2one('lhm.plant.block', string='Blok Tanam', ondelete='restrict', required=True)
+    type_of_plant = fields.Selection(related='plant_block_id.type_of_plant', store=True)
+    status = fields.Selection(related='plant_block_id.status', store=True)
+    
+    tbm_account_id = fields.Many2one(related="plant_block_id.tbm_account_id", string='Immature Plant Cost Account', help="Usually used for Immature Plant to accumulate Cost to Asset")
+    deferred_account_id = fields.Many2one(related="plant_block_id.deferred_account_id", string='Deferred Account', help="Usually used for Pra Harvesting Period")
+    
+    closing_account_id = fields.Many2one('account.account', string='Closing Account')
+
+    accumulated_tbm_cost = fields.Float('Accumulated TBM Cost')
+    accumulated_deferred_cost = fields.Float('Accumulated Deferred Cost')
+    current_period_cost = fields.Float('Cost on Current Period')
+    transfer_cost_to_deferred = fields.Boolean()
+
+    cost_line_ids = fields.One2many('closing.plantation.line', 'closing_id')
+    deferred_cost_line_ids = fields.One2many('closing.plantation.deferred', 'closing_id')
+
+    closing_move_id = fields.Many2one('account.move', string='Journal Entry')
+
+    def init(self):
+        _logger.info("Create SUMMARY CLOSING function...")
+        self.env.cr.execute("""CREATE OR REPLACE FUNCTION public.procedure_summerize_cost(
+                        p_closing_plantation_id integer, p_planted_block_id integer, 
+                        p_user_id integer, p_company_id integer) 
+            RETURNS void AS
+            $BODY$
+            DECLARE
+                v_closing_plantation_date_from date;
+                v_closing_plantation_date_to date;
+                v_location_type integer;
+                v_location integer;
+                v_existing_move_id integer;
+                sums_cost_aml record;
+                v_current_period_cost numeric := 0.0;
+            BEGIN
+                select date_from from closing_plantation where id=p_closing_plantation_id INTO v_closing_plantation_date_from;
+                select date_to from closing_plantation where id=p_closing_plantation_id INTO v_closing_plantation_date_to;
+                select location_type_id from lhm_plant_block where id=p_planted_block_id INTO v_location_type;
+                select location_id from lhm_plant_block where id=p_planted_block_id INTO v_location;
+
+                DELETE FROM closing_plantation_line WHERE closing_id=p_closing_plantation_id;
+                DELETE FROM closing_plantation_deffered WHERE closing_id=p_closing_plantation_id;
+
+                select closing_move_id from closing_plantation where id=p_closing_plantation_id INTO v_existing_move_id;
+                
+                IF v_existing_move_id>0 THEN
+                    DELETE FROM account_move_line WHERE move_id=v_existing_move_id;
+                END IF;
+                            
+                FOR sums_cost_aml IN SELECT 
+                                aml1.plantation_location_type_id,
+                                aml1.plantation_location_id,
+                                aml1.plantation_activity_id,
+                                aml1.plantation_src_journal_id,
+                                SUM(aml1.debit - aml1.credit) as cost 
+                            FROM account_move_line aml1
+                            WHERE 
+                                aml1.date>=v_closing_plantation_date_from 
+                                and aml1.date<=v_closing_plantation_date_to 
+                                and aml1.state='posted'
+                                and aml1.plantation_location_type_id=v_location_type
+                                and aml1.plantation_location_id=aml1.v_location
+                                and aml1.account_id in (select account_id from lhm_activity where type_id=v_location_type)
+                            GROUP BY aml1.plantation_location_type_id,
+                                aml1.plantation_location_id,
+                                aml1.plantation_activity_id,
+                                aml1.plantation_src_journal_id
+                LOOP
+                    v_current_period_cost := v_current_period_cost + sums_cost_aml.cost;
+                    INSERT INTO closing_plantation_line
+                            (id, closing_id,  
+                            plantation_location_type_id, plantation_location_id, 
+                            plantation_activity_id, total_cost,
+                            create_uid, write_uid, create_date, write_date) 
+                        VALUES (
+                            nextval('closing_plantation_line_id_seq'),
+                            p_closing_plantation_id,
+                            sums_cost_aml.plantation_location_type_id,
+                            sums_cost_aml.plantation_location_id,
+                            sums_cost_aml.plantation_activity_id,
+                            sums_cost_aml.cost,
+                            p_user_id, p_user_id, (now() at time zone 'UTC'), (now() at time zone 'UTC'));
+                END LOOP;                            
+
+                UPDATE closing_plantation SET 
+                        current_period_cost = v_current_period_cost,
+                        write_uid=p_user_id, 
+                        write_date=(now() at time zone 'UTC')
+                    WHERE id=p_closing_plantation_id;
+            END;
+            $BODY$
+            LANGUAGE plpgsql VOLATILE
+            COST 100;
+            """)
+
+        _logger.info("Create SUMMARY CLOSING function...")
+        self.env.cr.execute("""CREATE OR REPLACE FUNCTION public.procedure_summerize_deferred_cost(
+                        p_closing_plantation_id integer, p_planted_block_id integer, 
+                        p_user_id integer, p_company_id integer) 
+            RETURNS void AS
+            $BODY$
+            DECLARE
+                v_closing_plantation_date_from date;
+                v_location_type integer;
+                v_location integer;
+                v_deferred_account integer;
+                v_existing_move_id integer;
+                sums_deferred_aml record;
+                v_accumulated_cost numeric := 0.0;
+            BEGIN
+                select date_from from closing_plantation where id=p_closing_plantation_id INTO v_closing_plantation_date_from;
+                select location_type_id from lhm_plant_block where id=p_planted_block_id INTO v_location_type;
+                select location_id from lhm_plant_block where id=p_planted_block_id INTO v_location;
+                select deferred_account_id from lhm_plant_block where id=p_planted_block_id INTO v_deferred_account;
+
+                DELETE FROM closing_plantation_line WHERE closing_id=p_closing_plantation_id;
+                DELETE FROM closing_plantation_deffered WHERE closing_id=p_closing_plantation_id;
+
+                select closing_move_id from closing_plantation where id=p_closing_plantation_id INTO v_existing_move_id;
+                
+                IF v_existing_move_id>0 THEN
+                    DELETE FROM account_move_line WHERE move_id=v_existing_move_id;
+                END IF;
+
+                FOR sums_deferred_aml IN SELECT 
+                                aml1.plantation_location_type_id,
+                                aml1.plantation_location_id,
+                                aml1.plantation_activity_id,
+                                aml1.plantation_src_journal_id,
+                                SUM(aml1.debit - aml1.credit) as accumulated_cost 
+                            FROM account_move_line aml1
+                            WHERE 
+                                aml1.date<v_closing_plantation_date_from 
+                                and aml1.state='posted'
+                                and aml1.plantation_type_id=v_location_type
+                                and aml1.plantation_location_id=v_location 
+                                and aml1.account_id=v_deferred_account
+                            GROUP BY aml1.plantation_location_type_id,
+                                aml1.plantation_location_id,
+                                aml1.plantation_activity_id,
+                                aml1.plantation_src_journal_id
+                LOOP
+                    v_accumulated_cost := v_accumulated_cost + sums_cost_aml.accumulated_cost;
+
+                    INSERT INTO closing_plantation_deferred
+                            (id, closing_id,  
+                            plantation_location_type_id, plantation_location_id, 
+                            plantation_activity_id, plantation_src_journal_id,
+                            accumulated_cost,
+                            create_uid, write_uid, create_date, write_date) 
+                        VALUES (
+                            nextval('closing_plantation_line_id_seq'),
+                            p_closing_plantation_id,
+                            sums_cost_aml.plantation_location_type_id,
+                            sums_cost_aml.plantation_location_id,
+                            sums_cost_aml.plantation_activity_id,
+                            sums_cost_aml.plantation_src_journal_id,
+                            sums_cost_aml.accumulated_cost,
+                            p_user_id, p_user_id, (now() at time zone 'UTC'), (now() at time zone 'UTC'));
+                END LOOP;
+
+                UPDATE closing_plantation SET 
+                        accumulated_cost = v_accumulated_cost,
+                        write_uid=p_user_id, 
+                        write_date=(now() at time zone 'UTC')
+                    WHERE id=p_closing_plantation_id;
+            END;
+            $BODY$
+            LANGUAGE plpgsql VOLATILE
+            COST 100;
+            """)
+
+    def _get_domain_deferred_move_lines(self):
+        src_account_id = self.plant_block_id.deferred_account_id.id
+        if not src_account_id:
+            raise ValidationError(_(f"Could not find defered account inside Blok Tanam {self.plant_block_id.code}"))
+        domain = [('plantation_location_type_id','=',self.plant_block_id.location_type_id.id),
+                ('plantation_location_id','=',self.plant_block_id.location_id.id),
+                ('parent_state','=','posted'),('date','<',self.date_from),
+                ('account_id','=',src_account_id)]
+        return domain
+
+    def _get_domain_source_move_lines(self):
+        src_account_ids = self.plant_block_id.location_id.type_id.activity_ids.account_id.ids
+        if not src_account_ids:
+            raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        domain = [('plantation_location_id','=',self.plant_block_id.location_id.id),
+                ('parent_state','=','posted'),('date','>=',self.date_from),('date','<=',self.date_to)]
+        if len(src_account_ids)==1:
+            domain.append(('account_id','=',src_account_ids[0]))
+        else:
+            domain.append(('account_id','in',src_account_ids))
+        return domain
+
+    def summarize_move_line(self):
+        for closing in self:
+            # source_moves_cost = self.env['account.move.line'].search(self._get_domain_source_move_lines())
+            # closing.current_period_cost = sum(source_moves_cost.mapped('balance')) if source_moves_cost else 0.0
+            # deferred_moves_cost = self.env['account.move.line'].search(self._get_domain_deferred_move_lines())
+            # closing.accumulated_cost = sum(deferred_moves_cost.mapped('balance')) if deferred_moves_cost else 0.0
+            if closing.type_of_plant=='shorterm':
+                # Menghitung Summery Deferred Cost sampai dengan saat itu dan Summery Cost diperiode itu
+                # Jika Opsi Deferred di Centang, maka Cost akan diakumulasikan ke Akun Deferred(Aset)
+                # Jika Tidak, maka Cost akan didistribusikan ke Akun Masing2 ditambah Deferred Cost yang ingin didistribusikan dibulan itu
+                self.env.cr.execute(f"select procedure_summerize_cost({closing.id}, {closing.plant_block_id.id}, {self.env.user.id}, {self.env.company.id})")
+                if not closing.deferred_account_id:
+                    raise ValidationError(_(f"Account Deferred Cost is not yet defined on Master Blok Tanam for Blok with No. {closing.plant_block_id.code}"))
+                self.env.cr.execute(f"select procedure_summerize_deferred_cost({closing.id}, {closing.plant_block_id.id}, {self.env.user.id}, {self.env.company.id})")                
+            elif closing.type_of_plant=='longterm_seasonal':
+                # Menghitung Summery Cost diperiode itu
+                # Jika masih fase TBM, maka Cost akan diakumulasikan ke Aset
+                # Jika sudah TM, maka
+                #   Hitung Deferred Cost sampai dengan saat itu dan Summery Cost diperiode itu
+                #   Jika Opsi Deferred (transfer_cost_to_deferred=True) di Centang, maka Cost akan diakumulasikan ke Akun Deferred(Aset)
+                #   Jika Tidak (transfer_cost_to_deferred=False), maka Cost akan didistribusikan ke Akun Masing2 ditambah Deferred Cost yang ingin didistribusikan dibulan itu
+                self.env.cr.execute(f"select procedure_summerize_cost({closing.id}, {closing.plant_block_id.id}, {self.env.user.id}, {self.env.company.id})")
+                if closing.plant_block_id.status=='tm' and closing.deferred_account_id:
+                    self.env.cr.execute(f"select procedure_summerize_deferred_cost({closing.id}, {closing.plant_block_id.id}, {self.env.user.id}, {self.env.company.id})")
+            else: # closing.type_of_plant=='longterm_tbm_tm':
+                # Hanya menghitung Summery Cost diperiode itu
+                # Jika masih fase TBM, maka Cost akan diakumulasikan ke Aset
+                # Jika sudah TM, maka Cost akan didistribusikan ke Akun Masing2
+                self.env.cr.execute(f"select procedure_summerize_cost({closing.id}, {closing.plant_block_id.id}, {self.env.user.id}, {self.env.company.id})")
+
+    def _prepare_move_lines_for_shorterm_block(self):
+        self.ensure_one()
+        move_lines = []
+        for line1 in self.cost_line_ids:
+            dest_vals1 = {
+                'name': 'Move Cost Driver to Account Nursery',
+                'plantation_location_type_id': line1.plantation_location_type_id.id,
+                'plantation_location_id': line1.plantation_location_id.id,
+                'plantation_activity_id': line1.plantation_activity_id.id if self.transfer_cost_to_deferred else False,
+                'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                'account_id': self.deferred_account_id.id if self.transfer_cost_to_deferred else line1.plantation_activity_id.cost_account_id.id,
+                'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
+                'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+            }
+            move_lines.append([0,0,dest_vals1])
+            src_vals1 = {
+                'name': 'Move Cost Driver to Account Nursery',
+                'plantation_location_type_id': line1.plantation_location_type_id.id,
+                'plantation_location_id': line1.plantation_location_id.id,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                'account_id': self.closing_account_id.id,
+                'debit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                'credit': line1.total_cost if line1.total_cost > 0 else 0.0,
+            }
+            move_lines.append([0,0,src_vals1])
+        
+        if not self.transfer_cost_to_deferred:
+            for line2 in self.deferred_cost_line_ids:
+                if not line2.cost_to_post:
+                    dest_vals2 = {
+                        'name': 'Move Cost Driver to Account Nursery',
+                        'plantation_location_type_id': line2.plantation_location_type_id.id,
+                        'plantation_location_id': line2.plantation_location_id.id,
+                        # 'plantation_activity_id': False,
+                        'plantation_src_journal_id': line2.plantation_src_journal_id.id,
+                        'account_id': line2.plantation_activity_id.cost_account_id.id,
+                        'debit': line2.cost_to_post if line2.cost_to_post > 0 else 0.0,
+                        'credit': abs(line2.cost_to_post) if line2.cost_to_post < 0 else 0.0,
+                    }
+                    move_lines.append([0,0,dest_vals2])
+                    src_vals2 = {
+                        'name': 'Move Cost Driver to Account Nursery',
+                        'plantation_location_type_id': line2.plantation_location_type_id.id,
+                        'plantation_location_id': line2.plantation_location_id.id,
+                        'plantation_activity_id': line2.plantation_activity_id.id,
+                        'plantation_src_journal_id': line2.plantation_src_journal_id.id,
+                        'account_id': self.deferred_account_id.id,
+                        'debit': abs(line2.cost_to_post) if line2.cost_to_post < 0 else 0.0,
+                        'credit': line2.cost_to_post if line2.cost_to_post > 0 else 0.0,
+                    }
+                    move_lines.append([0,0,src_vals2])
+        return move_lines
+    
+    def _prepare_move_lines_for_longterm_seasonal_block(self):
+        self.ensure_one()
+        move_lines = []
+        for line1 in self.cost_line_ids:
+            if self.status=='tbm':
+                dest_vals1 = {
+                    'name': 'Move Cost Driver to Account Nursery',
+                    'plantation_location_type_id': line1.plantation_location_type_id.id,
+                    'plantation_location_id': line1.plantation_location_id.id,
+                    'plantation_activity_id': line1.plantation_activity_id.id,
+                    'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                    'account_id': self.tbm_account_id.id,
+                    'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
+                    'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                }
+                move_lines.append([0,0,dest_vals1])
+            else:
+                dest_vals1 = {
+                    'name': 'Move Cost Driver to Account Nursery',
+                    'plantation_location_type_id': line1.plantation_location_type_id.id,
+                    'plantation_location_id': line1.plantation_location_id.id,
+                    'plantation_activity_id': line1.plantation_activity_id.id if self.transfer_cost_to_deferred else False,
+                    'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                    'account_id': self.deferred_account_id.id if self.transfer_cost_to_deferred else line1.plantation_activity_id.cost_account_id.id,
+                    'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
+                    'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                }
+                move_lines.append([0,0,dest_vals1])
+            src_vals1 = {
+                'name': 'Move Cost Driver to Account Nursery',
+                'plantation_location_type_id': line1.plantation_location_type_id.id,
+                'plantation_location_id': line1.plantation_location_id.id,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                'account_id': self.closing_account_id.id,
+                'debit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                'credit': line1.total_cost if line1.total_cost > 0 else 0.0,
+            }
+            move_lines.append([0,0,src_vals1])
+        
+        if self.status=='tm' and not self.transfer_cost_to_deferred:
+            for line2 in self.deferred_cost_line_ids:
+                if not line2.cost_to_post:
+                    dest_vals2 = {
+                        'name': 'Move Cost Driver to Account Nursery',
+                        'plantation_location_type_id': line2.plantation_location_type_id.id,
+                        'plantation_location_id': line2.plantation_location_id.id,
+                        # 'plantation_activity_id': False,
+                        'plantation_src_journal_id': line2.plantation_src_journal_id.id,
+                        'account_id': line2.plantation_activity_id.cost_account_id.id,
+                        'debit': line2.cost_to_post if line2.cost_to_post > 0 else 0.0,
+                        'credit': abs(line2.cost_to_post) if line2.cost_to_post < 0 else 0.0,
+                    }
+                    move_lines.append([0,0,dest_vals2])
+                    src_vals2 = {
+                        'name': 'Move Cost Driver to Account Nursery',
+                        'plantation_location_type_id': line2.plantation_location_type_id.id,
+                        'plantation_location_id': line2.plantation_location_id.id,
+                        'plantation_activity_id': line2.plantation_activity_id.id,
+                        'plantation_src_journal_id': line2.plantation_src_journal_id.id,
+                        'account_id': self.deferred_account_id.id,
+                        'debit': abs(line2.cost_to_post) if line2.cost_to_post < 0 else 0.0,
+                        'credit': line2.cost_to_post if line2.cost_to_post > 0 else 0.0,
+                    }
+                    move_lines.append([0,0,src_vals2])
+        return move_lines
+        
+    def _prepare_move_lines_for_longterm_tbm_tm_block(self):
+        self.ensure_one()
+        move_lines = []
+        for line1 in self.cost_line_ids:
+            if self.status=='tbm':
+                dest_vals1 = {
+                    'name': 'Move Cost Driver to Account Nursery',
+                    'plantation_location_type_id': line1.plantation_location_type_id.id,
+                    'plantation_location_id': line1.plantation_location_id.id,
+                    'plantation_activity_id': line1.plantation_activity_id.id,
+                    'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                    'account_id': self.tbm_account_id.id,
+                    'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
+                    'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                }
+                move_lines.append([0,0,dest_vals1])
+            else:
+                dest_vals1 = {
+                    'name': 'Move Cost Driver to Account Nursery',
+                    'plantation_location_type_id': line1.plantation_location_type_id.id,
+                    'plantation_location_id': line1.plantation_location_id.id,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                    'account_id': line1.plantation_activity_id.cost_account_id.id,
+                    'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
+                    'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                }
+                move_lines.append([0,0,dest_vals1])
+            src_vals1 = {
+                'name': 'Move Cost Driver to Account Nursery',
+                'plantation_location_type_id': line1.plantation_location_type_id.id,
+                'plantation_location_id': line1.plantation_location_id.id,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': line1.plantation_src_journal_id.id,
+                'account_id': self.closing_account_id.id,
+                'debit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
+                'credit': line1.total_cost if line1.total_cost > 0 else 0.0,
+            }
+            move_lines.append([0,0,src_vals1])
+        return move_lines
+
+    def create_account_move(self):
+        closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
+        for closing in self:
+            if closing.type_of_plant=='shorterm':
+                move_lines = closing._prepare_move_lines_for_shorterm_block()
+            elif closing.type_of_plant=='longterm_seasonal':
+                move_lines = closing._prepare_move_lines_for_longterm_seasonal_block()
+            else: # closing.type_of_plant=='shorterm':
+                move_lines = closing._prepare_move_lines_for_longterm_tbm_tm_block()
+            if move_lines:
+                move_values = {
+                    'date': closing.date_to,
+                    'journal_id': closing_journal.id,
+                    'move_type': 'entry',
+                    'line_ids': move_lines,
+                }
+                new_move = self.env['account.move'].create(move_values)
+                
+                closing.closing_move_id = new_move.id
+        return True
+
+    def action_view_src_move_lines(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
+        action['domain'] = self._get_domain_source_move_lines()
+        return action
+
+    def action_view_deferred_move_lines(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
+        action['domain'] = self._get_domain_deferred_move_lines()
+        return action

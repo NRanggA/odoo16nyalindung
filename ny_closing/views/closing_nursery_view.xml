@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="closing_nursery_view_form" model="ir.ui.view">
+        <field name="name">closing.nursery.view.form</field>
+        <field name="model">closing.nursery</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Test Initialize" name="compute_initial_and_cost_value" type="object" groups="base.group_no_one"/>
+                    <button string="Test Create Journal Entry" name="create_account_move" type="object" groups="base.group_no_one"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="nursery_id" />
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group>
+                            <field name="dest_account_id" />
+                            <field name="closing_account_id" />
+                            <field name="closing_move_id" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group name="opening" string="Opening Seed">
+                        <group>
+                            <field name="opening_qty" />
+                        </group>
+                        <group>
+                            <field name="opening_value" />
+                            <field name="old_cost_price" />
+                        </group>
+                    </group>
+
+                    <group name="current_addition" string="Current Seed Addition">
+                        <group>
+                            <field name="incoming_qty" />
+                            <field name="adjustment_qty" />
+                        </group>
+                        <group>
+                            <label for="total_cost" />
+                            <div>
+                                <field name="total_cost" readonly="1" nolable="1"/>
+                                <button string="View Journals" name="action_view_src_move_lines" type="object" class="btn-info" icon="fa-search"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group name="onhand" string="Onhand Seed">
+                        <group>
+                            <field name="onhand_qty" />
+                        </group>
+                        <group>
+                            <field name="onhand_value" />
+                            <field name="new_cost_price" />
+                        </group>
+                    </group>
+                    
+                    <group name="current_outgoing" string="Current Outgoing">
+                        <group>
+                            <label for="outgoing_qty" />
+                            <div>
+                                <field name="outgoing_qty" readonly="1" nolable="1"/>
+                                <button string="View Outgoing" name="action_view_seed_out_move" 
+                                    type="object" class="btn-info" icon="fa-search"
+                                />
+                            </div>
+                            <field name="closing_out_move_ids" invisible="1"/>
+                        </group>
+                        <group>
+                            <label for="outgoing_value" />
+                            <div>
+                                <field name="outgoing_value" readonly="1" nolable="1"/>
+                                <button string="View Journals" name="action_view_seed_out_move_lines" 
+                                    type="object" class="btn-info" icon="fa-search"
+                                    attrs="{'invisible': [('closing_out_move_ids','=',[])]}"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group name="closing" string="Closing Seed">
+                        <group>
+                            <field name="closing_qty" />
+                        </group>
+                        <group>
+                            <field name="closing_value" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="closing_nursery_view_tree" model="ir.ui.view">
+        <field name="name">closing.nursery.view.tree</field>
+        <field name="model">closing.nursery</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="nursery_id" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="outgoing_qty" />
+                <field name="outgoing_value" />
+                <field name="closing_qty" />
+                <field name="closing_value" />
+                <field name="closing_move_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_nursery_view_search" model="ir.ui.view">
+        <field name="name">closing.nursery.view.search</field>
+        <field name="model">closing.nursery</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="nursery_id" />
+            </search>
+        </field>
+    </record>
+
+    <record id="closing_nursery_action" model="ir.actions.act_window">
+        <field name="name">Closing Nursery</field>
+        <field name="res_model">closing.nursery</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
