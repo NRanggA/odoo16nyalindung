@@ -3205,6 +3205,7 @@ class lhm_contractor(models.Model):
                     'partner_id'        : buku_kontraktor.supplier_id.id,
                     'date'              : buku_kontraktor.date_end,
                     'amount'            : -1*total_lines,
+                    'plantation_src_journal_id': journal_id.id,
                     })))
             move = AccountMove.create({
                 'journal_id'    : journal_id.id,

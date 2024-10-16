@@ -59,6 +59,8 @@ class AccountMoveLine(models.Model):
     plantation_location_id      = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
     plantation_activity_id      = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
     plantation_validator        = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
+    
+    plantation_src_journal_id = fields.Many2one('account.journal', string="Asal Journal")
 
     @api.onchange('plantation_location_type_id')
     def _onchange_plantation_location_type_id(self):
