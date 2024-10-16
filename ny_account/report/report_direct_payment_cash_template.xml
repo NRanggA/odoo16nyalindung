@@ -46,7 +46,6 @@
                                 <table style="border: none; font-size: 8px; text-align: left;">
                                     <tr>
                                         <th rowspan="4" width="40%">
-                                            <!-- <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/> -->
                                             <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                         </th>
                                         <th style="font-size: 13px;">KASBON KELUAR</th>
@@ -72,13 +71,7 @@
                                         <th>No. Invoice</th>
                                         <td>
                                             :
-                                            <!-- <t t-set="line_count" t-value="len(o.payment_line_ids)"/>
-                                            <t t-set="counter" t-value="0"/> 
-                                            <t t-foreach="o.payment_line_ids" t-as="line">
-                                                <t t-set="counter" t-value="counter + 1"/>
-                                                <t t-if="counter &gt; 1">, </t>
-                                                <span t-field="line.origin"/>
-                                            </t> -->
+                                            <span t-field="o.account_move_id.name"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -93,15 +86,15 @@
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
                                         <th>Dibayar Kepada</th>
-                                        <!-- <td> : <span t-field="o.partner_id.name"/></td> -->
+                                        <td> : <span t-field="o.partner_id.name"/></td>
                                     </tr>
                                     <tr>
                                         <th>Nominal</th>
-                                        <!-- <td> : <span t-esc="o.format_amount(o.amount)"/></td> -->
+                                        <td> : <span t-esc="o.format_amount(o.amount_total)"/></td>
                                     </tr>
                                     <tr>
                                         <th>Terbilang</th>
-                                        <!-- <td style="font-weight: bold; font-style: italic;"> : # <span t-field="o.amount_text"/> rupiah #</td> -->
+                                        <td style="font-weight: bold; font-style: italic;"> : # <span t-field="o.amount_text"/> rupiah #</td>
                                     </tr>
                                 </table>
                             </td>
@@ -120,25 +113,23 @@
                         </tr>
                         <tr class="header-table">
                             <td class="header-left" colspan="2">
-                                <!-- <t t-set="row_count" t-value="len(o.move_id.line_ids.filtered(lambda l: l.debit > 0)) + 1"/> -->
+                                <t t-set="row_count" t-value="len(o.line_ids) + 1"/>
                                 <table style="border: 1px solid black; font-size: 8px;">
                                     <tr style="border: 1px solid black;">
                                         <th t-att-rowspan="row_count" style="background-color: orange; border: 1px solid black; text-align:center;">
                                             Rincian COA
                                         </th>
-                                        <th style="background-color: orange; border: 1px solid black;">Dept</th>
+                                        <th style="background-color: orange; border: 1px solid black;">Ketrangan</th>
                                         <th style="background-color: orange; border: 1px solid black;">No COA</th>
                                         <th style="background-color: orange; border: 1px solid black;">Nilai</th>
                                     </tr>
-                                    <!-- <t t-foreach="o.move_id.line_ids" t-as="jurnal">
-                                        <t t-if="jurnal.debit > 0">
-                                            <tr style="border: 1px solid black;">
-                                                <td style="border: 1px solid black;"/>
-                                                <td t-esc="jurnal.account_id.name" style="border: 1px solid black;"/>
-                                                <td style="text-align:right; border: 1px solid black;"><span t-esc="o.format_amount(jurnal.debit)"/></td>
-                                            </tr>
-                                        </t>
-                                    </t> -->
+                                    <t t-foreach="o.line_ids" t-as="payment">
+                                        <tr style="border: 1px solid black;">
+                                            <td style="border: 1px solid black;" t-esc="payment.name"/>
+                                            <td t-esc="payment.account_id.name" style="border: 1px solid black;"/>
+                                            <td style="text-align:right; border: 1px solid black;"><span t-esc="o.format_amount(payment.amount)"/></td>
+                                        </tr>
+                                    </t>
                                 </table>
                             </td>
                         </tr>
@@ -148,7 +139,7 @@
                         </tr>
                         <tr class="header-table">
                             <td class="header-left" style="font-size: 8px; border: 1px solid black;">
-                                <!-- <p><span t-field="o.ref"/></p> -->
+                                <p><span t-field="o.description"/></p>
                             </td>
                             <td class="header-right" colspan="2">
                                 <table style="border: none; font-size: 8px;">

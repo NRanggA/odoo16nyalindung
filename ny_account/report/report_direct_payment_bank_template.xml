@@ -106,7 +106,6 @@
                                 <table class="logo" style="border: none; font-size: 10px; text-align: left;">
                                     <tr>
                                         <th rowspan="4" width="40%">
-                                            <!-- <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/> -->
                                             <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                         </th>
                                         <th style="font-size: 13px;">BUKTI PENGELUARAN BANK</th>
@@ -130,16 +129,10 @@
                                     </tr>
                                     <tr>
                                         <th>No. Invoice</th>
-                                        <!-- <td> 
+                                        <td> 
                                             :
-                                            <t t-set="line_count" t-value="len(o.payment_line_ids)"/>
-                                            <t t-set="counter" t-value="0"/> 
-                                            <t t-foreach="o.payment_line_ids" t-as="line">
-                                                <t t-set="counter" t-value="counter + 1"/>
-                                                <t t-if="counter &gt; 1">, </t>
-                                                <span t-field="line.origin"/>
-                                            </t>
-                                        </td> -->
+                                            <span t-field="o.account_move_id.name"/>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>No. Payment</th>
@@ -166,7 +159,7 @@
                                 </table>
                             </td>
                             <td colspan="2">
-                                <!-- <t t-set="row_count" t-value="len(o.move_id.line_ids.filtered(lambda l: l.debit > 0)) + 1"/> -->
+                                <t t-set="row_count" t-value="len(o.line_ids) + 1"/>
                                 <table class="coa-table" style="font-size: 10px;">
                                     <tr>
                                         <th t-att-rowspan="row_count">
@@ -176,15 +169,13 @@
                                         <th>No COA</th>
                                         <th>Nilai</th>
                                     </tr>
-                                    <!-- <t t-foreach="o.move_id.line_ids" t-as="jurnal">
-                                        <t t-if="jurnal.debit > 0">
-                                            <tr>
-                                                <td />
-                                                <td t-esc="jurnal.account_id.name"/>
-                                                <td style="text-align:right;"><span t-esc="o.format_amount(jurnal.debit)"/></td>
-                                            </tr>
-                                        </t>
-                                    </t> -->
+                                    <t t-foreach="o.line_ids" t-as="payment">
+                                        <tr>
+                                            <td />
+                                            <td t-esc="payment.account_id.name"/>
+                                            <td style="text-align:right;"><span t-esc="o.format_amount(payment.amount)"/></td>
+                                        </tr>
+                                    </t>
                                 </table>
                             </td>
                         </tr>
@@ -193,7 +184,7 @@
                                 <table style="border: none; font-size: 10px;">
                                     <tr>
                                         <th>Nama Penerima</th>
-                                        <!-- <td> : <span t-field="o.partner_id.name"/></td> -->
+                                        <td> : <span t-field="o.partner_id.name"/></td>
                                     </tr>
                                     <tr>
                                         <th>Atas Nama</th>
@@ -212,11 +203,15 @@
                                     </tr>
                                     <tr>
                                         <th>Cabang</th>
-                                        <!-- <td> : <span t-field="o.partner_id.bank_ids[0].bank_id.state.name"/></td> -->
+                                        <td> : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.state.name"/> -->
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>No. Rekening</th>
-                                        <!-- <td> : <span t-field="o.partner_id.bank_ids[0].acc_number"/></td> -->
+                                        <td> : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].acc_number"/> -->
+                                        </td>
                                     </tr>
                                 </table>
                             </td>
@@ -237,22 +232,22 @@
                             <th>Jumlah</th>
                             <th>Keterangan</th>
                         </tr>
-                        <!-- <tr>
-                            <td><span t-field="o.journal_id.name"/></td>
-                            <td><span t-field="o.no_memo"/></td>
-                            <td><span t-field="o.date_memo"/></td>
-                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount)"/></td>
-                            <td><span t-field="o.ref"/></td>
-                        </tr> -->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount_total)"/></td>
+                            <td><span t-field="o.description"/></td>
+                        </tr>
                     </table>
                     <table style="border: none; font-size: 10px; text-align: left; margin-top:10px;">
                         <tr>
                             <th >Jumlah</th>
-                            <!-- <td> : <span t-esc="o.format_amount(o.amount)"/></td> -->
+                            <td> : <span t-esc="o.format_amount(o.amount_total)"/></td>
                         </tr>
                         <tr>
                             <th>Terbilang</th>
-                            <!-- <td style="font-weight: bold; font-style: italic;"> : # <span t-field="o.amount_text"/> rupiah #</td> -->
+                            <td style="font-weight: bold; font-style: italic;"> : # <span t-field="o.amount_text"/> rupiah #</td>
                         </tr>
                     </table>
 
