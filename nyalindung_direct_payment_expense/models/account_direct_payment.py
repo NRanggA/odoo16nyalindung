@@ -115,10 +115,74 @@ class DirectPayment(models.Model):
 class DirectPaymentLine(models.Model):
     _inherit = 'account.direct.payment.line'
 
-    plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
-    plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
-    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
+    plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas', ondelete='restrict')
+    plantation_location_type_id = fields.Many2one("lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
+    filtered_locations = fields.Many2many('lhm.location', 'adpl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
+    plantation_location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    filtered_activities = fields.Many2many('lhm.activity', 'adpl_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
+    plantation_activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+    plantation_validator = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
     has_plantation = fields.Boolean('Has Plantation')
+
+    @api.depends('plantation_varieties_id','plantation_location_type_id', 'payment_id.state')
+    def _filter_locations(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.payment_id.state!='draft' or not line.plantation_location_type_id:
+                line.filtered_locations = []
+            else:
+                if line.plantation_location_type_id.code in ('PJ','NA'):
+                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
+                elif line.plantation_location_type_id.code in ('WS','VH','MA','NS'):
+                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
+                else: # GC, IDC, PLANTATION
+                    locations = self.env['lhm.location'].search([('type_id','=',line.plantation_location_type_id.id),('varieties_id','=',line.plantation_varieties_id.id)])
+                line.filtered_locations = [(6,0,locations.ids)] if locations else []
+
+    @api.depends('plantation_varieties_id','plantation_location_type_id', 'plantation_location_id', 'payment_id.state')
+    def _filter_activities(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.payment_id.state!='draft' or not line.plantation_location_type_id:
+                line.filtered_activities = []
+            else:
+                doc_form = self.env['res.doc.type'].search([('code','=','lhm')], limit=1)
+                if line.plantation_location_type_id and line.plantation_location_type_id.project and line.plantation_location_id:
+                    projects = self.env['lhm.project'].search([('location_id','=',line.plantation_location_id.id)])
+                    project_activity_ids = []
+                    for project in projects:
+                        # if doc_form:
+                        #     project_activity_ids += [x.activity_id.id for x in project.line_ids if doc_form.id in x.doc_ids.ids]
+                        # else:
+                            project_activity_ids += [x.activity_id.id for x in project.line_ids]
+
+                    if project_activity_ids:
+                        line.filtered_activities = [(6, 0, project_activity_ids)]
+                    else:
+                        line.filtered_activities = []
+                else:
+                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS'):
+                        activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
+                    else: # GC, IDC, PLANTATION
+                        if line.plantation_varieties_id:
+                            if line.plantation_location_type_id.general_charge:
+                                activities = line.plantation_varieties_id.general_charges_activity_ids
+                            elif line.plantation_location_type_id.indirect:
+                                activities = line.plantation_varieties_id.indirect_cost_activity_ids
+                            else:
+                                activities = line.plantation_varieties_id.harvest_activity_id
+                                activities |= line.plantation_varieties_id.upkeep_activity_ids
+                        else:
+                            # activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
+                            activities = []
+                    if False: #doc_form:
+                        act_ids = []
+                        for act in activities:
+                            if doc_form.id in act.doc_ids.ids:
+                                act_ids.append(act.id)
+                        line.filtered_activities = [(6, 0, act_ids)]
+                    else:
+                        line.filtered_activities = [(6, 0, activities.ids)] if activities else []
 
     def _prepare_move_line(self):
         amount = self.currency_id.compute(self.amount, self.payment_id.company_id.currency_id)

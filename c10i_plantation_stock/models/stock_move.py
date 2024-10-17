@@ -4,6 +4,7 @@ from odoo.exceptions import UserError
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
+    plantation_varieties_id = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
     plantation_location_type_id = fields.Many2one("lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     plantation_location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     plantation_activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
@@ -30,6 +31,8 @@ class StockMove(models.Model):
     
     def _generate_valuation_lines_data(self, partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description):
         res = super(StockMove, self)._generate_valuation_lines_data(partner_id, qty, debit_value, credit_value, debit_account_id, credit_account_id, svl_id, description)
+        res['credit_line_vals']["plantation_varieties_id"] = self.plantation_varieties_id.id
+        res['debit_line_vals']["plantation_varieties_id"] = self.plantation_varieties_id.id
         res['credit_line_vals']["plantation_location_type_id"] = self.plantation_location_type_id.id
         res['debit_line_vals']["plantation_location_type_id"] = self.plantation_location_type_id.id
         res['credit_line_vals']["plantation_location_id"] = self.plantation_location_id.id

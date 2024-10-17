@@ -9,12 +9,22 @@
                 <field name="is_kontraktor" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
             </xpath> -->
             <xpath expr="//field[@name='line_ids']/tree/field[@name='name']" position="after">
-                <field name="doc_activity_ids" invisible="1"/>
+                <!-- <field name="doc_activity_ids" invisible="1"/> -->
                 <!-- <field name="cost_allocation_mark" invisible="1"/> -->
 
-                <field name="location_type_id" options="{'no_create_edit': True, 'no_create': True}"/>
-                <field name="location_id" options="{'no_create_edit': True, 'no_create': True}"/> <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
-                <field name="activity_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('id','in',doc_activity_ids)]"/> <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
+                <field name="varieties_id" 
+                    options="{'no_create_edit': True, 'no_create': True}" required="1"/>
+                <field name="location_type_id" 
+                    options="{'no_create_edit': True, 'no_create': True}"/>
+                <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
+                <field name="filtered_locations" invisible="1" />
+                <field name="location_id" 
+                    domain="[('id','in',filtered_locations)]"
+                    options="{'no_create_edit': True, 'no_create': True}"/>
+                <field name="filtered_activities" invisible="1" />
+                <field name="activity_id" 
+                    options="{'no_create_edit': True, 'no_create': True}" 
+                    domain="[('id','in',filtered_activities)]"/> <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
             </xpath>
         </field>
     </record>

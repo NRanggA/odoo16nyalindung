@@ -6,6 +6,7 @@ class AccountCostCenter(models.Model):
 
     name = fields.Char('Nama', required=True)
     code = fields.Char('Kode', required=True)
+    varieties_id = fields.Many2one('plant.varieties', string='Varietas')
     company_id = fields.Many2one(
         comodel_name='res.company',
         string='Company',
@@ -34,10 +35,12 @@ class AccountCostCenter(models.Model):
         location_name = values.get('name', "(NoName)")
         location_code = values.get('code', "(NoCode)")
         location_type_id = values.get('location_type_id', False)
+        varieties_id = values.get('varieties_id', False)
         group_progress_id = values.get('group_progress_id', False)
         location_values = {
             'name': location_name,
             'code': location_code,
+            'varieties_id': varieties_id,
             'type_id': location_type_id,
             'group_progress_id': group_progress_id,
         }
@@ -57,6 +60,8 @@ class AccountCostCenter(models.Model):
             self.location_id.write({'code': values.get('code')})
         if 'location_type_id' in values and self.location_id:
             self.location_id.write({'type_id': values.get('location_type_id')})
+        if 'varieties_id' in values and self.varieties_id:
+            self.location_id.write({'varieties_id': values.get('varieties_id')})
         if 'group_progress_id' in values and self.location_id:
             self.location_id.write({'group_progress_id': values.get('group_progress_id')})
         if 'active' in values and self.location_id:

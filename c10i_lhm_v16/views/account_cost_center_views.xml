@@ -22,6 +22,7 @@
                             <group name="main_group1">
                                 <field name="code" string="Kode" required="1"/>
                                 <field name="location_type_id" required="1" domain="[('general_charge','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="varieties_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="group_progress_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group name="main_group2">

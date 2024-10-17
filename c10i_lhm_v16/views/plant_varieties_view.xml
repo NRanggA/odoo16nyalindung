@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="plant_varieties_view_form" model="ir.ui.view">
+        <field name="name">plant.varieties.view.form</field>
+        <field name="model">plant.varieties</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="code" />
+                        </group>
+                        <group>
+                            <field name="product_id" />
+                            <field name="secondary_product_id" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="plantation" string="Upkeep and Harvest">
+                            <group>
+                                <field name="harvest_activity_id" required="1"/>
+                            </group>
+                            <label for="upkeep_activity_ids"/>
+                            <field name="upkeep_activity_ids" />
+                        </page>
+                        <page name="gc" string="General Charges">
+                            <field name="general_charges_activity_ids" />
+                        </page>
+                        <page name="idc" string="Indirect Cost">
+                            <field name="indirect_cost_activity_ids" />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="plant_varieties_view_tree" model="ir.ui.view">
+        <field name="name">plant.varieties.view.tree</field>
+        <field name="model">plant.varieties</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="code" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="plant_varieties_action" model="ir.actions.act_window">
+        <field name="name">Varietas</field>
+        <field name="res_model">plant.varieties</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_plant_varieties" action="plant_varieties_action" parent="c10i_lhm_v16.menu_lhm_master" groups="group_plantation_supervisor" sequence="60"/>
+
+
+</odoo>
