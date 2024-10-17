@@ -110,10 +110,19 @@
                                     <field name="product_id" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="product_asset" readonly="1" string="Equipment" />
                                     <field name="name" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
-                                    <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                    <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                    <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                    <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                    <field name="varieties_id" 
+                                        options="{'no_create_edit': True, 'no_create': True}" required="1"/>
+                                    <field name="location_type_id" 
+                                        options="{'no_create_edit': True, 'no_create': True}"/>
+                                    <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
+                                    <field name="filtered_locations" invisible="1" />
+                                    <field name="location_id" 
+                                        domain="[('id','in',filtered_locations)]"
+                                        options="{'no_create_edit': True, 'no_create': True}"/>
+                                    <field name="filtered_activities" invisible="1" />
+                                    <field name="activity_id" 
+                                        options="{'no_create_edit': True, 'no_create': True}" 
+                                        domain="[('id','in',filtered_activities)]"/> <!-- attrs="{'required': [('cost_allocation_mark','!=','none')]}" -->
                                     <field name="product_qty" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="qty_available"/>
                                     <field name="uom_id" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
