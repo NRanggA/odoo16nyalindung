@@ -9,6 +9,9 @@ class AccountMove(models.Model):
 
     def validation_check_nomor_faktur(self):
         for record in self:
+            print(">>>>>>>>>>>>>>>>>>", record.partner_id)
+            print(">>>>>>>>>>>>>>>>>>", record.l10n_id_tax_number)
+            # print(">>>>>>>>>>>>>>>>>>", stop)
             if record.partner_id and record.l10n_id_tax_number:
                 this_nomor_faktur = record.l10n_id_tax_number[3:]
                 partner_nomor_faktur = self.env['prepopulated.data'].search([('npwp','like',record.partner_id.vat[2:]),('nomor_faktur','=',this_nomor_faktur)])
