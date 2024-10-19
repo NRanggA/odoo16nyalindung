@@ -22,6 +22,9 @@ from odoo.osv import expression
 import base64
 import xlrd
 from datetime import datetime
+import pandas as pd
+import numpy as np
+import io
 
 from decimal import Decimal, getcontext
 
@@ -1110,14 +1113,13 @@ class lhm_transaction(models.Model):
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
             
-            absensi_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+            # absensi_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
 
             for employee in self.kemandoran_id.employee_ids:
                 if employee.id in absensi_employee_ids:
 
-                    employee_absensi = absensi.filtered(lambda a: a.employee_id.id == employee.id)
-                    
-                    attendance = employee_absensi.filtered(lambda a: a.type_id == absensi_kj)
+                    # employee_absensi = absensi.filtered(lambda a: a.employee_id.id == employee.id)
+                    # attendance = employee_absensi.filtered(lambda a: a.type_id == absensi_kj)
 
                     values = {
                         'sequence'              : seq,
@@ -1133,7 +1135,7 @@ class lhm_transaction(models.Model):
                         'penalty'               : 0.0,
                         'name'                  : employee and employee.no_induk or False,
                         'employee_id'           : employee and employee.id or False,
-                        'attendance_id'         : attendance.type_id.id if attendance else False, 
+                        'attendance_id'         : False, 
                         # 'contract_id'           : contract and contract.id or False,
                         # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                         'contract_id'           : 0.0,
@@ -1162,7 +1164,7 @@ class lhm_transaction(models.Model):
                         'non_work_day'          : 0.0,
                         'total_hke'             : 0.0,
                         'total_hkne'            : 0.0,
-                        'ccontract_value_date'  : 0.0,
+                        'contract_value_date'   : 0.0,
                         'work_result'           : 0.0,
                         'premi'                 : 0.0,
                         'overtime_value'        : 0.0,
@@ -1259,8 +1261,6 @@ class lhm_transaction(models.Model):
             #         emp_transaction_borongan.write(values)
 
             for lhm_reprogress in plantation_line_obj.search([('lhm_id', 'in', lhm_list)], order='date asc'):
-                # print(f"=== Isii  LHM List : {lhm_reprogress.employee_id.name} Nama : {lhm_reprogress.lhm_id.name} Date : {lhm_reprogress.lhm_id.date}")
-
                 if (lhm_reprogress.lhm_id.state == 'done' or lhm_reprogress.lhm_id.state == 'in_progress'):
                     if lhm_reprogress.attendance_id and lhm_reprogress.employee_id and lhm_reprogress.employee_id.type_id and lhm_reprogress.employee_id.contract_id.wage_type_id.name == 'Month' and \
                         (lhm_reprogress.non_work_day > 0 or lhm_reprogress.work_day > 0):
@@ -1309,7 +1309,6 @@ class lhm_transaction(models.Model):
         
         # Fungsi mengambil gaji karyawan borongan panen
         self.lhm_line_ids.get_wage_borong_panen()
-        # print(f"{a}")
 
         # jelankan fungsi progress
         self._progress()

@@ -1890,28 +1890,16 @@
                                         <field name="attendance_id" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         
-                                        <field name="varieties_id" 
-                                                options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
-                                                required="1" />
-                                        <field name="location_type_id" 
-                                                options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
-                                                attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"  attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" />
                                         <field name="no_line" invisible="1" />
                                         <field name="filtered_locations" invisible="1"/>
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
-                                        <field name="location_id" 
-                                                options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
-                                                domain="[('id','in',filtered_locations)]"
-                                                attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 
-                                                    'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" />
+                                        <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" />
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1"/> -->
                                         <field name="filtered_activities" invisible="1"/>
                                                 <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
-                                        <field name="activity_id" 
-                                                domain="[('id','in',filtered_activities)]"  
-                                                options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
-                                                attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 
-                                                    'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
+                                        <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
                                         <field name="is_borong" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                         <field name="is_hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                         <button icon="fa-plus" type="object" title="Tambah Hasil" name="tambah_hasil_2" class="oe_highlight" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('is_hasil_2', '!=', True)]}"/>
