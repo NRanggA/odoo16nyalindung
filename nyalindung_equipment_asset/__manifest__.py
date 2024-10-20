@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'maintenance', 'account', 'om_account_accountant', 'product', 'c10i_lhm_v16', 'c10i_purchase_equipment', 'c10i_equipment_account_asset'],
+    'depends': ['base', 'maintenance', 'account', 'om_account_accountant', 'product', 'c10i_purchase_equipment', 'c10i_equipment_account_asset', 'c10i_lhm_v16'],
 
     # always loaded
     'data': [
