@@ -36,9 +36,9 @@ class lhm_transaction(models.Model):
         for index, row in df.iterrows():
             lhm_line = self.env['lhm.transaction.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', '')))], limit=1)
             if not lhm_line:
-                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('Name', '')} tidak ditemukan pada LHM saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada LHM saat ini!")
             if not lhm_line.employee_id.contract_id:
-                error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('Name', '')} tidak ditemukan pada data LHM saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada data LHM saat ini!")
 
             # ========== ATTENDANCE ==============
             # ==================================
