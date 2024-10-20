@@ -79,7 +79,7 @@ class lhm_transaction(models.Model):
             # ===================================
             activity = self.env['lhm.activity'].search([('code', '=', row.get('AKTIVITAS', ''))], limit=1)
             if not activity:
-                error_message_list.append(f"Baris ke- {index + 2}  Aktivitas dengan kode {row.get('AKTIVITAS', '')} tidak ditemukan!")
+                error_message_list.append(f"Baris ke- {index + 2} untuk karyawan {row.get('NAME', '')} Aktivitas dengan kode {row.get('AKTIVITAS', '')} tidak ditemukan!")
             
             # cari aktifitas berdasarkan tipe lokasi yang dipilih
             activity_2 = self.env['lhm.activity'].search([('code', '=', row.get('AKTIVITAS', '')) ,('type_id', '=', type_location.id)], limit=1)
