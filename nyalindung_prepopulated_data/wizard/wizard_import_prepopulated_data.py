@@ -49,9 +49,9 @@ class wizardImportPrepopulatedData(models.TransientModel):
                 
             try:
                 nomor_faktur = self.env['prepopulated.data'].search([('nomor_faktur', '=', row.get('Nomor Faktur'))])
-                dict(self.env['prepopulated.data']._fields['is_dikreditkan'].selection)
-                if not row.get('Dikreditkan') or row.get('Dikreditkan') not in ['Ya','Tidak']:
-                    raise ValidationError("Field harus di isi, Opsi (Ya, Tidak)")
+                is_dikreditkan_selection = dict(self.env['prepopulated.data']._fields['is_dikreditkan'].selection)
+                if not row.get('Dikreditkan') or row.get('Dikreditkan') not in is_dikreditkan_selection.values():
+                    raise ValidationError("Field 'Dikreditkan' harus diisi dengan opsi valid: Ya atau Tidak.")
 
                 if not nomor_faktur:
                     datas.append({
