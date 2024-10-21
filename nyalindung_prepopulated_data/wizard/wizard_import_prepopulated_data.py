@@ -56,7 +56,7 @@ class wizardImportPrepopulatedData(models.TransientModel):
                 if not nomor_faktur:
                     datas.append({
                         'name': row.get('Nama'),
-                        'npwp': row.get('NPWP').split('.')[0],
+                        'npwp': str(row.get('NPWP')).split('.')[0],
                         'jenis_transaksi': row.get('Jenis Transaksi'),
                         'status_pengganti': row.get('Status Pengganti'),
                         'nomor_faktur': row.get('Nomor Faktur'),
@@ -80,7 +80,7 @@ class wizardImportPrepopulatedData(models.TransientModel):
         if data_npwp:
             npwp_list = []
             for list in data_npwp:
-                npwp_list.append(list['npwp'].split('.')[0])
+                npwp_list.append(str(list['npwp']).split('.')[0])
 
             if len(npwp_list) > 1:
                 raise ValidationError(f"Please register these NPWPs as partners first:\n{npwp_list}")
