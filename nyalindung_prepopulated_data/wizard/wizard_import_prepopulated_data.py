@@ -50,7 +50,10 @@ class wizardImportPrepopulatedData(models.TransientModel):
             try:
                 nomor_faktur = self.env['prepopulated.data'].search([('nomor_faktur', '=', row.get('Nomor Faktur'))])
                 is_dikreditkan_selection = dict(self.env['prepopulated.data']._fields['is_dikreditkan'].selection)
-                if not row.get('Dikreditkan') or row.get('Dikreditkan') not in is_dikreditkan_selection.values():
+
+                dikreditkan_value = row.get('Dikreditkan', '').strip()
+
+                if not dikreditkan_value or dikreditkan_value not in is_dikreditkan_selection.values():
                     raise ValidationError("Field 'Dikreditkan' harus diisi dengan opsi valid: Ya atau Tidak.")
 
                 if not nomor_faktur:
@@ -64,7 +67,7 @@ class wizardImportPrepopulatedData(models.TransientModel):
                         'dpp': float(row.get('DPP').replace(',', '') if file_extension == '.csv' else row.get('DPP') or 0),
                         'ppn': float(row.get('PPN').replace(',', '') if file_extension == '.csv' else row.get('PPN') or 0),
                         'ppnbm': float(row.get('PPnBM').replace(',', '') if file_extension == '.csv' else row.get('PPnBM') or 0),
-                        'is_dikreditkan': row.get('Dikreditkan'),
+                        'is_dikreditkan': dikreditkan_value,
                     })
 
 
