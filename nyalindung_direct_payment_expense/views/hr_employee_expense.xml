@@ -93,7 +93,10 @@
                                     <field name="currency_id" invisible="1"/>
                                     <field name="product_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
-                                        attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')], 'invisible': [('parent.is_advance','=',True)]}"/>
+                                        attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}" invisible="1"/>
+                                    <!-- <field name="product_id" 
+                                        options="{'no_create_edit': True, 'no_create': True}" 
+                                        attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')], 'invisible': [('parent.is_advance','=',True)]}"/> -->
                                     <field name="name" attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}"/>
                                     <field name="account_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
