@@ -51,12 +51,35 @@ class wizardImportPrepopulatedData(models.TransientModel):
                 nomor_faktur = self.env['prepopulated.data'].search([('nomor_faktur', '=', row.get('Nomor Faktur'))])
                 is_dikreditkan_selection = dict(self.env['prepopulated.data']._fields['is_dikreditkan'].selection)
 
-                dikreditkan_value = str(row.get('Dikreditkan', '')).strip()
+                npwp = row.get('NPWP')
+                dikreditkan_value = row.get('Dikreditkan')
 
-                if not dikreditkan_value or dikreditkan_value not in is_dikreditkan_selection.values():
-                    raise ValidationError("Field 'Dikreditkan' harus diisi dengan opsi valid: Ya atau Tidak.")
+                if dikreditkan_value is not False:
+                    dikreditkan_value = str(dikreditkan_value).strip()
+                    
+                    if not dikreditkan_value or dikreditkan_value not in is_dikreditkan_selection.values():
+                        raise ValidationError("Field 'Dikreditkan' harus diisi dengan opsi valid: Ya atau Tidak.")
 
-                if not nomor_faktur:
+                dpp_value = row.get('DPP') or 0
+                if isinstance(dpp_value, str) and file_extension == '.csv':
+                    dpp_value = dpp_value.replace(',', '')  # Remove commas for CSV data
+
+                # Safely handle PPN value
+                ppn_value = row.get('PPN') or 0
+                if isinstance(ppn_value, str) and file_extension == '.csv':
+                    ppn_value = ppn_value.replace(',', '')  # Remove commas for CSV data
+
+                # Safely handle PPnBM value
+                ppnbm_value = row.get('PPnBM') or 0
+                if isinstance(ppnbm_value, str) and file_extension == '.csv':
+                    ppnbm_value = ppnbm_value.replace(',', '')  # Remove commas for CSV data
+
+                # Convert to float after processing
+                dpp_value = float(dpp_value)
+                ppn_value = float(ppn_value)
+                ppnbm_value = float(ppnbm_value)
+
+                if not nomor_faktur and npwp is not False:
                     datas.append({
                         'name': row.get('Nama'),
                         'npwp': str(row.get('NPWP')).split('.')[0],
@@ -64,9 +87,9 @@ class wizardImportPrepopulatedData(models.TransientModel):
                         'status_pengganti': row.get('Status Pengganti'),
                         'nomor_faktur': row.get('Nomor Faktur'),
                         'tanggal_faktur': row.get('Tanggal Faktur'),
-                        'dpp': float(row.get('DPP').replace(',', '') if file_extension == '.csv' else row.get('DPP') or 0),
-                        'ppn': float(row.get('PPN').replace(',', '') if file_extension == '.csv' else row.get('PPN') or 0),
-                        'ppnbm': float(row.get('PPnBM').replace(',', '') if file_extension == '.csv' else row.get('PPnBM') or 0),
+                        'dpp': dpp_value,
+                        'ppn': ppn_value,
+                        'ppnbm': ppnbm_value,
                         'is_dikreditkan': dikreditkan_value,
                     })
 
@@ -80,15 +103,20 @@ class wizardImportPrepopulatedData(models.TransientModel):
             except binascii.Error as err:
                 pass
 
+        print("===================================", data_npwp)
+
         if data_npwp:
             npwp_list = []
             for list in data_npwp:
                 npwp_list.append(str(list['npwp']).split('.')[0])
+            
+            print("===================================", npwp_list)
 
             if len(npwp_list) > 1:
                 raise ValidationError(f"Please register these NPWPs as partners first:\n{npwp_list}")
             else:
                 raise ValidationError(f"Please register this NPWP as partners first:\n{npwp_list}")
+            
 
         
         self.env['prepopulated.data'].create(datas)
