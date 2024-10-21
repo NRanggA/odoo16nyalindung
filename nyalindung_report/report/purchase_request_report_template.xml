@@ -54,7 +54,7 @@
                                     <td style="padding-left: 8px"><t t-esc="item.product_id.name"/></td>
                                     <td style="text-align: center"><t t-esc="item.product_qty" t-options='{"widget": "float", "precision": 0}'/></td>
                                     <td style="text-align: center"><t t-esc="item.product_uom_id.name"/></td>
-                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"><t t-esc="item.name"/></td>
                                     <t t-set="seq" t-value="seq + 1"/>
                                 </tr>
                             </tbody>
