@@ -20,7 +20,7 @@ class PrepopulatedData(models.Model):
     is_dikreditkan = fields.Selection([
         ('Ya', 'Ya'),
         ('Tidak', 'Tidak'),
-    ], string='Dikreditkan', default='ya')
+    ], string='Dikreditkan')
 
     def import_data(self):
         action = self.env["ir.actions.actions"]._for_xml_id('nyalindung_prepopulated_data.action_wizard_import_prepopulated_data')
