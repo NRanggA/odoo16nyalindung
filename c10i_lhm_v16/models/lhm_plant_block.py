@@ -22,7 +22,7 @@ class lhm_plant_block(models.Model):
     _description    = 'LHM Planting Block'
 
     def _default_location_type(self):
-        location_type_ids   = self.env['lhm.location.type'].search([('oil_palm','=',True)])
+        location_type_ids   = self.env['lhm.location.type'].search([('plantation','=',True)])
         if location_type_ids:
             return location_type_ids[0].id
         else:
@@ -67,6 +67,7 @@ class lhm_plant_block(models.Model):
             
     name                = fields.Char("Deskripsi")
     code                = fields.Char("Kode")
+    varieties_id = fields.Many2one('plant.varieties', string='Varietas')
     land_block_id       = fields.Many2one("lhm.land.block", string="Blok Tanah", ondelete="restrict")
     afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict")
     owner_type          = fields.Selection([('inti','Inti'),('plasma','Plasma')], 'Tipe Kepemilikan')
@@ -146,6 +147,7 @@ class lhm_plant_block(models.Model):
             'name'              : location_name or "(NoName)",
             'code'              : location_code or "(NoCode)",
             'type_id'           : location_type_id or False,
+            'varieties_id' : values.get('varieties_id', False),
             'group_progress_id' : group_progress_id,
         }
 
@@ -194,6 +196,8 @@ class lhm_plant_block(models.Model):
             self.location_id.write({'code': values.get('code', False)})
         if 'location_type_id' in values and self.location_id:
             self.location_id.write({'type_id': values.get('location_type_id', False)})
+        if 'varieties_id' in values and self.location_id:
+            self.location_id.write({'varieties_id': values.get('varieties_id', False)})
         if 'group_progress_id' in values and self.location_id:
             self.location_id.write({'group_progress_id' : values.get('group_progress_id',False)})
         if 'active' in values and self.location_id:

@@ -111,7 +111,8 @@
                                     <field name="nursery"/>
                                 </group>
                                 <group>
-                                    <field name="oil_palm"/>
+                                    <field name="plantation"/>
+                                    <!-- <field name="oil_palm"/> -->
                                     <field name="project"/>
                                     <field name="vehicle"/>
                                     <field name="workshop"/>
@@ -289,6 +290,7 @@
                         <group name="location">
                             <group>
                                 <field name="code" string="Kode" required="1" readonly="1"/>
+                                <field name="varieties_id" readonly="1"/>
                                 <field name="type_id" required="1" readonly="1"/>
                                 <field name="owner_type" />
                             </group>
@@ -763,6 +765,7 @@
                             <group>
                                 <field name="code" string="Kode" required="1"/>
                                 <field name="location_type_id" required="1" domain="[('indirect','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="varieties_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="group_progress_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
@@ -1238,7 +1241,8 @@
                         <group name="plant_block_information">
                             <group>
                                 <field name="code" string="Kode" required="1"/>
-                                <field name="location_type_id" required="1" domain="[('oil_palm','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="varieties_id" string="Varietas" required="1"/>
+                                <field name="location_type_id" required="1" domain="[('plantation','=',True)]" options="{'no_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="afdeling_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="land_block_id" required="1"/>
                                 <field name="land_class_id"/>
@@ -1886,14 +1890,16 @@
                                         <field name="attendance_id" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"  attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" />
                                         <field name="no_line" invisible="1" />
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" optional="show"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)
-                                        ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}" optional="show"/>
-
-
+                                        <field name="filtered_locations" invisible="1"/>
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" />
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1"/> -->
+                                        <field name="filtered_activities" invisible="1"/>
+                                                <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
                                         <field name="is_borong" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                         <field name="is_hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                         <button icon="fa-plus" type="object" title="Tambah Hasil" name="tambah_hasil_2" class="oe_highlight" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('is_hasil_2', '!=', True)]}"/>
@@ -2305,11 +2311,22 @@
                                     <tree editable="bottom">
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('machine_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="filtered_locations" invisible="1" />
+                                        <field name="location_type_id" 
+                                            domain="[('machine_line','=',True),('code','not in',['WS','VH','MA'])]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
 
                                         <field name="use_value" optional="show"/>
                                         <field name="use_hours" widget="float_time" optional="show"/>
@@ -2469,10 +2486,21 @@
                                         <field name="start_value" optional="show"/>
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" domain="[('code','not in',['WS','VH'])]"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="filtered_locations" invisible="1" />
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="filtered_activities" invisible="1" />
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="performance1" optional="show"/>
                                         <field name="uom_performance1_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="performance2" optional="show"/>
@@ -2634,10 +2662,22 @@
                                     <tree editable="bottom">
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('workshop_line','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" 
+                                            domain="[('workshop_line','=',True),('code','!=','WS')]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_locations" invisible="1"/>
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="filtered_activities" invisible="1"/>
+                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="use_hours" widget="float_time" optional="show"/>
                                     </tree>
                                 </field>
@@ -2808,10 +2848,21 @@
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
                                         <field name="distance_value" optional="show"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" domain="[('no_line','=',False)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            optional="show"/>
+                                        <field name="filtered_locations" invisible="1" />
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="nilai" optional="show"/>
                                         <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
@@ -2830,11 +2881,22 @@
                                         <field name="name" invisible="1"/>
                                         <!-- <field name="tidak_ditagihkan" optional="show"/> -->
                                         <field name="date" optional="show"/>
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" 
+                                            domain="[('no_line','=',False)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_locations" invisible="1" />
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="nilai" optional="show"/>
@@ -3056,10 +3118,20 @@
                                         <field name="name" invisible="1"/>
                                         <field name="date"/>
                                         <!-- <field name="vehicle_id" domain="[('ownership','=','rental')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="location_id" domain="[('type_id','=',location_type_id)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="activity_id" domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids[0][2])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="filtered_locations" invisible="1" />
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="nilai"/>
                                         <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>

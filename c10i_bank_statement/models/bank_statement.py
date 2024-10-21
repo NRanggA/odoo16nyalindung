@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from datetime import datetime
 
 class AccountBankStatement(models.Model):
     _inherit = 'account.bank.statement'
@@ -60,8 +61,11 @@ class AccountBankStatement(models.Model):
     @api.depends('line_ids.internal_index', 'line_ids.state')
     def _compute_date_index(self):
         for stmt in self:
-            sorted_lines = stmt.line_ids.sorted('internal_index')
-            stmt.first_line_index = sorted_lines[:1].internal_index
+            try:
+                sorted_lines = stmt.line_ids.sorted('internal_index')
+                stmt.first_line_index = sorted_lines[:1]
+            except:
+                stmt.first_line_index = False
             # stmt.date = sorted_lines.filtered(lambda l: l.state == 'posted')[-1:].date
         
     def button_get_payments(self):
@@ -82,3 +86,14 @@ class AccountBankStatement(models.Model):
 						'partner_id' : i.partner_id.id,
 						'amount': amount_payment,
 					})]
+
+class AccountBankStatementImport(models.TransientModel):
+    _inherit = 'account.bank.statement.import'
+
+    date = fields.Date('Date', default=fields.Date.today())
+    
+    def _prepare_statement_vals(self):
+        res = super(AccountBankStatementImport, self)._prepare_statement_vals()
+        res['date'] = self.date
+        res['name'] = 'Statement Of ' + str(self.date)
+        return res

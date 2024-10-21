@@ -5,7 +5,7 @@ from odoo.exceptions import UserError
 class PurchaseRequestMakePurchaseOrder(models.TransientModel):
     _inherit = 'purchase.request.line.make.purchase.order'
 
-    # supplier_id = fields.Many2one('res.partner', string='Supplier', required=False)
+    supplier_id = fields.Many2one('res.partner', string='Supplier', required=False)
     supplier_ids = fields.Many2many('res.partner', string="Suppliers", domain="[('supplier_rank', '>', 0)]")
 
     def make_purchase_order(self):
@@ -14,6 +14,8 @@ class PurchaseRequestMakePurchaseOrder(models.TransientModel):
         po_line_obj = self.env["purchase.order.line"]
         pr_line_obj = self.env["purchase.request.line"]
 
+        if self.supplier_ids:
+            self.supplier_id = self.supplier_ids[0]
         for supplier in self.supplier_ids:
             purchase = False
             for item in self.item_ids:
@@ -86,23 +88,3 @@ class PurchaseRequestMakePurchaseOrder(models.TransientModel):
             "context": False,
             "type": "ir.actions.act_window",
         }
-
-    # def make_purchase_order(self):
-    #     PurchaseOrder = self.env['purchase.order']
-    #     for wizard in self:
-    #         for supplier in wizard.supplier_ids:
-    #             po_vals = {
-    #                 'partner_id': supplier.id,
-    #                 'order_line': [],
-    #             }
-    #             for line in wizard.item_ids:
-    #                 po_line_vals = {
-    #                     'product_id': line.product_id.id,
-    #                     'name': line.name,
-    #                     'product_qty': line.product_qty,
-    #                     'product_uom': line.product_uom_id.id,
-    #                     'price_unit': 0.0,
-    #                     'date_planned': fields.Date.today(),
-    #                 }
-    #                 po_vals['order_line'].append((0, 0, po_line_vals))
-    #             PurchaseOrder.create(po_vals)

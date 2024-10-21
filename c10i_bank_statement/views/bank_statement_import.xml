@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="om_account_bank_statement_import_view_inherit_c10i_bank_statement" model="ir.ui.view">
+            <field name="name">account.bank.statement.import.view.form.c10i.bank.statement.inherit</field>
+            <field name="model">account.bank.statement.import</field>
+            <field name="inherit_id" ref="om_account_bank_statement_import.om_account_bank_statement_import_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='download_xlsx_template']" position="before">
+                    <field name="date" required="1"/>
+                </xpath>
+            </field>
+        </record>
+    
+    </data>
+    
+
+</odoo>

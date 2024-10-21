@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import models
+from . import plant_varieties
 from . import lhm
 from . import lhm_nap
 from . import lhm_plant_block

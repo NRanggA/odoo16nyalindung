@@ -89,6 +89,13 @@ class AccountBankStatementImport(models.TransientModel):
     def create_statement(self, values):
         statement = self.env['account.bank.statement'].create(values)
         return statement
+    
+    
+    def _prepare_statement_vals(self):
+        return {
+            'name': 'Statement Of ' + str(datetime.today().date()),
+            'journal_id': self.env.context.get('active_id'),
+        }
 
     def import_file(self):
         for data_file in self.attachment_ids:
@@ -144,11 +151,8 @@ class AccountBankStatementImport(models.TransientModel):
                                         'journal_id': self.env.context.get('active_id')
                                     })
                                     vals_list.append((0, 0, values))
-                        statement_vals = {
-                            'name': 'Statement Of ' + str(datetime.today().date()),
-                            'journal_id': self.env.context.get('active_id'),
-                            'line_ids': vals_list
-                        }
+                        statement_vals = self._prepare_statement_vals()
+                        statement_vals['line_ids'] = vals_list
                         if len(vals_list) != 0:
                             statement = self.create_statement(statement_vals)
                     elif file_name.strip().endswith('.xlsx'):
@@ -181,11 +185,8 @@ class AccountBankStatementImport(models.TransientModel):
                                     'journal_id': self.env.context.get('active_id')
                                 })
                                 vals_list.append((0, 0, values))
-                        statement_vals = {
-                            'name': 'Statement Of ' + str(datetime.today().date()),
-                            'journal_id': self.env.context.get('active_id'),
-                            'line_ids': vals_list
-                        }
+                        statement_vals = self._prepare_statement_vals()
+                        statement_vals['line_ids'] = vals_list
                         if len(vals_list) != 0:
                             statement = self.create_statement(statement_vals)
                     if statement:
