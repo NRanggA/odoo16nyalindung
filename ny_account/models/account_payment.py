@@ -42,6 +42,9 @@ class AccountPayment(models.Model):
     def report_data(self):
         for rec in self:
             
+            if not rec.partner_id.bank_ids:
+                raise ValidationError("Partner tidak memiliki informasi bank yang terdaftar.")
+
             if rec.journal_id.type == 'bank':
                 return self.env.ref('ny_account.action_report_payment_vendor_bank').report_action(self)
             else:
