@@ -24,13 +24,9 @@ class lhm_transaction(models.Model):
             else:
                 return cell_value.strip()
         
-        logging.info("======== IMPORT LHM LINE BERHASIL =======")
-
         if self.is_import:
             if not self.file:
-                raise UserError(_("Masukkan File Terlebih Dahulu"))
-        
-        
+                raise UserError(_("Masukkan File Terlebih Dahulu"))      
 
         data        = base64.b64decode(self.file)
         excel_file  = io.BytesIO(data)
@@ -130,11 +126,15 @@ class lhm_transaction(models.Model):
                 'hasil_2'           : row.get('HASIL 2', ''),
                 # 'satuan_2'          : satuan_2.id,
             }))
+
+
         
         if error_message_list:
             error_message = '\n'.join(error_message_list)
             self.error_message = error_message
             raise ValidationError(_("Import data gagal dengan error berikut:\n%s") % error_message)
+        
+        logging.info(f"======== IMPORT LHM LINE BERHASIL {to_update} =======")
         
         self.lhm_line_ids = to_update
         return True
