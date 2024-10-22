@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_e_faktur_list" model="ir.actions.act_window">
+        <field name="name">e-Faktur List</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_out_invoice': 1}</field>
+        <field name="domain">[('move_type', '=', 'out_invoice'), ('l10n_id_tax_number', '!=', False)]</field>
+    </record>
+
+    <record id="view_e_faktur_list_tree" model="ir.ui.view">
+        <field name="name">view.e.faktur.list.tree</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <tree string="e-Faktur List" create="false">
+                <field name="l10n_id_tax_number" string="Tax Number"/>
+                <field name="name" string="Invoice Name"/>
+                <field name="partner_id" string="Customer Name"/>
+            </tree>
+        </field>
+    </record>
+
+    <menuitem id="menu_e_faktur_list"
+              name="e-Faktur List"
+              parent="account.menu_finance_receivables"
+              action="action_e_faktur_list"
+              sequence="10"/>
+
+    <record id="l10n_id_efaktur.efaktur_invoice_action" model="ir.actions.act_window">
+        <field name="name">e-Faktur Outstanding</field>
+    </record>
+    <menuitem id="menu_group_efaktur" name="e-Faktur" parent="account.menu_finance_receivables" sequence="110"/>
+    <menuitem id="ny_account.menu_e_faktur_list" name="e-Faktur List" parent="menu_group_efaktur" sequence="1"/>
+    <menuitem id="l10n_id_efaktur.menu_efaktur_action" name="e-Faktur Outstanding" parent="menu_group_efaktur" sequence="2"/>
+
+
+</odoo>

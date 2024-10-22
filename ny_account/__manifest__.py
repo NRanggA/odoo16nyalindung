@@ -24,7 +24,7 @@
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
 
@@ -43,6 +43,9 @@
 
         # Direct Payment
         'views/account_skb_views.xml',
+
+        # E-Faktur List
+        'views/efaktur_list_views.xml',
 
 
     ],
