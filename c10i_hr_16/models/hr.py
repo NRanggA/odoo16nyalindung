@@ -42,7 +42,7 @@ class hr_employee(models.Model):
     state_id                = fields.Many2one('res.country.state', 'Provinsi', domain="[('country_id', '=', country_id)]")
     city_id                 = fields.Many2one('res.city', 'Kota/ Kabupaten', domain="[('state_id', '=', state_id),('country_id', '=', country_id)]")
     nationality_id          = fields.Many2one('res.country', 'Kewarganegaraan')
-    no_induk                = fields.Char('NIK',)
+    no_induk                = fields.Char('NIK')
     npwp                    = fields.Char('NPWP', )
     bpjs_kesehatan          = fields.Char('BPJS Kesehatan', )
     bpjs_ketenagakerjaan    = fields.Char('BPJS Ketenagakerjaan', )
@@ -55,6 +55,15 @@ class hr_employee(models.Model):
     calendar_id             = fields.Many2one('resource.calendar', string="Jam Kerja")
     pensiun                 = fields.Boolean(string='Pensiun', default=False)
     place_of_birth          = fields.Char('Tempat Lahir')
+
+    @api.constrains('no_induk')
+    def _check_unique_no_induk(self):
+        for record in self:
+            if record.no_induk:
+                # Cek jika ada karyawan lain dengan no_induk yang sama
+                existing_employee = self.search([('no_induk', '=', record.no_induk), ('id', '!=', record.id)], limit=1)
+                if existing_employee:
+                    raise ValidationError(f"NIK {record.no_induk} sudah digunakan oleh karyawan {existing_employee.name}.")
 
     @api.model
     def create(self, values):
