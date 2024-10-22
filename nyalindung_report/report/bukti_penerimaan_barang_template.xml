@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template t-name="nyalindung_report.report_penerimaan_barang">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="doc"/>
+            <t t-foreach="docs" t-as="o">
+                <div style="width: 80%; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+                    
+                    <header style="display: flex; width: 100%;">
+                        <h1 style="width: 50%;">PT. NYALINDUNG</h1>
+                        <h2 style="width: 50%;">BUKTI PENERIMAAN BARANG</h2>
+                    </header>
+                    
+                    <div style="display: flex; width: 100%; font-size: 14px;">
+                        <div style="width: 50%;"></div>
+                        <table style="width: 50%; border: none;">
+                            <tr>
+                                <td style="border: none;">Nomor</td>
+                                <td style="border: none;"> : </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none;">Supplier</td>
+                                <td style="border: none;"> : </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none;">Tanggal</td>
+                                <td style="border: none;"> : </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none;">Surat Pengantar/Nota No.</td>
+                                <td style="border: none;"> : </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none;">No. Pol Kendaraan</td>
+                                <td style="border: none;"> : </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <br/>
+
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid black; padding: 8px;">NO</th>
+                                <th style="border: 1px solid black; padding: 8px;">NAMA BARANG</th>
+                                <th style="border: 1px solid black; padding: 8px;">SATUAN</th>
+                                <th style="border: 1px solid black; padding: 8px;">JUMLAH</th>
+                                <th style="border: 1px solid black; padding: 8px;">KETERANGAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Inisialisasi variabel counter -->
+                            <t t-set="counter" t-value="0"/>
+                            <t t-foreach="o.move_ids_without_package" t-as="product">
+                                <!-- Increment counter untuk nomor urut -->
+                                <t t-set="counter" t-value="counter + 1"/>
+                                <tr>
+                                    <td style="border: 1px solid black; padding: 8px;" t-esc="counter"/>
+                                    <td style="border: 1px solid black; padding: 8px;" t-esc="product.product_id.name or ''"/>
+                                    <td style="border: 1px solid black; padding: 8px;" t-esc="product.product_uom.name or ''"/>
+                                    <td style="border: 1px solid black; padding: 8px;" t-esc="product.quantity_done or ''"/>
+                                    <td style="border: 1px solid black; padding: 8px;"></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <br/>
+
+                    <div style="margin-top: 50px; width: 100%; display: flex;">
+                        <div style="width: 50%; text-align: center;">
+                            <p>Yang Menyerahkan,</p>
+                            <br/><br/>
+                            <p>( ________________ )</p>
+                        </div>
+                        <div style="width: 50%; text-align: center;">
+                            <p>Mengetahui,<br/>Kepala Bagian</p>
+                            <br/><br/>
+                            <p>( ________________ )</p>
+                        </div>
+                        <div style="width: 50%; text-align: center;">
+                            <p>Nyalindung, 05 February 2024<br/>Penerima,</p>
+                            <br/><br/>
+                            <p>( ________________ )</p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+
+    <record id="paperformat_penerimaan_barang" model="report.paperformat">
+        <field name="name">Penerimaan barang</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="page_width">0</field>
+        <field name="page_width">0</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_right">5</field>
+        <field name="margin_left">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+</odoo>
