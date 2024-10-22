@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import io
 import base64
-
+import math
 import logging
 
 
@@ -23,6 +23,12 @@ class lhm_transaction(models.Model):
                 return str(int(cell_value)) if not np.isnan(cell_value) else ''
             else:
                 return cell_value.strip()
+        
+        # Fungsi untuk menangani NaN dan mengembalikan nilai default
+        def handle_nan(value, default):
+            if value is None or (isinstance(value, float) and math.isnan(value)):
+                return default
+            return value
         
         if self.is_import:
             if not self.file:
@@ -94,7 +100,6 @@ class lhm_transaction(models.Model):
             # Pencarian berdasarkan Varietas
 
 
-
             # ========== SATUAN ==============
             # ================================
             # satuan_1 = self.env['uom.uom'].search([('name', '=', row.get('Satuan 1', ''))], limit=1)
@@ -106,9 +111,9 @@ class lhm_transaction(models.Model):
             #     error_message_list.append(f"Baris ke- {index + 2}  pada Satuan 2 dengan nama {row.get('Satuan 2', '')} tidak ditemukan!")
 
 
-
             # Mencari data abasensi 
             absensi_kj  = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+
             # Menambahkan data
             to_update.append((1, lhm_line.id, {
                 'attendance_id'     : absensi_kj.id,
@@ -116,17 +121,16 @@ class lhm_transaction(models.Model):
                 'varieties_id'      : varietas_found.id,
                 'location_id'       : location.id,
                 'activity_id'       : activity.id,
-                'is_borong'         : row.get('IS BORONG', ''),
-                'is_hasil_2'        : row.get('IS HASIL 2', ''),
-                'work_day'          : row.get('HK', ''),
+                'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
+                'is_hasil_2'        : handle_nan(row.get('IS HASIL 2', ''), False),
+                'work_day'          : handle_nan(row.get('HK', ''), 0),
                 'product_id'        : varietas_found.product_id.id,
-                'hasil_1'           : row.get('HASIL 1', ''),
+                'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
                 # 'satuan_1'          : satuan_1.id,
                 'product_id_2'      : varietas_found.secondary_product_id.id,
-                'hasil_2'           : row.get('HASIL 2', ''),
+                'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                 # 'satuan_2'          : satuan_2.id,
             }))
-
 
         
         if error_message_list:
