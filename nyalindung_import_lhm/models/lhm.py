@@ -6,6 +6,9 @@ import numpy as np
 import io
 import base64
 
+import logging
+
+
 class lhm_transaction(models.Model):
     _inherit = 'lhm.transaction'
 
@@ -20,11 +23,14 @@ class lhm_transaction(models.Model):
                 return str(int(cell_value)) if not np.isnan(cell_value) else ''
             else:
                 return cell_value.strip()
-            
+        
+        logging.info("======== IMPORT LHM LINE BERHASIL =======")
+
         if self.is_import:
             if not self.file:
                 raise UserError(_("Masukkan File Terlebih Dahulu"))
-            
+        
+        
 
         data        = base64.b64decode(self.file)
         excel_file  = io.BytesIO(data)
