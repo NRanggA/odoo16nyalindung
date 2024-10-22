@@ -87,24 +87,26 @@ class NyAttendance(ApiBase):
             # VALIDASI FIELD
             if not datas.get('username',False):
                 return Response(json.dumps({'message': "username Wajib diisi"}), headers=HEADERS, status=404)
-            check_user = request.env['res.users'].sudo().search([('login','=',datas['username'])])
-            if not check_user:
+            employee_found = request.env['hr.employee'].sudo().search([('mydaya_user_login','=',datas['username'])])
+            if not employee_found:
+                return Response(json.dumps({'message': "Unauthorized, username not found."}), headers=HEADERS, status=401)
+            if employee_found.mydaya_user_pwd != datas.get('pwdlain', False):
                 return Response(json.dumps({'message': "Unauthorized, please contact the admin for further details."}), headers=HEADERS, status=401)
 
             result = {
                 'status': 1,
-                'uname': check_user.login,
-                'fname': check_user.employee_id.name,
-                'dept': check_user.employee_id.department_id.name,
-                'uemail': check_user.login,
-                'divisi': check_user.employee_id.department_id.name,
+                'uname': employee_found.mydaya_user_login,
+                'fname': employee_found.name,
+                'dept': employee_found.department_id.name,
+                'uemail': employee_found.work_email,
+                'divisi': employee_found.department_id.name,
                 'sect': '',
                 'area': 'OFFICE',
                 'golongan': '',
-                'nip': check_user.employee_id.no_induk,
-                'latacuan': check_user.employee_id.lat_acuan,
-                'lngacuan': check_user.employee_id.long_acuan,
-                'valjarak': check_user.employee_id.value_jarak,
+                'nip': employee_found.no_induk,
+                'latacuan': employee_found.lat_acuan,
+                'lngacuan': employee_found.long_acuan,
+                'valjarak': employee_found.value_jarak,
                 'subco': '2'
             }
             return Response(json.dumps(result, cls=DateEncoder), headers=HEADERS, status=201)
