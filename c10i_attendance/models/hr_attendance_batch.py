@@ -106,16 +106,17 @@ class HrAttendanceBatch(models.Model):
             # if not employee:
             #     raise ValidationError(f"Karyawan dengan nip {row['Nik']} tidak ditemukan!")
 
-            employee = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik']))])
-            if not employee:
+            employees = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik']))])
+            if not employees:
                 raise ValidationError(f"Karyawan dengan NIK {row['Nik']} tidak ditemukan!")
             
             # Jika ditemukan lebih dari satu karyawan dengan NIK yang sama
-            elif len(employee) > 1:
+            elif len(employees) > 1:
                 # list yang berisi nama dan NIK dari semua karyawan yang memiliki NIK yang sama
-                employee_list = "\n".join([f"- {emp.name} (NIK: {emp.no_induk})" for emp in employee])
+                employee_list = "\n".join([f"- {emp.name} (NIK: {emp.no_induk})" for emp in employees])
                 raise ValidationError(f"Ditemukan lebih dari satu karyawan dengan NIK {row['Nik']}: \n{employee_list}")
             
+            employee = employees[0]
 
             try:
                 check_in_str = None
