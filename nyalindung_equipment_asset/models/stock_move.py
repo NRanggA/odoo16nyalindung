@@ -10,7 +10,7 @@ class StockMove(models.Model):
 
         # Get the threshold value from settings
         threshold = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_from', default=0)
-
+        
         # Prepare debit and credit line values
         debit_line_vals = {
             'name': description,
@@ -33,6 +33,13 @@ class StockMove(models.Model):
             'balance': -credit_value,
             'account_id': credit_account_id,
         }
+        if self.picking_type_id.code=='issue':
+            credit_line_vals.update({
+                'plantation_varieties_id': self.plantation_varieties_id.id,
+                'plantation_location_type_id': self.plantation_location_type_id.id,
+                'plantation_location_id': self.plantation_location_id.id,
+                'plantation_activity_id': self.plantation_activity_id.id,
+            })
 
         # Initialize the result dictionary
         rslt = {'credit_line_vals': credit_line_vals, 'debit_line_vals': debit_line_vals}
