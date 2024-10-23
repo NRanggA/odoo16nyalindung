@@ -67,7 +67,7 @@ class lhm_plant_block(models.Model):
             
     name                = fields.Char("Deskripsi")
     code                = fields.Char("Kode")
-    varieties_id = fields.Many2one('plant.varieties', string='Varietas')
+    varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
     land_block_id       = fields.Many2one("lhm.land.block", string="Blok Tanah", ondelete="restrict")
     afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict")
     owner_type          = fields.Selection([('inti','Inti'),('plasma','Plasma')], 'Tipe Kepemilikan')

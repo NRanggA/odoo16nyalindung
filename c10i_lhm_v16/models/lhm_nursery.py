@@ -37,6 +37,7 @@ class lhm_nursery(models.Model):
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     account_id          = fields.Many2one("account.account", "Cost Account")
     product_id          = fields.Many2one('product.product', string='Product')
+    varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
 
     @api.model
     def create(self, values):

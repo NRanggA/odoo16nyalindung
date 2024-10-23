@@ -877,6 +877,8 @@ class lhm_project(models.Model):
                                                     "* Done: Project Sudah Selesai. \n")
     categ_id                = fields.Many2one('lhm.project.type', 'Kategory')
 
+    varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
+
     def button_progress(self):
         if not self.location_id:
             location_name       = self.code
