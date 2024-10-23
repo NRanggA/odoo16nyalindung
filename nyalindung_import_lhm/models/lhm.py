@@ -14,7 +14,7 @@ class lhm_transaction(models.Model):
 
     # Field untuk kebutuhan import LHM line 
     is_import = fields.Boolean('Import LHM line', default=False)
-    file = fields.Binary('File')
+    file = fields.Binary('File', attachment=True)
     error_message = fields.Text('Error Message')
 
     def import_data(self):
