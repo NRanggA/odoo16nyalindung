@@ -134,6 +134,10 @@ class StockMove(models.Model):
         if not acc_valuation:
             raise UserError(_('You don\'t have any stock valuation account defined on your product category. You must define one before processing this operation.'))
         journal_id = accounts_data['stock_journal'].id
+
+        if self._is_out() and self.plantation_activity_id.account_id:
+            acc_dest = self.plantation_activity_id.account_id.id
+
         return journal_id, acc_src, acc_dest, acc_valuation
     
 
