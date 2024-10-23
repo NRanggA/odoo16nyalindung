@@ -370,9 +370,9 @@ class ReportSummaryBkm(models.AbstractModel):
             row = 7
             nomor = 1
 
-            mandor_name = kemandoran.foreman_id.name if kemandoran.foreman_id else ''
-            asisten_mandor_name = kemandoran.foreman_id_1.name if kemandoran.foreman_id_1 else ''
-            kerani_name = kemandoran.admin_id.name if kemandoran.admin_id else ''
+            mandor_name = kemandoran.kepala_mandor_id.name if kemandoran.kepala_mandor_id else ''
+            asisten_mandor_name = kemandoran.mandor_id.name if kemandoran.mandor_id else ''
+            kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
 
             for emp_id, employee_name, total_qty_nap_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 sheet.write(row, 0, nomor, wbf['data_center'])
