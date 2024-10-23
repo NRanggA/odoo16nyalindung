@@ -36,6 +36,22 @@
                             <field name="usage" sum="usage"/>
                             <field name="distributed_cost" sum="distributed_cost"/>
                         </tree>
+                        <form>
+                            <group>
+                                <field name="plantation_location_type_id" />
+                                <field name="plantation_location_id" />
+                                <field name="plantation_activity_id" />
+                                <field name="dest_account_id" />
+                                <field name="usage"/>
+                                <field name="distributed_cost"/>
+                            </group>
+                            <field name="distribution_line_ids" >
+                                <tree>
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="distributed_cost" sum="distributed_cost" />
+                                </tree>
+                            </field>
+                        </form>
                     </field>
                 </sheet>
             </form>
@@ -53,6 +69,7 @@
                 <field name="total_usage" />
                 <field name="total_cost" />
                 <field name="running_move_id" optional="hide"/>
+                <field name="closing_account_id" invisible="1"/>
             </tree>
         </field>
     </record>

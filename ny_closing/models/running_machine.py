@@ -5,6 +5,14 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class RunningMachineLine(models.Model):
+    _name = 'running.machine.distribution.line'
+    _description = 'Distribution Cost on Running Machine Procedure'
+
+    running_line_id = fields.Many2one('running.machine.line', 'Running Line', ondelete='cascade')
+    plantation_src_journal_id = fields.Many2one('account.journal', string='Source Journal', ondelete='restrict')
+    distributed_cost = fields.Float()
+
+class RunningMachineLine(models.Model):
     _name = 'running.machine.line'
     _description = 'Summary Machine Log for Running Procedure'
     
@@ -16,10 +24,12 @@ class RunningMachineLine(models.Model):
     dest_account_id = fields.Many2one('account.account', string='Dest. Account', ondelete='restrict')
     usage = fields.Float()
     distributed_cost = fields.Float()
+    distribution_line_ids = fields.One2many('running.machine.distribution.line', 'running_line_id', string='Distribution Lines')
 
 class RunningMachine(models.Model):
     _name = 'running.machine' 
     _description = 'Running Machine Procedure'
+    _rec_name = 'machine_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
     
@@ -42,12 +52,12 @@ class RunningMachine(models.Model):
             RETURNS void AS
             $BODY$
             DECLARE
+                v_existing_move_id integer;
                 v_running_machine_date_from date;
                 v_running_machine_date_to date;
-                v_existing_move_id integer;
                 v_total_usage numeric := 0.0;
                 v_total_cost numeric := 0.0;
-                sums_usage_aml record;
+                sums_usage record;
                 v_activity_account_id integer := 0;
                 v_distributed_cost numeric := 0.0;
                 v_running_machine_line_id integer;
@@ -82,7 +92,7 @@ class RunningMachine(models.Model):
                         and aml.plantation_location_id=ll.id
                     group by lu.id INTO v_total_cost;
                             
-                FOR sums_usage_aml IN SELECT 
+                FOR sums_usage IN SELECT 
                                 lml2.location_type_id,
                                 lml2.location_id,
                                 lml2.activity_id,
@@ -96,12 +106,12 @@ class RunningMachine(models.Model):
                                     lml2.location_id, lml2.activity_id
                 LOOP
                     v_activity_account_id := 0;
-                    select account_id from lhm_activity where id=sums_usage_aml.activity_id INTO v_activity_account_id;
+                    select account_id from lhm_activity where id=sums_usage.activity_id INTO v_activity_account_id;
                     continue when v_activity_account_id=0;
 
                     v_distributed_cost := 0;
                     IF v_total_usage>0.0 THEN
-                        v_distributed_cost := (v_total_cost/v_total_usage) * sums_usage_aml.usage;
+                        v_distributed_cost := (v_total_cost/v_total_usage) * sums_usage.usage;
                     END IF;
 
                     INSERT INTO running_machine_line
@@ -114,11 +124,11 @@ class RunningMachine(models.Model):
                             nextval('running_machine_line_id_seq'),
                             p_running_machine_id,
                             p_machine_id,
-                            sums_usage_aml.location_type_id,
-                            sums_usage_aml.location_id,
-                            sums_usage_aml.activity_id,
+                            sums_usage.location_type_id,
+                            sums_usage.location_id,
+                            sums_usage.activity_id,
                             v_activity_account_id,
-                            sums_usage_aml.usage,
+                            sums_usage.usage,
                             v_distributed_cost,
                             p_user_id, p_user_id, (now() at time zone 'UTC'), (now() at time zone 'UTC'))
                         returning "id" into v_running_machine_line_id;
@@ -179,6 +189,11 @@ class RunningMachine(models.Model):
     def create_account_move(self):
         running_journal = self.env.ref('ny_closing.plantation_running_machine_journal')
         for running in self:
+            if not running.total_cost or not running.total_usage:
+                continue
+            if running.running_move_id:
+                if running.running_move_id.state=='posted':
+                    running.running_move_id.button_draft()
             move_lines = []
             for line in running.line_ids:
                 if not line.dest_account_id:
@@ -215,9 +230,11 @@ class RunningMachine(models.Model):
                 'move_type': 'entry',
                 'line_ids': move_lines,
             }
-            new_move = self.env['account.move'].create(values)
-            
-            running.running_move_id = new_move.id
+            if running.running_move_id:
+                running.running_move_id.write(values)
+            else:
+                new_move = self.env['account.move'].create(values)
+                running.running_move_id = new_move.id
 
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <menuitem 
+        id="menu_plantation_season" 
+        parent="c10i_lhm_v16.menu_lhm_master" 
+        action="ny_closing.plantation_season_action" 
+        sequence="60"
+        groups="c10i_lhm_v16.group_plantation_supervisor" />
+
     <menuitem
         id="menu_closing_process"
         parent="c10i_lhm_v16.menu_lhm_running"

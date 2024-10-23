@@ -3,11 +3,13 @@ access_closing_process_user,closing.process user,model_closing_process,base.grou
 
 access_running_workshop_user,running.workshop user,model_running_workshop,base.group_user,1,1,1,1
 access_running_workshop_line_user,running.workshop.line user,model_running_workshop_line,base.group_user,1,1,1,1
+access_running_workshop_distribution_line_user,running.workshop.distribution.line user,model_running_workshop_distribution_line,base.group_user,1,1,1,1
 access_running_vehicle_user,running.vehicle user,model_running_vehicle,base.group_user,1,1,1,1
 access_running_vehicle_line_user,running.vehicle.line user,model_running_vehicle_line,base.group_user,1,1,1,1
 access_running_vehicle_distribution_line_user,running.vehicle.distribution.line user,model_running_vehicle_distribution_line,base.group_user,1,1,1,1
 access_running_machine_user,running.machine user,model_running_machine,base.group_user,1,1,1,1
 access_running_machine_line_user,running.machine.line user,model_running_machine_line,base.group_user,1,1,1,1
+access_running_machine_distribution_line_user,running.machine.distribution.line user,model_running_machine_distribution_line,base.group_user,1,1,1,1
 access_closing_project_user,closing.project user,model_closing_project,base.group_user,1,1,1,1
 access_closing_nursery_user,closing.nursery user,model_closing_nursery,base.group_user,1,1,1,1
 
@@ -17,4 +19,5 @@ access_closing_plantation_deferred_user,closing.plantation.deferred user,model_c
 access_closing_plantation_user,closing.plantation user,model_closing_plantation,base.group_user,1,1,1,1
 
 access_closing_production_user,closing.production user,model_closing_production,base.group_user,1,1,1,1
+access_closing_production_plantation_cost_user,closing.production.plantation.cost user,model_closing_production_plantation_cost,base.group_user,1,1,1,1
 access_closing_production_finishgood_user,closing.production.finishgood user,model_closing_production_finishgood,base.group_user,1,1,1,1

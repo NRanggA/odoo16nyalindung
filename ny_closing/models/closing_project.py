@@ -7,6 +7,7 @@ _logger = logging.getLogger(__name__)
 class ClosingProject(models.Model):
     _name = 'closing.project' 
     _description = 'Closing Project Procedure'
+    _rec_name = 'project_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
 
@@ -44,6 +45,9 @@ class ClosingProject(models.Model):
 
     def create_account_move(self):
         for closing in self:
+            if closing.closing_move_id:
+                if closing.closing_move_id.state=='posted':
+                    closing.closing_move_id.button_draft()
             move_lines = []
             vals = {
                 'name': 'Distribute Cost from Project Closing',
@@ -71,9 +75,11 @@ class ClosingProject(models.Model):
                 'move_type': 'entry',
                 'line_ids': move_lines,
             }
-            new_move = self.env['account.move'].create(values)
-            
-            closing.closing_move_id = new_move.id
+            if closing.closing_move_id:
+                closing.closing_move_id.write(values)
+            else:
+                new_move = self.env['account.move'].create(values)
+                closing.closing_move_id = new_move.id
         
         return True
 
