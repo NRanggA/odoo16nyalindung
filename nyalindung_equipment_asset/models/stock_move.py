@@ -22,6 +22,13 @@ class StockMove(models.Model):
             'balance': debit_value,
             'account_id': debit_account_id,
         }
+        if self.picking_type_id.code=='issue':
+            debit_line_vals.update({
+                'plantation_varieties_id': self.plantation_varieties_id.id,
+                'plantation_location_type_id': self.plantation_location_type_id.id,
+                'plantation_location_id': self.plantation_location_id.id,
+                'plantation_activity_id': self.plantation_activity_id.id,
+            })
 
         credit_line_vals = {
             'name': description,
@@ -33,13 +40,6 @@ class StockMove(models.Model):
             'balance': -credit_value,
             'account_id': credit_account_id,
         }
-        if self.picking_type_id.code=='issue':
-            credit_line_vals.update({
-                'plantation_varieties_id': self.plantation_varieties_id.id,
-                'plantation_location_type_id': self.plantation_location_type_id.id,
-                'plantation_location_id': self.plantation_location_id.id,
-                'plantation_activity_id': self.plantation_activity_id.id,
-            })
 
         # Initialize the result dictionary
         rslt = {'credit_line_vals': credit_line_vals, 'debit_line_vals': debit_line_vals}
