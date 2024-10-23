@@ -27,6 +27,8 @@ class AccountBankStatement(models.Model):
 
     def button_validate(self):
         self.write({'state': 'validated'})
+        for line in self.line_ids:
+            line.reconcile_bank_line()
     
     def button_draft(self):
         self.write({'state': 'draft'})
@@ -69,23 +71,37 @@ class AccountBankStatement(models.Model):
             # stmt.date = sorted_lines.filtered(lambda l: l.state == 'posted')[-1:].date
         
     def button_get_payments(self):
-        self=self.sudo()
+        self = self.sudo()
+        journal_domain = [("date","=",self.date), ('journal_id','=',self.journal_id.id), ("state", "=", "posted")]
         self.line_ids = [(5,0,0)]
-        payments = self.env["account.direct.payment"].search([("date","=",self.date), ("state", "=", "posted")])
-        for i in payments:
+        account_payments = self.env["account.payment"].search(journal_domain)
+        direct_payments = self.env["account.direct.payment"].search(journal_domain)
+        for d in direct_payments:
             for a in i.line_ids:
-                if i.direct_state == 'send':
+                if d.direct_state == 'send':
                     amount_payment = -a.amount
-                elif i.direct_state == 'receive':
+                elif d.direct_state == 'receive':
                     amount_payment = a.amount
                     
                 self.line_ids = [(0,0,{
-                        'journal_id': i.journal_id.id,
-						'date': i.date,
+                        'journal_id': d.journal_id.id,
+						'date': d.date,
 						'payment_ref' : a.name,
-						'partner_id' : i.partner_id.id,
+						'partner_id' : d.partner_id.id,
 						'amount': amount_payment,
 					})]
+        for p in account_payments:
+            if p.payment_type == 'outbound':
+                amount_payment = -p.amount
+            else:
+                amount_payment = p.amount
+            self.line_ids = [(0,0,{
+                'journal_id': p.journal_id.id,
+                'date': p.date,
+                'payment_ref' : p.name,
+                'partner_id' : p.partner_id.id,
+                'amount': amount_payment,
+            })]
 
 class AccountBankStatementImport(models.TransientModel):
     _inherit = 'account.bank.statement.import'

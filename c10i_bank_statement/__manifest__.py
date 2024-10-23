@@ -16,7 +16,8 @@
     'category': 'Uncategorized',
     'version': '0.1',
 
-    'depends': ['base','account_statement_base', 'account_reconcile_oca', 'om_account_bank_statement_import'],
+    'depends': ['base','c10i_account','account_statement_base','nyalindung_direct_payment_expense',
+     'account_reconcile_oca', 'om_account_bank_statement_import'],
 
     'data': [
         'security/ir.model.access.csv',
