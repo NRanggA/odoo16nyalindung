@@ -8,9 +8,11 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='line_ids']/tree/field[@name='account_id']" position="before">
-                    <field name="plantation_varieties_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" required="1"/>
                     <field name="plantation_location_type_id" 
                         options="{'no_create':True, 'no_create':True, 'no_open': True}"/>
+                    <field name="plantation_varieties_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
+                        attrs="{'readonly': [('plantation_validator','=',True)], 
+                                'required': [('plantation_validator','=',False)]}" />
                     <field name="filtered_locations" invisible="1"/> 
                         <!-- domain="[('type_id','=',plantation_location_type_id)]"  -->
                     <field name="plantation_location_id" 
@@ -37,9 +39,11 @@
             <field name="inherit_id" ref="account.view_move_line_form"/>
             <field name="arch" type="xml">
                 <field name="account_id" position="before">
-                    <field name="plantation_varieties_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" required="1"/>
                     <field name="plantation_location_type_id" 
                         options="{'no_create':True, 'no_create':True, 'no_open': True}"/>
+                    <field name="plantation_varieties_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
+                        attrs="{'readonly': [('plantation_validator','=',True)], 
+                                'required': [('plantation_validator','=',False)]}" />
                     <field name="filtered_locations" invisible="1"/> 
                         <!-- domain="[('type_id','=',plantation_location_type_id)]"  -->
                     <field name="plantation_location_id" 
@@ -65,9 +69,11 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='account_id']" position="before">
-                    <field name="plantation_varieties_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" required="1"/>
                     <field name="plantation_location_type_id" 
                         options="{'no_create':True, 'no_create':True, 'no_open': True}"/>
+                    <field name="plantation_varieties_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
+                        attrs="{'readonly': [('plantation_validator','=',True)], 
+                                'required': [('plantation_validator','=',False)]}"/>
                     <field name="filtered_locations" invisible="1"/> 
                         <!-- domain="[('type_id','=',plantation_location_type_id)]"  -->
                     <field name="plantation_location_id" 

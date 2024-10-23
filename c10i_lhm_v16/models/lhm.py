@@ -87,6 +87,7 @@ class lhm_location_type(models.Model):
     workshop_line           = fields.Boolean("Workshop Line", default=False, help="Centang jika tipe lokasi ingin ditampilkan di Buku Workshop")
     machine_line            = fields.Boolean("Machine Line", default=False, help="Centang jika tipe lokasi ingin ditampilkan di Buku Mesin")
     no_line                 = fields.Boolean("No Line", default=False, help="Centang jika tipe lokasi tidak ingin ditampilkan di Dokumen Plantation Manabun")
+    station = fields.Boolean("Mills Station", default=False)
     
     skb_declare             = fields.Boolean("SKB Declare", default=False)
     has_subtype             = fields.Boolean("Sub Tipe?", help="Centang jika memiliki sub tipe")
@@ -944,6 +945,8 @@ class lhm_project(models.Model):
             self.location_id.write({'code': values.get('code', False)})
         if 'location_type_id' in values and self.location_id:
             self.location_id.write({'type_id': values.get('location_type_id', False)})
+        if 'varieties_id' in values and self.location_id:
+            self.location_id.write({'varieties_id': values.get('varieties_id', False)})
         if 'active' in values and self.location_id:
             self.location_id.write({'active': values.get('active', False)})
         return super(lhm_project, self).write(values)
@@ -1830,11 +1833,9 @@ class lhm_transaction_line(models.Model):
             if line.lhm_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('PJ','NA'):
+                if line.location_type_id.code in ('WS','VH','MA'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                elif line.location_type_id.code in ('WS','VH','MA','NS'):
-                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION
+                else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -2538,11 +2539,9 @@ class lhm_machine_line(models.Model):
             if line.lhm_machine_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('PJ','NA'):
+                if line.location_type_id.code in ('WS','VH','MA'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                elif line.location_type_id.code in ('WS','VH','MA','NS'):
-                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION
+                else: # GC, IDC, PLANTATION, NS, PJ
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -2817,11 +2816,9 @@ class lhm_vehicle_line(models.Model):
             if line.lhm_vehicle_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('PJ','NA'):
+                if line.location_type_id.code in ('WS','VH','MA'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                elif line.location_type_id.code in ('WS','VH','MA','NS'):
-                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION
+                else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -3117,11 +3114,9 @@ class lhm_workshop_line(models.Model):
             if line.lhm_workshop_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('PJ','NA'):
+                if line.location_type_id.code in ('WS','VH','MA'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                elif line.location_type_id.code in ('WS','VH','MA','NS'):
-                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION
+                else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -3659,11 +3654,9 @@ class lhm_contractor_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('PJ','NA'):
+                if line.location_type_id.code in ('WS','VH','MA'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                elif line.location_type_id.code in ('WS','VH','MA','NS'):
-                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION
+                else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 

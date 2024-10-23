@@ -133,9 +133,9 @@
                                     <field name="skb_declare"/>
                                 </group>
                             </group>
-                            <group string="Running/Closing Allocation Account Configuration">
+                            <!-- <group string="Running/Closing Allocation Account Configuration">
                                 <field name="beban_closing_account_id"/>
-                            </group>
+                            </group> -->
                         </group>
                         <notebook>
                             <page string="Daftar Lokasi">
@@ -559,7 +559,7 @@
                             </group>
                         </group>
                         <group name="accounting">
-                            <group>
+                            <!-- <group>
                                 <field name="beban_closing_account_id" />
                                 <field name="tm_beban_closing_account_id" />
                                 <field name="tm_plasma_closing_account_id" />
@@ -568,7 +568,7 @@
                                 <field name="counterpart_closing_account_id" />
                                 <field name="tm_counterpart_closing_account_id" />
                                 <field name="tm_plasma_counterpart_closing_account_id" />
-                            </group>
+                            </group> -->
                         </group>
                         <separator attrs="{'invisible' : [('type_id','=',False)]}" string="Tipe Dokumen" />
                         <field name="doc_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_res_doc_type_m2m_tree'}" attrs="{'invisible' : [('type_id','=',False)]}" />
@@ -2315,8 +2315,9 @@
                                         <field name="varieties_id" required="1"
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_locations" invisible="1" />
+                                        <!-- ('machine_line','=',True), -->
                                         <field name="location_type_id" 
-                                            domain="[('machine_line','=',True),('code','not in',['WS','VH','MA'])]" 
+                                            domain="[('code','not in',['WS','VH','MA'])]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 
@@ -2665,8 +2666,9 @@
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="varieties_id" required="1"
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <!-- ('workshop_line','=',True), -->
                                         <field name="location_type_id" 
-                                            domain="[('workshop_line','=',True),('code','!=','WS')]" 
+                                            domain="[('code','!=','WS')]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="filtered_locations" invisible="1"/>
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->

@@ -18,29 +18,29 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Project and Nursery">
+                        <page name="plantation" string="Upkeep and Harvest">
+                            <group>
+                                <field name="harvest_activity_id" required="1" domain="[('type_id.plantation','=',True)]"/>
+                            </group>
+                            <label for="upkeep_activity_ids"/>
+                            <field name="upkeep_activity_ids" domain="[('type_id.plantation','=',True)]"/>
+                        </page>
+                        <page name="gc" string="General Charges">
+                            <field name="general_charges_activity_ids" domain="[('type_id.code','=','GC')]"/>
+                        </page>
+                        <page name="idc" string="Indirect Cost">
+                            <field name="indirect_cost_activity_ids" domain="[('type_id.code','=','IDC')]"/>
+                        </page>
+                        <page name="plant_block" string="Blok Tanam">
+                            <field name="plant_block_ids" widget="many2many" nolabel="1"/>
+                        </page>
+                        <page name="other" string="Project and Nursery">
                             <group string="Project">
                                 <field name="project_ids" widget="many2many"/>
                             </group>
                             <group string="Nursery">
                                 <field name="nursery_ids" widget="many2many"/>
                             </group>
-                            <group string="Plant Block">
-                                <field name="plant_block_ids" widget="many2many"/>
-                            </group>
-                        </page>
-                        <page name="plantation" string="Upkeep and Harvest">
-                            <group>
-                                <field name="harvest_activity_id" required="1"/>
-                            </group>
-                            <label for="upkeep_activity_ids"/>
-                            <field name="upkeep_activity_ids" />
-                        </page>
-                        <page name="gc" string="General Charges">
-                            <field name="general_charges_activity_ids" />
-                        </page>
-                        <page name="idc" string="Indirect Cost">
-                            <field name="indirect_cost_activity_ids" />
                         </page>
                     </notebook>
                 </sheet>

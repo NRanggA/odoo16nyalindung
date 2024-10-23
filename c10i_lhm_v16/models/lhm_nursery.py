@@ -35,7 +35,7 @@ class lhm_nursery(models.Model):
     active              = fields.Boolean("Active", default=True)
     group_progress_id   = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    account_id          = fields.Many2one("account.account", "Cost Account")
+    account_id          = fields.Many2one("account.account", "Stock Valuation Account")
     product_id          = fields.Many2one('product.product', string='Product')
     varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
 
@@ -49,6 +49,7 @@ class lhm_nursery(models.Model):
                                 'name'              : location_name or "(NoName)",
                                 'code'              : location_code or "(NoCode)",
                                 'type_id'           : location_type_id or False,
+                                'varieties_id': values.get('varieties_id',False),
                                 'group_progress_id' : group_progress_id,
                             }
         new_location    = False
@@ -66,6 +67,8 @@ class lhm_nursery(models.Model):
             self.location_id.write({'code': values.get('code', False)})
         if 'location_type_id' in values and self.location_id:
             self.location_id.write({'type_id': values.get('location_type_id', False)})
+        if 'varieties_id' in values and self.location_id:
+            self.location_id.write({'varieties_id': values.get('varieties_id', False)})
         if 'group_progress_id' in values and self.location_id:
             self.location_id.write({'group_progress_id' : values.get('group_progress_id',False)})
         if 'active' in values and self.location_id:
