@@ -35,4 +35,20 @@
         </field>
     </record>
 
+    <record id="hr_foreman_view_tree" model="ir.ui.view">
+        <field name="name">hr.foreman.view.form</field>
+        <field name="model">hr.foreman</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_hr_foreman_tree" />
+        <field name="arch" type="xml">
+            <field name="foreman_id_1" position="replace"/>
+            <field name="foreman_id" position="replace"/>
+            <field name="admin_id" position="replace"/>
+            
+            <field name="name" position="after">
+                <field name="kepala_mandor_id"/>
+                <field name="mandor_id"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

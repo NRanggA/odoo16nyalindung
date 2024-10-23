@@ -899,7 +899,7 @@
                         </group>
                         <notebook>
                             <page name="daftar_karyawan" string="Daftar Karyawan">
-                                <field name="employee_ids" nolabel="1" readonly="0" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}">
+                                <field name="employee_ids" widget="many2many" nolabel="1" readonly="0" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}">
                                     <tree edit="false" create="false">
                                         <field name="name"/>
                                         <field name="no_induk"/>
