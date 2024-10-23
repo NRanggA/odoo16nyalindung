@@ -67,7 +67,7 @@ class SeedMoveLine(models.Model):
     mutation_type                = fields.Selection(related='seed_move_id.mutation_type_id.type', string='Tipe Mutasi', ondelete="cascade", store=True)
     date                         = fields.Date(string='Tanggal')
     satuan_id                    = fields.Many2one(related='nursery_id.product_id.uom_id', string='Satuan', store=True)
-    mutation_type_id             = fields.Many2one('mutation.type', string='Jenis Mutasi', ondelete="cascade", store=True)
+    mutation_type_id             = fields.Many2one(related='seed_move_id.mutation_type_id', string='Jenis Mutasi', ondelete="cascade", store=True)
     qty                          = fields.Float('Qty')
     nursery_id                   = fields.Many2one('lhm.nursery', string='Blok Bibit', ondelete="cascade")
     location_src_id              = fields.Many2one('lhm.location', string='From', ondelete="cascade")
