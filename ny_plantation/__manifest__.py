@@ -24,7 +24,7 @@
         # 'security/ir.model.access.csv',
 
         'views/hr_foreman_view.xml',
-        # 'views/lhm_transaction_view.xml',
+        'views/lhm_transaction_view.xml',
         'views/lhm_plant_block_view.xml',
     ],
 }
