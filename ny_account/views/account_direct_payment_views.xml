@@ -11,6 +11,16 @@
                 string="Print Direct Payment Report" class="btn-primary"
                 attrs="{'invisible': [('id', '=', False)]}"/>
             </xpath>
+            
+            <!-- view di product_id tree di hide -->
+            <xpath expr="//field[@name='line_ids']/tree//field[@name='product_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- view di form product_id di hide -->
+            <xpath expr="//field[@name='line_ids']/form//field[@name='product_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
         </field>
     </record>
 
