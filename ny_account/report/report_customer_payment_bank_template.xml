@@ -264,7 +264,7 @@
                         <tr>
                             <td><span t-field="o.journal_id.name"/></td>
                             <td><span t-field="o.no_memo"/></td>
-                            <td><span t-esc="o.date_memo and o.date_memo.strftime('%d/%m/%Y')"/></td>
+                            <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
                             <td style="text-align:right;"><span t-esc="o.format_amount(o.amount)"/></td>
                             <td><span t-field="o.ref"/></td>
                         </tr>
