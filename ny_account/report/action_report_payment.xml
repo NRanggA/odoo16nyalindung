@@ -10,7 +10,7 @@
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">ny_account.report_payment_vendor_bank</field>
             <field name="report_file">ny_account.report_payment_vendor_bank</field>
-            <field name="print_report_name">("Report Payment %s" % (object.partner_id.name))</field>
+            <field name="print_report_name">("Report Vendor Payment Bank %s" % (object.partner_id.name))</field>
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
         <record id="action_report_payment_vendor_cash" model="ir.actions.report">
@@ -19,7 +19,27 @@
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">ny_account.report_payment_vendor_cash</field>
             <field name="report_file">ny_account.report_payment_vendor_cash</field>
-            <field name="print_report_name">("Report Payment %s" % (object.partner_id.name))</field>
+            <field name="print_report_name">("Report Vendor Payment Cash %s" % (object.partner_id.name))</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+
+        <!-- Customer Payment -->
+        <record id="action_report_payment_customer_bank" model="ir.actions.report">
+            <field name="name">Report Payment Customer Bank</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_payment_customer_bank</field>
+            <field name="report_file">ny_account.report_payment_customer_bank</field>
+            <field name="print_report_name">("Report Customer Payment Bank %s" % (object.partner_id.name))</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+        <record id="action_report_payment_customer_cash" model="ir.actions.report">
+            <field name="name">Report Payment Customer (Cash)</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_payment_customer_cash</field>
+            <field name="report_file">ny_account.report_payment_customer_cash</field>
+            <field name="print_report_name">("Report Customer Payment Cash %s" % (object.partner_id.name))</field>
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
 

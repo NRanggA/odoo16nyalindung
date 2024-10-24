@@ -135,7 +135,7 @@
                                             <t t-set="line_count" t-value="len(o.payment_line_ids)"/>
                                             <t t-set="counter" t-value="0"/> 
                                             <t t-foreach="o.payment_line_ids" t-as="line">
-                                                <t t-if="line.is_full_payment">
+                                                <t t-if="line.amount_to_pay > 0">
                                                     <t t-set="counter" t-value="counter + 1"/>
                                                     <t t-if="counter &gt; 1">, </t>
                                                     <span t-field="line.origin"/>

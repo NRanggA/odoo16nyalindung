@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template t-name="ny_account.report_payment_customer_bank">
+        <t t-call="web.html_container">
+            <head>
+                <meta charset="utf-8"/>
+                <style>
+                    <!-- .container {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-family: Arial, sans-serif;
+                        margin: 10px;
+                        font-size: 10px;
+                    } -->
+                    .header-table, .details-table, .footer-table {
+                        width: 100%;
+                        border: 1px solid black;
+                        border-collapse: collapse;
+                        font-size: 10px;
+                    }
+
+                    .header-table td, .details-table td, .footer-table td {
+                        border: 1px solid black;
+                        padding: 2px;
+                    }
+
+                    .header-table .logo td {
+                        border: none;
+                        padding: 2px;
+                    }
+
+                    .header-table {
+                        margin-bottom: 20px;
+                    }
+
+                    .header-left {
+                        width: 50%;
+                    }
+
+                    .header-right {
+                        width: 30%;
+                    }
+
+                    .details-table th, .details-table td {
+                        border: 1px solid black;
+                        padding: 2px;
+                    }
+
+                    .details-table th {
+                        background-color: orange;
+                        text-align: center;
+                    }
+
+                    .footer-table {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        width: 100%;
+                        border: 1px solid black;
+                        border-collapse: collapse;
+                        background-color: white;
+                    }
+
+                    .signature-table td {
+                        height: 70px;
+                        vertical-align: bottom;
+                        text-align: center;
+                    }
+
+                    .coa-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    .coa-table th, .coa-table td {
+                        border: 1px solid black;
+                        padding: 2px;
+                    }
+
+                    .coa-table th {
+                        background-color: orange;
+                        text-align: center;
+                    }
+
+                    .coa-table .header-left {
+                        font-weight: bold;
+                        text-align: left;
+                        padding-left: 5px;
+                    }
+
+                    .table-list-name td, .table-list-name th {
+                        border: none;
+                        text-align: left;
+                    }
+                </style>
+            </head>
+            <body>
+                <t t-set="o" t-value="doc"/>
+                <t t-foreach="docs" t-as="o">
+                    <table class="header-table">
+                        <tr>
+                            <td class="header-left" style="display: flex; border: none;">
+                                <table class="logo" style="border: none; font-size: 10px; text-align: left;">
+                                    <tr>
+                                        <th rowspan="4" width="40%">
+                                            <!-- <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/> -->
+                                            <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
+                                        </th>
+                                        <th style="font-size: 13px;">BANK MASUK</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">PT. Nyalindung</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jl. Raya Purwakarta No. 625 Km.9</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Padalarang / Kab. Bandung Barat</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td class="header-right table-list-name" colspan="2">
+                                <table style="border: none; font-size: 10px;">
+                                    <tr>
+                                        <th>No. DBIS</th>
+                                        <td> : </td>
+                                    </tr>
+                                    <tr>
+                                        <th>No. Invoice</th>
+                                        <td> 
+                                            :
+                                            <t t-set="line_count" t-value="len(o.payment_line_ids)"/>
+                                            <t t-set="counter" t-value="0"/> 
+                                            <t t-foreach="o.payment_line_ids" t-as="line">
+                                                <t t-if="line.amount_to_pay > 0">
+                                                    <t t-set="counter" t-value="counter + 1"/>
+                                                    <t t-if="counter &gt; 1">, </t>
+                                                    <span t-field="line.origin"/>
+                                                </t>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>No. Payment</th>
+                                        <td> : <span t-field="o.name"/></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-list-name">
+                                <table style="border: none; font-size: 10px;">
+                                    <tr>
+                                        <th>Beban</th>
+                                        <td> : Kebun / Pasir ....</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Dept. / Divisi</th>
+                                        <td> : </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Jenis Pembayaran</th>
+                                        <td> : </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td colspan="2">
+                                <!-- <t t-set="row_count" t-value="len(o.move_id.line_ids.filtered(lambda l: l.debit > 0)) + 1"/> -->
+                                <t t-set="row_count" t-value="sum(len(line.move_id.line_ids.filtered(lambda j: j.credit > 0)) for line in o.payment_line_ids if line.amount_to_pay > 0) + 2"/>
+                                <table class="coa-table" style="font-size: 10px;">
+                                    <tr>
+                                        <th t-att-rowspan="row_count">
+                                            Rincian COA
+                                        </th>
+                                        <th>Dept.</th>
+                                        <th>No COA</th>
+                                        <th>Nilai</th>
+                                    </tr>
+                                    <t t-foreach="o.payment_line_ids" t-as="line">
+                                        <t t-if="line.amount_to_pay > 0">
+                                            <t t-foreach="line.move_id.line_ids" t-as="jurnal">
+                                                <t t-if="jurnal.debit > 0 and jurnal.account_id.id == line.move_id.partner_id.property_account_receivable_id.id">
+                                                    <tr>
+                                                        <td />
+                                                        <td t-esc="jurnal.account_id.name"/>
+                                                        <td style="text-align:right;"><span t-esc="o.format_amount(line.amount_to_pay)"/></td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </t>
+                                    <!-- <tr>
+                                        <t t-if="o.charge_account_id">
+                                            <td />
+                                            <td t-esc="o.charge_account_id.name or ''"/> 
+                                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
+                                        </t>
+                                    </tr> -->
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="header-left table-list-name" style="margin: 0;">
+                                <table style="border: none; font-size: 10px;">
+                                    <tr>
+                                        <th>Nama Penerima</th>
+                                        <td> : <span t-field="o.partner_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Atas Nama</th>
+                                        <td> : </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td class="header-right table-list-name">
+                                <table style="border: none; font-size: 10px;">
+                                    <tr>
+                                        <th>Bank</th>
+                                        <td>
+                                            : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.name"/> -->
+                                            <span t-esc="o.partner_bank_id.bank_id.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.name or ''"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Cabang</th>
+                                        <td> 
+                                            : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.state.name"/> -->
+                                            <span t-esc="o.partner_bank_id.bank_id.state.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.state.name or ''"/>
+                                        </td>
+                                        
+                                    </tr>
+                                    <tr>
+                                        <th>No. Rekening</th>
+                                        <td>
+                                            : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].acc_number"/> -->
+                                            <span t-esc="o.partner_bank_id.acc_number if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].acc_number or ''"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td>
+                                <h4 style="text-decoration: underline;">Catatan</h4>
+                                <ul style="font-size: 8px;">
+                                    <li>Nama penerima diisi dengan nama vendor/penerima</li>
+                                    <li>No rekening diisi dengan nama di rekening / yang akan di terima</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="details-table" style="font-size: 10px;">
+                        <tr>
+                            <th>Nama Bank</th>
+                            <th>No Seri BG/Cheque</th>
+                            <th>Tgl. JT</th>
+                            <th>Jumlah</th>
+                            <th>Keterangan</th>
+                        </tr>
+                        <tr>
+                            <td><span t-field="o.journal_id.name"/></td>
+                            <td><span t-field="o.no_memo"/></td>
+                            <td><span t-esc="o.date_memo and o.date_memo.strftime('%d/%m/%Y')"/></td>
+                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount)"/></td>
+                            <td><span t-field="o.ref"/></td>
+                        </tr>
+                    </table>
+                    <table style="border: none; font-size: 10px; text-align: left; margin-top:10px;">
+                        <tr>
+                            <th >Jumlah</th>
+                            <td> : <span t-esc="o.format_amount(o.amount)"/></td>
+                        </tr>
+                        <tr>
+                            <th>Terbilang</th>
+                            <td style="font-weight: bold; font-style: italic;"> : # <span t-field="o.amount_text"/> rupiah #</td>
+                        </tr>
+                    </table>
+
+                    <!-- (TODO) Kasih kondisi agar muncul di halaman ke dua -->
+                    <table class="footer-table" style="font-size: 10px;">
+                        <tr class="signature-table">
+                            <td>Dibuat oleh</td>
+                            <td>Diperiksa oleh</td>
+                            <td>Disetujui oleh</td>
+                            <td>Penerima</td>
+                        </tr>
+                    </table>
+                </t>
+            </body>
+        </t>
+    </template>
+</odoo>

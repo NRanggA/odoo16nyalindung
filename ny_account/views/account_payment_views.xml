@@ -9,8 +9,14 @@
             <!-- Menambahkan tombol di dalam form -->
             <xpath expr="//header" position="inside">
                 <button name="report_data" type="object"
-                string="Print Payment Report" class="btn-primary"
+                string="Print Vendor Payment Report" class="btn-primary"
                 attrs="{'invisible': ['|', '|', ('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier'), ('id', '=', False)]}"/>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
+                <button name="customer_payment_report" type="object"
+                string="Print Customer Payment Report" class="btn-primary"
+                attrs="{'invisible': ['|', '|', ('payment_type', '!=', 'inbound'), ('partner_type', '!=', 'customer'), ('id', '=', False)]}"/>
             </xpath>
 
             <xpath expr="//field[@name='payment_method_line_id']" position="after">

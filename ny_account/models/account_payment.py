@@ -50,7 +50,6 @@ class AccountPayment(models.Model):
             else:
                 return self.env.ref('ny_account.action_report_payment_vendor_cash').report_action(self)
 
-
     def action_post(self):
         super().action_post()
         # Mengecek apakah ada biaya administrasi (amount_charge)
@@ -111,3 +110,13 @@ class AccountPayment(models.Model):
             'context': {'create': False},
         }
     
+
+    def customer_payment_report(self):
+        for rec in self:
+            if not rec.partner_id.bank_ids:
+                raise ValidationError("Partner tidak memiliki informasi bank yang terdaftar.")
+
+            if rec.journal_id.type == 'bank':
+                return self.env.ref('ny_account.action_report_payment_customer_bank').report_action(self)
+            else:
+                return self.env.ref('ny_account.action_report_payment_customer_cash').report_action(self)

@@ -28,11 +28,15 @@
         'views/views.xml',
         'views/templates.xml',
 
-        # Report Payment
+        # Report Payment Vendor
         'report/report_payment_bank_template.xml',
         'report/report_payment_cash_template.xml',
         'views/account_payment_views.xml',
         'views/account_asset_views.xml',
+
+        # Customer Payment
+        'report/report_customer_payment_bank_template.xml',
+        'report/report_customer_payment_cash_template.xml',
 
         # Direct Payment
         'views/account_direct_payment_views.xml',
