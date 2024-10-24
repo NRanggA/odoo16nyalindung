@@ -19,6 +19,6 @@ class Employee(models.Model):
                 [('date_start', '<=', date_to),
                     '|',
                         ('date_end', '=', False),
-                        ('date_end', '>=', date_from)]]))
+                        ('date_end', '>=', date_from)]]), limit=1)
         else:
             return super(Employee, self)._get_contracts(date_from, date_to, states=states, kanban_state=kanban_state)

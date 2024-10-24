@@ -16,7 +16,7 @@ class HrPayslipRun(models.Model):
         return action
     
     def create_account_move(self):
-        lhm_journal = self.env.ref('c10i_lhm_v16.plantation_payroll_journal')
+        lhm_journal = self.env.ref('c10i_lhm_v16.plantation_lhm_journal')
         for batch in self:
             query_partner = f"SELECT partner_id FROM hr_payslip_cost_map WHERE payslip_run_id={batch.id} GROUP BY partner_id"
             self.env.cr.execute(query_partner)

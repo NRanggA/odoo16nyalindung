@@ -34,10 +34,10 @@
 					<notebook>
 						<page string="Procedure to Execute" >
 							<separator string="Exec"/>
-							<field name="exec_text" nolabel="1"/>
+							<field name="exec_text" widget="ace" options="{'mode': 'python'}" nolabel="1"/>
 						</page>
 						<page string="Result Text" >
-							<field name="result" nolabel="1"/>
+							<field name="result" widget="ace" options="{'mode': 'python'}" nolabel="1"/>
 						</page>
 					</notebook>
 					</sheet>

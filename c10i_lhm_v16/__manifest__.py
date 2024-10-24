@@ -37,6 +37,7 @@
         # 'data/stock_data.xml',
         'data/running_sequence_data.xml',
         'data/allowance_type_data.xml',
+        'data/account_journal.xml',
 
         'wizard/wizard_move_employee_views.xml',
 
