@@ -63,7 +63,7 @@
                                     <field name="currency_id" invisible="1"/>
                                     <field name="product_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
-                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                        attrs="{'readonly': [('parent.state', '!=', 'draft')]}" invisible="1"/>
                                     <field name="name" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="account_id" 
                                         options="{'no_create_edit': True, 'no_create': True}" 
@@ -80,7 +80,7 @@
                                     <field name="name" nolabel="1"/>
                                     <group>
                                         <group>
-                                            <field name="product_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                                            <field name="product_id" options="{'no_create_edit': True, 'no_create': True}" invisible="1"/>
                                         </group>
                                         <group>
                                             <field name="amount"/>
