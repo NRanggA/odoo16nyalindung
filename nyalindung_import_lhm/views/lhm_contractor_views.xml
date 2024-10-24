@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="lhm_contractor_form_inherit_nyalindung_import_lhm" model="ir.ui.view">
+        <field name="name">nyalindung.import.lhm.contractor.view.form.inherit</field>
+        <field name="model">lhm.contractor</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_contractor_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="is_import"/>
+                <field name="file" widget="binary" string="File Import"
+                    attrs="{'invisible': [('is_import', '!=', True)]}"/>
+                <button name="import_data" string="Import"
+                        type="object" class="oe_highlight"
+                        attrs="{'invisible': [('is_import', '!=', True)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
