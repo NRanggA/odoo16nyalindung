@@ -42,11 +42,15 @@ class lhm_transaction(models.Model):
         error_message_list = []
 
         for index, row in df.iterrows():
-            lhm_line = self.env['lhm.transaction.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', '')))], limit=1)
+
+            if not self.id:
+                raise ValidationError("Silakan Save Terlebih Dahulu !")
+
+            lhm_line = self.env['lhm.transaction.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', ''))), ('lhm_id', '=', self.id)], limit=1)
             if not lhm_line:
-                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada LHM saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada LHM {self.name} saat ini!")
             if not lhm_line.employee_id.contract_id:
-                error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada data LHM saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada data LHM {self.name} saat ini!")
 
             # ========== ATTENDANCE ==============
             # ==================================
@@ -98,6 +102,12 @@ class lhm_transaction(models.Model):
             
             
             # Pencarian berdasarkan Varietas
+
+
+            # Validasi HK lebih dari 1 
+            work_day = handle_nan(row.get('HK', ''), 0)
+            if work_day > 1:
+                error_message_list.append(f"Baris ke- {index + 2} untuk karyawan {row.get('NAME', '')}, HK yang dimasukkan {row.get('HK', '')} tidak boleh lebih dari 1!")
 
 
             # ========== SATUAN ==============
