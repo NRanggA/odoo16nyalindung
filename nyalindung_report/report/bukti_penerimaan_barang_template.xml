@@ -75,18 +75,18 @@
                     <br/>
 
                     <div style="margin-top: 50px; width: 100%; display: flex; justify-content: space-between;">
-                        <div style="width: 30%; text-align: center;">
+                        <div style="width: 29%; text-align: center;">
                             <p>Yang Menyerahkan,</p>
                             <br/><br/>
                             <br/>
                             <p>( ________________ )</p>
                         </div>
-                        <div style="width: 30%; text-align: center;">
+                        <div style="width: 29%; text-align: center;">
                             <p>Mengetahui,<br/>Kepala Bagian</p>
                             <br/><br/>
                             <p>( ________________ )</p>
                         </div>
-                        <div style="width: 30%; text-align: center;">
+                        <div style="width: 29%; text-align: center;">
                             <p>Nyalindung, <t t-esc="o.date_done.strftime('%d %m %Y')"/><br/>Penerima,</p>
                             <br/><br/>
                             <p>( ________________ )</p>
@@ -105,12 +105,12 @@
         <field name="orientation">Landscape</field>
         <field name="page_width">0</field>
         <field name="page_width">0</field>
-        <field name="margin_top">15</field>
-        <field name="margin_bottom">10</field>
-        <field name="margin_right">5</field>
-        <field name="margin_left">5</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_right">1</field>
+        <field name="margin_left">1</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">20</field>
+        <field name="header_spacing">0</field>
         <field name="dpi">90</field>
     </record>
 
