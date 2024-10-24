@@ -77,7 +77,7 @@ class AccountBankStatement(models.Model):
         account_payments = self.env["account.payment"].search(journal_domain)
         direct_payments = self.env["account.direct.payment"].search(journal_domain)
         for d in direct_payments:
-            for a in i.line_ids:
+            for a in self.line_ids:
                 if d.direct_state == 'send':
                     amount_payment = -a.amount
                 elif d.direct_state == 'receive':
