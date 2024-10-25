@@ -8,7 +8,7 @@
     'category': 'Payroll Localization',
     'version': '16.0.0',
     'license': 'LGPL-3',
-    'depends': ['c10i_hr','c10i_hr_payroll'],
+    'depends': ['c10i_hr_16','c10i_hr_payroll'],
     'data': [
         'security/ir.model.access.csv',
         
