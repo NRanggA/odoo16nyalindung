@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_employee_filter_inherit_custom" model="ir.ui.view">
+        <field name="name">hr.employee.search.inherit.custom</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="kemandoran_id" string="Kemandoran"/>
+                <field name="mandor_id" string="Mandor"/>
+            </xpath>
+
+            <xpath expr="//group" position="inside">
+                <filter string="Kemandoran" name="kemandoran_id" context="{'group_by': 'kemandoran_id'}"/>
+                <filter string="Mandor" name="mandor_id" context="{'group_by': 'mandor_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

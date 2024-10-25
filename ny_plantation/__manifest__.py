@@ -17,6 +17,7 @@
     # any module necessary for this one to work correctly
     'depends': [
         'c10i_lhm_v16',
+        'hr',
     ],
 
     # always loaded
@@ -26,5 +27,6 @@
         'views/hr_foreman_view.xml',
         'views/lhm_transaction_view.xml',
         'views/lhm_plant_block_view.xml',
+        'views/hr_employee.xml',
     ],
 }
