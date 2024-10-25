@@ -51,4 +51,34 @@
         </field>
     </record>
 
+    <record id="view_hr_foreman_search" model="ir.ui.view">
+        <field name="name">hr.foreman.search</field>
+        <field name="model">hr.foreman</field>
+        <field name="arch" type="xml">
+            <search string="Search Foreman">
+                <!-- Search fields -->
+                <field name="code" string="Code"/>
+                <field name="name" string="Name"/>
+
+                <!-- Group by options -->
+                <group expand="0" string="Group By">
+                    <filter string="Kepala Mandor" name="mandor_id" context="{'group_by': 'kepala_mandor_id'}"/>
+                    <filter string="Mandor" name="mandor_id" context="{'group_by': 'mandor_id'}"/>
+                    <filter string="Afdeling" name="afdeling_id" context="{'group_by': 'afdeling_id'}"/>
+                    <filter string="Department" name="department_id" context="{'group_by': 'department_id'}"/>
+                    <filter string="Division" name="division_id" context="{'group_by': 'division_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_foreman_lhm_inherit" model="ir.actions.act_window">
+        <field name="name">Kemandoran (Extended)</field>
+        <field name="res_model">hr.foreman</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="ny_plantation.view_hr_foreman_search"/>
+    </record>
+
+
+
 </odoo>
