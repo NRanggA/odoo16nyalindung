@@ -396,7 +396,7 @@ class ClosingPlantation(models.Model):
                             if season.harvest_date_schedule <= closing.date_from:
                                 # Only Cost to be distributed as Cost
                                 date_from = closing.date_from.strftime('%Y-%m-%d')
-                                date_to = season.date_stop.strftime('%Y-%m-%d') if season.date_stop<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
+                                date_to = season.date_end.strftime('%Y-%m-%d') if season.date_end<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
                                 self.env.cr.execute(f"select procedure_summerize_cost({closing.id}, {closing.plant_block_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
                             elif season.harvest_date_schedule > closing.date_to:
                                 # Only Cost to be Accrued
