@@ -111,11 +111,11 @@
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
                                         <th style="width: 20%">Beban</th>
-                                        <td style="width: 80%">:</td>
+                                        <td style="width: 80%">: <span t-field="o.beban"/></td>
                                     </tr>
                                     <tr>
                                         <th>Dept/Divisi</th>
-                                        <td>:</td>
+                                        <td>: <span t-field="o.department_id.name"/></td>
                                     </tr>
                                 </table>
                             </td>
@@ -146,6 +146,13 @@
                                             </t>
                                         </t>
                                     </t>
+                                    <tr>
+                                        <t t-if="o.charge_account_id">
+                                            <td style="border: 1px solid black;"/>
+                                            <td style="border: 1px solid black;" t-esc="o.charge_account_id.name or ''"/> 
+                                            <td style="text-align:right; border: 1px solid black;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
+                                        </t>
+                                    </tr>
                                 </table>
                             </td>
                         </tr>

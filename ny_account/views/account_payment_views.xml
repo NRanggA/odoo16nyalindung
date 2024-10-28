@@ -14,6 +14,12 @@
             </xpath>
 
             <xpath expr="//header" position="inside">
+                <button name="report_amount_charge" type="object"
+                    string="Print Report Amount Adm" class="btn-primary"
+                    attrs="{'invisible': ['|', ('amount_charge', '=', 0), ('charge_account_id', '=', False)]}"/>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
                 <button name="customer_payment_report" type="object"
                 string="Print Customer Payment Report" class="btn-primary"
                 attrs="{'invisible': ['|', '|', ('payment_type', '!=', 'inbound'), ('partner_type', '!=', 'customer'), ('id', '=', False)]}"/>
@@ -26,6 +32,16 @@
                 <field name="no_memo" />
                 <field name="date_memo" />
             </xpath>
+
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="department_id" />
+                <field name="beban" />
+            </xpath>
+
+            <xpath expr="//field[@name='payment_type']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
         </field>
     </record>
 

@@ -155,15 +155,15 @@
                                 <table style="border: none; font-size: 10px;">
                                     <tr>
                                         <th>Beban</th>
-                                        <td> : Kebun / Pasir ....</td>
+                                        <td> : <span t-field="o.beban"/></td>
                                     </tr>
                                     <tr>
                                         <th>Dept. / Divisi</th>
-                                        <td> : </td>
+                                        <td> : <span t-field="o.department_id.name"/></td>
                                     </tr>
                                     <tr>
                                         <th>Jenis Pembayaran</th>
-                                        <td> : </td>
+                                        <td> : Tunai </td>
                                     </tr>
                                 </table>
                             </td>
@@ -192,13 +192,13 @@
                                             </t>
                                         </t>
                                     </t>
-                                    <tr>
+                                    <!-- <tr>
                                         <t t-if="o.charge_account_id">
                                             <td />
                                             <td t-esc="o.charge_account_id.name or ''"/> 
                                             <td style="text-align:right;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
                                         </t>
-                                    </tr>
+                                    </tr> -->
                                 </table>
                             </td>
                         </tr>
@@ -265,14 +265,14 @@
                             <td><span t-field="o.journal_id.name"/></td>
                             <td><span t-field="o.no_memo"/></td>
                             <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
-                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount)"/></td>
+                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount - o.amount_charge)"/></td>
                             <td><span t-field="o.ref"/></td>
                         </tr>
                     </table>
                     <table style="border: none; font-size: 10px; text-align: left; margin-top:10px;">
                         <tr>
                             <th >Jumlah</th>
-                            <td> : <span t-esc="o.format_amount(o.amount)"/></td>
+                            <td> : <span t-esc="o.format_amount(o.amount - o.amount_charge)"/></td>
                         </tr>
                         <tr>
                             <th>Terbilang</th>
