@@ -3505,7 +3505,7 @@
                                 <field name="kebun_line_ids" nolabel="1">
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="product_id"/>
+                                        <field name="product_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
                                         <field name="tgl_panen"/>
@@ -3516,7 +3516,7 @@
                                 <field name="pabrik_line_ids" nolabel="1">
                                     <tree editable="bottom">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="product_id"/>
+                                        <field name="product_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
                                         <field name="tgl_terima"/>
@@ -3533,7 +3533,7 @@
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="tgl_panen"/>
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="product_id"/>
+                                        <field name="product_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="uom_id"/>
                                         <field name="drc"/>
                                         <field name="qty_nap"/>
