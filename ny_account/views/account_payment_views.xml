@@ -42,6 +42,10 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
+            <xpath expr="//field[@name='write_off_account_id']" position="after">
+                <field name="description" />
+            </xpath>
+
         </field>
     </record>
 

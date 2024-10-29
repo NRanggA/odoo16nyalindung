@@ -142,3 +142,10 @@ class AccountPayment(models.Model):
                 return self.env.ref('ny_account.action_report_payment_customer_bank').report_action(self)
             else:
                 return self.env.ref('ny_account.action_report_payment_customer_cash').report_action(self)
+
+
+class AccountPaymentLine(models.Model):
+    _inherit = 'account.payment.line'
+
+
+    description = fields.Text('Description')

@@ -261,13 +261,15 @@
                             <th>Jumlah</th>
                             <th>Keterangan</th>
                         </tr>
-                        <tr>
-                            <td><span t-field="o.journal_id.name"/></td>
-                            <td><span t-field="o.no_memo"/></td>
-                            <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
-                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount - o.amount_charge)"/></td>
-                            <td><span t-field="o.ref"/></td>
-                        </tr>
+                        <t t-foreach="o.payment_line_ids" t-as="data">
+                            <tr>
+                                <td><span t-field="o.journal_id.name"/></td>
+                                <td><span t-field="o.no_memo"/></td>
+                                <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
+                                <td style="text-align:right;"><span t-esc="o.format_amount(data.amount_to_pay)"/></td>
+                                <td><span t-field="data.description"/></td>
+                            </tr>
+                        </t>
                     </table>
                     <table style="border: none; font-size: 10px; text-align: left; margin-top:10px;">
                         <tr>
