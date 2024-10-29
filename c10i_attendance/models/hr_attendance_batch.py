@@ -108,7 +108,7 @@ class HrAttendanceBatch(models.Model):
 
             employees = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik']))])
             if not employees:
-                raise ValidationError(f"Karyawan dengan NIK {row['Nik']} tidak ditemukan!")
+                raise ValidationError(f"Karyawan dengan nama {row['Nama']}, NIK {row['Nik']} tidak ditemukan!")
             
             # Jika ditemukan lebih dari satu karyawan dengan NIK yang sama
             elif len(employees) > 1:
@@ -216,6 +216,10 @@ class HrAttendanceBatch(models.Model):
         return True
 
     def push_to_sheet(self):
+
+        if not self.attendance_ids:
+            raise ValidationError(f"Silahkan Import Data Absensi terlebih dahulu !")
+
         attendance_sheets = []
         # attendance_data = json.loads(self.attendance_data)
 
@@ -244,20 +248,17 @@ class HrAttendanceBatch(models.Model):
                 })
                 attendance_sheets.append(existing_attendance_sheet.id)
             else:
-                employee = self.env['hr.employee'].search([('id', '=', employee_id)], limit=1)
-                raise ValidationError(f"Data absensi untuk user {employee.name} pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
+                # employee = self.env['hr.employee'].search([('id', '=', employee_id)], limit=1)
+                # raise ValidationError(f"Data absensi untuk user {employee.name} pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
                 # Membuat data attendance.sheet baru ketika datanya tidak di temukan
-                # new_attendance_sheet = {
-                #     'employee_id' : employee_id,
-                #     'type'        : type_id,
-                #     'date'        : date,
-                #     'check_in'    : attendance.check_in if attendance.check_in else False,
-                #     'check_out'   : attendance.check_out if attendance.check_out else False
-                # }
-                # attendance_sheets.append(new_attendance_sheet.id)
+                self.env['hr.attendance.sheet'].create({
+                    'employee_id': employee_id,
+                    'type_id': type_id,
+                    'date': date,
+                    'check_in': attendance.check_in if attendance.check_in else False,
+                    'check_out': attendance.check_out if attendance.check_out else False,
+                })
 
-
-        
         self.write({'state': 'processed'})
         self.attendance_sheet_ids = [(6, 0, attendance_sheets)]
         return True
