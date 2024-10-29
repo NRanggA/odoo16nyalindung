@@ -5,7 +5,7 @@ class PlantVarieties(models.Model):
     _name = 'plant.varieties'
     _description = 'Varietas'
 
-    name = fields.Char('Varietas', required=True)
+    name = fields.Char('ORG', required=True)
     code = fields.Char('Code')
     product_id = fields.Many2one('product.product', string='Output Product')
     secondary_product_id = fields.Many2one('product.product', string='Secondary Product')

@@ -60,7 +60,7 @@
     </record>
 
     <record id="plant_varieties_action" model="ir.actions.act_window">
-        <field name="name">Varietas</field>
+        <field name="name">ORG</field>
         <field name="res_model">plant.varieties</field>
         <field name="view_mode">tree,form</field>
     </record>
