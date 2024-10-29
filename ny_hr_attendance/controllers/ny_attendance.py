@@ -116,7 +116,7 @@ class NyAttendance(ApiBase):
     # Request
     # {
     #     "token":"73b12f9a7b97a77420215b14f2220d22",
-    #     "NIP":"111111111111111"
+    #     "nip":"111111111111111"
     # }
     # Response
     # {
@@ -131,11 +131,11 @@ class NyAttendance(ApiBase):
         datas = self._get_payload() or {}
         try:
             # VALIDASI FIELD
-            if not datas.get('NIP',False):
+            if not datas.get('nip',False):
                 return Response(json.dumps({'message': "Nomor Induk Pegawai Wajib diisi"}), headers=HEADERS, status=404)
-            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['NIP'])])
+            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['nip'])])
             if not employee_found:
-                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['NIP']} tidak ditemukan"}), headers=HEADERS, status=422)
+                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
             today_att = request.env['hr.attendance.sheet'].sudo().search([('date','=',fields.Date.today()),
@@ -156,7 +156,7 @@ class NyAttendance(ApiBase):
     # Request
     # {
     #     "token":"73b12f9a7b97a77420215b14f2220d22",
-    #     "NIP":"1",
+    #     "nip":"1",
     #     "longitude":"longitude",
     #     "latitude":"latitude",
     #     "waktu":"2024-09-19 14:53:53",
@@ -180,11 +180,11 @@ class NyAttendance(ApiBase):
         # print("::::::::::::::::data on update_att", datas)
         try:
             # VALIDASI FIELD
-            if not datas.get('NIP',False):
+            if not datas.get('nip',False):
                 return Response(json.dumps({'message': "Nomor Induk Pegawai Wajib diisi"}), headers=HEADERS, status=404)
-            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['NIP'])])
+            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['nip'])])
             if not employee_found:
-                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['NIP']} tidak ditemukan"}), headers=HEADERS, status=422)
+                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # INSERT ATTENDANCE
             value_to_insert = {
@@ -221,12 +221,12 @@ class NyAttendance(ApiBase):
     # Request
     # {
     #     "token":"73b12f9a7b97a77420215b14f2220d22",
-    #     "NIP":"999999"
+    #     "nip":"999999"
     # }
     # Response
     # [
     #     {
-    #         "NIP": "999999",
+    #         "nip": "999999",
     #         "masuk": "15:15, Jarak :0.05 Km, Keterangan: keterangan",
     #         "pulang": "15:16, Jarak :0.05 Km, Keterangan: keterangan",
     #         "namafile": "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/999999/202409/999999_20240927151533.jpg",
@@ -244,11 +244,11 @@ class NyAttendance(ApiBase):
         datas = self._get_payload() or {}
         try:
             # VALIDASI FIELD
-            if not datas.get('NIP',False):
+            if not datas.get('nip',False):
                 return Response(json.dumps({'message': "Nomor Induk Pegawai Wajib diisi"}), headers=HEADERS, status=404)
-            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['NIP'])])
+            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['nip'])])
             if not employee_found:
-                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['NIP']} tidak ditemukan"}), headers=HEADERS, status=422)
+                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
             domain = [('employee_id','=',employee_found.id),('date','=',fields.Date.today())]
@@ -277,7 +277,7 @@ class NyAttendance(ApiBase):
                 if att.check_out:
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
-                    "NIP": employee_found.no_induk,
+                    "nip": employee_found.no_induk,
                     "masuk": f"{masuk.strftime('%H:%M')}, {ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
                     "pulang": pulang.strftime('%H:%M') if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                     "namafile": namafile,
@@ -294,13 +294,13 @@ class NyAttendance(ApiBase):
     # Request
     # {
     #     "token":"73b12f9a7b97a77420215b14f2220d22",
-    #     "NIP":"1111111111",
+    #     "nip":"1111111111",
     #     "tgl":"2024-07-19"
     # }
     # Response
     # [
     #     {
-    #         "NIP": "1",
+    #         "nip": "1",
     #         "masuk": "08:43, Jarak :18.52 Km, Keterangan: karena tes wfh",
     #         "pulang": "-",
     #         "namafile": "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/1/202407/1_20240702084340.jpg",
@@ -318,11 +318,11 @@ class NyAttendance(ApiBase):
         datas = self._get_payload() or {}
         try:
             # VALIDASI FIELD
-            if not datas.get('NIP',False):
+            if not datas.get('nip',False):
                 return Response(json.dumps({'message': "Nomor Induk Pegawai Wajib diisi"}), headers=HEADERS, status=404)
-            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['NIP'])])
+            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',datas['nip'])])
             if not employee_found:
-                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['NIP']} tidak ditemukan"}), headers=HEADERS, status=422)
+                return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
             date = datetime.strptime(datas.get('tgl'), "%Y-%m-%d")
@@ -354,7 +354,7 @@ class NyAttendance(ApiBase):
                 if att.check_out:
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
-                        "NIP": employee_found.no_induk,
+                        "nip": employee_found.no_induk,
                         "masuk": f"{masuk.strftime('%H:%M')}, {ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
                         "pulang": pulang.strftime('%H:%M') if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                         "namafile": namafile,
