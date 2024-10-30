@@ -157,9 +157,9 @@ class EquipmentRegisterLine(models.Model):
 	#################
 	def _prepare_equipment_vals(self):
 		serial_no = self.env['ir.sequence'].next_by_code('maintenance.equipment')		
-		threshold_param = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold', default=0.0)
-		threshold = float(threshold_param) if threshold_param else 0.0
-		asset_type = 'lva' if self.purchase_line_id.price_unit <= threshold  else 'fa'
+		threshold_param_to = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_to', default=0.0)
+		threshold_to = float(threshold_param_to) if threshold_param_to else 0.0
+		asset_type = 'lva' if self.purchase_line_id.price_unit <= threshold_to  else 'fa'
 		
 		res = {
             'category_id' : self.register_id.category_id.id,
