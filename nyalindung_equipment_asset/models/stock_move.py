@@ -10,7 +10,7 @@ class StockMove(models.Model):
 
         # Get the threshold value from settings
         threshold = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_from', default=0)
-
+        
         # Prepare debit and credit line values
         debit_line_vals = {
             'name': description,
@@ -22,6 +22,13 @@ class StockMove(models.Model):
             'balance': debit_value,
             'account_id': debit_account_id,
         }
+        if self.picking_type_id.code=='issue':
+            debit_line_vals.update({
+                'plantation_varieties_id': self.plantation_varieties_id.id,
+                'plantation_location_type_id': self.plantation_location_type_id.id,
+                'plantation_location_id': self.plantation_location_id.id,
+                'plantation_activity_id': self.plantation_activity_id.id,
+            })
 
         credit_line_vals = {
             'name': description,
@@ -130,6 +137,10 @@ class StockMove(models.Model):
         if not acc_valuation:
             raise UserError(_('You don\'t have any stock valuation account defined on your product category. You must define one before processing this operation.'))
         journal_id = accounts_data['stock_journal'].id
+
+        if self._is_out() and self.plantation_activity_id.account_id:
+            acc_dest = self.plantation_activity_id.account_id.id
+
         return journal_id, acc_src, acc_dest, acc_valuation
     
 

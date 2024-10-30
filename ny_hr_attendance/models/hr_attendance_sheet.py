@@ -15,13 +15,14 @@ class AttendanceSheet(models.Model):
         self.ensure_one()
         if self.att_log_ids:
             check_in = check_out = False
-            for tt in self.att_log_ids:
+            for tt in self.att_log_ids.sorted(key=lambda x: x.waktu):
                 if not check_in:
                     check_in = tt.waktu
-                elif check_in > tt.waktu:
-                    check_in = tt.waktu
+                    continue
+                # elif check_in > tt.waktu:
+                #     check_in = tt.waktu
                 
-                if not check_out:
+                if not check_out and check_in:
                     check_out = tt.waktu
                 elif check_out < tt.waktu:
                     check_out = tt.waktu

@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class RunningWorkshopLine(models.Model):
     _name = 'running.workshop.distribution.line'
-    _description = 'Distribution Cost on Running Procedure'
+    _description = 'Distribution Cost on Running Workshop Procedure'
 
     running_line_id = fields.Many2one('running.workshop.line', 'Running Line', ondelete='cascade')
     plantation_src_journal_id = fields.Many2one('account.journal', string='Source Journal', ondelete='restrict')
@@ -29,13 +29,14 @@ class RunningWorkshopLine(models.Model):
 class RunningWorkshop(models.Model):
     _name = 'running.workshop' 
     _description = 'Running Workshop Procedure'
+    _rec_name = 'workshop_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
     
     date_from = fields.Date('Date From', required=True)
     date_to = fields.Date('Date To', required=True)
     workshop_id = fields.Many2one('lhm.utility', string='Workshop', ondelete='restrict', domain="[('type','=', 'ws')]", required=True)
-    closing_account_id = fields.Many2one('account.account', string='Account')
+    closing_account_id = fields.Many2one('account.account', string='Counterpart Running Account')
 
     line_ids = fields.One2many('running.workshop.line', 'running_id')
     total_usage = fields.Float()
@@ -188,6 +189,11 @@ class RunningWorkshop(models.Model):
     def create_account_move(self):
         running_journal = self.env.ref('ny_closing.plantation_running_workshop_journal')
         for running in self:
+            if not running.total_cost or not running.total_usage:
+                continue
+            if running.running_move_id:
+                if running.running_move_id.state=='posted':
+                    running.running_move_id.button_draft()
             move_lines = []
             for line in running.line_ids:
                 if not line.dest_account_id:
@@ -225,9 +231,11 @@ class RunningWorkshop(models.Model):
                 'move_type': 'entry',
                 'line_ids': move_lines,
             }
-            new_move = self.env['account.move'].create(values)
-            
-            running.running_move_id = new_move.id
+            if running.running_move_id:
+                running.running_move_id.write(values)
+            else:
+                new_move = self.env['account.move'].create(values)
+                running.running_move_id = new_move.id
 
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")

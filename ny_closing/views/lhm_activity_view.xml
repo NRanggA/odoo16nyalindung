@@ -5,9 +5,9 @@
         <field name="model">lhm.activity</field>
         <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_activity_form" />
         <field name="arch" type="xml">
-            <field name="account_id" position="after">
+            <group name="accounting" position="inside">
                 <field name="cost_account_id" />
-            </field>
+            </group>
         </field>
     </record>
 </odoo>

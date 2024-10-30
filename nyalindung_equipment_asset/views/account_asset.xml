@@ -54,6 +54,9 @@
                     <field name="commulative_depreciation" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/> -->
                     <field name="write_on_asset_sales_account_id" invisible="1"/>
                 </field>
+                <field name="partner_id" position="attributes">
+                    <attribute name="required">False</attribute>
+                </field>
             </field>
         </record>
     

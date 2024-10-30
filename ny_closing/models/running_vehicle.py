@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class RunningVehicleLine(models.Model):
     _name = 'running.vehicle.distribution.line'
-    _description = 'Distribution Cost on Running Procedure'
+    _description = 'Distribution Cost on Running Vehicle Procedure'
 
     running_line_id = fields.Many2one('running.vehicle.line', 'Running Line', ondelete='cascade')
     plantation_src_journal_id = fields.Many2one('account.journal', string='Source Journal', ondelete='restrict')
@@ -29,6 +29,7 @@ class RunningVehicleLine(models.Model):
 class RunningVehicle(models.Model):
     _name = 'running.vehicle' 
     _description = 'Running Vehicle Procedure'
+    _rec_name = 'vehicle_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
     
@@ -188,6 +189,11 @@ class RunningVehicle(models.Model):
     def create_account_move(self):
         running_journal = self.env.ref('ny_closing.plantation_running_vehicle_journal')
         for running in self:
+            if not running.total_cost or not running.total_usage:
+                continue
+            if running.running_move_id:
+                if running.running_move_id.state=='posted':
+                    running.running_move_id.button_draft()
             move_lines = []
             for line in running.line_ids:
                 if not line.dest_account_id:
@@ -223,9 +229,11 @@ class RunningVehicle(models.Model):
                 'move_type': 'entry',
                 'line_ids': move_lines,
             }
-            new_move = self.env['account.move'].create(values)
-            
-            running.running_move_id = new_move.id
+            if running.running_move_id:
+                running.running_move_id.write(values)
+            else:
+                new_move = self.env['account.move'].create(values)
+                running.running_move_id = new_move.id
 
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")

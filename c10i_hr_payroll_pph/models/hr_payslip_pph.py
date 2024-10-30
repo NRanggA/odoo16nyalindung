@@ -86,7 +86,7 @@ class HrPayslipPph(models.Model):
     def _compute_ptkp(self):
         for line in self:
             if line.ptkp_id:
-                line.ptkp_amount = line.ptkp_id.revenue
+                line.ptkp_amount = line.ptkp_id.value
             else:
                 line.ptkp_amount = 0.0
 

@@ -899,7 +899,7 @@
                         </group>
                         <notebook>
                             <page name="daftar_karyawan" string="Daftar Karyawan">
-                                <field name="employee_ids" nolabel="1" readonly="0" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}">
+                                <field name="employee_ids" widget="many2many" nolabel="1" readonly="0" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}">
                                     <tree edit="false" create="false">
                                         <field name="name"/>
                                         <field name="no_induk"/>
@@ -938,12 +938,12 @@
             </field>
         </record>
 
-        <record id="view_hr_foreman_filter" model="ir.ui.view">
+        <!-- <record id="view_hr_foreman_filter" model="ir.ui.view">
             <field name="name">view.hr.foreman.filter</field>
             <field name="model">hr.foreman</field>
             <field name="arch" type="xml">
                 <search string="Kemandoran">
-                    <!-- <field name="name" string="Kemandoran" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="name" string="Kemandoran" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
                     <field name="foreman_id_1" string="Mandor 1" filter_domain="['|',('nik_mandor_1','ilike',self),('foreman_id_1','ilike',self)]"/>
                     <field name="foreman_id" string="Mandor" filter_domain="['|',('nik_mandor','ilike',self),('foreman_id','ilike',self)]"/>
                     <field name="admin_id" string="Kerani" filter_domain="['|',('nik_kerani','ilike',self),('admin_id','ilike',self)]"/>
@@ -960,17 +960,17 @@
                         <filter string="Afdeling" domain="[]" context="{'group_by':'afdeling_id'}"/>
                         <filter string="Department" domain="[]" context="{'group_by':'department_id'}"/>
                         <filter string="Divisi" domain="[]" context="{'group_by':'division_id'}"/>
-                    </group> -->
+                    </group>
                 </search>
             </field>
-        </record>
+        </record> -->
 
         <record id="action_hr_foreman_lhm" model="ir.actions.act_window">
             <field name="name">Kemandoran</field>
             <field name="res_model">hr.foreman</field>
             <!-- <field name="view_type">form</field> -->
             <field name="view_mode">tree,form</field>
-            <field name="search_view_id" ref="view_hr_foreman_filter"/>
+            <!-- <field name="search_view_id" ref="view_hr_foreman_filter"/> -->
             <field name="context">{}</field>
             <field name="domain">[]</field>
             <field name="help" type="html">

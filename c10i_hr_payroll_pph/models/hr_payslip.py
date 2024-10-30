@@ -36,7 +36,7 @@ class HrPayslip(models.Model):
                 'slip_id': slip.id,
                 'ptkp_id': slip.employee_id.ptkp_id.id,
                 'date': slip.date_to,
-                'first_contract_date': slip.employee_id.first_contract_date,
+                'first_contract_date': slip.employee_id.work_start_date or slip.employee_id.first_contract_date,
                 'termination_date': slip.employee_id.termination_date,
             }
             to_create_vals.update({
@@ -72,7 +72,7 @@ class HrPayslip(models.Model):
                 'slip_id': slip.id,
                 'ptkp_id': slip.employee_id.ptkp_id.id,
                 'date': slip.date_to,
-                'first_contract_date': slip.employee_id.first_contract_date,
+                'first_contract_date': slip.employee_id.work_start_date or slip.employee_id.first_contract_date,
                 'termination_date': slip.employee_id.termination_date,
             }
             to_create_vals.update({

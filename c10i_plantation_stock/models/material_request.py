@@ -13,6 +13,7 @@ class MaterialRequestLine(models.Model):
     location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     filtered_activities = fields.Many2many('lhm.activity', 'mrl_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
     activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+    no_line = fields.Boolean(string="No Line", related="location_type_id.no_line")
     
     # doc_activity_ids = fields.Many2many('lhm.activity', compute='_filtered_doc_activity_ids')
 
@@ -39,11 +40,9 @@ class MaterialRequestLine(models.Model):
             if line.mr_id.state!='draft' or not line.location_type_id:
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('PJ','NA'):
+                if line.location_type_id.code in ('WS','VH','MA'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                elif line.location_type_id.code in ('WS','VH','MA','NS'):
-                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION
+                else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 

@@ -20,29 +20,38 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'purchase', 'c10i_payment', 'account', 'om_account_asset', 'c10i_direct_payment'],
+    'depends': ['base', 'purchase', 'c10i_payment', 'account', 'om_account_asset', 'c10i_direct_payment', 'hr'],
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
 
-        # Report Payment
+        # Report Payment Vendor
         'report/report_payment_bank_template.xml',
         'report/report_payment_cash_template.xml',
         'views/account_payment_views.xml',
         'views/account_asset_views.xml',
+
+        # Customer Payment
+        'report/report_customer_payment_bank_template.xml',
+        'report/report_customer_payment_cash_template.xml',
 
         # Direct Payment
         'views/account_direct_payment_views.xml',
         'report/report_direct_payment_bank_template.xml',
         'report/report_direct_payment_cash_template.xml',
 
+        'report/report_amount_charge_template.xml',
+
         'report/action_report_payment.xml',
 
         # Direct Payment
         'views/account_skb_views.xml',
+
+        # E-Faktur List
+        'views/efaktur_list_views.xml',
 
 
     ],

@@ -5,3 +5,4 @@ from . import account_payment
 from . import account_asset
 from . import account_direct_payment
 from . import account_skb
+from . import efaktur_list

@@ -135,7 +135,7 @@
                                             <t t-set="line_count" t-value="len(o.payment_line_ids)"/>
                                             <t t-set="counter" t-value="0"/> 
                                             <t t-foreach="o.payment_line_ids" t-as="line">
-                                                <t t-if="line.is_full_payment">
+                                                <t t-if="line.amount_to_pay > 0">
                                                     <t t-set="counter" t-value="counter + 1"/>
                                                     <t t-if="counter &gt; 1">, </t>
                                                     <span t-field="line.origin"/>
@@ -155,21 +155,21 @@
                                 <table style="border: none; font-size: 10px;">
                                     <tr>
                                         <th>Beban</th>
-                                        <td> : Kebun / Pasir ....</td>
+                                        <td> : <span t-field="o.beban"/></td>
                                     </tr>
                                     <tr>
                                         <th>Dept. / Divisi</th>
-                                        <td> : </td>
+                                        <td> : <span t-field="o.department_id.name"/></td>
                                     </tr>
                                     <tr>
                                         <th>Jenis Pembayaran</th>
-                                        <td> : </td>
+                                        <td> : Tunai </td>
                                     </tr>
                                 </table>
                             </td>
                             <td colspan="2">
                                 <!-- <t t-set="row_count" t-value="len(o.move_id.line_ids.filtered(lambda l: l.debit > 0)) + 1"/> -->
-                                <t t-set="row_count" t-value="sum(len(line.move_id.line_ids.filtered(lambda j: j.credit > 0)) for line in o.payment_line_ids if line.is_full_payment) + 1"/>
+                                <t t-set="row_count" t-value="sum(len(line.move_id.line_ids.filtered(lambda j: j.credit > 0)) for line in o.payment_line_ids if line.amount_to_pay > 0) + 2"/>
                                 <table class="coa-table" style="font-size: 10px;">
                                     <tr>
                                         <th t-att-rowspan="row_count">
@@ -180,27 +180,25 @@
                                         <th>Nilai</th>
                                     </tr>
                                     <t t-foreach="o.payment_line_ids" t-as="line">
-                                        <t t-if="line.is_full_payment">
+                                        <t t-if="line.amount_to_pay > 0">
                                             <t t-foreach="line.move_id.line_ids" t-as="jurnal">
                                                 <t t-if="jurnal.credit > 0 and jurnal.account_id.id == line.move_id.partner_id.property_account_payable_id.id">
                                                     <tr>
                                                         <td />
                                                         <td t-esc="jurnal.account_id.name"/>
-                                                        <td style="text-align:right;"><span t-esc="o.format_amount(jurnal.credit)"/></td>
+                                                        <td style="text-align:right;"><span t-esc="o.format_amount(line.amount_to_pay)"/></td>
                                                     </tr>
                                                 </t>
                                             </t>
                                         </t>
                                     </t>
-                                    <!-- <t t-foreach="o.move_id.line_ids" t-as="jurnal">
-                                        <t t-if="jurnal.credit > 0">
-                                            <tr>
-                                                <td />
-                                                <td t-esc="jurnal.account_id.name"/>
-                                                <td style="text-align:right;"><span t-esc="o.format_amount(jurnal.credit)"/></td>
-                                            </tr>
+                                    <!-- <tr>
+                                        <t t-if="o.charge_account_id">
+                                            <td />
+                                            <td t-esc="o.charge_account_id.name or ''"/> 
+                                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
                                         </t>
-                                    </t> -->
+                                    </tr> -->
                                 </table>
                             </td>
                         </tr>
@@ -223,16 +221,26 @@
                                         <th>Bank</th>
                                         <td>
                                             : 
-                                            <span t-field="o.partner_id.bank_ids[0].bank_id.name"/>
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.name"/> -->
+                                            <span t-esc="o.partner_bank_id.bank_id.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.name or ''"/>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>Cabang</th>
-                                        <td> : <span t-field="o.partner_id.bank_ids[0].bank_id.state.name"/></td>
+                                        <td> 
+                                            : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.state.name"/> -->
+                                            <span t-esc="o.partner_bank_id.bank_id.state.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.state.name or ''"/>
+                                        </td>
+                                        
                                     </tr>
                                     <tr>
                                         <th>No. Rekening</th>
-                                        <td> : <span t-field="o.partner_id.bank_ids[0].acc_number"/></td>
+                                        <td>
+                                            : 
+                                            <!-- <span t-field="o.partner_id.bank_ids[0].acc_number"/> -->
+                                            <span t-esc="o.partner_bank_id.acc_number if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].acc_number or ''"/>
+                                        </td>
                                     </tr>
                                 </table>
                             </td>
@@ -253,18 +261,20 @@
                             <th>Jumlah</th>
                             <th>Keterangan</th>
                         </tr>
-                        <tr>
-                            <td><span t-field="o.journal_id.name"/></td>
-                            <td><span t-field="o.no_memo"/></td>
-                            <td><span t-field="o.date_memo"/></td>
-                            <td style="text-align:right;"><span t-esc="o.format_amount(o.amount)"/></td>
-                            <td><span t-field="o.ref"/></td>
-                        </tr>
+                        <t t-foreach="o.payment_line_ids" t-as="data">
+                            <tr>
+                                <td><span t-field="o.journal_id.name"/></td>
+                                <td><span t-field="o.no_memo"/></td>
+                                <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
+                                <td style="text-align:right;"><span t-esc="o.format_amount(data.amount_to_pay)"/></td>
+                                <td><span t-field="data.description"/></td>
+                            </tr>
+                        </t>
                     </table>
                     <table style="border: none; font-size: 10px; text-align: left; margin-top:10px;">
                         <tr>
                             <th >Jumlah</th>
-                            <td> : <span t-esc="o.format_amount(o.amount)"/></td>
+                            <td> : <span t-esc="o.format_amount(o.amount - o.amount_charge)"/></td>
                         </tr>
                         <tr>
                             <th>Terbilang</th>

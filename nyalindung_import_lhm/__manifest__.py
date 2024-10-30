@@ -28,6 +28,7 @@
         'views/templates.xml',
         
         'views/lhm_views.xml',
+        'views/lhm_contractor_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

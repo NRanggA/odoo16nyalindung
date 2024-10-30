@@ -38,6 +38,9 @@
         'report/surat_jalan_action.xml',
         'report/report_summary_bkm_action.xml',
         'wizard/wizard_report_summary_bkm_view.xml',
+
+        'report/bukti_penerimaan_barang_template.xml',
+        'report/bukti_penerimaan_barang_action.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

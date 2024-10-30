@@ -41,9 +41,9 @@
                 <field name="date_from" />
                 <field name="date_to" />
                 <field name="total_cost" />
-                <field name="closing_account_id" />
                 <field name="dest_account_id" />
                 <field name="closing_move_id" optional="hide"/>
+                <field name="closing_account_id" invisible="1"/>
             </tree>
         </field>
     </record>

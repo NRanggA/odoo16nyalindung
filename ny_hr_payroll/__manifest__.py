@@ -17,6 +17,7 @@
     # any module necessary for this one to work correctly
     'depends': [
         'ny_plantation',
+        'ny_hr_attendance',
         'c10i_hr_payroll',
         'c10i_hr_payroll_other_inputs',
     ],

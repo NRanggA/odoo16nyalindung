@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_karyawan_form_inherit" model="ir.ui.view">
+        <field name="name">view.karyawan.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="c10i_hr_16.view_karyawan_form_inherit"/>
+        <!-- <field name="inherit_id" ref="hr.view_employee_form"/> -->
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']/group[1]" position="inside">
+                <group name="contrct_informatino" string="Contract">
+                    <field name="work_start_date" />
+                    <field name="termination_date" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

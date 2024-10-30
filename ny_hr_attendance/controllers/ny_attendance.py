@@ -87,24 +87,26 @@ class NyAttendance(ApiBase):
             # VALIDASI FIELD
             if not datas.get('username',False):
                 return Response(json.dumps({'message': "username Wajib diisi"}), headers=HEADERS, status=404)
-            check_user = request.env['res.users'].sudo().search([('login','=',datas['username'])])
-            if not check_user:
+            employee_found = request.env['hr.employee'].sudo().search([('mydaya_user_login','=',datas['username'])])
+            if not employee_found:
+                return Response(json.dumps({'message': "Unauthorized, username not found."}), headers=HEADERS, status=401)
+            if employee_found.mydaya_user_pwd != datas.get('pwdlain', False):
                 return Response(json.dumps({'message': "Unauthorized, please contact the admin for further details."}), headers=HEADERS, status=401)
 
             result = {
                 'status': 1,
-                'uname': check_user.login,
-                'fname': check_user.employee_id.name,
-                'dept': check_user.employee_id.department_id.name,
-                'uemail': check_user.login,
-                'divisi': check_user.employee_id.department_id.name,
+                'uname': employee_found.mydaya_user_login or '',
+                'fname': employee_found.name or '',
+                'dept': employee_found.department_id.name if employee_found.department_id else '',
+                'uemail': employee_found.work_email or '',
+                'divisi': employee_found.department_id.name if employee_found.department_id else '',
                 'sect': '',
                 'area': 'OFFICE',
                 'golongan': '',
-                'nip': check_user.employee_id.no_induk,
-                'latacuan': check_user.employee_id.lat_acuan,
-                'lngacuan': check_user.employee_id.long_acuan,
-                'valjarak': check_user.employee_id.value_jarak,
+                'nip': employee_found.no_induk or '',
+                'latacuan': employee_found.lat_acuan or '',
+                'lngacuan': employee_found.long_acuan or '',
+                'valjarak': int(employee_found.value_jarak or '0'),
                 'subco': '2'
             }
             return Response(json.dumps(result, cls=DateEncoder), headers=HEADERS, status=201)
@@ -224,7 +226,7 @@ class NyAttendance(ApiBase):
     # Response
     # [
     #     {
-    #         "NIP": "999999",
+    #         "nip": "999999",
     #         "masuk": "15:15, Jarak :0.05 Km, Keterangan: keterangan",
     #         "pulang": "15:16, Jarak :0.05 Km, Keterangan: keterangan",
     #         "namafile": "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/999999/202409/999999_20240927151533.jpg",
@@ -275,7 +277,7 @@ class NyAttendance(ApiBase):
                 if att.check_out:
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
-                    "NIP": employee_found.no_induk,
+                    "nip": employee_found.no_induk,
                     "masuk": f"{masuk.strftime('%H:%M')}, {ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
                     "pulang": pulang.strftime('%H:%M') if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                     "namafile": namafile,
@@ -298,7 +300,7 @@ class NyAttendance(ApiBase):
     # Response
     # [
     #     {
-    #         "NIP": "1",
+    #         "nip": "1",
     #         "masuk": "08:43, Jarak :18.52 Km, Keterangan: karena tes wfh",
     #         "pulang": "-",
     #         "namafile": "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/1/202407/1_20240702084340.jpg",
@@ -325,10 +327,10 @@ class NyAttendance(ApiBase):
             # GET ATTENDANCE
             date = datetime.strptime(datas.get('tgl'), "%Y-%m-%d")
             start_date = date + relativedelta(day=1)
-            end_date = date + relativedelta(months=1) + relativedelta(day=1)
+            end_date = date + relativedelta(months=1) + relativedelta(day=1) - relativedelta(days=1)
             domain = [('employee_id','=',employee_found.id), ('date','>=', start_date), 
                         ('date','<=', end_date)]
-            attendances = request.env['hr.attendance.sheet'].sudo().search(domain)
+            attendances = request.env['hr.attendance.sheet'].sudo().search(domain, order='date asc')
             week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
                 3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
             res_att = []
@@ -352,7 +354,7 @@ class NyAttendance(ApiBase):
                 if att.check_out:
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
-                        "NIP": employee_found.no_induk,
+                        "nip": employee_found.no_induk,
                         "masuk": f"{masuk.strftime('%H:%M')}, {ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
                         "pulang": pulang.strftime('%H:%M') if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                         "namafile": namafile,

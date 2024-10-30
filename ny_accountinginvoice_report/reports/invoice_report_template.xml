@@ -86,7 +86,7 @@
                             <td><t t-esc="line.product_uom_id.name"/></td>
                             <td class="right-align"><t t-esc="line.price_unit"/></td>
                             <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                            <td class="right-align"><t t-esc="line.price_total"/></td>
+                            <td class="right-align"><t t-esc="o.amount_total"/></td>
                         </tr>
                     </t>
                 </table>
@@ -99,27 +99,27 @@
                 <table class="no-border2">
                     <tr>
                         <td colspan="4" class="terbilang">Terbilang</td>
-                        <td class="right-align col-narrow">Sub Total</td>
+                        <td class="right-align col-narrow">Sub Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align col-narrow"><t t-esc="sub_total"/></td>
                     </tr>
                     <tr>
                         <td colspan="4" class="terbilang" style="font-style: italic;"># <t t-esc="o.amount_text"/> rupiah #</td>
-                        <td class="right-align">Disc Total</td>
+                        <td class="right-align">Disc Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align"><t t-esc="total_discount"/></td>
                     </tr>
                     <tr>
                         <td colspan="4"></td>
-                        <td class="right-align">PPN 11%</td>
+                        <td class="right-align">PPN 11%:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align"><t t-esc="o.amount_tax"/></td>
                     </tr>
                     <tr>
                         <td colspan="4"></td>
-                        <td class="right-align">Grand Total</td>
+                        <td class="right-align">Grand Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="o.amount_total"/></td>
+                        <td class="right-align"><t t-esc="line.price_total"/></td>
                     </tr>
                 </table>
             </t>

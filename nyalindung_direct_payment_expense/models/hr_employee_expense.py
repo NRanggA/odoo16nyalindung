@@ -480,6 +480,64 @@ class HrEmployeeExpenseLine(models.Model):
     name = fields.Char(string="Description", required=True)
     amount = fields.Monetary('Amount')
 
+    varieties_id = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
+    location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+
+    filtered_activities = fields.Many2many('lhm.activity', 'lhm_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
+    filtered_locations = fields.Many2many('lhm.location', 'lhm_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
+
+    
+    @api.depends('varieties_id','location_type_id')
+    def _filter_locations(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.location_type_id.code in ('WS','VH','MA'):
+                locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
+            else: # GC, IDC, PLANTATION, PJ, NS
+                locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
+            line.filtered_locations = [(6,0,locations.ids)] if locations else []
+
+    @api.depends('varieties_id','location_type_id', 'location_id')
+    def _filter_activities(self):
+        for line in self:
+            # doc_form = self.env['res.doc.type'].search([('code','=','lhm')], limit=1)
+            if line.location_type_id and line.location_type_id.project and line.location_id:
+                projects = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
+                project_activity_ids = []
+                for project in projects:
+                        project_activity_ids += [x.activity_id.id for x in project.line_ids]
+
+                if project_activity_ids:
+                    line.filtered_activities = [(6, 0, project_activity_ids)]
+                else:
+                    line.filtered_activities = []
+            else:
+                if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                else: # GC, IDC, PLANTATION
+                    if line.varieties_id:
+                        if line.location_type_id.general_charge:
+                            activities = line.varieties_id.general_charges_activity_ids
+                        elif line.location_type_id.indirect:
+                            activities = line.varieties_id.indirect_cost_activity_ids
+                        else:
+                            activities = line.varieties_id.harvest_activity_id
+                            activities |= line.varieties_id.upkeep_activity_ids
+                    else:
+                        # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                        activities = []
+                if False: 
+                    act_ids = []
+                    for act in activities:
+                        if doc_form.id in act.doc_ids.ids:
+                            act_ids.append(act.id)
+                    line.filtered_activities = [(6, 0, act_ids)]
+                else:
+                    line.filtered_activities = [(6, 0, activities.ids)] if activities else []
+
+
     @api.onchange('product_id')
     def onchange_product(self):
         if self.product_id:

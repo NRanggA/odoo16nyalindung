@@ -5,13 +5,16 @@ import pandas as pd
 import numpy as np
 import io
 import base64
+import math
+import logging
+
 
 class lhm_transaction(models.Model):
     _inherit = 'lhm.transaction'
 
     # Field untuk kebutuhan import LHM line 
     is_import = fields.Boolean('Import LHM line', default=False)
-    file = fields.Binary('File')
+    file = fields.Binary('File', attachment=True)
     error_message = fields.Text('Error Message')
 
     def import_data(self):
@@ -20,11 +23,16 @@ class lhm_transaction(models.Model):
                 return str(int(cell_value)) if not np.isnan(cell_value) else ''
             else:
                 return cell_value.strip()
-            
+        
+        # Fungsi untuk menangani NaN dan mengembalikan nilai default
+        def handle_nan(value, default):
+            if value is None or (isinstance(value, float) and math.isnan(value)):
+                return default
+            return value
+        
         if self.is_import:
             if not self.file:
-                raise UserError(_("Masukkan File Terlebih Dahulu"))
-            
+                raise UserError(_("Masukkan File Terlebih Dahulu"))      
 
         data        = base64.b64decode(self.file)
         excel_file  = io.BytesIO(data)
@@ -34,11 +42,15 @@ class lhm_transaction(models.Model):
         error_message_list = []
 
         for index, row in df.iterrows():
-            lhm_line = self.env['lhm.transaction.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', '')))], limit=1)
+
+            if not self.id:
+                raise ValidationError("Silakan Save Terlebih Dahulu !")
+
+            lhm_line = self.env['lhm.transaction.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', ''))), ('lhm_id', '=', self.id)], limit=1)
             if not lhm_line:
-                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada LHM saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada LHM {self.name} saat ini!")
             if not lhm_line.employee_id.contract_id:
-                error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada data LHM saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan nip {row.get('NIK', '')} dan nama {row.get('NAME', '')} tidak ditemukan pada data LHM {self.name} saat ini!")
 
             # ========== ATTENDANCE ==============
             # ==================================
@@ -92,6 +104,11 @@ class lhm_transaction(models.Model):
             # Pencarian berdasarkan Varietas
 
 
+            # Validasi HK lebih dari 1 
+            work_day = handle_nan(row.get('HK', ''), 0)
+            if work_day > 1:
+                error_message_list.append(f"Baris ke- {index + 2} untuk karyawan {row.get('NAME', '')}, HK yang dimasukkan {row.get('HK', '')} tidak boleh lebih dari 1!")
+
 
             # ========== SATUAN ==============
             # ================================
@@ -104,9 +121,9 @@ class lhm_transaction(models.Model):
             #     error_message_list.append(f"Baris ke- {index + 2}  pada Satuan 2 dengan nama {row.get('Satuan 2', '')} tidak ditemukan!")
 
 
-
             # Mencari data abasensi 
             absensi_kj  = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+
             # Menambahkan data
             to_update.append((1, lhm_line.id, {
                 'attendance_id'     : absensi_kj.id,
@@ -114,21 +131,24 @@ class lhm_transaction(models.Model):
                 'varieties_id'      : varietas_found.id,
                 'location_id'       : location.id,
                 'activity_id'       : activity.id,
-                'is_borong'         : row.get('IS BORONG', ''),
-                'is_hasil_2'        : row.get('IS HASIL 2', ''),
-                'work_day'          : row.get('HK', ''),
+                'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
+                'is_hasil_2'        : handle_nan(row.get('IS HASIL 2', ''), False),
+                'work_day'          : handle_nan(row.get('HK', ''), 0),
                 'product_id'        : varietas_found.product_id.id,
-                'hasil_1'           : row.get('HASIL 1', ''),
+                'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
                 # 'satuan_1'          : satuan_1.id,
                 'product_id_2'      : varietas_found.secondary_product_id.id,
-                'hasil_2'           : row.get('HASIL 2', ''),
+                'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                 # 'satuan_2'          : satuan_2.id,
             }))
+
         
         if error_message_list:
             error_message = '\n'.join(error_message_list)
             self.error_message = error_message
             raise ValidationError(_("Import data gagal dengan error berikut:\n%s") % error_message)
+        
+        logging.info(f"======== IMPORT LHM LINE BERHASIL {to_update} =======")
         
         self.lhm_line_ids = to_update
         return True

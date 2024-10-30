@@ -6,6 +6,7 @@ class AccountPayment(models.Model):
     _inherit = 'account.payment'
     
     amount_text         = fields.Char(compute='amount_to_text', string='Terbilang')
+    amount_charge_text         = fields.Char(compute='amount_charge_to_text', string='Terbilang')
 
     amount_charge       = fields.Monetary(string='Amount Adm')
     memo_charge         = fields.Char('Memo Charge', default="Bank Charge")
@@ -15,6 +16,15 @@ class AccountPayment(models.Model):
 
     # Field untuk menyimpan jurnal tambahan (jurnal charge)
     charge_move_id      = fields.Many2one('account.move', string='Secondary Journal Entry', readonly=True)
+
+    # menambahkan field deparment
+    department_id       = fields.Many2one('hr.department', string='Department')
+    beban               = fields.Selection([
+                            ('kebun', 'Kebun'),
+                            ('pasir', 'Pasir'),
+                        ], string='Beban')
+
+
 
     # Fungsi untuk memformat jumlah
     def format_amount(self, amount):
@@ -26,8 +36,13 @@ class AccountPayment(models.Model):
 
     def amount_to_text(self):
         for record in self:
-            amount = int(record.amount)
+            amount = int(record.amount) - int(record.amount_charge)
             record.amount_text = num2words(amount, lang='id')
+
+    def amount_charge_to_text(self):
+        for record in self:
+            amount_charge = int(record.amount_charge)
+            record.amount_charge_text = num2words(amount_charge, lang='id')
     
     @api.onchange('payment_line_ids', 'amount_charge')
     def _onchange_amount(self):
@@ -42,11 +57,21 @@ class AccountPayment(models.Model):
     def report_data(self):
         for rec in self:
             
+            if not rec.partner_id.bank_ids:
+                raise ValidationError("Partner tidak memiliki informasi bank yang terdaftar.")
+
+            if rec.amount_charge and not rec.charge_account_id:
+                raise ValidationError("Masukkan terlebih dahulu account pada Charge Account!")
+
             if rec.journal_id.type == 'bank':
                 return self.env.ref('ny_account.action_report_payment_vendor_bank').report_action(self)
             else:
                 return self.env.ref('ny_account.action_report_payment_vendor_cash').report_action(self)
 
+    def report_amount_charge(self):
+        for rec in self:
+            if rec.amount_charge and rec.charge_account_id:
+                return self.env.ref('ny_account.action_report_payment_amount_charge').report_action(self)
 
     def action_post(self):
         super().action_post()
@@ -107,4 +132,20 @@ class AccountPayment(models.Model):
             'domain': [('id', 'in', move_ids)], 
             'context': {'create': False},
         }
-    
+
+    def customer_payment_report(self):
+        for rec in self:
+            if not rec.partner_id.bank_ids:
+                raise ValidationError("Partner tidak memiliki informasi bank yang terdaftar.")
+
+            if rec.journal_id.type == 'bank':
+                return self.env.ref('ny_account.action_report_payment_customer_bank').report_action(self)
+            else:
+                return self.env.ref('ny_account.action_report_payment_customer_cash').report_action(self)
+
+
+class AccountPaymentLine(models.Model):
+    _inherit = 'account.payment.line'
+
+
+    description = fields.Text('Description')

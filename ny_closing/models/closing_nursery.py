@@ -7,13 +7,14 @@ _logger = logging.getLogger(__name__)
 class ClosingNursery(models.Model):
     _name = 'closing.nursery' 
     _description = 'Running Vehicle Procedure'
+    _rec_name = 'nursery_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
 
     date_from = fields.Date('Date From', required=True)
     date_to = fields.Date('Date To', required=True)
     nursery_id = fields.Many2one('lhm.nursery', string='Blok Bibit', ondelete='restrict', required=True)
-    dest_account_id = fields.Many2one('account.account', string='Dest. Account')
+    dest_account_id = fields.Many2one(related='nursery_id.account_id', store=True, required=False)
     closing_account_id = fields.Many2one('account.account', string='Closing Account')
 
     opening_qty = fields.Float()
@@ -92,8 +93,8 @@ class ClosingNursery(models.Model):
                             ('date','<',closing.date_from)])
             closing.opening_qty = closing.nursery_id.qty + (sum(all_in_moves.mapped('qty')) if all_in_moves else 0.0) - (sum(all_out_moves.mapped('qty')) if all_out_moves else 0.0)
             domain_op = [('plantation_location_id','=',self.nursery_id.location_id.id),
-                ('account_id','=',closing.dest_account_id.id),
                 ('parent_state','=','posted'),
+                ('account_id','=',closing.dest_account_id.id),
                 ('date','<',self.date_from)]
             op_move_lines = self.env['account.move.line'].search(domain_op)
             closing.opening_value = sum(op_move_lines.mapped('balance')) if op_move_lines else 0.0
@@ -129,6 +130,9 @@ class ClosingNursery(models.Model):
     def create_account_move(self):
         nursery_journal = self.env.ref('ny_closing.plantation_closing_nursery_journal')
         for closing in self:
+            if closing.closing_move_id:
+                if closing.closing_move_id.state=='posted':
+                    closing.closing_move_id.button_draft()
             # Create Jurnal Closing Bibit
             if closing.total_cost:
                 move_lines1 = []
@@ -160,11 +164,19 @@ class ClosingNursery(models.Model):
                     'move_type': 'entry',
                     'line_ids': move_lines1,
                 }
-                new_move = self.env['account.move'].create(move_values1)
+                if closing.closing_move_id:
+                    closing.closing_move_id.write(move_values1)
+                else:
+                    new_move = self.env['account.move'].create(move_values1)
+                    closing.closing_move_id = new_move.id
                 
-                closing.closing_move_id = new_move.id
+            if closing.closing_out_move_ids:
+                for xmove in closing.closing_out_move_ids:
+                    if xmove.state=='posted':
+                        xmove.button_draft()
+                        xmove.write({'name': ''})
+                    xmove.unlink()
                 
-            if closing.outgoing_move_ids:
                 out_move_ids = [] # Journal Outoging Costing
                 for sml in closing.outgoing_move_ids:
                     if not sml.qty:

@@ -18,6 +18,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/ny_attendance_log_view.xml',
+        'views/hr_employee_view.xml',
         'views/menuitems.xml',
     ],
 }

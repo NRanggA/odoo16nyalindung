@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='skb']" position="after">
                 <field name="is_import" />
                 <field name="file" attrs="{'invisible': [('is_import', '!=', True)]}"/>
-                <button name="import_data" class="oe_highlight" string="Import" type="object" groups="base.group_no_one" attrs="{'invisible': [('is_import', '!=', True)]}"/>
+                <button name="import_data" class="oe_highlight" string="Import" type="object" attrs="{'invisible': [('is_import', '!=', True)]}"/>
             </xpath>
         </field>
     </record>

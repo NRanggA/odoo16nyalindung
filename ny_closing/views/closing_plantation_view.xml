@@ -23,41 +23,72 @@
                                 <button string="View Journals" name="action_view_src_move_lines" type="object" class="btn-info" icon="fa-search"/>
                             </div>
                             <label for="accumulated_deferred_cost" attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}"/>
-                            <div>
+                            <div attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}">
                                 <field name="accumulated_deferred_cost" readonly="1" nolable="1"/>
                                 <button string="View Journals" name="action_view_deferred_move_lines" type="object" class="btn-info" icon="fa-search"/>
                             </div>
-                            <field name="tbm_account_id"/>
-                            <field name="deferred_account_id"/>
+                            <field name="tbm_account_id" attrs="{'invisible': [('type_of_plant','not in',['longterm_tbm_tm','longterm_seasonal'])]}"/>
+                            <field name="deferred_account_id" attrs="{'invisible': [('type_of_plant','not in',['shorterm','longterm_seasonal'])]}"/>
                             <field name="closing_account_id"/>
                             <field name="closing_move_id" readonly="1"/>
                         </group>
                     </group>
                     <field name="type_of_plant" invisible="1"/>
                     <field name="status" invisible="1"/>
+                    <label for="plant_season_ids" attrs="{'invisible':[('plant_season_ids','=',[])]}"/>
+                    <field name="plant_season_ids" nolabel="1" attrs="{'invisible':[('plant_season_ids','=',[])]}"/>
                     <notebook>
-                        <page name="cost_line" string="Current Period Cost">
-                            <field name="cost_line_ids">
-                                <tree>
-                                    <field name="plantation_location_type_id" />
-                                    <field name="plantation_location_id" />
-                                    <field name="plantation_activity_id" />
-                                    <field name="plantation_src_jourcnal_id" />
-                                    <field name="total_cost" sum="total_cost"/>
+                        <page name="deferred_cost_line" string="Deferred Cost" 
+                                attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}">
+                            <group>
+                                <group>
+                                    <field name="pct_deferred_to_cost" />
+                                </group>
+                                <group>
+                                </group>
+                            </group>
+                            <field name="deferred_cost_line_ids">
+                                <tree create="false" delete="false" editable="bottom">
+                                    <field name="plantation_location_type_id" readonly="1"/>
+                                    <field name="plantation_location_id" readonly="1"/>
+                                    <field name="plantation_activity_id" readonly="1"/>
+                                    <field name="plantation_src_journal_id" readonly="1"/>
+                                    <field name="deferred_cost" sum="deferred_cost" readonly="1"/>
+                                    <field name="accumulated_cost" sum="accumulated_cost" readonly="1"/>
+                                    <field name="new_deferred_cost" sum="new_deferred_cost" readonly="1"/>
+                                    <field name="residual_deferred" sum="residual_deferred"/>
+                                    <field name="pct_cost_to_post" />
+                                    <field name="cost_to_post" />
+                                    <field name="new_residual_deferred" sum="new_residual_deferred"/>
                                 </tree>
                             </field>
                         </page>
-                        <page name="deferred_cost_line" string="Last Deferred Cost" 
-                                attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}">
-                            <field name="deferred_cost_line_ids">
+                        <page name="cost_line" string="Current Period Cost">
+                            <field name="cost_line_ids" invisible="1"/>
+                            <label for="cost_line_as_cost_ids"/>
+                            <field name="cost_line_as_cost_ids" nolabel="1" readonly="1">
                                 <tree>
+                                    <field name="date_from" />
+                                    <field name="date_to" />
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
-                                    <field name="plantation_src_jourcnal_id" />
-                                    <field name="accumulated_cost" sum="accumulated_cost"/>
-                                    <field name="pct_cost_to_post" />
-                                    <field name="cost_to_post" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="to_be_deferred" />
+                                    <field name="total_cost" sum="total_cost"/>
+                                </tree>
+                            </field>
+                            <label for="cost_line_to_be_deferred_ids"/>
+                            <field name="cost_line_to_be_deferred_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="date_from" />
+                                    <field name="date_to" />
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="to_be_deferred" />
+                                    <field name="total_cost" sum="total_cost"/>
                                 </tree>
                             </field>
                         </page>
@@ -78,6 +109,7 @@
                 <field name="current_period_cost" />
                 <field name="accumulated_deferred_cost" optional="hide"/>
                 <field name="closing_move_id" optional="hide"/>
+                <field name="closing_account_id" invisible="1"/>
             </tree>
         </field>
     </record>

@@ -6,17 +6,25 @@
         <field name="model">lhm.transaction</field>
         <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_transaction_form" />
         <field name="arch" type="xml">
-            <field name="afdeling_id" position="replace"/>
-            <field name="foreman_id_1" position="replace"/>
-            <field name="foreman_id" position="replace"/>
-            <field name="admin_id_1" position="replace"/>
-            <field name="admin_id" position="replace"/>
+            <!-- <field name="afdeling_id" position="replace"/> -->
+            <field name="asisten_mandor_id" position="replace"/>
+            <field name="mandor_id" position="replace"/>
+            <field name="kerani_id" position="replace"/>
+            <field name="nik_kerani" position="replace"/>
+            <!-- <field name="nik_mandor_1" position="replace"/>
+            <field name="nik_mandor" position="replace"/> -->
             
-            <field name="code" position="after">
+            <field name="kemandoran_id" position="after">
                 <field name="assisten_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
                 <field name="kepala_mandor_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
                 <field name="mandor_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
                 <field name="tap_kontrol_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+            </field>
+            <field name="location" position="after">
+                <field name="nik_assisten" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+            </field>
+            <field name="company_id" position="before">
+                <field name="nik_tap_kontrol" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
             </field>
         </field>
     </record>

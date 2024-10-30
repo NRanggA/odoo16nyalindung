@@ -1,18 +1,6 @@
 <odoo>
     <data>
         
-        <record id="hr_attendance_batch_view_tree" model="ir.ui.view">
-            <field name="name">hr.attendance.batch.view.tree</field>
-            <field name="model">hr.attendance.batch</field>
-            <field name="arch" type="xml">
-                <tree string="Data Import Karyawan">
-                    <field name="date" />
-                    <field name="state" widget="badge" decoration-success="state == 'valid'" decoration-danger="state == 'draft'" />
-                </tree>
-            </field>
-        </record>
-
-        
         <record id="view_hr_attendance_batch_form" model="ir.ui.view">
             <field name="name">import.attendance</field>
             <field name="model">hr.attendance.batch</field>
@@ -21,7 +9,7 @@
                     <header>
                         <button string="Process" type="object" name="push_to_sheet" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
                         <button string="Confirm" type="object" name="action_confirm" class="btn-primary"  attrs="{'invisible': [('state', '!=', 'processed')]}"/>
-                        <button string="Set To Draft" type="object" name="set_to_draft" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
+                        <button string="Set To Draft" type="object" name="set_to_draft" class="btn-secondary" attrs="{'invisible': [('state', '!=', 'valid')]}"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,processed,valid"/>
                     </header>
                     <sheet>
@@ -49,8 +37,19 @@
             </field>
         </record>
 
+        <record id="hr_attendance_batch_view_tree" model="ir.ui.view">
+            <field name="name">hr.attendance.batch.view.tree</field>
+            <field name="model">hr.attendance.batch</field>
+            <field name="arch" type="xml">
+                <tree string="Data Import Absensi">
+                    <field name="date" />
+                    <field name="state" widget="badge" decoration-success="state == 'valid'" decoration-danger="state == 'draft'" />
+                </tree>
+            </field>
+        </record>
+
         <record id="action_hr_attendance_batch" model="ir.actions.act_window">
-            <field name="name">Import Excel</field>
+            <field name="name">Import Data Absensi</field>
             <field name="res_model">hr.attendance.batch</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="hr_attendance_batch_view_tree"/>

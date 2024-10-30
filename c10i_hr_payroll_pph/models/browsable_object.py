@@ -7,12 +7,11 @@ _logger = logging.getLogger(__name__)
 
 class Payslips2(Payslips):
     def prepare_pph21_values(self, fix_income, jht):
-        # _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: get employee")
+        _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: get employee")
         employee = self.env['hr.employee'].browse(self.employee_id)
         this_period_jht = jht
         # Prev of PPH 21 slips paid this Month
-        # BPDPKS TIDAK PERLU INI
-        # _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: start query 1")
+        _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: start query 1")
         self.env.cr.execute("""
             SELECT 
                 sum(case when hp.credit_note = True then (-hpp.current_income_base_pph_amount) else (hpp.current_income_base_pph_amount) end) as income_base_pph_amount,
@@ -24,11 +23,11 @@ class Payslips2(Payslips):
                 AND extract(month from hpp.date)=%s AND extract(year from hpp.date)=%s
             """,
             (self.employee_id, self.date_to.month, self.date_to.year))
-        # _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: query 1 done")
+        _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: query 1 done")
         prev = self.env.cr.dictfetchone()
 
         # Prev of PPH 21 slips paid all months this year
-        # _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: start query 2")
+        _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: start query 2")
         self.env.cr.execute("""
             SELECT 
                 sum(case when hp.credit_note = True then (-hpp.current_income_base_pph_amount) else (hpp.current_income_base_pph_amount) end) as income_base_pph_amount,
@@ -41,7 +40,7 @@ class Payslips2(Payslips):
                 AND extract(year from hpp.date)=%s
             """,
             (self.employee_id, self.date_to.year))
-        # _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: query 2 done")
+        _logger.info(":::::::::::::::::::::::::::::::::: PPH21 ::::::::: query 2 done")
         prev_all = self.env.cr.dictfetchone()
         
         to_update = {
@@ -49,7 +48,7 @@ class Payslips2(Payslips):
             'termination_date': employee.termination_date,
             'employee_id': employee.id,
             'ptkp_id': employee.ptkp_id.id,
-            'ptkp_amount': employee.ptkp_id.revenue,
+            'ptkp_amount': employee.ptkp_id.value,
 
             'current_income_base_pph_amount': fix_income,
             'current_jht': this_period_jht,
@@ -63,14 +62,14 @@ class Payslips2(Payslips):
                 (prev_all.get('jht_amount',0.0) if prev_all.get('jht_amount') is not None else 0.0) \
                 + this_period_jht,
         }
-        # _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: HASIL SUM {str(to_update)}")
+        _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: HASIL SUM {str(to_update)}")
         
-        # _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: SLIP PPH 1 {str(self.pph_slip_id)}")
+        _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: SLIP PPH 1 {str(self.pph_slip_id)}")
         slip_pph21 = self.env['hr.payslip.pph'].browse(self.pph_slip_id.id)
-        # _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: SLIP PPH 2 {str(slip_pph21.id)}")
+        _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: SLIP PPH 2 {str(slip_pph21.id)}")
         if slip_pph21:
             slip_pph21.write(to_update)
-            # _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: AFTER WRITE {str(slip_pph21.pph_amount)}")
+            _logger.info(f":::::::::::::::::::::::::::::::::: PPH21 ::::::::: AFTER WRITE {str(slip_pph21.pph_amount)}")
             return slip_pph21.pph_amount
         else:
             return 0.0

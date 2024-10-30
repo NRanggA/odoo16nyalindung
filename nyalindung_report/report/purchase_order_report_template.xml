@@ -109,12 +109,12 @@
                                 <tr>
                                     <td width="28%" height="40px" style="vertical-align : top">Telepon</td>
                                     <td width="1%" height="40px" style="vertical-align : top">:</td>
-                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.company_id.phone" t-esc="o.company_id.phone"/></td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.partner_id.phone" t-esc="o.partner_id.phone"/></td>
                                 </tr>
                                 <tr>
                                     <td width="28%" height="40px" style="vertical-align : top">NPWP</td>
                                     <td width="1%" height="40px" style="vertical-align : top">:</td>
-                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.company_id.vat" t-esc="o.company_id.vat"/></td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.partner_id.vat" t-esc="o.partner_id.vat"/></td>
                                 </tr>
                                 <tr>
                                     <td width="28%" height="40px" style="vertical-align : top">Pembayaran Transfer</td>

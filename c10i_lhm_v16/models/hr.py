@@ -66,7 +66,6 @@ class HrMinimumWage(models.Model):
                 self.date_from = datetime(self.year, 1, 1)
                 self.date_to = datetime(self.year, 12, 31)
 
-
 class HrForeman(models.Model):
     _name = 'hr.foreman'
     _description = 'Master Data Kemandoran'
@@ -154,7 +153,6 @@ class hr_employee_status(models.Model):
     active          = fields.Boolean("Active", default=True)
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
 
-
 class hr_employee_foreman_transfer(models.Model):
     _name           = 'hr.employee.foreman.transfer'
     _description    = 'Daftar Transfer Kemandoran'
@@ -169,7 +167,6 @@ class hr_employee_foreman_transfer(models.Model):
     kemandoran_from_id  = fields.Many2one(comodel_name="hr.foreman", string="Asal Kemandoran")
     kemandoran_to_id    = fields.Many2one(comodel_name="hr.foreman", string="Tujuan Kemandoran")
     type                = fields.Selection([('in', 'Masuk'), ('out', 'Keluar')], string='Type')
-
 
 class hr_attendance_type(models.Model):
     _name           = 'hr.attendance.type'
@@ -240,7 +237,6 @@ class hr_attendance_type(models.Model):
                 'context': {'default_attendance_type_id': self.id},
             }
 
-
 class hr_employee_type(models.Model):
     _name           = 'hr.employee.type'
     _description    = 'Employee Type'
@@ -292,7 +288,6 @@ class hr_department(models.Model):
 
     is_lhm          = fields.Boolean("Data LHM")
 
-
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
     _description = 'Employee'
@@ -305,7 +300,7 @@ class HrEmployee(models.Model):
         ptkp = self.env['hr.ptkp'].search([('marital','=','TK')], limit=1)
         return ptkp and ptkp.id or False
 
-    no_induk    = fields.Char('NIK', default="/")
+    # no_induk    = fields.Char('NIK', default="/")
     # gender      = fields.Selection(selection_add=[
     #                 ('Laki-laki', 'Laki-laki'),
     #                 ('Perempuan', 'Perempuan'),

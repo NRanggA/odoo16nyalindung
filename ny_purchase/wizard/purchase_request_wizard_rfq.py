@@ -6,7 +6,7 @@ class PurchaseRequestMakePurchaseOrder(models.TransientModel):
     _inherit = 'purchase.request.line.make.purchase.order'
 
     supplier_id = fields.Many2one('res.partner', string='Supplier', required=False)
-    supplier_ids = fields.Many2many('res.partner', string="Suppliers", domain="[('supplier_rank', '>', 0)]")
+    supplier_ids = fields.Many2many('res.partner', string="Suppliers", domain="[('supplier_rank', '>', 0) , ('supplier', '=', True)]")
 
     def make_purchase_order(self):
         res = []

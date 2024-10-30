@@ -102,9 +102,21 @@ class HrAttendanceBatch(models.Model):
 
             # Mengumpulkan data check-in dan check-out dari file Excel
         for index, row in df.iterrows():
-            employee = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik'])), ('name', '=', row['Nama'])], limit=1)                
-            if not employee:
-                raise ValidationError(f"Karyawan dengan nip {row['Nik']} tidak ditemukan!")
+            # employee = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik'])), ('name', '=', row['Nama'])], limit=1)                
+            # if not employee:
+            #     raise ValidationError(f"Karyawan dengan nip {row['Nik']} tidak ditemukan!")
+
+            employees = self.env['hr.employee'].search([('no_induk', '=', cell_to_string(row['Nik']))])
+            if not employees:
+                raise ValidationError(f"Karyawan dengan nama {row['Nama']}, NIK {row['Nik']} tidak ditemukan!")
+            
+            # Jika ditemukan lebih dari satu karyawan dengan NIK yang sama
+            elif len(employees) > 1:
+                # list yang berisi nama dan NIK dari semua karyawan yang memiliki NIK yang sama
+                employee_list = "\n".join([f"- {emp.name} (NIK: {emp.no_induk})" for emp in employees])
+                raise ValidationError(f"Ditemukan lebih dari satu karyawan dengan NIK {row['Nik']}: \n{employee_list}")
+            
+            employee = employees[0]
 
             try:
                 check_in_str = None
@@ -204,6 +216,10 @@ class HrAttendanceBatch(models.Model):
         return True
 
     def push_to_sheet(self):
+
+        if not self.attendance_ids:
+            raise ValidationError(f"Silahkan Import Data Absensi terlebih dahulu !")
+
         attendance_sheets = []
         # attendance_data = json.loads(self.attendance_data)
 
@@ -232,20 +248,17 @@ class HrAttendanceBatch(models.Model):
                 })
                 attendance_sheets.append(existing_attendance_sheet.id)
             else:
-                employee = self.env['hr.employee'].search([('id', '=', employee_id)], limit=1)
-                raise ValidationError(f"Data absensi untuk user {employee.name} pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
+                # employee = self.env['hr.employee'].search([('id', '=', employee_id)], limit=1)
+                # raise ValidationError(f"Data absensi untuk user {employee.name} pada tanggal {date} belum dibuat di dalam Sheet Absensi.")
                 # Membuat data attendance.sheet baru ketika datanya tidak di temukan
-                # new_attendance_sheet = {
-                #     'employee_id' : employee_id,
-                #     'type'        : type_id,
-                #     'date'        : date,
-                #     'check_in'    : attendance.check_in if attendance.check_in else False,
-                #     'check_out'   : attendance.check_out if attendance.check_out else False
-                # }
-                # attendance_sheets.append(new_attendance_sheet.id)
+                self.env['hr.attendance.sheet'].create({
+                    'employee_id': employee_id,
+                    'type_id': type_id,
+                    'date': date,
+                    'check_in': attendance.check_in if attendance.check_in else False,
+                    'check_out': attendance.check_out if attendance.check_out else False,
+                })
 
-
-        
         self.write({'state': 'processed'})
         self.attendance_sheet_ids = [(6, 0, attendance_sheets)]
         return True

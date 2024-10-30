@@ -10,6 +10,7 @@
                         <group>
                             <field name="product_id" />
                             <field name="prev_closing_fg_id" />
+                            <field name="closing_move_id" groups="base.group_no_one" readonly="1" />
                         </group>
                         <group>
                             <field name="inventory_account_id" />
@@ -58,6 +59,20 @@
                             <field name="closing_value" />
                         </group>
                     </group>
+
+                    <label for="plantation_cost_ids" groups="base.group_no_one"/>
+                    <field name="plantation_cost_ids" groups="base.group_no_one">
+                        <tree>
+                            <field name="plantation_location_type_id" />
+                            <field name="plantation_location_id" />
+                            <field name="plantation_activity_id" />
+                            <field name="plantation_src_journal_id" />
+                            <field name="account_id" />
+                            <field name="total_cost_latex" />
+                            <field name="total_cost_lump" />
+                            <field name="total_cost" optional="hide" />
+                        </tree>
+                    </field>
                 </sheet>
             </form>
         </field>
@@ -108,9 +123,10 @@
                 </header>
                 <sheet>
                     <group>
-                        <field name="date_from" attrs="{'readonly': [('state','!=','draft')]}" />
-                        <field name="date_to" attrs="{'readonly': [('state','!=','draft')]}" />
+                        <field name="date_from" attrs="{'readonly': [('state','!=','start')]}" />
+                        <field name="date_to" attrs="{'readonly': [('state','!=','start')]}" />
                         <field name="prev_closing_id" groups="base.group_no_one" readonly="1" />
+                        <field name="closing_move_ids" groups="base.group_no_one" readonly="1" />
                     </group>
                     <group name="acc_config" string="Account Configuration" attrs="{'invisible': [('state','!=','account_entry')]}">
                         <group string="Account for Latex">
@@ -259,6 +275,20 @@
                                     </tr>
                                 </tbody>
                             </table>
+
+                            <label for="plantation_cost_ids" groups="base.group_no_one"/>
+                            <field name="plantation_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="account_id" />
+                                    <field name="total_cost_latex" />
+                                    <field name="total_cost_lump" />
+                                    <field name="total_cost" optional="hide" />
+                                </tree>
+                            </field>
                         </page>
                         <page name="fg1_valuation" string="Semi-Finish Good"
                                 attrs="{'invisible': [('state','not in',['fg1_valuation','fg2_valuation','account_entry','done'])]}">
@@ -267,6 +297,7 @@
                                 <field name="sheet_opening_value_manual" invisible="1"/>
                                 <field name="compound_opening_qty_manual" invisible="1"/>
                                 <field name="compound_opening_value_manual" invisible="1"/>
+                                <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
                             </group>
                             <table class="w-100 table table-sm table-bordered table-hover">
                                 <thead class="thead-light">
@@ -312,7 +343,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td rowspan="2">Manufacturing Cost</td>
+                                        <td rowspan="4">Manufacturing Cost</td>
                                         <td colspan="8" class="text-center"><field name="manufacturing_cost" 
                                             attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
                                     </tr>
@@ -326,6 +357,26 @@
                                         <td><field name="pct_cost_for_compound" 
                                             attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
                                         <td style="text-align: right;"><field name="compound_manufacturing_cost" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cost of Latex</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_raw_material_cost" readonly="1" /></td>
+                                        <td></td>
+                                        <td>Cost of Lump</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="compound_raw_material_cost" readonly="1" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Cost of Sheet</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_production_cost" /></td>
+                                        <td></td>
+                                        <td>Total Cost of Compound</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="compound_production_cost" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
