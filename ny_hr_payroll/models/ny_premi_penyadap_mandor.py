@@ -82,3 +82,32 @@ class NyPremiPenyadapMandor(models.Model):
             if rec.other_input_id.payslip_id and rec.other_input_id.payslip_id.state!='draft':
                 raise ValidationError(_("Cannot delete other input batch which is already linked with Payslip"))
         return super().unlink()
+
+    def action_view_foreman(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.action_edit_production_target_foreman")
+        action['domain'] = [(f'{self.position}_id','=',self.employee_id.id)]
+        return action
+
+    def action_view_lhm(self):
+        kemandorans = self.env['hr.foreman'].search([(f'{self.position}_id','=',self.employee_id.id)])
+        domain = [('lhm_id.state','=','done'), \
+                ('lhm_transaction_line_id.date','>=',self.ref_id.date_from), \
+                ('lhm_transaction_line_id.date','<=',self.ref_id.date_to)]
+        varieties = kemandorans.mapped('blok_tanam_id.varieties_id')
+        if len(varieties)>1:
+            if len(varieties.harvest_activity_id)>1:
+                domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
+            else:
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+        else:
+            domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+        blok_tanams = kemandorans.blok_tanam_id
+        locations = blok_tanams.location_id
+        if len(locations)==1:
+            domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+        else:
+            domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+        domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.lhm_trans_nap_line_action")
+        action['domain'] = domain
+        return action

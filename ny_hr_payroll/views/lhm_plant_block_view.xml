@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="edit_lhm_plant_block_tree" model="ir.ui.view">
+        <field name="name">edit.lhm.plant.block.target</field>
+        <field name="model">lhm.plant.block</field>
+        <field name="priority" eval="100" />
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="0" edit="1" delete="0">
+                <field name="name" readonly="1" />
+                <field name="varieties_id" readonly="1" options="{'no_open': True}" />
+                <field name="production_daily_target" sum="production_daily_target" />
+                <field name="production_daily_target_mandor" sum="production_daily_target_mandor" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_edit_production_target" model="ir.actions.act_window">
+        <field name="name">Blok Tanam</field>
+        <field name="res_model">lhm.plant.block</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_edit_production_target_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="act_window_id" ref="ny_hr_payroll.action_edit_production_target"/>
+        <field name="view_id" ref="ny_hr_payroll.edit_lhm_plant_block_tree"/>
+    </record>
+</odoo>

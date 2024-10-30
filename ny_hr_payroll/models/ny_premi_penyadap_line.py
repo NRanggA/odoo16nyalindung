@@ -12,12 +12,12 @@ class NyPremiPenyadapLine(models.Model):
     block_tanam_id = fields.Many2one('lhm.plant.block', string='Blok Tanam')
 
     # hari
-    base_hk = fields.Float()
+    base_hk = fields.Float(compute='compute_days', store=True)
     base_libur = fields.Float()
-    base_total_days = fields.Float(compute='compute_days', store=True)
-    act_hk = fields.Float()
+    base_total_days = fields.Float()
+    act_hk = fields.Float(compute='compute_days', store=True)
     act_libur = fields.Float()
-    act_total_days = fields.Float(compute='compute_days', store=True)
+    act_total_days = fields.Float()
 
     # base qty
     karet_kering_qty = fields.Float()
@@ -32,22 +32,31 @@ class NyPremiPenyadapLine(models.Model):
 
     other_input_id = fields.Many2one('hr.payslip.other.input', string='Other Input')
 
-    @api.depends('base_hk','base_libur','act_hk','act_libur')
+    # @api.depends('base_hk','base_libur','act_hk','act_libur')
+    # def compute_days(self):
+    #     for line in self:
+    #         line.base_total_days = line.base_hk + line.base_libur
+    #         line.act_total_days = line.act_hk + line.act_libur
+    @api.depends('base_libur', 'act_libur', 'base_total_days', 'act_total_days')
     def compute_days(self):
         for line in self:
-            line.base_total_days = line.base_hk + line.base_libur
-            line.act_total_days = line.act_hk + line.act_libur
+            line.base_hk = line.base_total_days - line.base_libur
+            line.act_hk = line.act_total_days - line.act_libur
 
-    @api.depends('base_total_days', 'block_tanam_id')
+    @api.depends('block_tanam_id', 'act_libur', 'base_libur', 'base_total_days')
     def compute_target(self):
         for line in self:
             target = 0.0
             if line.block_tanam_id:
                 target = line.block_tanam_id.production_daily_target
-            if line.act_libur > line.base_libur:
-                line.target_qty = (line.base_total_days - line.base_libur) * target
+            if line.act_libur:
+                if line.act_libur > line.base_libur:
+                    line.target_qty = (line.base_total_days - line.base_libur) * target
+                else:
+                    line.target_qty = (line.base_total_days - line.act_libur) * target
             else:
-                line.target_qty = (line.base_total_days - line.act_libur) * target
+                line.target_qty = (line.base_total_days - line.base_libur) * target
+
     
     @api.depends('karet_kering_qty','target_qty')
     def compute_qty(self):
@@ -70,3 +79,12 @@ class NyPremiPenyadapLine(models.Model):
             if rec.other_input_id.payslip_id and rec.other_input_id.payslip_id.state!='draft':
                 raise ValidationError(_("Cannot delete other input batch which is already linked with Payslip"))
         return super().unlink()
+
+    def action_view_lhm(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.lhm_trans_nap_line_action")
+        action['domain'] = [('lhm_id.state','=','done'), \
+                  ('lhm_transaction_line_id.date','>=',self.ref_id.date_from), \
+                  ('lhm_transaction_line_id.date','<=',self.ref_id.date_to), \
+                  ('employee_id','=',self.employee_id.id), \
+                  '|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump')]
+        return action

@@ -134,10 +134,10 @@ class lhm_transaction(models.Model):
                 'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
                 'is_hasil_2'        : handle_nan(row.get('IS HASIL 2', ''), False),
                 'work_day'          : handle_nan(row.get('HK', ''), 0),
-                'product_id'        : varietas_found.product_id.id,
+                'product_id'        : varietas_found.product_id.id if activity.id==varietas_found.harvest_activity_id.id else False,
                 'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
                 # 'satuan_1'          : satuan_1.id,
-                'product_id_2'      : varietas_found.secondary_product_id.id,
+                'product_id_2'      : varietas_found.secondary_product_id.id if activity.id==varietas_found.harvest_activity_id.id else False,
                 'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                 # 'satuan_2'          : satuan_2.id,
             }))

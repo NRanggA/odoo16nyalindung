@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="edit_hr_foreman_tree" model="ir.ui.view">
+        <field name="name">edit.hr.foreman.target</field>
+        <field name="model">hr.foreman</field>
+        <field name="priority" eval="100" />
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="0" edit="1" delete="0">
+                <field name="name" readonly="1" />
+                <field name="code" readonly="0" />
+                <field name="kepala_mandor_id" readonly="1" options="{'no_open': True}"/>
+                <field name="mandor_id" readonly="1" options="{'no_open': True}"/>
+                <field name="tap_kontrol_id" readonly="1" options="{'no_open': True}"/>
+                <field name="blok_tanam_id" readonly="1" options="{'no_open': True}"/>
+                <field name="production_daily_target" readonly="0" sum="production_daily_target" />
+                <field name="production_daily_target_mandor" readonly="0" sum="production_daily_target_mandor" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_edit_production_target_foreman" model="ir.actions.act_window">
+        <field name="name">Foreman</field>
+        <field name="res_model">hr.foreman</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_edit_production_target_foreman_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="act_window_id" ref="ny_hr_payroll.action_edit_production_target_foreman"/>
+        <field name="view_id" ref="ny_hr_payroll.edit_hr_foreman_tree"/>
+    </record>
+</odoo>

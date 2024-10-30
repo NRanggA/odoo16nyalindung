@@ -49,15 +49,15 @@ class NyPremiPenyadap(models.Model):
             # target = (HK total sebulan - ABSENSI yang tipenya L) * Target per orang
             day_from = datetime.combine(fields.Date.from_string(self.date_from), time.min)
             day_to = datetime.combine(fields.Date.from_string(self.date_to), time.max)
-            base_hk = employee._get_work_days_data(
+            base_hk = employee.with_context(leave_premi_sadap=True)._get_work_days_data(
                 day_from,
                 day_to,
                 calendar=employee.contract_id.resource_calendar_id,
-                compute_leaves=False,
+                compute_leaves=True,
             )
-            base_libur = (self.date_to - self.date_from).days+1 - base_hk['days']
+            base_libur = (self.date_to - self.date_from).days+1 - base_hk['days'] + 4
             att_domain = [('employee_id','=',employee.id),('date','>=',self.date_from),('date','<=',self.date_to)]
-            act_hk = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','KJ')])
+            # act_hk = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','KJ')])
             act_libur = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','L')])
 
             vals = {
@@ -65,10 +65,12 @@ class NyPremiPenyadap(models.Model):
                 'karet_kering_qty': karet_kering,
                 'kemandoran_id': employee.kemandoran_id.id,
                 'block_tanam_id': employee.kemandoran_id.blok_tanam_id.id,
-                'base_hk': base_hk['days'],
+                # 'base_hk': base_hk['days'] - 4,
                 'base_libur': base_libur,
-                'act_hk': act_hk,
+                'base_total_days': (self.date_to - self.date_from).days+1,
+                # 'act_hk': act_hk,
                 'act_libur': act_libur,
+                'act_total_days': (self.date_to - self.date_from).days+1,
                 # 'target_qty': (31 - 5) * employee.kemandoran_id.block_tanam_id.production_daily_target,
             }
             to_create.append((0,0,vals))
@@ -79,45 +81,100 @@ class NyPremiPenyadap(models.Model):
     def compute_mandor_production(self):
         self.mandor_line_ids.unlink()
         to_create = []
-        for kemandoran in self.line_ids.kemandoran_id:
-            target_qty = sum(self.line_ids.filtered(lambda x: x.kemandoran_id.id==kemandoran.id).mapped('target_qty'))
-            produce_qty = sum(self.line_ids.filtered(lambda x: x.kemandoran_id.id==kemandoran.id).mapped('karet_kering_qty'))
-            if kemandoran.assisten_id:
-                to_create.append((0,0,{
-                    'employee_id': kemandoran.assisten_id.id,
-                    'position': 'assisten',
-                    'kemandoran_id': kemandoran.id,
-                    'block_tanam_id': kemandoran.blok_tanam_id.id,
-                    'total_karet_kering_qty': produce_qty,
-                    'target_qty': target_qty,
-                }))
-            if kemandoran.kepala_mandor_id:
-                to_create.append((0,0,{
-                    'employee_id': kemandoran.kepala_mandor_id.id,
-                    'position': 'kepala_mandor',
-                    'kemandoran_id': kemandoran.id,
-                    'block_tanam_id': kemandoran.blok_tanam_id.id,
-                    'total_karet_kering_qty': produce_qty,
-                    'target_qty': target_qty,
-                }))
-            if kemandoran.mandor_id:
-                to_create.append((0,0,{
-                    'employee_id': kemandoran.mandor_id.id,
-                    'position': 'mandor',
-                    'kemandoran_id': kemandoran.id,
-                    'block_tanam_id': kemandoran.blok_tanam_id.id,
-                    'total_karet_kering_qty': produce_qty,
-                    'target_qty': target_qty,
-                }))
-            if kemandoran.tap_kontrol_id:
-                to_create.append((0,0,{
-                    'employee_id': kemandoran.tap_kontrol_id.id,
-                    'position': 'tap_kontrol',
-                    'kemandoran_id': kemandoran.id,
-                    'block_tanam_id': kemandoran.blok_tanam_id.id,
-                    'total_karet_kering_qty': produce_qty,
-                    'target_qty': target_qty,
-                }))
+        kemandorans = self.env['hr.foreman'].search([('blok_tanam_id.varieties_id.name','=','Karet')])
+        for kepala_mandor in kemandorans.kepala_mandor_id:
+            domain = [('lhm_id.state','=','done'), \
+                    ('lhm_transaction_line_id.date','>=',self.date_from), \
+                    ('lhm_transaction_line_id.date','<=',self.date_to)]
+            varieties = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).mapped('blok_tanam_id.varieties_id')
+            if len(varieties)>1:
+                if len(varieties.harvest_activity_id)>1:
+                    domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
+                else:
+                    domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            else:
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            blok_tanams = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).blok_tanam_id
+            locations = blok_tanams.location_id
+            if len(locations)==1:
+                domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            else:
+                domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
+            
+            karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
+            karet_kering += sum(lhm_found.mapped('hasil_convert_lump'))
+            to_create.append((0,0,{
+                'employee_id': kepala_mandor.id,
+                'position': 'kepala_mandor',
+                'kemandoran_id': False,
+                'block_tanam_id': False,
+                'total_karet_kering_qty': karet_kering,
+                'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+            }))
+        for tap_kontrol in kemandorans.tap_kontrol_id:
+            domain = [('lhm_id.state','=','done'), \
+                    ('lhm_transaction_line_id.date','>=',self.date_from), \
+                    ('lhm_transaction_line_id.date','<=',self.date_to)]
+            varieties = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).mapped('blok_tanam_id.varieties_id')
+            if len(varieties)>1:
+                if len(varieties.harvest_activity_id)>1:
+                    domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
+                else:
+                    domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            else:
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            blok_tanams = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).blok_tanam_id
+            locations = blok_tanams.location_id
+            if len(locations)==1:
+                domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            else:
+                domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
+            
+            karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
+            karet_kering += sum(lhm_found.mapped('hasil_convert_lump'))
+            to_create.append((0,0,{
+                'employee_id': tap_kontrol.id,
+                'position': 'tap_kontrol',
+                'kemandoran_id': False,
+                'block_tanam_id': False,
+                'total_karet_kering_qty': karet_kering,
+                'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+            }))
+        for mandor in kemandorans.mandor_id:
+            domain = [('lhm_id.state','=','done'), \
+                    ('lhm_transaction_line_id.date','>=',self.date_from), \
+                    ('lhm_transaction_line_id.date','<=',self.date_to)]
+            varieties = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).mapped('blok_tanam_id.varieties_id')
+            if len(varieties)>1:
+                if len(varieties.harvest_activity_id)>1:
+                    domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
+                else:
+                    domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            else:
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            blok_tanams = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).blok_tanam_id
+            locations = blok_tanams.location_id
+            if len(locations)==1:
+                domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            else:
+                domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
+            
+            karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
+            karet_kering += sum(lhm_found.mapped('hasil_convert_lump'))
+            to_create.append((0,0,{
+                'employee_id': mandor.id,
+                'position': 'mandor',
+                'kemandoran_id': False,
+                'block_tanam_id': False,
+                'total_karet_kering_qty': karet_kering,
+                'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+            }))
         if to_create:
             self.mandor_line_ids = to_create
         return True
@@ -180,3 +237,13 @@ class NyPremiPenyadap(models.Model):
             if rec.payslip_id:
                 raise ValidationError(_("Cannot delete other input batch which is already linked with Payslip"))
         return super().unlink()
+
+    def action_view_block(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.action_edit_production_target")
+        action['domain'] = [('varieties_id.name','=','Karet')]
+        return action
+
+    def action_view_foreman(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.action_edit_production_target_foreman")
+        action['domain'] = [('blok_tanam_id','!=',False)]
+        return action

@@ -12,6 +12,10 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm" />
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_block" type="object" class="oe_stat_button" icon="fa-search" string="Blok Tanam"/>
+                        <button name="action_view_foreman" type="object" class="oe_stat_button" icon="fa-users" string="Kemandoran"/>
+                    </div>
                     <group>
                         <group>
                             <label for="date_from" string="Period"/>
@@ -39,6 +43,7 @@
                                     <field name="act_libur" optional="hide"/>
                                     <field name="act_total_days" optional="hide"/>
                                     <field name="karet_kering_qty" />
+                                    <button name="action_view_lhm" type="object" icon="fa-search"/>
                                     <field name="target_qty" />
                                     <field name="lebih_target_qty" />
                                     <field name="grade_id" />
@@ -66,12 +71,14 @@
 
                             <field name="mandor_line_ids" attrs="{'readonly': [('state','!=','draft')]}">
                                 <tree editable="bottom">
-                                    <field name="kemandoran_id" readonly="1" />
+                                    <!-- <field name="kemandoran_id" readonly="1" /> -->
                                     <field name="position" readonly="1" />
                                     <field name="employee_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}"/>
-                                    <field name="block_tanam_id" readonly="1" />
+                                    <!-- <field name="block_tanam_id" readonly="1" /> -->
                                     <field name="total_karet_kering_qty" />
+                                    <button name="action_view_lhm" type="object" icon="fa-search"/>
                                     <field name="target_qty" />
+                                    <button name="action_view_foreman" type="object" icon="fa-search"/>
                                     <field name="karet_kering_qty" />
                                     <field name="lebih_target_qty" />
                                     <field name="base_rate" />

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lhm_trans_nap_line_view_tree" model="ir.ui.view">
+        <field name="name">lhm.transaction.nap.line.view.tree</field>
+        <field name="model">lhm.transaction.nap.line</field>
+        <field name="arch" type="xml">
+            <tree edit="0" create="0" delete="1">
+                <field name="employee_id" />
+                <field name="product_id" />
+                <field name="hasil_1_nap" />
+                <field name="drc_latex_nap" />
+                <field name="product_id_2" />
+                <field name="hasil_2_nap" />
+                <field name="drc_lump_nap" />
+                <field name="hasil_convert_latex" sum="hasil_convert_latex" />
+                <field name="hasil_convert_lump" sum="hasil_convert_lump" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="lhm_trans_nap_line_action" model="ir.actions.act_window">
+        <field name="name">LHM NAP</field>
+        <field name="res_model">lhm.transaction.nap.line</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>
