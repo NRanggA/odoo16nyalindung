@@ -7,7 +7,7 @@ from odoo.exceptions import UserError
 class MaterialRequestLine(models.Model):
     _inherit = 'material.request.line'
 
-    varieties_id = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
+    varieties_id = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_type_id = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     filtered_locations = fields.Many2many('lhm.location', 'mrl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")

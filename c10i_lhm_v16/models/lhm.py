@@ -1574,6 +1574,7 @@ class lhm_transaction(models.Model):
                     ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
                     ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
                     # ('skb', '=', True),
+                    ('picking_type_id.code', '=', 'issue'), 
                     ('state', '=', 'done'), 
                     ('plantation_location_id', '=', progress.location_id.id), 
                     ('plantation_activity_id', '=', progress.activity_id.id), 
@@ -1581,6 +1582,7 @@ class lhm_transaction(models.Model):
                     ('pending_material_allocation', '>', 0.0),
                     ]
                 skb_ids     = move_obj.search(domain)
+
                 for skb in skb_ids:
                     values_skb  = {
                         'name'              : skb.picking_id.bpb_number or '',
@@ -3510,6 +3512,7 @@ class lhm_contractor(models.Model):
             # UPDATE line yg sudah terlanjur terbuat
             line_to_update = []
             line_to_delete = []
+            
             for mat_line in sorted(contractor.material_line_ids, key=lambda x:x.date):
                 if mat_line.realization>0.0 and mat_line.residual_qty>0.0:
                     line_to_update.append(mat_line)
@@ -3523,12 +3526,15 @@ class lhm_contractor(models.Model):
             for line in contractor.material_line_ids.filtered(lambda x: x.realization==0.0):
                 if line.move_id.id in [x.move_id.id for x in line_to_delete]:
                     line.unlink()
+
             # Tambah SKB baru
             for line in sorted(contractor.line_ids.filtered(lambda x: x.location_id \
                         and x.location_id.type_id.skb_declare), key=lambda x:x.date):
                 domain = [
                         ('date', '<=', str(line.date) + ' 23:59:59'), 
-                        ('skb', '=', True), ('state', '=', 'done'), 
+                        # ('skb', '=', True), 
+                        ('picking_type_id.code', '=', 'issue'), 
+                        ('state', '=', 'done'), 
                         ('plantation_location_id', '=', line.location_id.id), 
                         ('plantation_activity_id', '=', line.activity_id.id), 
                         ('origin_returned_move_id', '=', False),
