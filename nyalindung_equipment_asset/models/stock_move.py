@@ -49,8 +49,11 @@ class StockMove(models.Model):
             # Check if the order line price is below the threshold
             if asset_category and order_line_price < float(threshold):
                 expense_account_id = self.product_id.categ_id.property_account_expense_categ_id.id
+                asset_clearing_id = self.product_id.categ_id.asset_clearing_account_id.id
                 if not expense_account_id:
                     raise UserError(_('No expense account defined for this product category.'))
+                if not asset_clearing_id:
+                    raise UserError(_('No Asset Clearing account defined for this product category.'))
 
                 # Create additional debit and credit lines
                 additional_debit_line_vals = {
@@ -60,7 +63,7 @@ class StockMove(models.Model):
                     'product_uom_id': self.product_id.uom_id.id,
                     'ref': description,
                     'partner_id': partner_id,
-                    'balance': debit_value,  # You may want to set a specific value for expense
+                    'balance': debit_value,
                     'account_id': expense_account_id,
                 }
                 additional_credit_line_vals = {
@@ -70,8 +73,8 @@ class StockMove(models.Model):
                     'product_uom_id': self.product_id.uom_id.id,
                     'ref': description,
                     'partner_id': partner_id,
-                    'balance': -credit_value,  # You may want to set a specific value for expense
-                    'account_id': expense_account_id,
+                    'balance': -credit_value,
+                    'account_id': asset_clearing_id,
                 }
 
                 rslt['additional_debit_line_vals'] = additional_debit_line_vals
