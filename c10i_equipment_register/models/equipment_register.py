@@ -72,9 +72,13 @@ class EquipmentRegister(models.Model):
 		}
         lines = []
         for rline in self.register_line_ids:
-            threshold_param = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold', default=0.0)
-            threshold = float(threshold_param) if threshold_param else 0.0
-            if threshold and rline.purchase_line_id.price_unit > threshold:
+            # threshold_param = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold', default=0.0)
+            # threshold = float(threshold_param) if threshold_param else 0.0
+
+            threshold_to_param = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_to', default=0.0)
+            threshold_to = float(threshold_to_param) if threshold_to_param else 0.0
+
+            if threshold_to and rline.purchase_line_id.price_unit > threshold_to:
                 line_vals = {
 					'product_id': rline.product_id.id,
 					'name': rline.name,

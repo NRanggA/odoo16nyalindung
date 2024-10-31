@@ -16,7 +16,7 @@ class EquipmentRegister(models.Model):
 		self.ensure_one()
 		Acquisition = self.env['account.asset.acquisition']
 		AcquisitionLine = self.env['account.asset.acquisition.line']
-
+		
 		values = {
 			'origin': f"{self.origin}: {self.name}",
 			'date': self.date,
@@ -40,6 +40,7 @@ class EquipmentRegister(models.Model):
 		return new_acquisition
 
 	def register_hook(self):
-		super().register_hook()
+		res = super().register_hook()
 		for register in self:
 			result = register.create_asset_acquisition()
+		return res

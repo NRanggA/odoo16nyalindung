@@ -38,7 +38,19 @@
                 <field name="seq_no" />
               </field>
           </field>
-      </record>
+    </record>
+
+    <record id="equipment_inherit_tree" model="ir.ui.view">
+      <field name="name">maintenance.equipment.inherit.tree</field>
+      <field name="model">maintenance.equipment</field>
+      <field name="inherit_id" ref="maintenance.hr_equipment_view_tree"/>
+      <field name="arch" type="xml">
+            <field name="category_id" position="after">
+                <field name="asset_type" />
+            </field>
+      </field>
+    </record>
+
   
   </data>
   
