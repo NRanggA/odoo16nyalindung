@@ -181,54 +181,55 @@ class AccountAssetDisposal(models.Model):
             move_ids += [move.id]
         return move_ids
     
-    # def action_create_invoice(self):
-    #     if self.lva:
-    #         move = self.action_create_invoice_lva()
-    #         return self.action_open_invoice(move)
-    #     else:
-    #         def get_line(asset, amount, account):
-    #             return (0, 0, {
-    #                 'name': f"{asset.name} - {asset.register_id.name}",
-    #                 'account_id': account.id,
-    #                 'debit': 0.0 if float_compare(amount, 0.0, precision_digits=prec) > 0 else -amount,
-    #                 'credit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
-    #                 'currency_id': current_currency.id,
-    #                 'amount_currency': -amount,
-    #             })
+    def action_create_invoice(self):
+        if self.lva:
+            move = self.action_create_invoice_lva()
+            return self.action_open_invoice(move)
+        else:
+            return super(AccountAssetDisposal, self).action_create_invoice()
+            # def get_line(asset, amount, account):
+            #     return (0, 0, {
+            #         'name': f"{asset.name} - {asset.register_id.name}",
+            #         'account_id': account.id,
+            #         'debit': 0.0 if float_compare(amount, 0.0, precision_digits=prec) > 0 else -amount,
+            #         'credit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
+            #         'currency_id': current_currency.id,
+            #         'amount_currency': -amount,
+            #     })
 
-    #         asset = self.asset_id
-    #         company_currency = asset.company_id.currency_id
-    #         current_currency = asset.currency_id
-    #         prec = company_currency.decimal_places
+            # asset = self.asset_id
+            # company_currency = asset.company_id.currency_id
+            # current_currency = asset.currency_id
+            # prec = company_currency.decimal_places
 
-    #         initial_amount = asset.value
-    #         initial_account = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.category_id.account_asset_id
-    #         # commulative_depreciation = -self.value_residual
-    #         depreciation_moves = asset.depreciation_line_ids.filtered(lambda r: r.move_posted_check) # and not (r.reversal_move_id and r.reversal_move_id[0].state == 'posted')
-    #         depreciated_amount = copysign(sum(depreciation_moves.mapped('amount')), -initial_amount)
-    #         depreciation_account = asset.category_id.account_depreciation_id
-    #         difference = self.sell_value - self.value_residual
-    #         sell_amount = -self.sell_value
-    #         asset_receivable_account = self.env['account.account'].search([('account_type','=','asset_receivable')],limit=1)
+            # initial_amount = asset.value
+            # initial_account = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.category_id.account_asset_id
+            # # commulative_depreciation = -self.value_residual
+            # depreciation_moves = asset.depreciation_line_ids.filtered(lambda r: r.move_posted_check) # and not (r.reversal_move_id and r.reversal_move_id[0].state == 'posted')
+            # depreciated_amount = copysign(sum(depreciation_moves.mapped('amount')), -initial_amount)
+            # depreciation_account = asset.category_id.account_depreciation_id
+            # difference = self.sell_value - self.value_residual
+            # sell_amount = -self.sell_value
+            # asset_receivable_account = self.env['account.account'].search([('account_type','=','asset_receivable')],limit=1)
 
-    #         difference_account = self.gain_account_id if self.sell_value > self.value_residual else self.loss_account_id
-    #         line_datas = [(sell_amount, asset_receivable_account),(initial_amount, initial_account), (depreciated_amount, depreciation_account), (difference, difference_account)]
-    #         invoice_lines = [(0,0,{
-    #             'product_id': False,
-    #             'name': f"{self.asset_id.name} - {self.asset_id.register_id.name}",
-    #             'quantity': 1,
-    #             'price_unit': self.sell_value,
-    #             'account_id': asset.category_id.account_asset_id.id,
-    #             'currency_id': self.company_id.currency_id.id,
-    #             'display_type' : 'product'
-    #         })]
-    #         move = self.env['account.move'].create({
-    #             # 'move_type' : 'out_invoice',
-    #             'date': date.today(),
-    #             # 'invoice_line_ids' : invoice_lines,
-    #             'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
-    #         })
-    #         return self.action_open_invoice(move)
+            # difference_account = self.gain_account_id if self.sell_value > self.value_residual else self.loss_account_id
+            # line_datas = [(sell_amount, asset_receivable_account),(initial_amount, initial_account), (depreciated_amount, depreciation_account), (difference, difference_account)]
+            # invoice_lines = [(0,0,{
+            #     'product_id': False,
+            #     'name': f"{self.asset_id.name} - {self.asset_id.register_id.name}",
+            #     'quantity': 1,
+            #     'price_unit': self.sell_value,
+            #     'account_id': asset.category_id.account_asset_id.id,
+            #     'currency_id': self.company_id.currency_id.id,
+            #     'display_type' : 'product'
+            # })]
+            # move = self.env['account.move'].create({
+            #     # 'move_type' : 'out_invoice',
+            #     'date': date.today(),
+            #     # 'invoice_line_ids' : invoice_lines,
+            #     'line_ids': [get_line(asset, amount, account) for amount, account in line_datas if account],
+            # })
+            # return self.action_open_invoice(move)
     
     def action_create_invoice_lva(self):
         income_account = self.income_from_lva_sales_account_id
@@ -246,7 +247,9 @@ class AccountAssetDisposal(models.Model):
             'move_type' : 'out_invoice',
             'date': date.today(),
             'invoice_line_ids' : invoice_lines,
+            'partner_id': self.partner_id.id,
         })
+        self.invoice_id = move.id
         return move
             
     

@@ -32,7 +32,7 @@
                     <field name="lva" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                 </field>
                 <field name="asset_id" position="before">
-                    <field name="equip_id" attrs="{'invisible' : [('lva', '!=',True),], 'required' : [('lva','=',True)], 'readonly': [('state', '!=', 'draft')]}"/>
+                    <field name="equip_id" domain="[('asset_type', '=', 'lva')]" attrs="{'invisible' : [('lva', '!=',True),], 'required' : [('lva','=',True)], 'readonly': [('state', '!=', 'draft')]}"/>
                 </field>
                 <xpath expr="//field[@name='reason']" position="attributes">
                     <attribute name="attrs">{'invisible' : [('action','not in',['sell','dispose'])], 'readonly': [('state', '!=', 'draft')]}</attribute>
@@ -41,7 +41,8 @@
                     <attribute name="attrs">{'invisible' : [('lva','=',True)], 'required' : [('lva','!=',True)], 'readonly': [('state', '!=', 'draft')]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='invoice_id']" position="attributes">
-                    <attribute name="attrs">{'invisible': ['|',('action', '!=', 'sell'),('lva','=',True)]}</attribute>
+                    <!-- <attribute name="attrs">{'invisible': ['|',('action', '!=', 'sell'),('lva','=',True)]}</attribute> -->
+                    <attribute name="attrs">{'invisible': [('action', '!=', 'sell')]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='gain_account_id']" position="attributes">
                     <attribute name="attrs">{'invisible' : ['|',('gain_or_loss', '!=', 'gain'),('lva','=',True)]}</attribute>
