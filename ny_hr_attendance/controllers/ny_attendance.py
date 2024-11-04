@@ -131,10 +131,11 @@ class NyAttendance(ApiBase):
             #     stream.public = True
             send_file_kwargs = {
                 'as_attachment': False,
+                'download_name': 'profile-picture.jpg',
                 'max_age': None
             }
             res = stream.get_response(**send_file_kwargs)
-            res.headers['Content-Security-Policy'] = "default-src 'none'"
+            # res.headers['Content-Security-Policy'] = "default-src 'none'"
             return res
             # return Response(json.dumps(result, cls=DateEncoder), headers=HEADERS, status=201)
         except Exception as error:
@@ -307,8 +308,8 @@ class NyAttendance(ApiBase):
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
                     "nip": employee_found.no_induk,
-                    "masuk": f"{masuk.strftime('%H:%M')}{', '+att.distance_in if att.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
-                    "pulang": f"{pulang.strftime('%H:%M')}{', '+att.distance_out if att.distance_out else ''}{', '+ketmasuk}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
+                    "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
+                    "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketmasuk}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                     "namafile": namafile,
                     "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
                     "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
@@ -383,8 +384,8 @@ class NyAttendance(ApiBase):
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
                         "nip": employee_found.no_induk,
-                        "masuk": f"{masuk.strftime('%H:%M')}{', '+att.distance_in if att.distance_in else ''}{', '+ketmasuk}" if masuk else '',
-                        "pulang": f"{pulang.strftime('%H:%M')}{', '+att.distance_out if att.distance_out else ''}{', '+ketmasuk}" if pulang else '',
+                        "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '',
+                        "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketmasuk}" if pulang else '',
                         "namafile": namafile,
                         "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
                         "tanggal": att.date.strftime("%d %b %Y") if att.date else "",

@@ -7,11 +7,11 @@ class AttendanceSheet(models.Model):
 
     is_data_from_my_daya = fields.Boolean(compute='_compute_mydaya_att', store=True, string='Data From My Daya Apps')
     att_log_ids = fields.One2many('ny.attendance.log', 'attendance_sheet_id', string='MyDaya Attendance')
-    longitude_in = fields.Float()
-    latitude_in = fields.Float()
+    longitude_in = fields.Float(digits=(10, 7))
+    latitude_in = fields.Float(digits=(10, 7))
     distance_in = fields.Float(compute='_compute_distance', store=True)
-    longitude_out = fields.Float()
-    latitude_out = fields.Float()
+    longitude_out = fields.Float(digits=(10, 7))
+    latitude_out = fields.Float(digits=(10, 7))
     distance_out = fields.Float(compute='_compute_distance', store=True)
 
     @api.depends('att_log_ids')
@@ -61,7 +61,6 @@ class AttendanceSheet(models.Model):
                     check_out = tt.waktu
                     lat_out = float(tt.latitude)
                     long_out = float(tt.longitude)
-                
             self.write({'check_in': check_in, 
                 'latitude_in': lat_in, 'longitude_in': long_in,
                 'check_out': check_out,
