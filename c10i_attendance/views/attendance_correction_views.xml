@@ -10,7 +10,8 @@
                     <field name="date"/>
                     <!-- <field name="kemandoran_id"/> -->
                     <field name="date_attendance"/>
-                    <field name="state" widget="badge"/>
+                    <field name="attendance_type_id"/>
+                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-danger="state == 'reject'" decoration-info="state == 'approve'"/>
                 </tree>
             </field>
         </record>
@@ -21,12 +22,13 @@
             <field name="arch" type="xml">
                 <form string="Perbaikan Absensi">
                     <header>
-                        <button string="Request Approval" name="request_approval" type="object" class="oe_highlight"/>
-                        <button string="Approve" name="button_approve" type="object" class="oe_highlight"/>
-                        <button string="Reject" name="button_reject" type="object" class="oe_highlight"/>
-                        <button string="Cancel" name="button_cancel" type="object" class="oe_highlight"/>
-                        <button string="Set to draft" name="set_to_draft" type="object" class="oe_highlight"/>
-                        <field name="state" widget="statusbar"/>
+                        <button string="Request Approval" name="request_approval" states="draft" type="object" class="oe_highlight"/>
+                        <button string="Approve" name="button_approve" states="progres" type="object" class="oe_highlight"/>
+                        <button string="Reject" name="button_reject" states="progres" type="object" class="oe_highlight"/>
+                        <button string="Cancel" name="button_cancel" states="progres" type="object" class="oe_highlight"/>
+                        <button string="Done" name="button_done" states="approve" type="object" class="oe_highlight"/>
+                        <button string="Set to draft" name="set_to_draft" states="approve,reject,done" type="object" class="oe_stat_button"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,progres,approve,reject,cancel,done"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -36,6 +38,7 @@
                         <group>
                             <field name="date"/>
                             <!-- <field name="kemandoran_id"/> -->
+                            <field name="attendance_type_id"/>
                             <field name="date_attendance"/>
                         </group>
                         <notebook>
