@@ -163,7 +163,7 @@
                                     </tr>
                                     <tr>
                                         <th>Jenis Pembayaran</th>
-                                        <td> : Tunai </td>
+                                        <td> : <span t-field="o.jenis_pembayaran"/> </td>
                                     </tr>
                                 </table>
                             </td>

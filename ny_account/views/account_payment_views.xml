@@ -36,6 +36,7 @@
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="department_id" />
                 <field name="beban" />
+                <field name="jenis_pembayaran" />
             </xpath>
 
             <xpath expr="//field[@name='payment_type']" position="attributes">

@@ -23,7 +23,12 @@ class AccountPayment(models.Model):
                             ('kebun', 'Kebun'),
                             ('pasir', 'Pasir'),
                         ], string='Beban')
-
+    
+    jenis_pembayaran    = fields.Selection([
+                            ('tunai', 'Tunai'),
+                            ('transfer', 'Transfer'),
+                        ], string='Jenis Pembayaran')
+    
 
 
     # Fungsi untuk memformat jumlah
