@@ -27,6 +27,9 @@
             <xpath expr="//field[@name='requested_by']" position="before">
                 <field name="create_uid"/>
             </xpath>
+            <xpath expr="//field[@name='requested_by']" position="after">
+                <field name="requested_by_2"/>
+            </xpath>
         </field>
     </record>
 
