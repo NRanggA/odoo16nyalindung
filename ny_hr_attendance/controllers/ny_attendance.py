@@ -31,7 +31,6 @@ class NyAttendance(ApiBase):
         
         datas = self._get_payload() or {}
         token = str(datas.get('token'))
-        # print(">>>>>>>>>>>>>>>", datas, token)
         if not token:
             # added_addrs.write({
             #     'number_of_error_allowed': added_addrs.number_of_error_allowed-1,
@@ -41,7 +40,6 @@ class NyAttendance(ApiBase):
         
         # check_token = request.env['res.users'].sudo().search([('mydaya_api_token','=',token)])
         global_token = request.env['ir.config_parameter'].sudo().get_param('mydaya_api_token', False)
-        # print(">>>>>>>>>>>>>>>", global_token)
         check_token = token == global_token
         # if not check_token:
             # Add to Client List
@@ -104,15 +102,44 @@ class NyAttendance(ApiBase):
                 'area': 'OFFICE',
                 'golongan': '',
                 'nip': employee_found.no_induk or '',
-                'latacuan': employee_found.lat_acuan or '',
-                'lngacuan': employee_found.long_acuan or '',
-                'valjarak': int(employee_found.value_jarak or '0'),
+                'latacuan': str(employee_found.company_id.company_latitude or ''),
+                'lngacuan': str(employee_found.company_id.company_longitude or ''),
+                'valjarak': int(employee_found.company_id.attendance_radius_distance or '0'),
                 'subco': '2'
             }
             return Response(json.dumps(result, cls=DateEncoder), headers=HEADERS, status=201)
         except Exception as error:
             return self._handle_exception(error)
     
+    @http.route(f"{ROUTES}/foto", auth='public', website=False, csrf=False, type='http', methods=['GET'])
+    def get_employee_image(self, nip):
+        # check_token, message = self._verify_auth()
+        # if not check_token:
+        #     return Response(json.dumps({'message': message}), headers=HEADERS, status=401)
+        
+        try:
+            # VALIDASI FIELD
+            if not nip:
+                return Response(json.dumps({'message': "Nomor Induk Pegawai Wajib diisi"}), headers=HEADERS, status=404)
+            employee_found = request.env['hr.employee'].sudo().search([('no_induk','=',nip)])
+            if not employee_found:
+                return Response(json.dumps({'message': f"Nomor Induk Pegawai {nip} tidak ditemukan"}), headers=HEADERS, status=422)
+            result = {}
+            # record = request.env['ir.binary']._find_record(xmlid, model, id and int(id), access_token)
+            stream = request.env['ir.binary']._get_image_stream_from(employee_found, 'image_1920')
+            # if request.httprequest.args.get('access_token'):
+            #     stream.public = True
+            send_file_kwargs = {
+                'as_attachment': False,
+                'max_age': None
+            }
+            res = stream.get_response(**send_file_kwargs)
+            res.headers['Content-Security-Policy'] = "default-src 'none'"
+            return res
+            # return Response(json.dumps(result, cls=DateEncoder), headers=HEADERS, status=201)
+        except Exception as error:
+            return self._handle_exception(error)
+
     # Request
     # {
     #     "token":"73b12f9a7b97a77420215b14f2220d22",
@@ -177,7 +204,6 @@ class NyAttendance(ApiBase):
             return Response(json.dumps({'message': message}), headers=HEADERS, status=401)
         
         datas = self._get_payload() or {}
-        # print("::::::::::::::::data on update_att", datas)
         try:
             # VALIDASI FIELD
             if not datas.get('nip',False):
@@ -189,8 +215,8 @@ class NyAttendance(ApiBase):
             # INSERT ATTENDANCE
             value_to_insert = {
                 'employee_id': employee_found.id,
-                'longitude': datas.get('longitude',''),
-                'latitude': datas.get('latitude',''),
+                'longitude': datas.get('longitude','0.0'),
+                'latitude': datas.get('latitude','0.0'),
                 # 'waktu': datas.get('waktu',False),
                 'waktu': fields.Datetime.now(),
                 # 'version': datas.get('version',''),
@@ -206,10 +232,10 @@ class NyAttendance(ApiBase):
                     'res_model': 'ny.attendance.log',
                     'res_id': new_att_log.id,
                     'res_field': 'foto',
-                    'mimetype': 'image/jpeg'
+                    'mimetype': 'image/jpeg',
+                    'public': True,
                 })
             new_att_log.find_attendance_sheet()
-            # print(">>>>>>>>>>>>", new_att_log)
             result = {
                 'status': 1,
                 'deskripsi': 'Data berhasil disimpan'
@@ -251,26 +277,29 @@ class NyAttendance(ApiBase):
                 return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
-            domain = [('employee_id','=',employee_found.id),('date','=',fields.Date.today())]
-            attendances = request.env['hr.attendance.sheet'].sudo().search(domain)
+            start_date = fields.Date.today()
+            end_date = start_date + relativedelta(months=1) + relativedelta(day=1) - relativedelta(days=1)
+            domain = [('employee_id','=',employee_found.id), ('date','>=', start_date), 
+                        ('date','<=', end_date)]
+            attendances = request.env['hr.attendance.sheet'].sudo().search(domain, order='date desc')
             week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
                 3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
             res_att = []
             base_url = request.env['ir.config_parameter'].sudo().search([('key', '=', 'web.base.url')], limit=1).value
             for att in attendances:
-                namafile = "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/999999/202409/999999_20240927151533.jpg"
-                statusmasuk = ""
-                ketmasuk = ""
-                if att.att_log_ids:
-                    first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                    statusmasuk = first_att.statusmasuk
-                    ketmasuk = first_att.keterangan
-                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                        and res_field='foto' and res_id={first_att.id}"""
-                    request.env.cr.execute(query_attachment)
-                    attc_ids = request.env.cr.fetchone()
-                    if attc_ids:
-                        namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+                if att.type_id.code!='KJ' and not att.att_log_ids:
+                    continue
+                namafile = statusmasuk = ketmasuk = ""
+
+                first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+                statusmasuk = first_att.statusmasuk
+                ketmasuk = first_att.keterangan
+                query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                    and res_field='foto' and res_id={first_att.id}"""
+                request.env.cr.execute(query_attachment)
+                attc_ids = request.env.cr.fetchone()
+                if attc_ids:
+                    namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
                 masuk = pulang = ""
                 if att.check_in:
                     masuk = att.check_in.astimezone(timezone('Asia/Jakarta'))
@@ -278,12 +307,11 @@ class NyAttendance(ApiBase):
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
                     "nip": employee_found.no_induk,
-                    "masuk": f"{masuk.strftime('%H:%M')}, {ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
-                    "pulang": pulang.strftime('%H:%M') if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
+                    "masuk": f"{masuk.strftime('%H:%M')}{', '+att.distance_in if att.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
+                    "pulang": f"{pulang.strftime('%H:%M')}{', '+att.distance_out if att.distance_out else ''}{', '+ketmasuk}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                     "namafile": namafile,
-                    # "namafile": "/web/image/{attachment.id}/{namafile}",
-                    "namahari": week_day_names.get(att.check_in.weekday(),"") if att.check_in else "",
-                    "tanggal": att.check_in.strftime("%d %b %Y") if att.check_in else "",
+                    "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
+                    "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
                     "statusmasuk": statusmasuk
                 }
                 res_att.append(att_vals)
@@ -295,7 +323,7 @@ class NyAttendance(ApiBase):
     # {
     #     "token":"73b12f9a7b97a77420215b14f2220d22",
     #     "nip":"1111111111",
-    #     "tgl":"2024-07-19"
+    #     "tgl":"202407"
     # }
     # Response
     # [
@@ -305,7 +333,7 @@ class NyAttendance(ApiBase):
     #         "pulang": "-",
     #         "namafile": "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/1/202407/1_20240702084340.jpg",
     #         "namahari": "Selasa",
-    #         "tanggal": "02 Jul 2024",
+    #         "tanggal": "02 July 2024",
     #         "statusmasuk": "WFH"
     #     }
     # ]
@@ -325,19 +353,19 @@ class NyAttendance(ApiBase):
                 return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
-            date = datetime.strptime(datas.get('tgl'), "%Y-%m-%d")
-            start_date = date + relativedelta(day=1)
-            end_date = date + relativedelta(months=1) + relativedelta(day=1) - relativedelta(days=1)
+            start_date = datetime.strptime(datas.get('tgl'), "%Y%m")
+            end_date = start_date + relativedelta(months=1) + relativedelta(day=1) - relativedelta(days=1)
             domain = [('employee_id','=',employee_found.id), ('date','>=', start_date), 
                         ('date','<=', end_date)]
-            attendances = request.env['hr.attendance.sheet'].sudo().search(domain, order='date asc')
+            attendances = request.env['hr.attendance.sheet'].sudo().search(domain, order='date desc')
             week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
                 3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
             res_att = []
             base_url = request.env['ir.config_parameter'].sudo().search([('key', '=', 'web.base.url')], limit=1).value
             for att in attendances:
-                namafile = "https://api-gateway.nyalindung.co.id/assets/uploads/presensi/999999/202409/999999_20240927151533.jpg"
-                statusmasuk = ketmasuk = ""
+                if att.type_id.code!='KJ' and not att.att_log_ids:
+                    continue
+                namafile = statusmasuk = ketmasuk = ""
                 if att.att_log_ids:
                     first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
                     statusmasuk = first_att.statusmasuk
@@ -355,11 +383,10 @@ class NyAttendance(ApiBase):
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
                 att_vals = {
                         "nip": employee_found.no_induk,
-                        "masuk": f"{masuk.strftime('%H:%M')}, {ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
-                        "pulang": pulang.strftime('%H:%M') if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
+                        "masuk": f"{masuk.strftime('%H:%M')}{', '+att.distance_in if att.distance_in else ''}{', '+ketmasuk}" if masuk else '',
+                        "pulang": f"{pulang.strftime('%H:%M')}{', '+att.distance_out if att.distance_out else ''}{', '+ketmasuk}" if pulang else '',
                         "namafile": namafile,
-                        # "namafile": "/web/image/{attachment.id}/{namafile}",
-                        "namahari": week_day_names.get(att.check_in.weekday(),"") if att.check_in else "",
+                        "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
                         "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
                         "statusmasuk": statusmasuk
                 }

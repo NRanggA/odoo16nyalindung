@@ -13,9 +13,9 @@
                             <field name="mydaya_user_pwd" password="1" />
                         </group>
                         <group>
-                            <field name="lat_acuan" />
+                            <!-- <field name="lat_acuan" />
                             <field name="long_acuan" />
-                            <field name="value_jarak" />
+                            <field name="value_jarak" /> -->
                         </group>
                     </group>
                 </page>
