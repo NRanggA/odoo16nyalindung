@@ -5,5 +5,10 @@
             <field name="name">Premi Penyadap</field>
             <field name="code">PREMIPENYADAP</field>
         </record>
+
+        <record id="oth_input_type_ongkos_pikul" model="hr.payslip.other.input.type">
+            <field name="name">Ongkos Pikul</field>
+            <field name="code">ONGKOSPIKUL</field>
+        </record>
     </data>
 </odoo>

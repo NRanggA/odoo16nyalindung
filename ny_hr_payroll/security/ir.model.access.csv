@@ -3,3 +3,5 @@ access_ny_premi_penyadap_grade,ny.premi.penyadap.grade,model_ny_premi_penyadap_g
 access_ny_premi_penyadap,ny.premi.penyadap,model_ny_premi_penyadap,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
 access_ny_premi_penyadap_line,ny.premi.penyadap.line,model_ny_premi_penyadap_line,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
 access_ny_premi_penyadap_mandor,ny.premi.penyadap.mandor,model_ny_premi_penyadap_mandor,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_ny_ongkos_pikul,ny.ongkos.pikul,model_ny_ongkos_pikul,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_ny_ongkos_pikul_line,ny.ongkos.pikul.line,model_ny_ongkos_pikul_line,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1

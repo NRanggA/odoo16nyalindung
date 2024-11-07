@@ -35,6 +35,7 @@
         'views/hr_foreman_view.xml',
         'views/lhm_plant_block_view.xml',
         'views/lhm_transaction_nap_line_view.xml',
+        'views/ny_ongkos_pikul_view.xml',
     ],
     # only loaded in demonstration mode
     # 'demo': [

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ny_ongkos_pikul_view_form" model="ir.ui.view">
+        <field name="name">ny.ongkos.pikul.view.form</field>
+        <field name="model">ny.ongkos.pikul</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Compute" name="action_compute" type="object" states="draft"/>
+                    <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" states="draft"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm" />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_block" type="object" class="oe_stat_button" icon="fa-search" string="Blok Tanam"/>
+                    </div>
+                    <group>
+                        <group>
+                            <label for="date_from" string="Period"/>
+                            <div>
+                                <field name="date_from" class="oe_inline" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                -
+                                <field name="date_to" class="oe_inline" attrs="{'readonly': [('state','!=','draft')]}"/>
+                            </div>
+                            <field name="rate" attrs="{'readonly': [('state','!=','draft')]}"/>
+                        </group>
+                        <group>
+                            <field name="other_input_type_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}" attrs="{'readonly': [('state','!=','draft')]}"/>
+                            <field name="batch_other_input_id" invisible="0" groups="base.group_no_one" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="employee" string="Karyawan">
+                            <field name="line_ids" attrs="{'readonly': [('state','!=','draft')]}">
+                                <tree editable="bottom">
+                                    <field name="employee_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}"/>
+                                    <field name="plant_block_id" readonly="1" />
+                                    <field name="qty" />
+                                    <button name="action_view_lhm" type="object" icon="fa-search"/>
+                                    <field name="rate" />
+                                    <field name="amount" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="ny_ongkos_pikul_view_tree" model="ir.ui.view">
+        <field name="name">ny.ongkos.pikul.view.tree</field>
+        <field name="model">ny.ongkos.pikul</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="other_input_type_id" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- <record id="ny_ongkos_pikul_view_search" model="ir.ui.view">
+        <field name="name">ny.ongkos.pikul.view.search</field>
+        <field name="model">ny.ongkos.pikul</field>
+        <field name="arch" type="xml">
+            <search>
+            </search>
+        </field>
+    </record> -->
+
+    <record id="ny_ongkos_pikul_action" model="ir.actions.act_window">
+        <field name="name">Ongkos Pikul</field>
+        <field name="res_model">ny.ongkos.pikul</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="ny_ongkos_pikul_menu"
+        action="ny_ongkos_pikul_action"
+        parent="c10i_hr_payroll_other_inputs.hr_payroll_other_input_misc_menu"
+        sequence="11"/>
+</odoo>
