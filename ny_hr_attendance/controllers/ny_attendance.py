@@ -278,7 +278,7 @@ class NyAttendance(ApiBase):
                 return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
-            start_date = fields.Date.today()
+            start_date = fields.Date.today() + relativedelta(day=1)
             end_date = start_date + relativedelta(months=1) + relativedelta(day=1) - relativedelta(days=1)
             domain = [('employee_id','=',employee_found.id), ('date','>=', start_date), 
                         ('date','<=', end_date)]
