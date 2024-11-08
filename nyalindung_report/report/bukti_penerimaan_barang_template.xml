@@ -73,24 +73,27 @@
                     </table>
 
                     <br/>
-
-                    <div style="margin-top: 50px; width: 100%; display: flex; justify-content: space-between; font-size: 12px;">
-                        <div style="width: 30%; text-align: center;">
-                            <p>Yang Menyerahkan,</p>
-                            <br/><br/>
-                            <br/>
-                            <p>( ________________ )</p>
-                        </div>
-                        <div style="width: 30%; text-align: center;">
-                            <p>Mengetahui,<br/>Kepala Bagian</p>
-                            <br/><br/>
-                            <p>( ________________ )</p>
-                        </div>
-                        <div style="width: 30%; text-align: center;">
-                            <p>Nyalindung, <t t-esc="o.date_done.strftime('%d %m %Y')"/><br/>Penerima,</p>
-                            <br/><br/>
-                            <p>( ________________ )</p>
-                        </div>
+                    <div>
+                        <table width="89%" style="margin-top: 20px; text-align: center; margin-left: 58px;">
+                            <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td>Mengetahui,</td>
+                                    <td>Nyalindung, <t t-esc="o.date_done.strftime('%d-%m-%Y')"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Yang Menyerahkan,</td>
+                                    <td>Kepala Bagian,</td>
+                                    <td>Penerima,</td>
+                                </tr>
+                                <tr height="100px"></tr>
+                                <tr>
+                                    <td>( ________________ )</td>
+                                    <td>( ________________ )</td>
+                                    <td>( ________________ )</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </t>
