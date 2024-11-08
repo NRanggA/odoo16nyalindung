@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_lhm_contractor_form_harian" model="ir.ui.view">
+            <field name="name">view.lhm.contractor.form.harian</field>
+            <field name="model">lhm.contractor</field>
+            <field name="arch" type="xml">
+                <form string="Buku Kontraktor Harian">
+                    <header attrs="{'invisible': [('approval','!=',True)]}">
+                        <button name="button_draft" states="cancel,process,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <!-- <button name="get_material" string="Material" states="draft" type="object" groups="c10i_lhm_v16.group_plantation_operator"/> -->
+                        <button name="button_confirm" states="process" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="button_process" states="draft" string="Process" type="object" class="btn-default btn-primary"/>
+                        <button name="button_cancel" states="process,confirmed" string="Cancel" type="object" class="btn-default"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,process,confirmed,done"/>
+                    </header>
+                    <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
+                        </div>
+                        <group name="lhm_contractor_harian">
+                            <group>
+                                <field name="supplier_id" force_save="1" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <!-- <field name="payment_type" force_save="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/> -->
+                                <field name="account_period_id" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <field name="date" required="1"/>
+                                <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                            <group>
+                                <field name="supplier_code"/>
+                                <field name="type"/>
+                                <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="invoice_id" readonly="1" options="{'no_create_edit':True, 'no_create':True}"/>
+                                <field name="amount_total" widget="monetary"/>
+                            </group>
+                            <group>
+                                <label for="contractor_vehicle" string="Alat" invisible="1"/>
+                                <div>
+                                    <field name="contractor_vehicle" invisible="1" force_save="0" class="oe_inline" nolabel="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"/>
+                                    <label for="total_type" invisible="1" string="Dasar Perhitungan" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)]}"/>
+                                    <field name="total_type" invisible="1" class="oe_inline" nolabel="1" force_save="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])],'invisible':[('contractor_vehicle','!=',True)],'required':[('contractor_vehicle','!=',False)]}"/>
+                                </div>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Detail Aktivitas">
+                                <field name="line_vehicle_ids" force_save="1" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form_harian', 'line_vehicle_ids':line_vehicle_ids,'period_id':account_period_id, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
+                                    <tree editable="bottom">
+                                        <field name="name" invisible="1"/>
+                                        <field name="tidak_ditagihkan" optional="show"/>
+                                        <field name="vehicle_id" domain="[('ownership','=','rental')]" optional="show"/>
+                                        <field name="start_value" optional="show"/>
+                                        <field name="end_value" optional="show"/>
+                                        <field name="difference_value" optional="show"/>
+                                        <field name="distance_value" optional="show"/>
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" domain="[('no_line','=',False)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            optional="show"/>
+                                        <field name="filtered_locations" invisible="1" />
+                                        <field name="block_id" optional="show"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="nilai" optional="show"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="nilai2" optional="show"/>
+                                        <field name="unit_price" optional="show"/>
+                                        <field name="total" optional="show"/>
+                                        <field name="filter_charge_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filter_charge_ids[0][2])]" attrs="{'readonly':[('filter_charge_ids','=', [])]}" optional="show"/>
+                                        <field name="uom_charge_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly':[('filter_charge_ids','=', [])]}" optional="show"/>
+                                        <field name="contractor_vehicle" invisible="1"/>
+                                        <field name="type" invisible="1"/>
+                                    </tree>
+                                </field>
+                                <field name="line_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',False)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form_harian'}">
+                                    <tree editable="bottom">
+                                        <field name="name" invisible="1"/>
+                                        <!-- <field name="varieties_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="150"/> -->
+                                        <!-- <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/> -->
+                                        <!-- <field name="filtered_locations" invisible="1"/> -->
+                                        <field name="block_id" optional="show"/>
+                                        <!-- <field name="filtered_activities" invisible="1"/> -->
+                                        <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="product_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
+                                        <field name="nilai" optional="show" width="80"/>
+                                        <field name="product_id_2" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
+                                        <field name="nilai2" optional="show" width="80"/>
+                                        <!-- <field name="drc_latex_nap" optional="show" width="100"/> -->
+                                        <!-- <field name="drc_lump_nap" optional="show" width="100"/> -->
+                                        <field name="unit_price" optional="show" width="80"/>
+                                        <field name="total" optional="show" width="80"/>
+                                        <field name="contractor_vehicle" invisible="1"/>
+                                        <field name="type" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Data Panen Kontraktor">
+                                <field name="line_nap_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',False)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form_harian'}">
+                                    <tree editable="bottom">
+                                        <field name="name" invisible="1"/>
+                                        <!-- <field name="varieties_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="150"/> -->
+                                        <!-- <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/> -->
+                                        <!-- <field name="filtered_locations" invisible="1"/> -->
+                                        <field name="block_id" optional="show"/>
+                                        <field name="filtered_activities" invisible="1"/>
+                                        <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="product_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="nilai" optional="show" width="80"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
+                                        <field name="product_id_2" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="nilai2" optional="show" width="80"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
+                                        <field name="drc_latex_nap" optional="show" width="100"/>
+                                        <field name="drc_lump_nap" optional="show" width="100"/>
+                                        <field name="hasil_convert_latex" optional="show" width="100" readonly="1"/>
+                                        <field name="hasil_convert_lump" optional="show" width="100" readonly="1"/>
+                                        <!-- <field name="unit_price" optional="show" width="80"/> -->
+                                        <!-- <field name="total" optional="show" width="80"/> -->
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Material" attrs="{'invisible': [('material_line_ids','=',[])]}">
+                                <field name="material_line_ids" nolabel="1" >
+                                    <tree editable="bottom" create="false">
+                                        <field name="date" readonly="1" />
+                                        <field name="name" readonly="1"/>
+                                        <field name="product_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_name" readonly="1"/>
+                                        <field name="block_id" optional="show"/>
+                                        <field name="move_id" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="picking_id" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="product_uom_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="real_stock_qty" readonly="1"/>
+                                        <field name="stock_qty" readonly="1"/>
+                                        <field name="realization"/>
+                                        <field name="residual_qty" readonly="1"/>
+                                        <!-- <field name="line_id" invisible="1"/> -->
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <field name="note" placeholder="Tulis Catatan Disini..." nolabel="1" colspan="8"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_contractor_tree_harian" model="ir.ui.view">
+            <field name="name">view.lhm.contractor.tree.harian</field>
+            <field name="model">lhm.contractor</field>
+            <field name="arch" type="xml">
+                <tree string="Buku Kontraktor Harian">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="supplier_id"/>
+                    <field name="supplier_code"/>
+                    <field name="account_period_id"/>
+                    <!-- <field name="payment_type"/> -->
+                    <!-- <field name="contractor_vehicle"/> -->
+                    <field name="company_id"/>
+                    <field name="state"/>
+                    <!-- <field name="invoice_id"/> -->
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_contractor_filter_harian" model="ir.ui.view">
+            <field name="name">view.lhm.contractor.filter.harian</field>
+            <field name="model">lhm.contractor</field>
+            <field name="arch" type="xml">
+                <search string="Buku Kontraktor Harian">
+                    <field name="name" string="Nama Kontrak"/>
+                    <field name="supplier_id" string="Nama Kontraktor" filter_domain="['|',('supplier_id','ilike',self),('supplier_code','ilike',self)]"/>
+                    <separator/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Kontraktor" name="supplier_id" context="{'group_by':'supplier_id'}"/>
+                        <filter string="Periode" name="supplier_id" context="{'group_by':'account_period_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_lhm_contractor_harian" model="ir.actions.act_window">
+            <field name="name">Buku Kontraktor Harian</field>
+            <field name="res_model">lhm.contractor</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_contractor_filter_harian"/>
+            <field name="domain">[('type','=','vendor'),('date', '!=', False)]</field>
+            <field name="context">{'readonly_by_pass': True, 'default_type':'vendor'}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Buku Kontraktor Harian.
+              </p>
+            </field>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_lhm_contractor_tree_harian">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_lhm_contractor_tree_harian"/>
+            <field name="act_window_id" ref="action_lhm_contractor_harian"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_lhm_contractor_form_harian">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_lhm_contractor_form_harian"/>
+            <field name="act_window_id" ref="action_lhm_contractor_harian"/>
+        </record>
+        <record id="action_lhm_contractor_all_harian" model="ir.actions.act_window">
+            <field name="name">Buku Kontraktor Harian</field>
+            <field name="res_model">lhm.contractor</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_contractor_filter_harian"/>
+            <field name="domain">[('type','=','vendor')]</field>
+            <field name="context">{'readonly_by_pass': True, 'default_type':'vendor'}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Buku Kontraktor Harian.
+              </p>
+            </field>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_lhm_contractor_all_tree_harian">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_lhm_contractor_tree_harian"/>
+            <field name="act_window_id" ref="action_lhm_contractor_all_harian"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_lhm_contractor_all_form_harian">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_lhm_contractor_form_harian"/>
+            <field name="act_window_id" ref="action_lhm_contractor_all_harian"/>
+        </record>
+        <!-- End of Transaksi Buku Kontraktor -->
+
+
+        <!-- LHM Contractor Line-->
+        <record id="view_lhm_contractor_line_form_harian" model="ir.ui.view">
+            <field name="name">view.lhm.contractor.line.form.harian</field>
+            <field name="model">lhm.contractor.nap.line</field>
+            <field name="arch" type="xml">
+                <form string="Daftar Aktivitas">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group name="lhm_transaction_harian">
+                            <group string="Informasi Umum">
+                                <field name="date"/>
+                                <field name="nilai"/>
+                                <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="nilai2"/>
+                                <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="unit_price"/>
+                                <field name="total"/>
+                            </group>
+                            <group string="Location &amp; Activity">
+                                <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="block_id" optional="show"/>
+                                <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!-- End Of LHM Contractor Line -->
+
+
+        <!-- Transaksi Buku Kontraktor Alat-->
+        <record id="view_lhm_vehicle_contractor_form_harian" model="ir.ui.view">
+            <field name="name">view.lhm.vehicle.contractor.form.harian</field>
+            <field name="model">lhm.contractor</field>
+            <field name="arch" type="xml">
+                <form string="Buku Kontraktor Alat">
+                    <header attrs="{'invisible': [('approval','!=',True)]}">
+                        <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <!-- <button name="button_get_data" states="draft" type="object" class="btn-default btn-primary"/> -->
+                        <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
+                    </header>
+                    <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group name="lhm_vehicle_contractor_harian">
+                            <group>
+
+                                <field name="supplier_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="payment_type" attrs="{'readonly': [('line_ids','!=',[])]}" required="1"/>
+
+                                <!-- error domain pada field ini, domain="[('special','=',False),('state','=','draft')]" -->
+                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('line_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
+
+                                <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="contractor_vehicle"/>
+                            </group>
+                            <group>
+                                <field name="supplier_code"/>
+                                <field name="type"/>
+                                <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <label for="date_start" string="Periode Pembayaran"/>
+                                <div>
+                                    <field name="date_start" class="oe_inline" nolabel="1" required="1" attrs="{'readonly': [('line_ids','!=',[])]}"/> -
+                                    <field name="date_end" nolabel="1" class="oe_inline" required="1" attrs="{'readonly': [('line_ids','!=',[])]}"/>
+                                </div>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Detail Aktivitas">
+                                <field name="line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_vehicle_contractor_line_form_harian'}">
+                                    <tree editable="bottom">
+                                        <field name="name" invisible="1"/>
+                                        <!-- <field name="date"/> -->
+                                        <!-- <field name="vehicle_id" domain="[('ownership','=','rental')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="location_type_id" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="filtered_locations" invisible="1" />
+                                        <field name="block_id" optional="show"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="nilai"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="nilai2"/>
+                                        <field name="unit_price"/>
+                                        <field name="total"/>
+                                        <field name="type" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <field name="note" placeholder="Tulis Catatan Disini..." nolabel="1" colspan="8"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_vehicle_contractor_tree_harian" model="ir.ui.view">
+            <field name="name">view.lhm.vehicle.contractor.tree.harian</field>
+            <field name="model">lhm.contractor</field>
+            <field name="arch" type="xml">
+                <tree string="Buku Kontraktor Alat">
+                    <field name="name"/>
+                    <field name="supplier_id"/>
+                    <field name="supplier_code"/>
+                    <field name="account_period_id"/>
+                    <field name="payment_type"/>
+                    <!-- <field name="contractor_vehicle"/> -->
+                    <field name="company_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_vehicle_contractor_filter_harian" model="ir.ui.view">
+            <field name="name">view.lhm.vehicle.contractor.filter.harian</field>
+            <field name="model">lhm.contractor</field>
+            <field name="arch" type="xml">
+                <search string="Buku Kontraktor Alat">
+                    <field name="name" string="Nama Kontrak"/>
+                    <field name="supplier_id" string="Nama Kontraktor" filter_domain="['|',('supplier_id','ilike',self),('supplier_code','ilike',self)]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Kontraktor" name="supplier_id" context="{'group_by':'supplier_id'}"/>
+                        <filter string="Periode" name="account_period_id" context="{'group_by':'account_period_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_lhm_vehicle_contractor_harian" model="ir.actions.act_window">
+            <field name="name">Buku Kontraktor Alat</field>
+            <field name="res_model">lhm.contractor</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_vehicle_contractor_filter_harian"/>
+            <field name="domain">[('type','=','vehicle')]</field>
+            <field name="context">{'readonly_by_pass': ['supplier_id','payment_type','account_period_id','date_start','date_end'], 'default_type':'vehicle'}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Buku Kontraktor Alat.
+              </p>
+            </field>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_lhm_vehicle_contractor_tree_harian">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_lhm_vehicle_contractor_tree_harian"/>
+            <field name="act_window_id" ref="action_lhm_vehicle_contractor_harian"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_lhm_vehicle_contractor_form_harian">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_lhm_vehicle_contractor_form_harian"/>
+            <field name="act_window_id" ref="action_lhm_vehicle_contractor_harian"/>
+        </record>
+        <!-- End of Transaksi Buku Kontraktor Alat-->
+
+        <!-- LHM Contractor Vehicle Line-->
+        <record id="view_lhm_vehicle_contractor_line_form_harian" model="ir.ui.view">
+            <field name="name">view.lhm.vehicle.contractor.line.form.harian</field>
+            <field name="model">lhm.contractor.nap.line</field>
+            <field name="arch" type="xml">
+                <form string="Daftar Aktivitas">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group name="lhm_vehicle_contractor_harian">
+                            <group string="Informasi Umum">
+                                <field name="date"/>
+                                <field name="nilai"/>
+                                <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="nilai2"/>
+                                <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="unit_price"/>
+                                <field name="total"/>
+                            </group>
+                            <group string="Location &amp; Activity">
+                                <!--<field name="vehicle_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>-->
+                                <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="block_id" optional="show"/>
+                                <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

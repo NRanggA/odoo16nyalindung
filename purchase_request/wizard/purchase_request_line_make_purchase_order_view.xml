@@ -8,6 +8,12 @@
         <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Create RFQ">
+                <separator string="New PO details:" />
+                <newline />
+                <group>
+                    <field name="supplier_id" />
+                </group>
+                <newline />
                 <separator string="Existing RFQ to update:" />
                 <newline />
                 <group>
@@ -16,12 +22,6 @@
                         domain="[('partner_id', '=', supplier_id)]"
                     />
                     <field name="sync_data_planned" />
-                </group>
-                <newline />
-                <separator string="New PO details:" />
-                <newline />
-                <group>
-                    <field name="supplier_id" />
                 </group>
                 <newline />
                 <group>

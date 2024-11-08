@@ -2882,7 +2882,7 @@
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
                                         <!-- <field name="tidak_ditagihkan" optional="show"/> -->
-                                        <field name="date" optional="show"/>
+                                        <field name="date" required="1" optional="show"/>
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="varieties_id" required="1"
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
@@ -2982,11 +2982,11 @@
         </record>
 
         <record id="action_lhm_contractor" model="ir.actions.act_window">
-            <field name="name">Buku Kontraktor</field>
+            <field name="name">Buku Kontraktor Bulanan</field>
             <field name="res_model">lhm.contractor</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_lhm_contractor_filter"/>
-            <field name="domain">[('type','=','vendor')]</field>
+            <field name="domain">[('type','=','vendor'),('date', '=', False)]</field>
             <field name="context">{'readonly_by_pass': True, 'default_type':'vendor', 'search_default_date_monthly':1}</field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
@@ -3032,7 +3032,11 @@
             <field name="view_id" ref="view_lhm_contractor_form"/>
             <field name="act_window_id" ref="action_lhm_contractor_all"/>
         </record>
-        <menuitem id="submenu_lhm_contractor" action="action_lhm_contractor" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="50"/>
+        
+
+        <menuitem id="menu_lhm_contractor_group" name="Buku Kontraktor" parent="menu_lhm_transaction" sequence="29" groups="group_plantation_operator"/>
+        <menuitem id="submenu_lhm_contractor_harian" action="action_lhm_contractor_harian" parent="menu_lhm_contractor_group" sequence="1"/>
+        <menuitem id="submenu_lhm_contractor" action="action_lhm_contractor" parent="menu_lhm_contractor_group" sequence="2"/>
         <!-- <menuitem id="submenu_lhm_contractor_all" action="action_lhm_contractor_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="50"/> -->
         <!-- End of Transaksi Buku Kontraktor -->
 
@@ -3355,7 +3359,7 @@
                                         <field name="product_qty"/>
                                         <field name="uom_id"/>
                                         <field name="tgl_terima"/>
-                                        <field name="drc"/>
+                                        <field name="drc" invisible="1"/>
                                         <field name="quality_pabrik"/>
                                         <!-- <field name="stock_picking_id"/> -->
                                     </tree>
@@ -3425,12 +3429,14 @@
                     <header>
                         <button name="button_draft" states="cancel,process,confirmed,done" string="Set Draft" type="object" class="btn-default"/>
                         <button name="button_save_to_nap_line" states="draft" string="Process" type="object" class="btn-primary" />
-                        <button name="button_confirm" states="process" string="Confirm" type="object" class="btn-default btn-primary"/>
-                        <button name="create_material_receipt" states="confirmed" string="Create Material Receipt" type="object" class="oe_highlight"/>
+                        <button name="button_confirm" states="confirmed" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="create_material_receipt" states="process" string="Create Material Receipt" type="object" class="oe_highlight"/>
                         <button name="button_cancel" states="process,confirmed,done" string="Cancel" type="object" class="btn-default"/>
-                        <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
+                        <!-- <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/> -->
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,process,confirmed,done"/>
+                        <!-- <button name="create_material_receipt" states="confirmed" string="Create Material Receipt" type="object" class="oe_highlight"/> -->
+                        <!-- <button name="button_confirm" states="process" string="Confirm" type="object" class="btn-default btn-primary"/> -->
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -3521,7 +3527,7 @@
                                         <field name="uom_id"/>
                                         <field name="tgl_terima"/>
                                         <field name="tgl_panen"/>
-                                        <field name="drc"/>
+                                        <field name="drc" invisible="1"/>
                                         <field name="quality_pabrik"/>
                                         <!-- <field name="stock_picking_id"/> -->
                                     </tree>
@@ -3587,7 +3593,7 @@
             <field name="arch" type="xml">
                 <tree string="Nota Angkut Panen">
                     <field name="name"/>
-                    <field name="date_pks"/>
+                    <!-- <field name="date_pks"/> -->
                     <field name="no_nab"/>
                     <field name="afdeling_id"/>
                     <field name="reg_number"/>
@@ -3604,7 +3610,7 @@
             <field name="arch" type="xml">
                 <tree string="Nota Angkut Panen">
                     <field name="name"/>
-                    <field name="date_pks"/>
+                    <!-- <field name="date_pks"/> -->
                     <field name="no_nap"/>
                     <field name="afdeling_id"/>
                     <field name="reg_number"/>
@@ -3714,8 +3720,8 @@
         <!-- End of Transaksi Nota Angkut Panen Input-->
 
         <menuitem id="submenu_lhm_nap" name="Nota Angkut Panen" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/>
+        <menuitem id="submenu_lhm_nap_input" name="Nota Angkut Panen - Input" action="action_lhm_nap_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="1"/>
         <!-- <menuitem id="submenu_lhm_nap_all" name="Nota Angkut Panen" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
-        <menuitem id="submenu_lhm_nap_input" name="Nota Angkut Panen - Input" action="action_lhm_nap_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="10"/>
         <!-- <menuitem id="submenu_lhm_nap_input_all" name="Nota Angkut Panen - Input" action="action_lhm_nap_input_all" parent="submenu_lhm_nap_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End of Transaksi Nota Angkut Panen Input-->
 

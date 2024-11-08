@@ -1,0 +1,87 @@
+<odoo>
+    <data>
+        <record id="view_lhm_drc_tree" model="ir.ui.view">
+            <field name="name">view.lhm.drc.tree</field>
+            <field name="model">lhm.drc</field>
+            <field name="arch" type="xml">
+                <tree string="Dry Rubber Content">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="view_lhm_drc_filter" model="ir.ui.view">
+            <field name="name">view.lhm.drc.filter</field>
+            <field name="model">lhm.drc</field>
+            <field name="arch" type="xml">
+                <search string="Dry Rubber Content">
+                    <field name="name" string="Dry Rubber Content"/>
+                    <separator/>
+                    <filter name="date"/>
+                    <separator/>
+                </search>
+            </field>
+        </record>
+        <record id="action_lhm_drc_input" model="ir.actions.act_window">
+            <field name="name">Dry Rubber Content</field>
+            <field name="res_model">lhm.drc</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_drc_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Dry Rubber Content.
+                </p>
+            </field>
+        </record>
+        <record id="action_lhm_drc_input_all" model="ir.actions.act_window">
+            <field name="name">Dry Rubber Content</field>
+            <field name="res_model">lhm.drc</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_drc_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Dry Rubber Content.
+                </p>
+            </field>
+        </record>
+        <record id="view_lhm_drc_form" model="ir.ui.view">
+            <field name="name">view.lhm.drc.form</field>
+            <field name="model">lhm.drc</field>
+            <field name="arch" type="xml">
+                <form string="Dry Rubber Content">                    
+                    <header>
+                        <button name="action_confirm" type="object" string="Confirm" class="btn-primary" states="draft"/>
+                        <button name="action_draft" type="object" string="Draft" class="btn-primary" states="cancel,confirmed"/>
+                        <button name="action_cancel" type="object" string="Cancel" class="btn-primary" states="confirmed"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="date"/>
+                        </group>
+                        <notebook>
+                            <page string="Detail DRC">
+                                <field name="drc_line_ids" widget="one2many_list">
+                                    <tree editable="bottom">
+                                        <field name="block_id"/>
+                                        <field name="date"/>
+                                        <field name="product"/>
+                                        <field name="uom"/>
+                                        <field name="drc"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <menuitem id="submenu_lhm_drc_input" name="Dry Rubber Content - Input" action="action_lhm_drc_input" parent="c10i_lhm_v16.submenu_lhm_nap" groups="c10i_lhm_v16.group_plantation_operator" sequence="2"/>
+    </data>
+</odoo>

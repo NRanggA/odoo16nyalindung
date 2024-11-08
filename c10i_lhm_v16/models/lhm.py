@@ -1031,35 +1031,36 @@ class lhm_transaction(models.Model):
         doc_id = self.env['res.doc.type'].search([('code', '=', 'lhm')])[-1]
         return doc_id and doc_id.id or False
 
-    name                = fields.Char("Nama", default="/")
-    kemandoran_id       = fields.Many2one("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True)
-    doc_type_id         = fields.Many2one("res.doc.type", string="Document Type", ondelete="restrict", tracking=True, default=_default_doc_id)
-    approval            = fields.Boolean(string="Approval", related="doc_type_id.approval", readonly=True)
-    date                = fields.Date("Tanggal", tracking=True)
-    kemandoran_code     = fields.Char("Kode Kemandoran", related="kemandoran_id.code", readonly=True)
-    mandor_id           = fields.Many2one("hr.employee", string="Mandor", ondelete="restrict", related="kemandoran_id.foreman_id", readonly=True, store=True)
-    asisten_mandor_id   = fields.Many2one("hr.employee", string="Mandor Besar", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True, store=True)
-    kerani_id           = fields.Many2one("hr.employee", string="Kerani", ondelete="restrict", related="kemandoran_id.admin_id", readonly=True, store=True)
-    location            = fields.Char("Afdeling/ Divisi", compute="_compute_location", readonly=True, store=True)
-    nik_mandor          = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
-    nik_mandor_1        = fields.Char("NIK Mandor Besar", related="kemandoran_id.nik_mandor_1", readonly=True)
-    nik_kerani          = fields.Char("NIK Kerani", related="kemandoran_id.nik_kerani", readonly=True)
-    lhm_line_ids        = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM")
-    lhm_nap_line_ids    = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
-    is_nap              = fields.Boolean(string='Is NAP', compute='_compute_is_nap', store=True)
-    skb                 = fields.Boolean('Is SKB', compute="_compute_is_skb", store=True)
-    process_line_ids    = fields.One2many('lhm.transaction.process.line', 'lhm_id', string="Detail Progress LHM")
-    material_line_ids   = fields.One2many('lhm.transaction.material.line', 'lhm_id', string="Detail Material LHM")
-    emp_out_ids         = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer Out LHM", domain=[('type', '=', 'out')], readonly=1)
-    emp_in_ids          = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer In LHM", domain=[('type', '=', 'in')], readonly=1)
-    user_id             = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
-    operating_unit_id   = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)
-    account_period_id   = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', readonly=True, store=True)
-    date_start          = fields.Date(related="account_period_id.date_start", string="Range Start Date", readonly=1)
-    date_stop           = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
-    company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    note                = fields.Text("Catatan")
-    state               = fields.Selection(selection=_get_state, string='Status',
+    name                    = fields.Char("Nama", default="/")
+    kemandoran_id           = fields.Many2one("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True)
+    doc_type_id             = fields.Many2one("res.doc.type", string="Document Type", ondelete="restrict", tracking=True, default=_default_doc_id)
+    approval                = fields.Boolean(string="Approval", related="doc_type_id.approval", readonly=True)
+    date                    = fields.Date("Tanggal", tracking=True)
+    kemandoran_code         = fields.Char("Kode Kemandoran", related="kemandoran_id.code", readonly=True)
+    mandor_id               = fields.Many2one("hr.employee", string="Mandor", ondelete="restrict", related="kemandoran_id.foreman_id", readonly=True, store=True)
+    asisten_mandor_id       = fields.Many2one("hr.employee", string="Mandor Besar", ondelete="restrict", related="kemandoran_id.foreman_id_1", readonly=True, store=True)
+    kerani_id               = fields.Many2one("hr.employee", string="Kerani", ondelete="restrict", related="kemandoran_id.admin_id", readonly=True, store=True)
+    location                = fields.Char("Afdeling/ Divisi", compute="_compute_location", readonly=True, store=True)
+    nik_mandor              = fields.Char("NIK Mandor", related="kemandoran_id.nik_mandor", readonly=True)
+    nik_mandor_1            = fields.Char("NIK Mandor Besar", related="kemandoran_id.nik_mandor_1", readonly=True)
+    nik_kerani              = fields.Char("NIK Kerani", related="kemandoran_id.nik_kerani", readonly=True)
+    lhm_line_ids            = fields.One2many('lhm.transaction.line', 'lhm_id', string="Detail LHM")
+    lhm_nap_line_ids        = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
+    # lhm_contractor_line_ids = fields.One2many('lhm.contractor.line', 'lhm_id', string="Detail Buku Kontraktor")
+    is_nap                  = fields.Boolean(string='Is NAP', compute='_compute_is_nap', store=True)
+    skb                     = fields.Boolean('Is SKB', compute="_compute_is_skb", store=True)
+    process_line_ids        = fields.One2many('lhm.transaction.process.line', 'lhm_id', string="Detail Progress LHM")
+    material_line_ids       = fields.One2many('lhm.transaction.material.line', 'lhm_id', string="Detail Material LHM")
+    emp_out_ids             = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer Out LHM", domain=[('type', '=', 'out')], readonly=1)
+    emp_in_ids              = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer In LHM", domain=[('type', '=', 'in')], readonly=1)
+    user_id                 = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
+    operating_unit_id       = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)
+    account_period_id       = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', readonly=True, store=True)
+    date_start              = fields.Date(related="account_period_id.date_start", string="Range Start Date", readonly=1)
+    date_stop               = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
+    company_id              = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
+    note                    = fields.Text("Catatan")
+    state                   = fields.Selection(selection=_get_state, string='Status',
                                     copy=False, default='draft', index=False, readonly=False, tracking=True,
                                     help="* New: Dokumen LHM baru.\n"
                                          "* Cancelled: LHM dibatalkan.\n"
@@ -3252,6 +3253,7 @@ class lhm_contractor(models.Model):
         return state
 
     name                          = fields.Char('Nama', required=False)
+    date                          = fields.Date("Tanggal", required=True)
     type                          = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', index=False, readonly=True)
     supplier_id                   = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict")
     supplier_code                 = fields.Char('Kode', readonly=True, related="supplier_id.ref")
@@ -3266,22 +3268,25 @@ class lhm_contractor(models.Model):
     total_type                    = fields.Selection([('used', 'HM/KM Terpakai'), ('result', 'Hasil Kerja')], string='Kalkulasi')
     company_id                    = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     line_ids                      = fields.One2many('lhm.contractor.line', 'contractor_id', string="Detail Kontraktor", )
+    line_nap_ids                  = fields.One2many('lhm.contractor.nap.line', 'contractor_id', string="Data Panen Kontraktor")
     line_vehicle_ids              = fields.One2many('lhm.contractor.vehicle.line', 'contractor_id', string="Detail Kontraktor Alat", )
     payment_type                  = fields.Selection([('payment0', 'Pembayaran 1 Bulan Penuh'),('payment1','Pembayaran Ke-1'),('payment2','Pembayaran Ke-2')], string='Pembayaran', index=False, readonly=False)
     user_id                       = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
     note                          = fields.Text('Catatan')
     state                         = fields.Selection([
-                                    ('draft', 'New'), ('cancel', 'Cancelled'),
+                                    ('draft', 'New'), ('cancel', 'Cancelled'), ('process', 'Process'),
                                     ('confirmed', 'Confirmed'), ('done', 'Done')], string='Status',
                                     copy=False, default=_default_state, index=True, readonly=True,
                                     help="* New: Dokumen Baru.\n"
                                         "* Cancelled: Dokumen Telah Dibatalkan.\n"
+                                        "* Process: Dokumen Sedang di Process.\n"
                                         "* Confirmed: Dokumen Sudah Diperiksa Pihak Terkait.\n"
                                         "* Done: Dokumen Sudah Selesai Diproses. \n")
     invoice_id                    = fields.Many2one('account.move', 'Invoice')
     move_id                       = fields.Many2one('account.move', 'Journal Entry')
     amount_total                  = fields.Float(compute='_compute_total', string='Total')
     material_line_ids             = fields.One2many('lhm.contractor.material.line', 'contractor_id', string="Detail Material")
+    afdeling_id                   = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
     
     contractor_default_journal_id = fields.Many2one(
                                 comodel_name='account.journal',
@@ -3344,7 +3349,7 @@ class lhm_contractor(models.Model):
             if self.payment_type:
                 month           = self.account_period_id.date_start.strftime('%m')
                 year            = self.account_period_id.date_start.strftime('%Y')
-                last_day    = calendar.monthrange(int(year), int(month))[1]
+                last_day        = calendar.monthrange(int(year), int(month))[1]
                 if self.payment_type=='payment1':
                     self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '01')
                     self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + '15')
@@ -3369,9 +3374,41 @@ class lhm_contractor(models.Model):
         contractor = super(lhm_contractor, self).unlink()
         return contractor
 
+    # def button_get_data(self):
+    #     self.state = 'draft'
+    #     # self.confirmed = True
+    
     def button_confirm(self):
         move = self._account_move_entry()
         self.state = 'confirmed'
+
+    def button_process(self):
+        self.state = 'process'
+        self.env['lhm.contractor.nap.line'].search([('contractor_id', '=', self.id)]).unlink()
+        
+        contractor_nap_lines = []
+        contractor_lines = self.line_ids
+
+        for contractor_line in contractor_lines:
+            # if not contractor_line.date:
+            #     contractor_line.date = self.date
+            nap_line_data = {
+                'block_id': contractor_line.block_id.id,
+                'activity_id': contractor_line.activity_id.id,
+                'product_id': contractor_line.product_id.id,
+                'product_id_2': contractor_line.product_id_2.id,
+                'nilai': None,
+                'nilai2': None,
+                'uom_id': contractor_line.uom_id.id,
+                'uom2_id': contractor_line.uom2_id.id,
+                'contractor_id': self.id,
+                'contractor_line_id': contractor_line.id,
+                'date': contractor_line.date,
+            }
+            contractor_nap_lines.append(nap_line_data)
+
+        if contractor_nap_lines:
+            self.env['lhm.contractor.nap.line'].create(contractor_nap_lines)
 
     def button_draft(self):
         for contractor in self:
@@ -3571,6 +3608,7 @@ class lhm_contractor_material_line(models.Model):
     product_id      = fields.Many2one("product.product", string="Product", ondelete="restrict")
     activity_id     = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
     activity_name   = fields.Char(related="activity_id.name", string="Name")
+    block_id        = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
     location_id     = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     real_stock_qty  = fields.Float('SKB Qty', digits=dp.get_precision('Product Unit of Measure'),)
     product_uom_id  = fields.Many2one("uom.uom", string="UoM", ondelete="restrict")
@@ -3632,12 +3670,13 @@ class lhm_contractor_line(models.Model):
 
     # Field definitions
     name                = fields.Char(related='activity_id.name', readonly=True)
-    date                = fields.Date("Tanggal", required=True)
+    date                = fields.Date("Tanggal")
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
     varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    block_id            = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
     doc_activity_ids    = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
     filtered_activities = fields.Many2many('lhm.activity', 'lhm_cont_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
     activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
@@ -3651,8 +3690,232 @@ class lhm_contractor_line(models.Model):
     supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
     contractor_vehicle  = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
     contractor_id       = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
+    line_nap_ids        = fields.One2many('lhm.contractor.nap.line', 'contractor_line_id', string="NAP Lines")
+    lhm_nap_line_id     = fields.Many2one('lhm.nap.line', string="NAP Line", ondelete="cascade")
     tidak_ditagihkan    = fields.Boolean(string="Tidak Ditagihkan")
     skip_constraint     = fields.Boolean(string="Skip Constraint")
+    product_id          = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product_id_2        = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
+    drc_latex_nap       = fields.Float('DRC Latex NAP (%)')
+    drc_lump_nap        = fields.Float('DRC Lump NAP (%)')
+    hasil_convert_latex = fields.Float(string="Hasil Convert Latex",  digits=(16, 2))
+    hasil_convert_lump  = fields.Float(string="Hasil Convert Lump",  digits=(16, 2))
+
+    @api.depends('varieties_id','location_type_id', 'contractor_id.state')
+    def _filter_locations(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.contractor_id.state!='draft':
+                line.filtered_locations = []
+            else:
+                if line.location_type_id.code in ('WS','VH','MA'):
+                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
+                else: # GC, IDC, PLANTATION, PJ, NS
+                    locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
+                line.filtered_locations = [(6,0,locations.ids)] if locations else []
+
+    @api.depends('varieties_id','location_type_id', 'location_id', 'contractor_id.state')
+    def _filter_activities(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.contractor_id.state!='draft':
+                line.filtered_activities = []
+            else:
+                doc_form = self.env['res.doc.type'].search([('code','=','bkt')], limit=1)
+                if line.location_type_id and line.location_type_id.project and line.location_id:
+                    projects = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
+                    project_activity_ids = []
+                    for project in projects:
+                        # if doc_form:
+                        #     project_activity_ids += [x.activity_id.id for x in project.line_ids if doc_form.id in x.doc_ids.ids]
+                        # else:
+                            project_activity_ids += [x.activity_id.id for x in project.line_ids]
+
+                    if project_activity_ids:
+                        line.filtered_activities = [(6, 0, project_activity_ids)]
+                    else:
+                        line.filtered_activities = []
+                else:
+                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                        activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                    else: # GC, IDC, PLANTATION
+                        if line.varieties_id:
+                            if line.location_type_id.general_charge:
+                                activities = line.varieties_id.general_charges_activity_ids
+                            elif line.location_type_id.indirect:
+                                activities = line.varieties_id.indirect_cost_activity_ids
+                            else:
+                                activities = line.varieties_id.harvest_activity_id
+                                activities |= line.varieties_id.upkeep_activity_ids
+                        else:
+                            # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                            activities = []
+                    if False: #doc_form:
+                        act_ids = []
+                        for act in activities:
+                            if doc_form.id in act.doc_ids.ids:
+                                act_ids.append(act.id)
+                        line.filtered_activities = [(6, 0, act_ids)]
+                    else:
+                        line.filtered_activities = [(6, 0, activities.ids)] if activities else []
+    
+    @api.onchange('activity_id')
+    def _onchange_activity_id(self):
+        if self.activity_id:
+            borongan_contractor = self.env['lhm.wage.borongan.contractor'].search([('activity_id', '=', self.activity_id.id)]);
+            
+            self.unit_price = borongan_contractor.price if borongan_contractor.price else 0.0
+            self.uom_id     = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            self.uom2_id    = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
+
+    @api.onchange('location_type_id')
+    def _onchange_location_type_id(self):
+        if self.location_type_id:
+            self.location_id = False
+            self.activity_id = False
+
+    @api.onchange('location_id')
+    def _onchange_location_id(self):
+        if self.location_id:
+            self.activity_id = False
+
+    @api.depends('unit_price', 'nilai')
+    def _compute_harga_satuan(self):
+        for harga in self:
+            if harga.nilai and harga.unit_price:
+                harga.total = harga.unit_price * harga.nilai
+
+    @api.constrains('date', 'location_id', 'activity_id')
+    def _check_date_unique(self):
+        for rec in self:
+            rec._check_date_line()
+
+    def _check_date_line(self):
+        if self.skip_constraint:
+            return True
+
+        if not (self.date >= self.contractor_id.date_start and self.date <= self.contractor_id.date_end):
+            raise UserError(_('Tanggal %s pada Buku Kontraktor tidak dalam Periode Pembayaran \n'
+                              '%s - %s.\n'
+                              'Ubah tanggal atau hapus baris di Daftar Buku Kontraktor') % (
+                            self.date, self.contractor_id.date_start, self.contractor_id.date_end))
+        domain = []
+        total_domain = 0
+        if self.date:
+            domain.append(('date', '=', self.date))
+            total_domain += 1
+        if self.location_id:
+            domain.append(('location_id', '=', self.location_id.id))
+            total_domain += 1
+        if self.activity_id:
+            domain.append(('activity_id', '=', self.activity_id.id))
+            total_domain += 1
+        if self.type:
+            domain.append(('type', '=', self.type))
+            total_domain += 1
+        if self.supplier_id:
+            domain.append(('supplier_id', '=', self.supplier_id.id))
+            total_domain += 1
+        if self.unit_price:
+            domain.append(('unit_price', '=', self.unit_price))
+            total_domain += 1
+        if total_domain == 6 and self.search_count(domain) > 1:
+            raise UserError(_('Terjadi Duplikasi Data!!!!.\n'
+                              'Tanggal          : %s.\n'
+                              'Kode Lokasi      : %s.\n'
+                              'Kode Aktivitas   : %s.\n'
+                              'Ganti salah satu detail atau hapus baris yang sama') % (self.date, self.location_id.code, self.activity_id.code))
+        return True
+
+class lhm_contractor_nap_line(models.Model):
+    _name = 'lhm.contractor.nap.line'
+    _description = 'LHM Contractor NAP Line'
+
+    @api.depends("location_type_id","location_id")
+    def _get_doc_activity_ids(self):
+        for line in self:
+            activity_list = []
+            if line.contractor_id._context.get('default_type',line.contractor_id.type) == 'vendor':
+                doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkt')], limit=1)
+            else:
+                doc_id  = self.env['res.doc.type'].search([('code', '=', 'bkta')], limit=1)
+            level_1     = self.env['lhm.activity'].search([('level', '=', 1)], limit=1)
+            avail_act   = self.env['lhm.activity'].search([('type_id', '=', line.location_type_id.id)])
+            if doc_id:
+                for act in avail_act:
+                    if doc_id.id in act.doc_ids.ids:
+                        activity_list.append(act.id)
+            if level_1:
+                activity_list.append(level_1.id)
+            if (line.location_type_id and line.location_type_id.project) and line.location_id:
+                project_ids = self.env['lhm.project'].search([('location_id', '=', line.location_id.id)])
+                project_act = []
+                avail = []
+                if level_1:
+                    avail.append(level_1.id)
+                for project in project_ids:
+                    project_act += [x.activity_id.id for x in project.line_ids]
+                if project_act != []:
+                    for act_project in project_act:
+                        if act_project in activity_list:
+                            avail.append(act_project)
+                if avail != []:
+                    line.doc_activity_ids = [(6, 0, avail)]
+            else:
+                line.doc_activity_ids = [(6, 0, activity_list)]
+
+    # Field definitions
+    name                = fields.Char(related='activity_id.name', readonly=True)
+    date                = fields.Date("Tanggal")
+    location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
+    varieties_id        = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
+    filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
+    location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
+    block_id            = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
+    doc_activity_ids    = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
+    filtered_activities = fields.Many2many('lhm.activity', 'lhm_cont_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
+    activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+    nilai               = fields.Float('Hasil 1')
+    uom_id              = fields.Many2one("uom.uom", string="Satuan 1", ondelete="restrict")
+    nilai2              = fields.Float('Hasil 2')
+    uom2_id             = fields.Many2one("uom.uom", string="Satuan 2", ondelete="restrict")
+    unit_price          = fields.Float('Tarif Satuan')
+    total               = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
+    type                = fields.Selection([('vehicle', 'Alat'), ('vendor', 'Vendor')], string='Type', related="contractor_id.type", readonly=True)
+    supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
+    contractor_vehicle  = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
+    contractor_id       = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
+    # line_ids            = fields.Many2one('lhm.contractor.line', string="Contractor Lines", ondelete="cascade")
+    contractor_line_id  = fields.Many2one('lhm.contractor.line', string="Contractor Lines", ondelete="cascade")
+    tidak_ditagihkan    = fields.Boolean(string="Tidak Ditagihkan")
+    skip_constraint     = fields.Boolean(string="Skip Constraint")
+    product_id          = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
+    product_id_2        = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
+    drc_latex_nap       = fields.Float('DRC Latex NAP (%)')
+    drc_lump_nap        = fields.Float('DRC Lump NAP (%)')
+    hasil_convert_latex = fields.Float(string="Hasil Convert Latex",  digits=(16, 2))
+    hasil_convert_lump  = fields.Float(string="Hasil Convert Lump",  digits=(16, 2))
+
+    def convert_karet_contractor(self):
+        """
+        Fungsi untuk menghitung konversi hasil latex dan lump.
+        """
+        convert_hasil_latex = 0
+        convert_hasil_lump = 0
+
+        drc_latex           = self.drc_latex_nap
+        convert_hasil_latex = self.nilai * drc_latex / 100
+
+        drc_lump            = self.drc_lump_nap
+        convert_hasil_lump  = self.nilai2 * drc_lump / 100
+
+        self.write({
+            'hasil_convert_latex'   : convert_hasil_latex,
+            'hasil_convert_lump'    : convert_hasil_lump
+        })
+        
+        return convert_hasil_latex, convert_hasil_lump
 
     @api.depends('varieties_id','location_type_id', 'contractor_id.state')
     def _filter_locations(self):
