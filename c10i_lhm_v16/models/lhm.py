@@ -1114,8 +1114,9 @@ class lhm_transaction(models.Model):
             # Pencarian absensi karyawan pada tanggal yang sama
             absensi = self.env['hr.attendance.sheet'].search([
                 ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
-                ('check_in', '>=', start_date),
-                ('check_in', '<', end_date)
+                ('date', '=', self.date),
+                ('check_in', '!=', False),
+                # ('check_in', '<', end_date)
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
             
