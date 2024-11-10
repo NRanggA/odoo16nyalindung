@@ -131,7 +131,7 @@
                                         <th>No. Invoice</th>
                                         <td> 
                                             :
-                                            <span t-field="o.account_move_id.name"/>
+                                            <span t-field="o.employee_expense_id.name"/>
                                         </td>
                                     </tr>
                                     <tr>
