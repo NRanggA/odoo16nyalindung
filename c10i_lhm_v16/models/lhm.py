@@ -1097,6 +1097,9 @@ class lhm_transaction(models.Model):
                     'warning': {'title': _('Kesalahan Input Data'),
                                 'message': _("Dokumen sudah ada: %s.") % other_ids[-1].name},
                 }
+        # Hapus semua data di `lhm_line_ids` sebelum menambahkan data baru
+        self.lhm_line_ids = [(5, 0, 0)]
+        
         if self.date and self.kemandoran_id and not other_ids:
             transfer_out_ids    = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'out'), ('kemandoran_to_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
             transfer_in_ids     = self.env['hr.employee.foreman.transfer'].search([('date', '=', self.date), ('type', '=', 'in'), ('kemandoran_from_id', '=', self.kemandoran_id.id), ('lhm_line_id', '=', False)])
@@ -1106,6 +1109,8 @@ class lhm_transaction(models.Model):
             emp_out_ids = [x.employee_id.id for x in transfer_out_ids]
             list_employee = []
             seq = 1
+
+
 
             # Mencari Absensi karyawan berdasarkan tanggal yang sama di masukkan di form lhm
             start_date  = datetime.combine(self.date, datetime.min.time())
