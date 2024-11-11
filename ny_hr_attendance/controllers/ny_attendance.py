@@ -292,8 +292,8 @@ class NyAttendance(ApiBase):
                     continue
                 namafile = statusmasuk = ketmasuk = ""
 
-                first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                last_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
                 statusmasuk = first_att.statusmasuk
                 ketmasuk = first_att.keterangan
                 ketkeluar = last_att.keterangan
@@ -370,8 +370,8 @@ class NyAttendance(ApiBase):
                     continue
                 namafile = statusmasuk = ketmasuk = ketpulang = ""
                 if att.att_log_ids:
-                    first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                    last_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                    first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                    last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
                     statusmasuk = first_att.statusmasuk
                     ketmasuk = first_att.keterangan
                     ketpulang = last_att.keterangan
