@@ -59,10 +59,13 @@ class ReportLpphExcel(models.AbstractModel):
 
     def generate_xlsx_report(self, workbook, data, objects):
         workbook = self.add_workbook_format(workbook)
-        worksheet = workbook.add_worksheet("LPPH Report")
+        worksheet = workbook.add_worksheet("Laporan Progress Kerja Harian")
+        worksheet2 = workbook.add_worksheet("Pending Store Issue")
+
         wbf = self.wbf
 
         worksheet.set_column(0, 12, 15)
+        worksheet2.set_column(0, 12, 15)
 
         for o in objects:
             # Header
@@ -170,7 +173,7 @@ class ReportLpphExcel(models.AbstractModel):
             worksheet.set_column(21, 21, 18)
             worksheet.merge_range(next_row, 22, next_row, 29, "PEMAKAIAN MATERIAL", wbf['header'])
             worksheet.merge_range(next_row + 1, 22, next_row + 1, 24, "SKB", wbf['header'])
-            worksheet.write(next_row + 2, 22, "NO. PBB", wbf['header'])
+            worksheet.write(next_row + 2, 22, "NO. BPB", wbf['header'])
             worksheet.set_column(22, 22, 18)
             worksheet.write(next_row + 2, 23, "TANGGAL", wbf['header'])
             worksheet.set_column(23, 23, 18)
@@ -382,6 +385,7 @@ class ReportLpphExcel(models.AbstractModel):
                         ('progress_id', '=', line['progress_id']),
                         ('realization', '>', 0)
                     ])
+                    # for material in get_material:
 
                     worksheet.write(row_data, 0, lhm_data['key'].code, wbf['content'])
                     worksheet.set_column(0, 0, 18)
@@ -449,31 +453,76 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 21, '-', wbf['content'])
                     worksheet.set_column(21, 21, 18)
 
-                    worksheet.write(row_data, 22, get_material.name if get_material else '-', wbf['content'])
-                    worksheet.set_column(22, 22, 18)
+                    if get_material:
+                        material_row = row_data
 
-                    worksheet.write(row_data, 23, get_material.date.strftime('%d-%m-%Y') if get_material else '-', wbf['content'])
-                    worksheet.set_column(23, 23, 18)
+                        for material in get_material:
 
-                    worksheet.write(row_data, 24, line['real_stock_qty'] if line['real_stock_qty'] else 0.0, wbf['number_content'])
-                    worksheet.set_column(24, 24, 18)
+                            worksheet.write(row_data, 22, material.move_id.picking_id.name , wbf['content'])
+                            worksheet.set_column(22, 22, 18)
 
-                    worksheet.write(row_data, 25, get_material.product_id.name if get_material else '-', wbf['content'])
-                    worksheet.set_column(25, 25, 40)
+                            worksheet.write(row_data, 23, material.date.strftime('%d-%m-%Y') , wbf['content'])
+                            worksheet.set_column(23, 23, 18)
 
-                    worksheet.write(row_data, 26, get_material.product_uom_id.name if get_material else '-', wbf['content'])
-                    worksheet.set_column(26, 26, 18)
+                            worksheet.write(row_data, 24, material.real_stock_qty, wbf['number_content'])
+                            worksheet.set_column(24, 24, 18)
 
-                    worksheet.write(row_data, 27, line['realization'] if line['realization'] else 0.0, wbf['number_content'])
-                    worksheet.set_column(27, 27, 18)
+                            worksheet.write(row_data, 25, material.product_id.name , wbf['content'])
+                            worksheet.set_column(25, 25, 40)
 
-                    worksheet.write(row_data, 28, line['shi_realization'] if line['shi_realization'] else 0.0, wbf['number_content'])
-                    worksheet.set_column(28, 28, 18)
+                            worksheet.write(row_data, 26, material.product_uom_id.name , wbf['content'])
+                            worksheet.set_column(26, 26, 18)
 
-                    worksheet.write(row_data, 29, '-', wbf['content'])
-                    worksheet.set_column(29, 29, 18)
+                            worksheet.write(row_data, 27, material.realization, wbf['number_content'])
+                            worksheet.set_column(27, 27, 18)
 
-                    row_data += 1
+                            worksheet.write(row_data, 28, material.realization, wbf['number_content'])
+                            worksheet.set_column(28, 28, 18)
+
+                            worksheet.write(row_data, 29, '-', wbf['content'])
+                            worksheet.set_column(29, 29, 18)
+
+                            row_data += 1
+
+                        # worksheet.merge_range(material_row,27,row_data-1,27,line['realization'] if line['realization'] else 0.0,wbf['number_content'])
+                        # worksheet.set_column(27, 27, 18)
+
+                        # worksheet.merge_range(material_row,28,row_data-1,28,line['shi_realization'] if line['shi_realization'] else 0.0,wbf['number_content'])
+                        # worksheet.set_column(28, 28, 18)
+
+                        # worksheet.merge_range(material_row,29,row_data-1,29,'-',wbf['number_content'])
+                        # worksheet.set_column(29, 29, 18)
+
+                    
+                       
+
+                    else:
+                        worksheet.write(row_data, 22, '-' , wbf['content'])
+                        worksheet.set_column(22, 22, 18)
+
+                        worksheet.write(row_data, 23, '-' , wbf['content'])
+                        worksheet.set_column(23, 23, 18)
+
+                        worksheet.write(row_data, 24, 0.0, wbf['number_content'])
+                        worksheet.set_column(24, 24, 18)
+
+                        worksheet.write(row_data, 25, '-' , wbf['content'])
+                        worksheet.set_column(25, 25, 40)
+
+                        worksheet.write(row_data, 26, '-' , wbf['content'])
+                        worksheet.set_column(26, 26, 18)
+
+
+                        worksheet.write(row_data, 27, line['realization'] if line['realization'] else 0.0, wbf['number_content'])
+                        worksheet.set_column(27, 27, 18)
+
+                        worksheet.write(row_data, 28, line['shi_realization'] if line['shi_realization'] else 0.0, wbf['number_content'])
+                        worksheet.set_column(28, 28, 18)
+
+                        worksheet.write(row_data, 29, '-', wbf['content'])
+                        worksheet.set_column(29, 29, 18)
+
+                        row_data += 1
 
                 worksheet.write(row_data, 0, "Subtotal", wbf['total'])
                 worksheet.write(row_data, 1, "", wbf['total'])
@@ -538,3 +587,138 @@ class ReportLpphExcel(models.AbstractModel):
                 worksheet.write(row_data, 27, total_realization, wbf['number_total'])
                 worksheet.write(row_data, 28, total_shi_realization, wbf['number_total'])
                 worksheet.write(row_data, 29, "", wbf['total'])
+
+###################################     SHEET 2       #####################
+            row = 1
+            worksheet2.write(row, 0, (o.company_id.name), wbf['title'])
+            worksheet2.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
+            worksheet2.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
+            worksheet2.write(row + 2, 1, ": %s" %(location_name), wbf['title'])
+            worksheet2.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
+            worksheet2.write(row + 3, 1, ": %s" %(o.type.upper()), wbf['title'])
+            worksheet2.write(row + 4, 0, "TANGGAL", wbf['title'])
+            worksheet2.write(row + 4, 1, ": %s" %(date), wbf['title'])
+            
+            worksheet2.merge_range(row, 6, row + 3, 6, "Diperiksa Oleh,", wbf['signature'])
+            worksheet2.write(row + 4, 6, "Ka. Afdeling/Kabag", wbf['header'])
+            worksheet2.merge_range(row, 7, row + 3, 7, "Disetujui Oleh,", wbf['signature'])
+            worksheet2.write(row + 4, 7, "Asisten Kepala", wbf['header'])
+
+            next_row = row + 6
+            worksheet2.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
+            worksheet2.set_column(0, 0, 18)
+            worksheet2.merge_range(next_row, 1, next_row + 1, 1, "LOKASI", wbf['header'])
+            worksheet2.write(next_row + 2, 1, "KODE", wbf['header'])
+            worksheet2.set_column(1, 1, 14)
+            worksheet2.merge_range(next_row, 2, next_row + 1, 3, "KEGIATAN", wbf['header'])
+            worksheet2.write(next_row + 2, 2, "COA", wbf['header'])
+            worksheet2.set_column(2, 2, 14)
+            worksheet2.write(next_row + 2, 3, "DESKRIPSI", wbf['header'])
+            worksheet2.set_column(3, 3, 40)
+            worksheet2.merge_range(next_row, 4, next_row, 8, "PEMAKAIAN MATERIAL", wbf['header'])
+            worksheet2.merge_range(next_row + 1, 4, next_row + 1, 6, "SKB", wbf['header'])
+            worksheet2.write(next_row + 2, 4, "NO. BPB", wbf['header'])
+            worksheet2.set_column(4, 4, 18)
+            worksheet2.write(next_row + 2, 5, "TANGGAL", wbf['header'])
+            worksheet2.set_column(5, 5, 18)
+            worksheet2.write(next_row + 2, 6, "QTY", wbf['header'])
+            worksheet2.set_column(6, 6, 18)
+            worksheet2.merge_range(next_row + 1, 7, next_row + 2, 7, "NAMA MATERIAL", wbf['header'])
+            worksheet2.set_column(7, 7, 40)
+            worksheet2.merge_range(next_row + 1, 8, next_row + 2, 8, "SATUAN", wbf['header'])
+            worksheet2.set_column(8, 8, 18)
+
+            stock_move_ids = self.env['stock.move'].search([
+                                ('picking_type_id.code', '=', 'issue'),
+                                ('allocation_residual_qty', '>', 0),
+                                ('state','=','done')
+                            ],order="date desc, plantation_activity_id asc")
+            row_data = next_row + 3
+            activity_ids = []
+            grand_total_qty = 0
+            subtotal_qty = 0
+            coa = False
+            activity_name = False
+            for move_id in stock_move_ids:
+                move_data = [
+                    move_id.plantation_location_type_id.code,
+                    move_id.plantation_location_id.code,
+                    move_id.plantation_activity_id.code,
+                    move_id.plantation_activity_name,
+                    move_id.picking_id.name,
+                    move_id.date,
+                    move_id.product_uom_qty,
+                    move_id.product_id.name,
+                    move_id.product_uom.name
+                ]
+                coa = move_id.plantation_activity_id.code
+                activity_name = move_id.plantation_activity_name
+                
+
+                if move_id.plantation_activity_id.id not in activity_ids and activity_ids:
+                    worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
+                    worksheet2.write(row_data, 1, "", wbf['total'])
+                    worksheet2.write(row_data, 2, move_data[1], wbf['total'])
+                    worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
+
+                    row_data += 1
+                    subtotal_qty = 0  
+                
+
+                worksheet2.write(row_data, 0, move_data[0], wbf['content'])
+                worksheet2.set_column(0, 0, 18)
+
+                worksheet2.write(row_data, 1, move_data[1], wbf['content'])
+                worksheet2.set_column(1, 1, 14)
+
+                worksheet2.write(row_data, 2, move_data[2], wbf['content'])
+                worksheet2.set_column(2, 2, 14)
+
+                worksheet2.write(row_data, 3, move_data[3], wbf['content'])
+                worksheet2.set_column(3, 3, 40)
+
+                worksheet2.write(row_data, 4, move_data[4] or '-', wbf['content'])
+                worksheet2.set_column(4, 4, 14)
+
+                worksheet2.write(row_data, 5, move_data[5], wbf['content'])
+                worksheet2.set_column(5, 5, 14)
+
+                worksheet2.write(row_data, 6, move_data[6], wbf['content'])
+                worksheet2.set_column(6, 6, 14)
+
+                worksheet2.write(row_data, 7, move_data[7] or '-', wbf['content'])
+                worksheet2.set_column(7, 7, 40)
+
+                worksheet2.write(row_data, 8, move_data[8], wbf['content'])
+                worksheet2.set_column(8, 8, 14)
+
+                subtotal_qty += move_data[6]
+                grand_total_qty += move_data[6]
+
+                activity_ids.append(move_id.plantation_activity_id.id)
+                row_data += 1
+
+            worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
+            worksheet2.write(row_data, 1, "", wbf['total'])
+            worksheet2.write(row_data, 2, coa, wbf['total'])
+            worksheet2.write(row_data, 3, activity_name, wbf['total'])
+            worksheet2.write(row_data, 4, "", wbf['total'])
+            worksheet2.write(row_data, 5, "", wbf['total'])
+            worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
+            worksheet2.write(row_data, 7, "", wbf['total'])
+            worksheet2.write(row_data, 8, "", wbf['total'])
+            row_data += 1
+
+            worksheet2.write(row_data, 0, "Grand Total", wbf['total'])
+            worksheet2.write(row_data, 1, "", wbf['total'])
+            worksheet2.write(row_data, 2, "", wbf['total'])
+            worksheet2.write(row_data, 3, "", wbf['total'])
+            worksheet2.write(row_data, 4, "", wbf['total'])
+            worksheet2.write(row_data, 5, "", wbf['total'])
+            worksheet2.write(row_data, 6, grand_total_qty, wbf['total'])
+            worksheet2.write(row_data, 7, "", wbf['total'])
+            worksheet2.write(row_data, 8, "", wbf['total'])
+
+
+
+
