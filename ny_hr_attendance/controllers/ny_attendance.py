@@ -293,8 +293,10 @@ class NyAttendance(ApiBase):
                 namafile = statusmasuk = ketmasuk = ""
 
                 first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+                last_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
                 statusmasuk = first_att.statusmasuk
                 ketmasuk = first_att.keterangan
+                ketkeluar = last_att.keterangan
                 query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
                     and res_field='foto' and res_id={first_att.id}"""
                 request.env.cr.execute(query_attachment)
@@ -309,7 +311,7 @@ class NyAttendance(ApiBase):
                 att_vals = {
                     "nip": employee_found.no_induk,
                     "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
-                    "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketmasuk}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
+                    "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketkeluar}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
                     "namafile": namafile,
                     "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
                     "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
@@ -366,11 +368,13 @@ class NyAttendance(ApiBase):
             for att in attendances:
                 if att.type_id.code!='KJ' and not att.att_log_ids:
                     continue
-                namafile = statusmasuk = ketmasuk = ""
+                namafile = statusmasuk = ketmasuk = ketpulang = ""
                 if att.att_log_ids:
                     first_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+                    last_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
                     statusmasuk = first_att.statusmasuk
                     ketmasuk = first_att.keterangan
+                    ketpulang = last_att.keterangan
                     query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
                         and res_field='foto' and res_id={first_att.id}"""
                     request.env.cr.execute(query_attachment)
@@ -385,7 +389,7 @@ class NyAttendance(ApiBase):
                 att_vals = {
                         "nip": employee_found.no_induk,
                         "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '',
-                        "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketmasuk}" if pulang else '',
+                        "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketpulang}" if pulang else '',
                         "namafile": namafile,
                         "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
                         "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
