@@ -176,7 +176,7 @@ class WizardAddEmployee(models.TransientModel):
             contract = self.env['hr.contract'].search([
                 ('employee_type_id', '=', employee.type_id.id),
                 ('date_start', '<=', lhm_transaction_data.date),
-                ('date_end', '>=', lhm_transaction_data.date),
+                '|',('date_end', '=', False),('date_end', '>=', lhm_transaction_data.date),
                 ('state', '=', 'open'),
                 ('is_lhm', '=', True ),
             ], limit=1)
