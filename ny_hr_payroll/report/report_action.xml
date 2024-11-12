@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_payroll_report_xlsx" model="ir.actions.report">
+        <field name="name">Payroll Report XLSX</field>
+        <field name="model">payroll.report</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_hr_payroll.payroll_report_xlsx</field>
+        <field name="report_file">ny_hr_payroll.payroll_report_xlsx</field>
+        <field name="print_report_name">'Pengajuan Gaji'</field>
+    </record>
+    
+    <record id="action_report_payroll_report_csv" model="ir.actions.report">
+        <field name="name">Payroll Report CSV</field>
+        <field name="model">payroll.report</field>
+        <field name="report_type">csv</field>
+        <field name="report_name">ny_hr_payroll.payroll_report_csv</field>
+        <field name="report_file">ny_hr_payroll.payroll_report_csv</field>
+        <field name="print_report_name">'Pembayaran Gaji'</field>
+    </record>
+
+</odoo>

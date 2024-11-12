@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_payslip_view_form" model="ir.ui.view">
+        <field name="name">hr.payslip.run.inherit.form</field>
+        <field name="model">hr.payslip.run</field>
+        <field name="inherit_id" ref="c10i_hr_payroll.hr_payslip_run_form"/>
+        <field name="arch" type="xml">
+            <button name="close_payslip_run" position="after">
+                <button string="Print Report" name="action_print_report" type="object" class="btn-secondary" attrs="{'invisible': [('slip_ids','=',[])]}"/>
+            </button>
+        </field>
+    </record>
+
+</odoo>

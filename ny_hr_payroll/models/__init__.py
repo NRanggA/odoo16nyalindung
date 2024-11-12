@@ -9,5 +9,6 @@ from . import ny_premi_penyadap
 from . import ny_premi_penyadap_line
 from . import ny_premi_penyadap_mandor
 from . import hr_payslip
+from . import hr_payslip_run
 from . import lhm_plant_block
 from . import ny_ongkos_pikul

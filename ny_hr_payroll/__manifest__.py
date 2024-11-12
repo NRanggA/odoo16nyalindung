@@ -21,6 +21,8 @@
         'ny_hr_attendance',
         'c10i_hr_payroll',
         'c10i_hr_payroll_other_inputs',
+        'report_xlsx',
+        'report_csv',
     ],
 
     # always loaded
@@ -36,6 +38,11 @@
         'views/lhm_plant_block_view.xml',
         'views/lhm_transaction_nap_line_view.xml',
         'views/ny_ongkos_pikul_view.xml',
+        'views/hr_payslip_view.xml',
+        'views/hr_payslip_run_view.xml',
+
+        'report/report_action.xml',
+        'wizard/payroll_report_wizard_view.xml',
     ],
     # only loaded in demonstration mode
     # 'demo': [

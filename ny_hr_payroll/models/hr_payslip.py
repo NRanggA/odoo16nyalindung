@@ -73,3 +73,8 @@ class HrPayslip(models.Model):
             }
             res.append(my_daya_attendance)
         return res
+
+    def action_print_report(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.payroll_report_wizard_action")
+        action['context'] = {'default_payslip_ids': [(6,0,self.ids)]}
+        return action
