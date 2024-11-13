@@ -313,6 +313,7 @@ class lhm_nap(models.Model):
                         ('block_id', '=', pabrik_line.block_id.id),
                         ('contractor_id.date', '=', pabrik_line.tgl_panen),
                     ])
+
                     for nap_line in nap_lines:
                         employee_id = nap_line.employee_id.id
                         product_id = pabrik_line.product_id.id
@@ -328,6 +329,8 @@ class lhm_nap(models.Model):
                                 'hasil_2_nap': None,
                                 'drc_lump': None,
                                 'lhm_transaction_nap_id': nap_line.id,
+                                'block_id': pabrik_line.block_id.id,
+                                'tgl_panen': pabrik_line.tgl_panen
                             }
 
                         if nap_line.lhm_transaction_line_id.product_id.id == product_id:
@@ -361,6 +364,8 @@ class lhm_nap(models.Model):
                                 'hasil_2_nap': None,
                                 'drc_lump': None,
                                 'lhm_contractor_nap_id': contractor_line.id,
+                                'block_id': pabrik_line.block_id.id,
+                                'tgl_panen': pabrik_line.tgl_panen
                             }
 
                         if contractor_line.product_id.id == product_id:  
@@ -387,10 +392,10 @@ class lhm_nap(models.Model):
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
                             'lhm_nap_id': record.id,
-                            'block_id': pabrik_line.block_id.id,
+                            'block_id': data['block_id'],
                             'employee_id': data.get('employee_id'),
                             'product_id': data['product_1'],
-                            'tgl_panen': pabrik_line.tgl_panen,
+                            'tgl_panen': data['tgl_panen'],
                             'qty_nap': data['hasil_1_nap'],
                             'drc': data['drc_latex'],
                             'uom_id': data['uom_1'],
@@ -404,15 +409,16 @@ class lhm_nap(models.Model):
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
                             'lhm_nap_id': record.id,
-                            'block_id': pabrik_line.block_id.id,
+                            'block_id': data['block_id'],
                             'employee_id': data.get('employee_id'),
                             'product_id': data['product_2'],
-                            'tgl_panen': pabrik_line.tgl_panen,
+                            'tgl_panen': data['tgl_panen'],
                             'qty_nap': data['hasil_2_nap'],
                             'drc': data['drc_lump'],
                             'uom_id': data['uom_2'],
                             'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
                         })
+
             for supplier_id, data in supplier_data.items():
                 if data['hasil_1_nap']:
                     transaction_exists = (
@@ -421,10 +427,10 @@ class lhm_nap(models.Model):
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
                             'lhm_nap_id': record.id,
-                            'block_id': pabrik_line.block_id.id,
+                            'block_id': data['block_id'],
                             'supplier_id': data.get('supplier_id'),
                             'product_id': data['product_1'],
-                            'tgl_panen': pabrik_line.tgl_panen,
+                            'tgl_panen': data['tgl_panen'],
                             'qty_nap': data['hasil_1_nap'],
                             'drc': data['drc_latex'],
                             'uom_id': data['uom_1'],
@@ -438,15 +444,16 @@ class lhm_nap(models.Model):
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
                             'lhm_nap_id': record.id,
-                            'block_id': pabrik_line.block_id.id,
+                            'block_id': data['block_id'],
                             'supplier_id': data.get('supplier_id'),
                             'product_id': data['product_2'],
-                            'tgl_panen': pabrik_line.tgl_panen,
+                            'tgl_panen': data['tgl_panen'],
                             'qty_nap': data['hasil_2_nap'],
                             'drc': data['drc_lump'],
                             'uom_id': data['uom_2'],
                             'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
                         })
+
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
