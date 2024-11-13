@@ -264,9 +264,9 @@ class ClosingProcess(models.Model):
         for rec in self:
             existing_cl_plant = rec.closing_plantation_ids
             if existing_cl_plant:
-                plant_blocks = self.env['lhm.plant.block'].search([('id','not in',rec.closing_plantation_ids.plant_block_id.ids)])
+                plant_blocks = self.env['lhm.plant.block'].search([('is_project','=',False),('id','not in',rec.closing_plantation_ids.plant_block_id.ids)])
             else:
-                plant_blocks = self.env['lhm.plant.block'].search([])
+                plant_blocks = self.env['lhm.plant.block'].search([('is_project','=',False)])
             
             to_insert = []
             for plb in plant_blocks:

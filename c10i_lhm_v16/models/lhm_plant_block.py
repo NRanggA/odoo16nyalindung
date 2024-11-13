@@ -70,7 +70,7 @@ class lhm_plant_block(models.Model):
     varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
     land_block_id       = fields.Many2one("lhm.land.block", string="Blok Tanah", ondelete="restrict")
     afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict")
-    owner_type          = fields.Selection([('inti','Inti'),('plasma','Plasma')], 'Tipe Kepemilikan')
+    owner_type          = fields.Selection([('inti','Inti'),('plasma','Plasma')], 'Tipe Kepemilikan', default='inti')
     plasma_pricelist_id = fields.Many2one('product.pricelist', 'Harga TBS Plasma')
     location_id         = fields.Many2one("lhm.location", string="Lokasi")
     location_type_id    = fields.Many2one("lhm.location.type", string="Type Lokasi", ondelete="restrict", default=_default_location_type)
@@ -138,22 +138,16 @@ class lhm_plant_block(models.Model):
 
     @api.model
     def create(self, values):
-        location_name       = values.get('name', False)
-        location_code       = values.get('code', False)
-        location_type_id    = values.get('location_type_id', False)
-        group_progress_id   = values.get('group_progress_id', False)
-
-        location_values     = {
-            'name'              : location_name or "(NoName)",
-            'code'              : location_code or "(NoCode)",
-            'type_id'           : location_type_id or False,
-            'varieties_id' : values.get('varieties_id', False),
-            'group_progress_id' : group_progress_id,
-        }
-
         location = super(lhm_plant_block, self).create(values)
         
-        if location:
+        if location and not location.location_id:
+            location_values = {
+                'name' : values.get('name', "(NoCode)"),
+                'code' : values.get('code', "(NoCode)"),
+                'type_id' : values.get('location_type_id', False),
+                'varieties_id' : values.get('varieties_id', False),
+                'group_progress_id' : values.get('group_progress_id', False),
+            }
             new_location = self.env['lhm.location'].create(location_values)
             if new_location:
                 location.location_id = new_location.id

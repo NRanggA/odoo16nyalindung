@@ -12,3 +12,5 @@ from . import lhm_activity
 from . import lhm_plant_block
 from . import closing_plantation
 from . import closing_production
+
+from . import lhm_project

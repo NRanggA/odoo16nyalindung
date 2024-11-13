@@ -27,6 +27,64 @@
                             <field name="closing_move_id" readonly="1"/>
                         </group>
                     </group>
+                    <field name="project_tanaman" invisible="1"/>
+                    <notebook>
+                        <page name="deferred_cost_line" string="Deferred Cost" 
+                                attrs="{'invisible': [('project_tanaman','=',False)]}">
+                            <group>
+                                <group>
+                                    <field name="pct_deferred_to_cost" />
+                                </group>
+                                <group>
+                                </group>
+                            </group>
+                            <field name="deferred_cost_line_ids">
+                                <tree create="false" delete="false" editable="bottom">
+                                    <field name="plantation_location_type_id" readonly="1"/>
+                                    <field name="plantation_location_id" readonly="1"/>
+                                    <field name="plantation_activity_id" readonly="1"/>
+                                    <field name="plantation_src_journal_id" readonly="1"/>
+                                    <field name="deferred_cost" sum="deferred_cost" readonly="1"/>
+                                    <field name="accumulated_cost" sum="accumulated_cost" readonly="1"/>
+                                    <field name="new_deferred_cost" sum="new_deferred_cost" readonly="1"/>
+                                    <field name="residual_deferred" sum="residual_deferred"/>
+                                    <field name="pct_cost_to_post" />
+                                    <field name="cost_to_post" />
+                                    <field name="new_residual_deferred" sum="new_residual_deferred"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="cost_line" string="Current Period Cost"
+                                attrs="{'invisible': [('project_tanaman','=',False)]}">
+                            <field name="cost_line_ids" invisible="1"/>
+                            <label for="cost_line_as_cost_ids"/>
+                            <field name="cost_line_as_cost_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="date_from" />
+                                    <field name="date_to" />
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="to_be_deferred" />
+                                    <field name="total_cost" sum="total_cost"/>
+                                </tree>
+                            </field>
+                            <label for="cost_line_to_be_deferred_ids"/>
+                            <field name="cost_line_to_be_deferred_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="date_from" />
+                                    <field name="date_to" />
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="to_be_deferred" />
+                                    <field name="total_cost" sum="total_cost"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -44,6 +102,10 @@
                 <field name="dest_account_id" />
                 <field name="closing_move_id" optional="hide"/>
                 <field name="closing_account_id" invisible="1"/>
+                <field name="mark_project_period" widget="badge" 
+                    decoration-danger="mark_project_period in ('done','harvesting')"
+                    decoration-info="mark_project_period in ('preharvest','inprogress')"
+                    />
             </tree>
         </field>
     </record>

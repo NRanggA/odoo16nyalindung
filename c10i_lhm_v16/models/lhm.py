@@ -881,26 +881,30 @@ class lhm_project(models.Model):
     varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
 
     def button_progress(self):
-        if not self.location_id:
-            location_name       = self.code
-            location_code       = self.name
-            location_type_id    = self.location_type_id
-            location_values     = {
-                'name'      : location_name or "(NoName)",
-                'code'      : location_code or "(NoCode)",
-                'type_id'   : location_type_id and location_type_id.id or False,
-            }
-            new_location = self.env['lhm.location'].create(location_values)
-            if new_location:
-                 self.location_id = new_location.id
-        else:
-            self.location_id.write({'active': True})
-        self.state = 'in_progress'
+        for project in self:
+            if not project.location_id:
+                location_name       = project.code
+                location_code       = project.name
+                location_type_id    = project.location_type_id
+                location_values     = {
+                    'name'      : location_name or "(NoName)",
+                    'code'      : location_code or "(NoCode)",
+                    'type_id'   : location_type_id and location_type_id.id or False,
+                }
+                new_location = project.env['lhm.location'].create(location_values)
+                if new_location:
+                    project.location_id = new_location.id
+            else:
+                project.location_id.write({'active': True})
+            project.state = 'in_progress'
+        return True
 
     def button_cancel(self):
-        if self.location_id:
-            self.location_id.write({'active': False})
-        self.state = 'cancel'
+        for project in self:
+            if project.location_id:
+                project.location_id.write({'active': False})
+            project.state = 'cancel'
+        return True
 
     def button_draft(self):
         if self.location_id:

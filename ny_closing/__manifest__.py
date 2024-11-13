@@ -30,6 +30,7 @@
         'views/closing_plantation_view.xml',
         'views/closing_production_view.xml',
         'views/closing_process_view.xml',
+        'views/lhm_project_view.xml',
         'views/menuitems.xml',
         
         'data/account_journal.xml',

@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 import logging
 _logger = logging.getLogger(__name__)
 
-class ClosingPlantation(models.Model):
+class ClosingPlantationDeferred(models.Model):
     _name = 'closing.plantation.deferred' 
     _description = 'Closing Plantation - Deffered Cost'
 
@@ -51,7 +51,7 @@ class ClosingPlantation(models.Model):
         action['domain'] = self._get_domain_deferred_move_lines()
         return action
 
-class ClosingPlantation(models.Model):
+class ClosingPlantationLine(models.Model):
     _name = 'closing.plantation.line' 
     _description = 'Closing Plantation - Current Cost'
 
@@ -296,7 +296,7 @@ class ClosingPlantation(models.Model):
 
     @api.onchange('pct_deferred_to_cost')
     def onchange_pct_deferred_to_cost(self):
-        self.deferred_cost_line_ids.write({'cost_to_post': self.pct_deferred_to_cost})
+        self.deferred_cost_line_ids.write({'pct_cost_to_post': self.pct_deferred_to_cost})
 
     def _get_domain_deferred_move_lines(self):
         src_account_id = self.plant_block_id.deferred_account_id.id

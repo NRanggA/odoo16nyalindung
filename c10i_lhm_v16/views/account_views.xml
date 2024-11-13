@@ -28,6 +28,7 @@
                         attrs="{'readonly': [('plantation_validator','=',True)], 
                             'required': [('plantation_validator','=',False)]}"/>
                     <field name="plantation_validator" invisible="1"/>
+                    <field name="plantation_src_journal_id" groups="base.group_no_one"/>
                 </xpath>
             </field>
         </record>
@@ -59,6 +60,7 @@
                         attrs="{'readonly': [('plantation_validator','=',True)], 
                             'required': [('plantation_validator','=',False)]}"/>
                     <field name="plantation_validator" invisible="1"/>
+                    <field name="plantation_src_journal_id" groups="base.group_no_one"/>
                 </field>
             </field>
         </record>
@@ -89,6 +91,7 @@
                         attrs="{'readonly': [('plantation_validator','=',True)], 
                             'required': [('plantation_validator','=',False)]}"/>
                     <field name="plantation_validator" invisible="1"/>
+                    <field name="plantation_src_journal_id" groups="base.group_no_one"/>
                 </xpath>
             </field>
         </record>

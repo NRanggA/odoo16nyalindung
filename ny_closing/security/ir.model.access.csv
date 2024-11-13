@@ -10,7 +10,11 @@ access_running_vehicle_distribution_line_user,running.vehicle.distribution.line 
 access_running_machine_user,running.machine user,model_running_machine,base.group_user,1,1,1,1
 access_running_machine_line_user,running.machine.line user,model_running_machine_line,base.group_user,1,1,1,1
 access_running_machine_distribution_line_user,running.machine.distribution.line user,model_running_machine_distribution_line,base.group_user,1,1,1,1
+
 access_closing_project_user,closing.project user,model_closing_project,base.group_user,1,1,1,1
+access_closing_project_plant_line_user,closing.project.plant.line user,model_closing_project_plant_line,base.group_user,1,1,1,1
+access_closing_project_plant_deferred_user,closing.project.plant.deferred user,model_closing_project_plant_deferred,base.group_user,1,1,1,1
+
 access_closing_nursery_user,closing.nursery user,model_closing_nursery,base.group_user,1,1,1,1
 
 access_plantation_season_user,plantation.season user,model_plantation_season,base.group_user,1,1,1,1

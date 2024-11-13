@@ -4,6 +4,8 @@ from odoo.exceptions import UserError, ValidationError
 class PlantBlock(models.Model):
     _inherit = 'lhm.plant.block'
 
+    status = fields.Selection(selection_add=[('none','None')])
+    is_project = fields.Boolean()
     type_of_plant = fields.Selection([
         ('longterm_tbm_tm', "Tanaman Jangka Panjang dengan konsep Panen Bulanan"),
         ('longterm_seasonal', "Tanaman Jangka Panjang dengan Masa Panen Seasonal"),
@@ -20,3 +22,15 @@ class PlantBlock(models.Model):
     #                   Kemudian saat MASUK Season Panen semua COST akan dilempar ke akun BIAYA di MASING-MASING AKTIFITAS
     # Untuk tanaman jangka pendek
     deferred_account_id = fields.Many2one('account.account', string='Deferred Account', help='Usually used for TBM')
+
+    @api.depends('year', 'tm_year', 'is_project', 'type_of_plant')
+    def _compute_time_plant(self):
+        shorterm_plant = self.filtered(lambda p: p.type_of_plant=='shorterm' or p.is_project)
+        super(PlantBlock, self - shorterm_plant)._compute_time_plant()
+        for block in shorterm_plant:
+            block.status = 'none'
+            block.planting_time = 0 
+            block.tm_age = ''
+            block.tbm_age = ''
+            block.tm_category_id = False
+            block.need_to_be_approved = False
