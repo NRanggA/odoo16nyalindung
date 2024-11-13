@@ -31,7 +31,8 @@ class HrAttendanceCorrection(models.Model):
                         line.attendance_sheet_id.write({
                             'check_in': line.check_in,
                             'check_out': line.check_out,
-                            'type_id': attendance_type.id
+                            'type_id': attendance_type.id,
+                            'is_correction': True
                         })
                     else:
                         line.attendance_sheet_id.write({

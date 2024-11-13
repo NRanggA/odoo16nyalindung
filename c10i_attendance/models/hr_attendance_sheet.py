@@ -19,6 +19,9 @@ class HrAttendanceSheet(models.Model):
     date         = fields.Date('Tanggal')
     is_holiday = fields.Boolean(default=False)
 
+    # Menambahkan boolean untuk menandakan ini dikoreksi atau engga
+    is_correction = fields.Boolean('is_correction', default=False)
+
     @api.model
     def create_attendance_sheets(self, **kwargs):
         
@@ -76,3 +79,4 @@ class HrAttendanceSheet(models.Model):
             _logger.info(f"=== Created {len(attendance_sheets_to_create)} new attendance sheets for today ({today_date}).")
 
         return True
+    
