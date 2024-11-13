@@ -287,8 +287,6 @@ class lhm_nap(models.Model):
         self.line_ids.allocate_nap_line_to_lhm_line()
                         
     def button_save_to_nap_line(self):
-        # self.state = 'confirmed'
-        # self.confirmed = True
         self.state = 'process'
         self.process = True
         for record in self:
