@@ -10,7 +10,7 @@
                     <group>
                         <group>
                             <field name="mydaya_user_login" />
-                            <field name="mydaya_user_pwd" password="1" />
+                            <field name="mydaya_user_pwd" password="1" attrs="{'required': [('mydaya_user_login', '!=', False)]}"/>
                         </group>
                         <group>
                             <!-- <field name="lat_acuan" />
