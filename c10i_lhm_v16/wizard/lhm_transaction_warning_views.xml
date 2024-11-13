@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lhm_transaction_warning_wizard" model="ir.ui.view">
+        <field name="name">lhm.transaction.warning.wizard.form</field>
+        <field name="model">lhm.transaction.warning.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Warning">
+                <sheet>
+                    <label for="message" string="Message" colspan="4"/>
+                    <field name="message" readonly="1"/>
+                    <field name="invalid_employee_ids" readonly="1" >
+                        <tree editable="bottom" create="false">
+                            <field name="no_induk" />
+                            <field name="name" />
+                            <field name="department_id" />
+                            <field name="job_id" />
+                            <field name="kemandoran_id" />
+                        </tree>
+                    </field>
+                </sheet>
+                <footer>
+                    <button string="Continue" type="object" class="btn-primary" name="action_continue"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+</odoo>

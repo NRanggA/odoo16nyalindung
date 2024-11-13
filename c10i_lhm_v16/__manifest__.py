@@ -106,6 +106,8 @@
         'views/lhm_wage_borongan_contractor_views.xml',
         'views/res_config_settings_views.xml',
         'views/account_cost_center_views.xml',
+        
+        'wizard/lhm_transaction_warning_views.xml',
 
         # Bibitan
         'views/mutation_type_views.xml',

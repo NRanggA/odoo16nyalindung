@@ -1307,23 +1307,49 @@ class lhm_transaction(models.Model):
 
     # Menggunakan Contract_id
     def run_progress(self):
+
+        # Cek jika wizard sudah ditampilkan sebelumnya di context
+        if not self.env.context.get('wizard_shown'):
+            # Pengecekan employee sesuai kemandoran
+            check_employee = self.check_employee_in_kemandoran()
+            if check_employee:
+                # Tambahkan context 'wizard_shown' untuk mencegah loop
+                check_employee['context']['wizard_shown'] = True
+                return check_employee
+
         # fungsi untuk menambahkan employee panen ke dalam Nap
         self.lhm_line_ids.get_employee_panen_nap()
-
         # Panggil fungsi untuk mengambil gaji untuk setiap employee
         self.lhm_line_ids.get_wage_value_employee()
-        
         # Fungsi mengambil gaji karyawan borongan rawat
         self.lhm_line_ids.get_wage_borong_rawat()
-
         # Panggil fungsi untuk mengambil material yang digunakan
         self.get_material()
-        
         # Fungsi mengambil gaji karyawan borongan panen
         self.lhm_line_ids.get_wage_borong_panen()
-
         # jelankan fungsi progress
         self._progress()
+
+    # Fungsi untuk mengecek employee sesuai kemandoran
+    def check_employee_in_kemandoran(self):
+        # Mengambil daftar employee yang sesuai dengan kemandoran
+        allowed_employees = self.kemandoran_id.employee_ids 
+
+        # Daftar employee_id pada lhm_line_ids yang tidak sesuai dengan kemandoran
+        invalid_employees = self.lhm_line_ids.filtered(lambda line: line.employee_id not in allowed_employees)
+
+        if invalid_employees:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'lhm.transaction.warning.wizard',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {
+                    'default_message': "Beberapa karyawan di dalam LHM line tidak sesuai dengan Kemandoran yang dipilih.",
+                    'default_invalid_employee_ids': [(6, 0, invalid_employees.mapped('employee_id').ids)]
+                }
+            }
+
 
     def _progress(self):
         lhm_progress_list = []
@@ -2247,6 +2273,7 @@ class lhm_transaction_line(models.Model):
                     ('id', '!=', self._origin.id)]
             data_lhm_line   = self.search(domain)
             max_hk          = 1
+
             if not data_lhm_line:
                 total_work_day  = 0
             else:
@@ -2262,7 +2289,7 @@ class lhm_transaction_line(models.Model):
                 return {
                         'warning': {'title': _('Kesalahan Input Data'), 'message': _("HK tidak boleh lebih dari: %s.") % max_hk },
                     }
-
+    
     @api.constrains('employee_id', 'attendance_id')
     def _check_attendance_id(self):
         for record in self:
