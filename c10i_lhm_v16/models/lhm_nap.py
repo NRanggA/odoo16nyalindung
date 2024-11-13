@@ -352,9 +352,10 @@ class lhm_nap(models.Model):
                     for contractor_line in contractor_lines:
                         supplier_id = contractor_line.supplier_id.id
                         product_id = pabrik_line.product_id.id
+                        supplier_key = (supplier_id, pabrik_line.block_id.id, pabrik_line.tgl_panen)
 
-                        if supplier_id not in supplier_data:
-                            supplier_data[supplier_id] = {
+                        if supplier_key not in supplier_data:
+                            supplier_data[supplier_key] = {
                                 'supplier_id': supplier_id,
                                 'product_1': None,
                                 'hasil_1_nap': None,
@@ -369,20 +370,20 @@ class lhm_nap(models.Model):
                             }
 
                         if contractor_line.product_id.id == product_id:  
-                            if supplier_data[supplier_id]['product_1'] is None:
-                                supplier_data[supplier_id]['product_1'] = contractor_line.product_id.id
-                                supplier_data[supplier_id]['hasil_1_nap'] = (
+                            if supplier_data[supplier_key]['product_1'] is None:
+                                supplier_data[supplier_key]['product_1'] = contractor_line.product_id.id
+                                supplier_data[supplier_key]['hasil_1_nap'] = (
                                     (contractor_line.contractor_line_id.nilai / kebun_line.product_qty) * pabrik_line.product_qty
                                 )
-                                supplier_data[supplier_id]['drc_latex'] = pabrik_line.drc
-                                supplier_data[supplier_id]['uom_1'] = pabrik_line.uom_id.id
+                                supplier_data[supplier_key]['drc_latex'] = pabrik_line.drc
+                                supplier_data[supplier_key]['uom_1'] = pabrik_line.uom_id.id
                         elif contractor_line.product_id_2.id == product_id:
-                            supplier_data[supplier_id]['product_2'] = contractor_line.product_id_2.id
-                            supplier_data[supplier_id]['hasil_2_nap'] = (
+                            supplier_data[supplier_key]['product_2'] = contractor_line.product_id_2.id
+                            supplier_data[supplier_key]['hasil_2_nap'] = (
                                 (contractor_line.contractor_line_id.nilai2 / kebun_line.product_qty) * pabrik_line.product_qty
                             )
-                            supplier_data[supplier_id]['drc_lump'] = pabrik_line.drc
-                            supplier_data[supplier_id]['uom_2'] = pabrik_line.uom_id.id
+                            supplier_data[supplier_key]['drc_lump'] = pabrik_line.drc
+                            supplier_data[supplier_key]['uom_2'] = pabrik_line.uom_id.id
 
             for employee_id, data in employee_data.items():
                 if data['hasil_1_nap']:
@@ -419,7 +420,7 @@ class lhm_nap(models.Model):
                             'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
                         })
 
-            for supplier_id, data in supplier_data.items():
+            for supplier_key, data in supplier_data.items():
                 if data['hasil_1_nap']:
                     transaction_exists = (
                         self.env['lhm.contractor.nap.line'].search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
@@ -453,7 +454,6 @@ class lhm_nap(models.Model):
                             'uom_id': data['uom_2'],
                             'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
                         })
-
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
