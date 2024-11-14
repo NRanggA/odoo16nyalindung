@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="lhm_plant_block_view_form" model="ir.ui.view">
+    <!-- <record id="lhm_plant_block_view_form" model="ir.ui.view">
         <field name="name">ny.lhm.plant.block.view.form</field>
         <field name="model">lhm.plant.block</field>
         <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_plant_block_form" />
@@ -10,6 +10,6 @@
                 <field name="production_daily_target" />
             </field>
         </field>
-    </record>
+    </record> -->
 
 </odoo>

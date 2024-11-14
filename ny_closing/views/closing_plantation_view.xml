@@ -110,6 +110,11 @@
                 <field name="accumulated_deferred_cost" optional="hide"/>
                 <field name="closing_move_id" optional="hide"/>
                 <field name="closing_account_id" invisible="1"/>
+                <field name="mark_plant_block_period" widget="badge" 
+                    decoration-danger="mark_plant_block_period=='harvesting'"
+                    decoration-warning="mark_plant_block_period=='tm'"
+                    decoration-info="mark_plant_block_period in ('preharvest','tbm')"
+                    />
             </tree>
         </field>
     </record>

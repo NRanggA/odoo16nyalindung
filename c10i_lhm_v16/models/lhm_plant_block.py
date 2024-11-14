@@ -98,9 +98,6 @@ class lhm_plant_block(models.Model):
     sph_move_ids        = fields.One2many('sph.move', 'block_tanam_id', string='SPH Move')
     opening             = fields.Float('Opening')
 
-    # POC Nyalindung
-    target_panen_perhari = fields.Float('Target Panen per Hari (kg)')
-    
     _sql_constraints = [('name_company_uniq', 'unique (name, company_id)', "Blok Tanam Sudah ada percompany!"),]
 
     @api.depends('sph_move_ids.qty', 'sph_move_ids.type')

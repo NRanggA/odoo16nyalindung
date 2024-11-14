@@ -1241,26 +1241,32 @@
                         <group name="plant_block_information">
                             <group>
                                 <field name="code" string="Kode" required="1"/>
+                                <field name='owner_type' required="1"/>
                                 <field name="varieties_id" string="Varietas" required="1"/>
                                 <field name="location_type_id" required="1" domain="[('plantation','=',True)]" options="{'no_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="afdeling_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="land_block_id" required="1"/>
+                                <field name="company_id" readonly="1" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="total_plant"/>
+                                <field name="opening"/>
+                                <field name="date_start" readonly="1"/>
+                                <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name='plasma_pricelist_id' groups='c10i_lhm_v16.group_plantation_manager' domain="[('plantation_pricelist_type','=','pricelist_plasma')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                        </group>
+                        <group name="area_info">
+                            <group>
                                 <field name="land_class_id"/>
                                 <field name="sprouts_id"/>
                                 <field name="section"/>
-                                <field name="company_id" readonly="1"/>
                             </group>
                             <group>
                                 <field name="block_uom"/>
                                 <field name="planted"/>
                                 <field name="plantable"/>
-                                <field name="total_plant"/>
-                                <field name="opening"/>
                                 <field name="koefisien_luas"/>
-                                <field name="date_start" readonly="1"/>
-                                <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name='owner_type' />
-                                <field name='plasma_pricelist_id' groups='c10i_lhm_v16.group_plantation_manager' domain="[('plantation_pricelist_type','=','pricelist_plasma')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                         </group>
                         <group name="Status Tanam">

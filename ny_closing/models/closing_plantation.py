@@ -96,7 +96,8 @@ class ClosingPlantation(models.Model):
     type_of_plant = fields.Selection(related='plant_block_id.type_of_plant', store=True)
     status = fields.Selection(related='plant_block_id.status', store=True)
     plant_season_ids = fields.Many2many('plantation.season', 'closing_plantation_season_rel', string='Season', ondelete='restrict')
-    
+    mark_plant_block_period = fields.Selection([('none','None'),('tm','TM'),('tbm','TBM'),('preharvest','Pre-Harvesting'),('harvesting','Harvesting')], compute='_compute_mark', string='Block Mark')
+
     tbm_account_id = fields.Many2one(related="plant_block_id.tbm_account_id", string='Immature Plant Cost Account', help="Usually used for Immature Plant to accumulate Cost to Asset")
     deferred_account_id = fields.Many2one(related="plant_block_id.deferred_account_id", string='Deferred Account', help="Usually used for Pra Harvesting Period")
     
@@ -113,6 +114,34 @@ class ClosingPlantation(models.Model):
     pct_deferred_to_cost = fields.Float()
 
     closing_move_id = fields.Many2one('account.move', string='Journal Entry')
+
+    @api.depends('plant_block_id','type_of_plant','status','plant_season_ids','plant_season_ids.harvest_date_schedule')
+    def _compute_mark(self):
+        for closing in self:
+            new_mark_plant_block_period = 'none'
+            if closing.type_of_plant=='shorterm' and closing.plant_season_ids:
+                if any([closing.date_to>=s.harvest_date_schedule for s in closing.plant_season_ids]):
+                    new_mark_plant_block_period = 'harvesting'
+                else:
+                    new_mark_plant_block_period = 'preharvest'
+            elif closing.type_of_plant=='longterm_seasonal':
+                if closing.status=='tbm':
+                    new_mark_plant_block_period = 'tbm'
+                else:
+                    if closing.plant_season_ids:
+                        if any([closing.date_to>=s.harvest_date_schedule for s in closing.plant_season_ids]):
+                            new_mark_plant_block_period = 'harvesting'
+                        else:
+                            new_mark_plant_block_period = 'preharvest'
+                    else:
+                        new_mark_plant_block_period = 'tm'
+            else:
+                if closing.status=='tbm':
+                    new_mark_plant_block_period = 'tbm'
+                else:
+                    new_mark_plant_block_period = 'tm'
+
+            closing.mark_plant_block_period = new_mark_plant_block_period
 
     def init(self):
         _logger.info("Create SUMMARY CLOSING function...")
