@@ -1274,7 +1274,7 @@
                                 <field name="year" required="1"/>
                                 <field name="planting_time"/>
                                 <!-- BEGIN : POC Nyalindung -->
-                                    <field name="target_panen_perhari"/>
+                                    <!-- <field name="target_panen_perhari"/> -->
                                 <!-- END : POC Nyalindung -->
                             </group>
                             <group>

@@ -2151,7 +2151,7 @@ class lhm_transaction_line(models.Model):
             # self.satuan_id      = self.activity_id.uom_id and self.activity_id.uom_id.id or False
             if self.activity_id.is_panen:
                 lokasi = self.env['lhm.plant.block'].search([('location_id','=',self.location_id.id)], limit=1)
-                self.target_panen = lokasi.target_panen_perhari if lokasi else 0.0
+                # self.target_panen = lokasi.target_panen_perhari if lokasi else 0.0
 
     # (TODO) Pengecekan Lebih lannjut terkait transfer employee
     def _check_transfer_employee(self):
