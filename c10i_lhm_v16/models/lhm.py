@@ -3467,14 +3467,25 @@ class lhm_contractor(models.Model):
 
     @api.model
     def create(self, values):
-        supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id'))])
-        period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id'))])
-        if period_id:
-            month           = period_id.date_start.strftime('%m')
-            year            = period_id.date_start.strftime('%Y')
-            values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
+        supplier = self.env['res.partner'].browse(values.get('supplier_id'))
+        period = self.env['account.period'].browse(values.get('account_period_id'))
+
+        if self.env.context.get('is_harian'):
+            if values.get('date'):
+                date_str = fields.Date.from_string(values['date']).strftime('%Y-%m-%d')
+                supplier_ref = supplier.ref if supplier.ref else supplier.name
+                values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{date_str}"
+            else:
+                values['name'] = supplier.ref or supplier.name or 'Harian'
         else:
-            values['name']  = (supplier_id.code or "") + "/"
+            if period:
+                month = period.date_start.strftime('%m')
+                year = period.date_start.strftime('%Y')
+                supplier_ref = supplier.ref if supplier.ref else supplier.name
+                values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
+            else:
+                values['name'] = supplier.ref or supplier.name or 'Bulanan'
+
         return super(lhm_contractor, self).create(values)
 
     def _account_move_entry(self):

@@ -185,7 +185,17 @@ class lhm_nap(models.Model):
     
     @api.model
     def create(self, values):
-        values['name'] = self.env['ir.sequence'].next_by_code('lhm.nap') or _('New')
+        if values.get('no_nap'):
+            values['name'] = values['no_nap']
+        else:
+            afdeling = self.env['res.afdeling'].browse(values.get('afdeling_id'))
+            date_nap = values.get('date_nap')
+            if date_nap:
+                date_nap = fields.Date.from_string(date_nap)
+            if afdeling and date_nap:
+                values['name'] = f"{afdeling.name}/{date_nap.strftime('%Y-%m-%d')}"
+            else:
+                values['name'] = _('New')
         return super(lhm_nap, self).create(values)
     
     def create_material_receipt(self):
