@@ -49,13 +49,13 @@ class NyPremiPenyadapLine(models.Model):
             target = 0.0
             if line.block_tanam_id:
                 target = line.block_tanam_id.production_daily_target
-            if line.act_libur:
-                if line.act_libur > line.base_libur:
-                    line.target_qty = (line.base_total_days - line.base_libur) * target
-                else:
-                    line.target_qty = (line.base_total_days - line.act_libur) * target
-            else:
+            # if line.act_libur:
+            if line.act_libur > line.base_libur:
                 line.target_qty = (line.base_total_days - line.base_libur) * target
+            else:
+                line.target_qty = (line.base_total_days - line.act_libur) * target
+            # else:
+            #     line.target_qty = (line.base_total_days - line.base_libur) * target
 
     
     @api.depends('karet_kering_qty','target_qty')
