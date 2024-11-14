@@ -1256,7 +1256,7 @@
                                 <field name='plasma_pricelist_id' groups='c10i_lhm_v16.group_plantation_manager' domain="[('plantation_pricelist_type','=','pricelist_plasma')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                         </group>
-                        <group name="area_info">
+                        <group name="area_info" string="Area">
                             <group>
                                 <field name="land_class_id"/>
                                 <field name="sprouts_id"/>
@@ -1269,7 +1269,7 @@
                                 <field name="koefisien_luas"/>
                             </group>
                         </group>
-                        <group name="Status Tanam">
+                        <group name="status" string="Status Tanam">
                             <group>
                                 <field name="year" required="1"/>
                                 <field name="planting_time"/>
