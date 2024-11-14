@@ -15,4 +15,19 @@
             </xpath>
         </field>
     </record>
+    <record id="lhm_contractor_form_harian_inherit_nyalindung_import_lhm" model="ir.ui.view">
+        <field name="name">nyalindung.import.lhm.contractor.view.form.harian.inherit</field>
+        <field name="model">lhm.contractor</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_contractor_form_harian"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="is_import_harian"/>
+                <field name="file" widget="binary" string="File Import"
+                    attrs="{'invisible': [('is_import_harian', '!=', True)]}"/>
+                <button name="import_data_harian" string="Import"
+                        type="object" class="oe_highlight"
+                        attrs="{'invisible': [('is_import_harian', '!=', True)]}"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

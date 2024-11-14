@@ -14,6 +14,7 @@ class LHMContractor(models.Model):
     _inherit = 'lhm.contractor'
 
     is_import = fields.Boolean('Is Import', default=False)
+    is_import_harian = fields.Boolean('Is Import', default=False)
     file = fields.Binary('File Import')
 
     def import_data(self):
@@ -65,4 +66,44 @@ class LHMContractor(models.Model):
                 'uom2_id': uom2_id.id,
                 'nilai2': hasil2,
                 'unit_price': unit_price, 
+            })
+
+    def import_data_harian(self):
+        if not self.file:
+            raise UserError(_("Silakan pilih file Excel untuk diimport."))
+
+        file_data = base64.b64decode(self.file)
+        
+        workbook = xlrd.open_workbook(file_contents=file_data)
+        sheet = workbook.sheet_by_index(0) 
+        
+        for row_no in range(1, sheet.nrows):  
+            row = sheet.row(row_no)
+            
+            lokasi_name = row[0].value
+            aktivitas_name = row[1].value
+            product_name = row[2].value
+            uom_name = row[3].value
+            nilai = row[4].value
+            product_2_name = row[5].value
+            uom2_name = row[6].value
+            nilai2 = row[7].value
+
+            block_id = self.env['lhm.plant.block'].search([('name', '=', lokasi_name)], limit=1)
+            activity_id = self.env['lhm.activity'].search([('name', '=', aktivitas_name)], limit=1)
+            product_id = self.env['product.product'].search([('name', '=', product_name)], limit=1)
+            uom_id = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
+            product_id_2 = self.env['product.product'].search([('name', '=', product_2_name)], limit=1)
+            uom2_id = self.env['uom.uom'].search([('name', '=', uom2_name)], limit=1)
+
+            self.env['lhm.contractor.line'].create({
+                'contractor_id': self.id, 
+                'block_id': block_id.id,
+                'activity_id': activity_id.id,
+                'product_id': product_id.id,
+                'uom_id': uom_id.id,
+                'nilai': nilai,
+                'product_id_2': product_id_2.id,
+                'uom2_id': uom2_id.id,
+                'nilai2': nilai2,
             })
