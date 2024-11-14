@@ -1514,6 +1514,8 @@ class lhm_transaction(models.Model):
         else:
             self.state      = 'draft'
             employee_ids    = []
+            for material in self.material_line_ids:
+                material.unlink()
             for line in self.lhm_line_ids:
                 if line.attendance_id and line.employee_id and \
                         line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
