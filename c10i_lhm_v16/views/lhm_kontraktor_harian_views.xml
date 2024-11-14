@@ -205,7 +205,7 @@
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_lhm_contractor_filter_harian"/>
             <field name="domain">[('type','=','vendor'),('date', '!=', False)]</field>
-            <field name="context">{'readonly_by_pass': True, 'default_type':'vendor'}</field>
+            <field name="context">{'readonly_by_pass': True, 'default_type':'vendor', 'is_harian': True}</field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Buku Kontraktor Harian.

@@ -6,8 +6,8 @@ class lhm_drc(models.Model):
 
     drc_line_ids = fields.One2many('lhm.drc.line', 'drc_id', string="Lines")
     nap_id = fields.Many2one('lhm.nap', ondelete="cascade")
-    name = fields.Char(string="No. Dok", required=True)
-    date = fields.Date(string="Tanggal", default=fields.Date.context_today)
+    name = fields.Char(string="No. Dok", default='New')
+    date = fields.Date(string="Tanggal", required=True)
     confirmed = fields.Boolean(string="Confirmed", default=False)
     cancel = fields.Boolean(string="Cancelled", default=False)
     state = fields.Selection([
@@ -18,6 +18,13 @@ class lhm_drc(models.Model):
     help="* New: Dokumen Baru.\n"
          "* Cancelled: Dokumen Telah Dibatalkan.\n"
          "* Confirmed: Dokumen Sedang Di Proses.\n")
+
+    @api.model
+    def create(self, values):
+        date = values.get('date', fields.Date.context_today(self))
+        date_obj = fields.Date.from_string(date)
+        values['name'] = f"DRC/{date_obj.strftime('%Y-%m-%d')}"
+        return super(lhm_drc, self).create(values)
     
     def action_draft(self):
         for record in self:
@@ -39,8 +46,6 @@ class lhm_drc(models.Model):
                     nap_line.write({'drc': line.drc})
                     
             record.state = 'confirmed'
-
-
 
 
 class lhm_drc_line(models.Model):
