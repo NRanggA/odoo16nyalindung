@@ -236,9 +236,9 @@ class ClosingProduction(models.Model):
             #                 ('lhm_nap_id.date_nap','<=',closing.date_to),
             #                 ('lhm_nap_id.state','in',['confirmed','done'])])
             latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
-                            ('lhm_nab_id.date_nap','>=',closing.date_from),
-                            ('lhm_nab_id.date_nap','<=',closing.date_to),
-                            ('lhm_nab_id.state','in',['confirmed','done'])])
+                            ('lhm_nap_id.date_nap','>=',closing.date_from),
+                            ('lhm_nap_id.date_nap','<=',closing.date_to),
+                            ('lhm_nap_id.state','in',['confirmed','done'])])
             # closing.latex_incoming_qty = sum(latex_in.mapped('qty_nap')) if latex_in else 0.0  
             closing.latex_incoming_qty = sum(latex_in.mapped('product_qty')) if latex_in else 0.0  
             # lhm_transaction_nap_id
