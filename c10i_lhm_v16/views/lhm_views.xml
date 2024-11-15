@@ -116,6 +116,7 @@
                                     <field name="project"/>
                                     <field name="vehicle"/>
                                     <field name="workshop"/>
+                                    <field name="mills"/>
                                 </group>
                             </group>
                             <group>

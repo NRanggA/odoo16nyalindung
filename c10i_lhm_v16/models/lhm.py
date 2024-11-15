@@ -88,6 +88,10 @@ class lhm_location_type(models.Model):
     machine_line            = fields.Boolean("Machine Line", default=False, help="Centang jika tipe lokasi ingin ditampilkan di Buku Mesin")
     no_line                 = fields.Boolean("No Line", default=False, help="Centang jika tipe lokasi tidak ingin ditampilkan di Dokumen Plantation Manabun")
     station = fields.Boolean("Mills Station", default=False)
+
+    # Boolean Mils
+    mills                   = fields.Boolean('Mills', default=False)
+
     
     skb_declare             = fields.Boolean("SKB Declare", default=False)
     has_subtype             = fields.Boolean("Sub Tipe?", help="Centang jika memiliki sub tipe")
