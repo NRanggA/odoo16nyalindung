@@ -231,19 +231,29 @@ class ClosingProduction(models.Model):
             # Get All Incoming Qty from NAP
             product_latex = self.env['product.product'].search([('name','=','Latex')], limit=1)
             closing.latex_product_id = product_latex.id
-            latex_in = self.env['lhm.nap.line'].search([('product_id','=',product_latex.id),
-                            ('lhm_nap_id.date_nap','>=',closing.date_from),
-                            ('lhm_nap_id.date_nap','<=',closing.date_to),
-                            ('lhm_nap_id.state','in',['confirmed','done'])])
-            closing.latex_incoming_qty = sum(latex_in.mapped('qty_nap')) if latex_in else 0.0  
+            # latex_in = self.env['lhm.nap.line'].search([('product_id','=',product_latex.id),
+            #                 ('lhm_nap_id.date_nap','>=',closing.date_from),
+            #                 ('lhm_nap_id.date_nap','<=',closing.date_to),
+            #                 ('lhm_nap_id.state','in',['confirmed','done'])])
+            latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
+                            ('lhm_nab_id.date_nap','>=',closing.date_from),
+                            ('lhm_nab_id.date_nap','<=',closing.date_to),
+                            ('lhm_nab_id.state','in',['confirmed','done'])])
+            # closing.latex_incoming_qty = sum(latex_in.mapped('qty_nap')) if latex_in else 0.0  
+            closing.latex_incoming_qty = sum(latex_in.mapped('product_qty')) if latex_in else 0.0  
             # lhm_transaction_nap_id
             product_lump = self.env['product.product'].search([('name','=','Lump')], limit=1)
             closing.lump_product_id = product_latex.id
-            lump_in = self.env['lhm.nap.line'].search([('product_id','=',product_lump.id),
+            # lump_in = self.env['lhm.nap.line'].search([('product_id','=',product_lump.id),
+            #                 ('lhm_nap_id.date_nap','>=',closing.date_from),
+            #                 ('lhm_nap_id.date_nap','<=',closing.date_to),
+            #                 ('lhm_nap_id.state','in',['confirmed','done'])])
+            lump_in = self.env['timbangan.pabrik'].search([('product_id','=',product_lump.id),
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            closing.lump_incoming_qty = sum(lump_in.mapped('qty_nap')) if latex_in else 0.0  
+            # closing.lump_incoming_qty = sum(lump_in.mapped('qty_nap')) if latex_in else 0.0  
+            closing.lump_incoming_qty = sum(lump_in.mapped('product_qty')) if latex_in else 0.0  
             
             # Get Plantation Cost
             varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
