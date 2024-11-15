@@ -3425,6 +3425,10 @@ class lhm_contractor(models.Model):
         move = self._account_move_entry()
         self.state = 'confirmed'
 
+    def button_confirm_harian(self):
+        # move = self._account_move_entry()
+        self.state = 'confirmed'
+
     def button_process(self):
         self.state = 'process'
         self.env['lhm.contractor.nap.line'].search([('contractor_id', '=', self.id)]).unlink()
