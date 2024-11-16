@@ -18,6 +18,9 @@
                         </group>
                     </group>
                     <notebook>
+                        <page name="mc" string="Mill Costs">
+                            <field name="mill_costs_ids" domain="[('type_id.code','=','MC')]"/>
+                        </page>
                         <page name="plantation" string="Upkeep and Harvest">
                             <group>
                                 <field name="harvest_activity_id" required="1" domain="[('type_id.plantation','=',True)]"/>

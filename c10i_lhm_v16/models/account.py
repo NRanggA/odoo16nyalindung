@@ -86,6 +86,9 @@ class AccountMoveLine(models.Model):
                                 activities = line.plantation_varieties_id.general_charges_activity_ids
                             elif line.plantation_location_type_id.indirect:
                                 activities = line.plantation_varieties_id.indirect_cost_activity_ids
+                            # menambahkan tipe mills 
+                            elif line.plantation_location_type_id.mills:
+                                activities = line.plantation_varieties_id.mill_costs_ids
                             else:
                                 activities = line.plantation_varieties_id.harvest_activity_id
                                 activities |= line.plantation_varieties_id.upkeep_activity_ids

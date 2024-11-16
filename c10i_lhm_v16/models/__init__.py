@@ -30,3 +30,5 @@ from . import seed_release
 from . import seed_semai
 from . import seed_mutation
 from . import sph_move
+
+from . import lhm_station
