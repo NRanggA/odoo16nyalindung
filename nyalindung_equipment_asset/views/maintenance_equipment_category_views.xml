@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View maintenance.equipment.category form -->
+    <record id="view_maintenance_equipment_category_form" model="ir.ui.view">
+        <field name="name">view.maintenance.equipment.category.form</field>
+        <field name="model">maintenance.equipment.category</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_category_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[1]" position="inside">
+                <field name="prefix_seq" />
+                <field name="asset_type" widget="radio" options="{'horizontal':True}" />
+                <field name="asset_category_id" options="{'no_create':True}" attrs="{'invisible':[('asset_type','!=','fa')],'required':[('asset_type','=','fa')]}" />
+                <field name="fix_asset_state" attrs="{'invisible':[('asset_type','!=','fa')]}" widget="badge" decoration-danger="not asset_category_id" decoration-success="asset_category_id" readonly="1"/>
+                <field name="sequence_id" readonly="1" />
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- View maintenance.equipment.category tree -->
+    <record id="view_maintenance_equipment_category_tree_inherit_nyalindung" model="ir.ui.view">
+        <field name="name">view.maintenance.equipment.category.tree.inherit.nyalindung.eqipment</field>
+        <field name="model">maintenance.equipment.category</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_category_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='technician_user_id']" position="after">
+                <field name="asset_type" optional="show" />
+                <field name="asset_type" optional="show" />
+                <field name="asset_category_id" options="{'no_create':True}" optional="show" />
+                <field name="fix_asset_state" attrs="{'invisible':[('asset_type','!=','fa')]}" widget="badge" decoration-danger="not asset_category_id" decoration-success="asset_category_id" optional="show" />
+                
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

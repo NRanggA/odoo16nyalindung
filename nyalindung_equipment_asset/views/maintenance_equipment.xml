@@ -47,7 +47,23 @@
       <field name="arch" type="xml">
             <field name="category_id" position="after">
                 <field name="asset_type" />
+                <field name="condition" widget="badge" decoration-success="condition == 'good'" decoration-warning="condition == 'broken'"  decoration-danger="condition == 'lost'"/>
             </field>
+      </field>
+    </record>
+
+
+    <record id="hr_equipment_view_kanban_inherit_nyalindung_equipment_asset" model="ir.ui.view">
+      <field name="name">maintenance.hr_equipment_view_kanban.view.kanban.inherit</field>
+      <field name="model">maintenance.equipment</field>
+      <field name="inherit_id" ref="maintenance.hr_equipment_view_kanban"/>
+      <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_kanban_record_body')]" position="inside">
+                <span>
+                   Condition :  <field name="condition" widget="badge" decoration-danger="condition == 'lost'" decoration-warning="condition == 'broken'" decoration-success="condition == 'good'" />
+                </span>
+            </xpath>
+        
       </field>
     </record>
 

@@ -23,15 +23,18 @@
     'depends': ['base', 'maintenance', 'account', 'om_account_accountant', 'product', 'c10i_purchase_equipment', 'c10i_equipment_account_asset', 'c10i_lhm_v16'],
 
     # always loaded
-    'data': [
-        # 'security/ir.model.access.csv',
-        'views/maintenance_equipment.xml',
-        # 'views/low_value_asset.xml',
-        'views/res_config_settings_views.xml',
-        'views/equipment_register.xml',
-        'views/product.xml',
-        'views/asset_acquisition.xml',
-        'views/account_asset.xml',
+    "data": [
+        #"security/ir.model.access.csv",
+        "views/maintenance_equipment.xml",
+        #
+        # "views/low_value_asset.xml",
+        "views/res_config_settings_views.xml",
+        "views/equipment_register.xml",
+        "views/product.xml",
+        "views/asset_acquisition.xml",
+        "views/account_asset.xml",
+        "views/maintenance_equipment_category_views.xml",
+        "views/purchase_order_views.xml"
     ],
     # only loaded in demonstration mode
     'demo': [

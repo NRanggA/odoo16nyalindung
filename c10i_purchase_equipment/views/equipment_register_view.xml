@@ -45,7 +45,7 @@
                                 </tree>
                                 <form>
                                     <header>
-                                        <field name="state" widget="statusbar" statusbar_visible="draft, confirm, done"/>
+                                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
                                     </header>
                                     <group>
                                         <group>

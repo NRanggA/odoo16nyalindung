@@ -113,9 +113,11 @@ class EquipmentRegister(models.Model):
 		if not equipments:
 			equipments = self.register_line_ids.mapped('equipment_ids')
 		if not equipments or len(equipments) > 1:
-			result['domain'] = "[('id','in',%s)]" % (equipments.ids)
+			result['domain'] = [('id','in',equipments.ids)]
 		elif len(equipments)==1:
-			result['domain'] = "[('id','=',%s)]" % (equipments.id)
+			# result['domain'] = [('id','=',equipments.id)]
+			result['views'] = [(self.env.ref('maintenance.hr_equipment_view_form', False).id, 'form')]
+			result['res_id'] = equipments.id
 
 		return result
 

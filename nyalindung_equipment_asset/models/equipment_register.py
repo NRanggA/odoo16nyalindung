@@ -128,7 +128,9 @@ class EquipmentRegisterLine(models.Model):
 	location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
 	activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
 	doc_activity_ids    = fields.Many2many('lhm.activity', compute='_filtered_doc_activity_ids')
-	account_id = fields.Many2one('account.account', string='Account', compute='_get_account_clearing')
+	account_id          = fields.Many2one('account.account', string='Account', compute='_get_account_clearing')
+	category_id         = fields.Many2one('maintenance.equipment.category', string="Equipment Category", ondelete="restrict")
+	
 	
 	@api.depends('location_type_id','location_id')
 	def _filtered_doc_activity_ids(self):
@@ -156,13 +158,15 @@ class EquipmentRegisterLine(models.Model):
 	# HELPER METHOD #
 	#################
 	def _prepare_equipment_vals(self):
-		serial_no = self.env['ir.sequence'].next_by_code('maintenance.equipment')		
+		seq_code = self.category_id.sequence_id.code
+		serial_no = self.env['ir.sequence'].next_by_code(seq_code)
+				
 		threshold_param_to = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_to', default=0.0)
 		threshold_to = float(threshold_param_to) if threshold_param_to else 0.0
 		asset_type = 'lva' if self.purchase_line_id.price_unit <= threshold_to  else 'fa'
 		
 		res = {
-            'category_id' : self.register_id.category_id.id,
+            # 'category_id' : self.register_id.category_id.id,
             'equipment_assign_to' : self.register_id.equipment_assign_to,
             'department_id' : self.register_id.department_id.id,
             'employee_id' : self.register_id.employee_id.id,
@@ -179,10 +183,10 @@ class EquipmentRegisterLine(models.Model):
 			'note': self.name,
 			'purchase_date': self.register_id.date,
 			'effective_date': self.register_id.date,
-			'category_id': False,
+			'category_id': self.category_id.id,
 			'partner_id': self.purchase_line_id.order_id.partner_id.id,
 			'partner_ref': self.purchase_line_id.order_id.partner_ref,
-			'seq_no': serial_no, #harusnya diisi serial aktualnya, atau diganti dengan sequence
+			'seq_no': serial_no,
 			'cost': self.purchase_line_id.price_unit,
 			'asset_type' : asset_type
 

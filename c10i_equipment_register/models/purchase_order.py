@@ -63,6 +63,7 @@ class PurchaseOrderLine(models.Model):
             'product_qty': 1,
             'name': self.name,
             'product_uom': self.product_id.uom_id.id,
-            'purchase_line_id': self.id,
+            'purchase_line_id': self.id
         }
         return result
+        

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View purchase.order.line form -->
+    <record id="view_purchase_order_form_inherit_nyalindung_equipment_asset" model="ir.ui.view">
+        <field name="name">view.purchase.order.form.inherit.nyalindung_equipment_asset</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="after">
+                <field name="asset_type" invisible="0" />
+                <field name="equipment_category_id" domain="[('asset_type','=',asset_type)]" options="{'no_create':True}" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
