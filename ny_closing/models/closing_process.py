@@ -44,8 +44,11 @@ class ClosingProcess(models.Model):
     counterpart_closing_plant_account_id = fields.Many2one('account.account', string='Counterpart Closing Plantation Account')
     closing_plantation_ids = fields.One2many('closing.plantation', 'closing_process_id', string='Closing Plantation')
     mark_closing_plantation_is_done = fields.Boolean()
-    closing_production_ids = fields.One2many('closing.production', 'closing_process_id', string='Closing Production')
+    # closing_production_ids = fields.One2many('closing.production', 'closing_process_id', string='Closing Production', domain=[('nonkaret','=',False)])
+    closing_production_ids = fields.One2many('closing.production', 'closing_process_id', string='Closing Production with MRP')
     mark_closing_production_is_done = fields.Boolean(compute='_compute_mark_done_production', store=True)
+    closing_production_without_mrp_ids = fields.One2many('closing.production.finishgood', 'closing_process_id', string='Closing Production without MRP', domain=[('without_mrp','=',True)])
+    # mark_closing_production_nonkaret_is_done = fields.Boolean(compute='_compute_mark_done_production_nonkaret', store=True)
 
     @api.model
     def get_views(self, views, options=None):
@@ -102,6 +105,17 @@ class ClosingProcess(models.Model):
                     rec.mark_closing_production_is_done = False
             else:
                 rec.mark_closing_production_is_done = False
+    
+    # @api.depends('closing_production_nonkaret_ids.state')
+    # def _compute_mark_done_production_nonkaret(self):
+    #     for rec in self:
+    #         if rec.closing_production_nonkaret_ids:
+    #             if all([x.state=='done' for x in rec.closing_production_nonkaret_ids]):
+    #                 rec.mark_closing_production_nonkaret_is_done = True
+    #             else:
+    #                 rec.mark_closing_production_nonkaret_is_done = False
+    #         else:
+    #             rec.mark_closing_production_nonkaret_is_done = False
 
     #################### BEGIN HELPER METHOD #####################
     def get_workshop(self):
@@ -291,27 +305,141 @@ class ClosingProcess(models.Model):
             rec.closing_plantation_ids.create_account_move()
             rec.closing_plantation_ids.closing_move_id._post(soft=False)
     
+    def create_product_other_variant(self):
+        for closing in self:
+            varieties = self.env['plant.varieties'].search([('name','not in',['Karet','Pisang'])])
+            closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
+            to_create = []
+            if closing.closing_production_without_mrp_ids:
+                closing.closing_production_without_mrp_ids.unlink()
+            for varietas in varieties:
+                product = varietas.product_id
+                if not product:
+                    continue
+                # Find Previous Valuation
+                # prev_closing_fg_plant = False
+                # if closing.prev_closing_id:
+                #     for line in closing.prev_closing_id.fg2_valuation_ids:
+                #         if line.product_id.id==product.id:
+                #             prev_closing_fg_plant = line
+                prev_closing_fg_plant = self.env['closing.production.finishgood'].search([('without_mrp','=',True),
+                            ('product_id','=',product.id),
+                            ('closing_process_id.state','=','done'),('date_to','<',closing.date_from)],
+                            order='date_from desc', limit=1)
+
+                # Find Plantation Cost based on Business Unit
+                domain_plantation = [('parent_state','=','posted'),
+                    ('date','>=',closing.date_from),('date','<=',closing.date_to),
+                    ('plantation_varieties_id','=',varietas.id),
+                    ('plantation_location_type_id.plantation','=',True),
+                    ('plantation_location_id','!=',False),
+                    ('journal_id','=',closing_journal.id),
+                    # ('plantation_activity_id','!=',False),
+                    ]
+                activities = self.env['lhm.activity']
+                activities |= varietas.harvest_activity_id
+                activities |= varietas.upkeep_activity_ids
+                # activities |= varieties.general_charges_activity_ids
+                # activities |= varieties.indirect_cost_activity_ids
+                plantation_cost_account_ids = []
+                if activities:
+                    plantation_cost_account_ids = activities.cost_account_id.ids
+                if plantation_cost_account_ids:
+                    domain_plantation.append(('account_id','in',plantation_cost_account_ids))
+                plantation_cost = self.env['account.move.line'].search(domain_plantation)
+                # Grouping by Loc Type, Loc, Activity, Src Journal
+                plantation_cost_grouped = {}
+                for aml in plantation_cost:
+                    key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+                    if key not in plantation_cost_grouped.keys():
+                        plantation_cost_grouped.update({key: {
+                                'plantation_location_type_id': aml.plantation_location_type_id.id,
+                                'plantation_location_id': aml.plantation_location_id.id,
+                                'plantation_activity_id': aml.plantation_activity_id.id,
+                                'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                                'account_id': aml.account_id.id,
+                                'total_cost': 0.0,
+                            }
+                        })
+                    plantation_cost_grouped[key]['total_cost'] += aml.balance
+                # closing.plantation_cost = sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0
+                plantation_cost_to_add = [(0,0,vals) for vals in plantation_cost_grouped.values()]
+
+                # From NAP
+                incoming_naps = self.env['lhm.nap.line'].search([('product_id','=',product.id),
+                            ('lhm_nap_id.date_nap','>=',closing.date_from),
+                            ('lhm_nap_id.date_nap','<=',closing.date_to),
+                            ('lhm_nap_id.state','in',['confirmed','done'])])
+                incoming_qty = sum(incoming_naps.mapped('qty_nap')) if incoming_naps else 0.0
+                # Find Delivery/Sales
+                outgoing_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','internal'),('location_dest_id.usage','!=','internal'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
+                values_to_create = {
+                    'product_id': product.id,
+                    'prev_closing_fg_id': prev_closing_fg_plant.id if prev_closing_fg_plant else False,
+                    'opening_qty': prev_closing_fg_plant.closing_qty if prev_closing_fg_plant else 0.0,
+                    'opening_value': prev_closing_fg_plant.closing_value if prev_closing_fg_plant else 0.0,
+                    'incoming_qty': incoming_qty,
+                    'outgoing_qty': outgoing_qty,
+                    'plantation_cost_ids': plantation_cost_to_add,
+                }
+                if prev_closing_fg_plant:
+                    values_to_create.update({
+                        'inventory_account_id': prev_closing_fg_plant.inventory_account_id.id if prev_closing_fg_plant.inventory_account_id else False,
+                        'cogs_account_id': prev_closing_fg_plant.cogs_account_id.id if prev_closing_fg_plant.cogs_account_id else False,
+                    })
+                to_create.append((0,0,values_to_create))
+            if to_create:
+                closing.closing_production_without_mrp_ids = to_create
+
     def get_production(self):
         for rec in self:
+            # if rec.closing_production_ids:
+            #     rec.closing_production_ids.unlink()
             if not rec.closing_production_ids:
+                # CREATE PRODUCTION KARET
                 vals = {
-                        'date_from': rec.date_from, 'date_to': rec.date_to, 
+                        'date_from': rec.date_from, 'date_to': rec.date_to,
+                        'varieties_type': 'karet', 
                     }
-                prev_closing = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done')], order='date_from desc', limit=1)
+                prev_closing = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done'),
+                                                ('varieties_type','=','karet')], order='date_from desc', limit=1)
                 if prev_closing:
                     vals.update({'prev_closing_id': prev_closing.id,
                         'latex_inventory_account_id': prev_closing.latex_inventory_account_id.id if prev_closing.latex_inventory_account_id else False,
                         'latex_wip_account_id': prev_closing.latex_wip_account_id.id if prev_closing.latex_wip_account_id else False,
-                        'latex_consumption_account_id': prev_closing.latex_consumption_account_id.id if prev_closing.latex_consumption_account_id else False,
+                        # 'latex_consumption_account_id': prev_closing.latex_consumption_account_id.id if prev_closing.latex_consumption_account_id else False,
                         'lump_inventory_account_id': prev_closing.lump_inventory_account_id.id if prev_closing.lump_inventory_account_id else False,
                         'lump_wip_account_id': prev_closing.lump_wip_account_id.id if prev_closing.lump_wip_account_id else False,
-                        'lump_consumption_account_id': prev_closing.lump_consumption_account_id.id if prev_closing.lump_consumption_account_id else False,
-                        'sheet_inventory_account_id': prev_closing.sheet_inventory_account_id.id if prev_closing.sheet_inventory_account_id else False,
+                        # 'lump_consumption_account_id': prev_closing.lump_consumption_account_id.id if prev_closing.lump_consumption_account_id else False,
+                        # 'sheet_inventory_account_id': prev_closing.sheet_inventory_account_id.id if prev_closing.sheet_inventory_account_id else False,
                         'sheet_wip_account_id': prev_closing.sheet_wip_account_id.id if prev_closing.sheet_wip_account_id else False,
-                        'sheet_consumption_account_id': prev_closing.sheet_consumption_account_id.id if prev_closing.sheet_consumption_account_id else False,
-                        'manufacturing_cost_account_ids': [(6,0,prev_closing.manufacturing_cost_account_ids.ids)] if prev_closing.manufacturing_cost_account_ids else False,
+                        'compound_wip_account_id': prev_closing.sheet_wip_account_id.id if prev_closing.sheet_wip_account_id else False,
+                        # 'sheet_consumption_account_id': prev_closing.sheet_consumption_account_id.id if prev_closing.sheet_consumption_account_id else False,
+                        # 'manufacturing_cost_account_ids': [(6,0,prev_closing.manufacturing_cost_account_ids.ids)] if prev_closing.manufacturing_cost_account_ids else False,
                     })
                 rec.closing_production_ids = [(0,0,vals)]
+                
+                # CREATE PRODUCTION PISANG
+                vals2 = {
+                        'date_from': rec.date_from, 'date_to': rec.date_to,
+                        'varieties_type': 'pisang', 
+                    }
+                prev_closing2 = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done'),
+                                                ('varieties_type','=','karet')], order='date_from desc', limit=1)
+                # if prev_closing2:
+                #     vals2.update({'prev_closing_id': prev_closing2.id,
+                #         'pisang_inventory_account_id': prev_closing2.pisang_inventory_account_id.id if prev_closing2.pisang_inventory_account_id else False,
+                #         'pisang_wip_account_id': prev_closing2.pisang_wip_account_id.id if prev_closing2.pisang_wip_account_id else False,
+                #     })
+                rec.closing_production_ids = [(0,0,vals2)]
+            
+            # CREATE PRODUCTION OTHER VARITAS
+            rec.create_product_other_variant()
 
     #################### END HELPER METHOD #####################
 
@@ -406,6 +534,7 @@ class ClosingProcess(models.Model):
     def action_done(self):
         for rec in self:
             if not rec.mark_closing_production_is_done:
+            # if not rec.mark_closing_production_nonkaret_is_done:
                 raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
             rec.write({'state': 'done'})
     
@@ -576,8 +705,11 @@ class ClosingProcess(models.Model):
 
     def action_open_closing_production(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.closing_production_action")
-        action['views'] = [(self.env.ref("ny_closing.closing_production_view_form").id, "form")]
-        action['res_id'] = self.closing_production_ids.id
-        action['domain'] = [('id','=',self.closing_production_ids.id)]
+        if len(self.closing_production_ids.ids)>1:
+            action['domain'] = [('id','in',self.closing_production_ids.ids)]
+        else:
+            action['views'] = [(self.env.ref("ny_closing.closing_production_view_form").id, "form")]
+            action['res_id'] = self.closing_production_ids.id
+            action['domain'] = [('id','=',self.closing_production_ids.id)]
         return action
     #################### END OPERATION METHOD #####################

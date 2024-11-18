@@ -133,7 +133,10 @@
                                 <group><field name="mark_closing_production_is_done" string="Mark as Done"/></group>
                                 <group></group>
                             </group>
+                            <label for="closing_production_ids"/>
                             <field name="closing_production_ids"/>
+                            <label for="closing_production_without_mrp_ids"/>
+                            <field name="closing_production_without_mrp_ids"/>
                         </page>
                     </notebook>
                 </sheet>

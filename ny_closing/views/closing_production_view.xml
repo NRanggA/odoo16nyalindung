@@ -17,48 +17,59 @@
                             <field name="cogs_account_id" />
                         </group>
                     </group>
-                    <group>
-                        <group>
-                            <field name="opening_qty" />
-                        </group>
-                        <group>
-                            <field name="opening_value" />
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="incoming_qty" />
-                        </group>
-                        <group>
-                            <field name="manufacturing_cost" />
-                            <field name="plantation_cost" />
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="onhand_qty" />
-                        </group>
-                        <group>
-                            <field name="onhand_value" />
-                            <field name="new_cost_price" />
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="outgoing_qty" />
-                        </group>
-                        <group>
-                            <field name="outgoing_value" />
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="closing_qty" />
-                        </group>
-                        <group>
-                            <field name="closing_value" />
-                        </group>
-                    </group>
+                    <table class="table table-sm table-bordered table-hover" style="width: 80%">
+                        <thead class="thead-light">
+                            <tr>
+                                <th rowspan="2" class="text-center" style="width: 30%;"></th>
+                                <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Quantity</th>
+                                <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight: bold;">Beginning</td>
+                                <td style="width: 30%; text-align: right;"><field name="opening_qty"/></td>
+                                <td style="width: 5%;"></td>
+                                <td style="width: 30%; text-align: right;"><field name="opening_value"/></td>
+                                <td style="width: 5%;"></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Incoming</td>
+                                <td style="text-align: right;"><field name="incoming_qty"/></td>
+                                <td></td>
+                                <td style="text-align: right;"><field name="manufacturing_cost" /></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Onhand Qty</td>
+                                <td style="text-align: right;"><field name="onhand_qty"/></td>
+                                <td></td>
+                                <td style="text-align: right;"><field name="onhand_value"/></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px;">New Cost Price</td>
+                                <td style="text-align: right;"></td>
+                                <td></td>
+                                <td style="text-align: right;"><field name="new_cost_price"/></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Outgoing</td>
+                                <td style="text-align: right;"><field name="outgoing_qty"/></td>
+                                <td></td>
+                                <td style="text-align: right;"><field name="outgoing_value"/></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Ending</td>
+                                <td style="text-align: right;"><field name="closing_qty"/></td>
+                                <td></td>
+                                <td style="text-align: right;"><field name="closing_value"/></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <label for="plantation_cost_ids" groups="base.group_no_one"/>
                     <field name="plantation_cost_ids" groups="base.group_no_one">
@@ -104,50 +115,62 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button string="Back to Previous Stage" name="button_back" type="object" states="fg1_valuation,fg2_valuation,account_entry"/>
+                    <button string="Back to Previous Stage" name="button_back" type="object" states="fg_valuation,account_entry"/>
                     <button string="Start" name="button_start" type="object" class="oe_highlight" icon="fa-play" states="start"/>
-                    <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm" type="object" states="rm_valuation"/>
-                    <button string="Confirm Valuation and Continue" name="button_continue_to_fg1" type="object" class="oe_highlight" states="rm_valuation"/>
-                    <button string="Get Transaction and Cost" name="compute_initial_and_cost_fg1" type="object" states="fg1_valuation"/>
-                    <button string="Confirm Valuation and Continue" name="button_continue_to_fg2" type="object" class="oe_highlight" states="fg1_valuation"/>
-                    <button string="Get Transaction and Cost" name="compute_initial_and_cost_fg2" type="object" states="fg2_valuation"/>
-                    <button string="Confirm Valuation and Continue" name="button_continue_to_account_entry" type="object" class="oe_highlight" states="fg2_valuation"/>
+                    <!-- <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm" type="object" states="rm_valuation"/> -->
+                    <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm_karet" type="object" attrs="{'invisible': ['|',('state','!=','rm_valuation'),('varieties_type','!=','karet')]}"/>
+                    <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm_pisang" type="object" attrs="{'invisible': ['|',('state','!=','rm_valuation'),('varieties_type','!=','pisang')]}"/>
+                    <button string="Confirm Valuation and Continue" name="button_continue_to_fg" type="object" class="oe_highlight" states="rm_valuation"/>
+                    <!-- <button string="Get Transaction and Cost" name="compute_initial_and_cost_fg1" type="object" states="fg1_valuation"/> -->
+                    <!-- <button string="Confirm Valuation and Continue" name="button_continue_to_fg2" type="object" class="oe_highlight" states="fg1_valuation"/> -->
+                    <!-- <button string="Get Transaction and Cost" name="compute_initial_and_cost_fg2" type="object" states="fg2_valuation"/> -->
+                    <button string="Confirm Valuation and Continue" name="button_continue_to_account_entry" type="object" class="oe_highlight" states="fg_valuation"/>
                     
                     <button string="Test Create Journal" name="create_move_entries" type="object" states="account_entry"/>
                     <button string="Finish Process" name="action_done" type="object" class="oe_highlight" states="account_entry"/>
                     
-                    <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="start,rm_valuation,fg1_valuation,fg2_valuation,account_entry"/>
+                    <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="start,rm_valuation,fg_valuation,account_entry"/>
                     <button string="Back to Start" name="button_set_new" type="object" states="cancel"/>
 
-                    <field name="state" widget="statusbar" statusbar_visible="start,rm_valuation,fg1_valuation,fg2_valuation,account_entry,done" />
+                    <field name="state" widget="statusbar" statusbar_visible="start,rm_valuation,fg_valuation,account_entry,done" />
                 </header>
                 <sheet>
                     <group>
                         <field name="date_from" attrs="{'readonly': [('state','!=','start')]}" />
+                        <field name="varieties_type" invisible="1"/>
                         <field name="date_to" attrs="{'readonly': [('state','!=','start')]}" />
                         <field name="prev_closing_id" groups="base.group_no_one" readonly="1" />
                         <field name="closing_move_ids" groups="base.group_no_one" readonly="1" />
                     </group>
                     <group name="acc_config" string="Account Configuration" attrs="{'invisible': [('state','!=','account_entry')]}">
-                        <group string="Account for Latex">
-                            <field name="latex_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
-                            <field name="latex_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
-                            <field name="latex_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
+                        <group string="Account for Latex" attrs="{'invisible': [('varieties_type','!=','karet')]}">
+                            <field name="latex_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <field name="latex_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <!-- <field name="latex_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                         </group>
-                        <group string="Account for Lump">
-                            <field name="lump_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
-                            <field name="lump_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
-                            <field name="lump_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
+                        <group string="Account for Lump" attrs="{'invisible': [('varieties_type','!=','karet')]}">
+                            <field name="lump_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <field name="lump_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <!-- <field name="lump_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                         </group>
-                        <group string="Account for Sheet">
-                            <field name="sheet_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
-                            <field name="sheet_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
-                            <field name="sheet_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/>
+                        <group string="Account for Sheet" attrs="{'invisible': [('varieties_type','!=','karet')]}">
+                            <!-- <field name="sheet_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
+                            <field name="sheet_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <!-- <field name="sheet_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
+                        </group>
+                        <group string="Account for Compo" attrs="{'invisible': [('varieties_type','!=','karet')]}">
+                            <!-- <field name="sheet_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
+                            <field name="compound_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <!-- <field name="sheet_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
+                        </group>
+                        <group string="Account for Pisang" attrs="{'invisible': [('varieties_type','!=','pisang')]}">
+                            <field name="pisang_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','pisang'),('state','=','account_entry')]}"/>
+                            <field name="pisang_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','pisang'),('state','=','account_entry')]}"/>
                         </group>
                     </group>
                     <notebook>
-                        <page name="rm_valuation" string="Raw Material Valuation" 
-                                    attrs="{'invisible': [('state','not in',['rm_valuation','fg1_valuation','fg2_valuation','account_entry','done'])]}">
+                        <page name="rm_valuation_karet" string="Production Computation" 
+                                    attrs="{'invisible': ['|',('varieties_type','!=','karet'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
                             <group>
                                 <field name="latex_opening_qty_manual" invisible="1"/>
                                 <field name="latex_opening_value_manual" invisible="1"/>
@@ -157,35 +180,35 @@
                             <table class="w-100 table table-sm table-bordered table-hover">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th rowspan="2" class="text-center"></th>
-                                        <th colspan="4" class="text-center">Latex</th>
-                                        <th colspan="4" class="text-center">Lump</th>
+                                        <th rowspan="2" class="text-center" style="width: 20%;"></th>
+                                        <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Latex</th>
+                                        <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Lump</th>
                                     </tr>
                                     <tr>
-                                        <th colspan="2" class="text-center">Quantity</th>
-                                        <th colspan="2" class="text-center">Value</th>
-                                        <th colspan="2" class="text-center">Quantity</th>
-                                        <th colspan="2" class="text-center">Value</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 15%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 25%;">Value</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 15%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 25%;">Value</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="table-secondary">Opening</td>
-                                        <td style="text-align: right;"><field name="latex_opening_qty" 
+                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="width: 10%; text-align: right;"><field name="latex_opening_qty" 
                                             attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="latex_opening_value" 
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 20%; text-align: right;"><field name="latex_opening_value" 
                                             attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="lump_opening_qty" 
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 10%; text-align: right;"><field name="lump_opening_qty" 
                                             attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="lump_opening_value" 
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 20%; text-align: right;"><field name="lump_opening_value" 
                                             attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
+                                        <td style="width: 5%;"></td>
                                     </tr>
                                     <tr>
-                                        <td class="table-secondary">Receiving</td>
+                                        <td style="font-weight: bold;">Incoming</td>
                                         <td style="text-align: right;"><field name="latex_incoming_qty" 
                                             attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
                                         <td></td>
@@ -198,9 +221,8 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td rowspan="2">Plantation Cost</td>
-                                        <td colspan="8" class="text-center"><field name="plantation_cost" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td rowspan="2" style="font-weight: bold;">Plantation Cost</td>
+                                        <td colspan="8" class="text-center"><field name="plantation_cost" /></td>
                                     </tr>
                                     <tr>
                                         <td>% Cost for Latex</td>
@@ -215,7 +237,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Onhand</td>
+                                        <td style="font-weight: bold;">Onhand</td>
                                         <td style="text-align: right;"><field name="latex_onhand_qty" /></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="latex_onhand_value" /></td>
@@ -226,7 +248,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>New Cost Price</td>
+                                        <td style="padding-left: 20px;">New Cost Price</td>
                                         <td></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="latex_new_cost_price" /></td>
@@ -237,33 +259,128 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>WIP</td>
-                                        <td style="text-align: right;"><field name="latex_wip_qty" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="font-weight: bold;">Work in Process</td>
+                                        <td colspan="4" style="font-weight: bold; text-align: center;">Sheet</td>
+                                        <td colspan="4" style="font-weight: bold; text-align: center;">Compo</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Beginning WIP</td>
+                                        <td style="text-align: right;"><field name="latex_wip_opening_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_wip_opening_value" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_opening_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_opening_value" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">New MO</td>
+                                        <td style="text-align: right;"><field name="latex_wip_incoming_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_wip_incoming_value" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_incoming_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_incoming_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;" rowspan="2">Manufacturing Cost
+                                            <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
+                                            <br/>
+                                            <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
+                                        </td>
+                                        <td colspan="8" class="text-center">
+                                            <field name="manufacturing_cost" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>% Cost for Sheet</td>
+                                        <td><field name="pct_cost_for_sheet" attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="text-align: right;"><field name="sheet_manufacturing_cost" /></td>
+                                        <td></td>
+                                        <td>% Cost for Compo</td>
+                                        <td><field name="pct_cost_for_compound" attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="text-align: right;"><field name="compound_manufacturing_cost" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <!-- <tr>
+                                        <td>Other Raw Material</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_raw_material_cost" readonly="0" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr> -->
+                                    <!-- <tr>
+                                        <td>Total Cost of Sheet</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_production_cost" /></td>
+                                        <td></td>
+                                        <td>Total Cost of Compo</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="compound_production_cost" /></td>
+                                        <td></td>
+                                    </tr> -->
+                                    <tr>
+                                        <td style="padding-left: 20px;">Total WIP</td>
+                                        <td style="text-align: right;"><field name="latex_wip_onhand_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_wip_onhand_value" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_onhand_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_onhand_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 40px;">WIP Cost Price</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_wip_cost_price" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_cost_price" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;" rowspan="2">Finished MO</td>
+                                        <td style="text-align: right;"><field name="latex_wip_outgoing_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_wip_outgoing_value" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_outgoing_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_wip_outgoing_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Raw Material Cost</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_raw_material_cost" readonly="0" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Ending WIP</td>
+                                        <td style="text-align: right;"><field name="latex_wip_qty" /></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="latex_wip_value" /></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="lump_wip_qty" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="text-align: right;"><field name="lump_wip_qty" /></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="lump_wip_value" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Consumed</td>
-                                        <td style="text-align: right;"><field name="latex_outgoing_qty" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="latex_outgoing_value" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="lump_outgoing_qty" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="lump_outgoing_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Closing</td>
+                                        <td style="font-weight: bold;">Ending</td>
                                         <td style="text-align: right;"><field name="latex_closing_qty" /></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="latex_closing_value" /></td>
@@ -284,175 +401,177 @@
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" />
-                                    <field name="total_cost_lump" />
-                                    <field name="total_cost" optional="hide" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" />
+                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                </tree>
+                            </field>
+                            <label for="mrp_cost_ids" groups="base.group_no_one"/>
+                            <field name="mrp_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="account_id" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" />
+                                    <field name="total_cost" sum="total_cost" optional="hide" />
                                 </tree>
                             </field>
                         </page>
-                        <page name="fg1_valuation" string="Semi-Finish Good"
-                                attrs="{'invisible': [('state','not in',['fg1_valuation','fg2_valuation','account_entry','done'])]}">
+                        <page name="rm_valuation_pisang" string="Production Computation" 
+                                    attrs="{'invisible': ['|',('varieties_type','!=','pisang'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
                             <group>
-                                <field name="sheet_opening_qty_manual" invisible="1"/>
-                                <field name="sheet_opening_value_manual" invisible="1"/>
-                                <field name="compound_opening_qty_manual" invisible="1"/>
-                                <field name="compound_opening_value_manual" invisible="1"/>
-                                <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
+                                <field name="pisang_opening_qty_manual" invisible="1"/>
+                                <field name="pisang_opening_value_manual" invisible="1"/>
                             </group>
-                            <table class="w-100 table table-sm table-bordered table-hover">
+                            <table class="w-100 table table-sm table-bordered table-hover" style="width: 70%;">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th rowspan="2" class="text-center"></th>
-                                        <th colspan="4" class="text-center">Sheet</th>
-                                        <th colspan="4" class="text-center">Compound</th>
+                                        <th rowspan="2" class="text-center" style="width: 20%;"></th>
+                                        <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Pisang</th>
                                     </tr>
                                     <tr>
-                                        <th colspan="2" class="text-center">Quantity</th>
-                                        <th colspan="2" class="text-center">Value</th>
-                                        <th colspan="2" class="text-center">Quantity</th>
-                                        <th colspan="2" class="text-center">Value</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 15%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 25%;">Value</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="table-secondary">Opening</td>
-                                        <td style="text-align: right;"><field name="sheet_opening_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="sheet_opening_value" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_opening_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_opening_value" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
+                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="width: 10%; text-align: right;"><field name="pisang_opening_qty" 
+                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 20%; text-align: right;"><field name="pisang_opening_value" 
+                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="width: 5%;"></td>
                                     </tr>
                                     <tr>
-                                        <td class="table-secondary">Produced</td>
-                                        <td style="text-align: right;"><field name="sheet_incoming_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_incoming_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
+                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="text-align: right;"><field name="pisang_incoming_qty" 
+                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td rowspan="4">Manufacturing Cost</td>
-                                        <td colspan="8" class="text-center"><field name="manufacturing_cost" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>% Cost for Sheet</td>
-                                        <td><field name="pct_cost_for_sheet" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td style="text-align: right;"><field name="sheet_manufacturing_cost" /></td>
+                                        <td style="font-weight: bold;">Plantation Cost</td>
                                         <td></td>
-                                        <td>% Cost for Compound</td>
-                                        <td><field name="pct_cost_for_compound" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td style="text-align: right;"><field name="compound_manufacturing_cost" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="plantation_cost" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Cost of Latex</td>
+                                        <td style="font-weight: bold;">Onhand</td>
+                                        <td style="text-align: right;"><field name="pisang_onhand_qty" /></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="sheet_raw_material_cost" readonly="1" /></td>
-                                        <td></td>
-                                        <td>Cost of Lump</td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_raw_material_cost" readonly="1" /></td>
+                                        <td style="text-align: right;"><field name="pisang_onhand_value" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Total Cost of Sheet</td>
+                                        <td style="padding-left: 20px;">New Cost Price</td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="sheet_production_cost" /></td>
                                         <td></td>
-                                        <td>Total Cost of Compound</td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_production_cost" /></td>
+                                        <td style="text-align: right;"><field name="pisang_new_cost_price" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Onhand</td>
-                                        <td style="text-align: right;"><field name="sheet_onhand_qty" /></td>
+                                        <td style="font-weight: bold;">Work in Process</td>
+                                        <td colspan="4" style="font-weight: bold; text-align: center;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Beginning WIP</td>
+                                        <td style="text-align: right;"><field name="pisang_wip_opening_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="sheet_onhand_value" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_onhand_qty" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_onhand_value" /></td>
+                                        <td style="text-align: right;"><field name="pisang_wip_opening_value" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>New Cost Price</td>
+                                        <td style="padding-left: 20px;">New MO</td>
+                                        <td style="text-align: right;"><field name="pisang_wip_incoming_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
                                         <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="sheet_new_cost_price" /></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_new_cost_price" /></td>
+                                        <td style="text-align: right;"><field name="pisang_wip_incoming_value" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>WIP</td>
-                                        <td style="text-align: right;"><field name="sheet_wip_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="sheet_wip_value" /></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="padding-left: 20px;">Manufacturing Cost
+                                            <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
+                                            <br/>
+                                            <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
+                                        </td>
                                         <td></td>
                                         <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Consumed</td>
-                                        <td style="text-align: right;"><field name="sheet_outgoing_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="sheet_outgoing_value" /></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="text-align: right;"><field name="manufacturing_cost" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Sales</td>
+                                        <td style="padding-left: 20px;">Total WIP</td>
+                                        <td style="text-align: right;"><field name="pisang_wip_onhand_qty" /></td>
                                         <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_outgoing_qty" 
-                                            attrs="{'readonly': [('state','!=','fg1_valuation')]}" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="compound_outgoing_value" /></td>
+                                        <td style="text-align: right;"><field name="pisang_wip_onhand_value" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Closing</td>
-                                        <td style="text-align: right;"><field name="sheet_closing_qty" /></td>
+                                        <td style="padding-left: 40px;">WIP Cost Price</td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="sheet_closing_value" /></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="compound_closing_qty" /></td>
+                                        <td style="text-align: right;"><field name="pisang_wip_cost_price" /></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="compound_closing_value" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Finished MO</td>
+                                        <td style="text-align: right;"><field name="pisang_wip_outgoing_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="pisang_wip_outgoing_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Ending WIP</td>
+                                        <td style="text-align: right;"><field name="pisang_wip_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="pisang_wip_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Ending</td>
+                                        <td style="text-align: right;"><field name="pisang_closing_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="pisang_closing_value" /></td>
                                         <td></td>
                                     </tr>
                                 </tbody>
                             </table>
+
+                            <label for="plantation_cost_ids" groups="base.group_no_one"/>
+                            <field name="plantation_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="account_id" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" />
+                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                </tree>
+                            </field>
+                            <label for="mrp_cost_ids" groups="base.group_no_one"/>
+                            <field name="mrp_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="account_id" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" />
+                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                </tree>
+                            </field>
                         </page>
-                        <page name="fg2_valuation" string="Finish Good Valuation"
-                                attrs="{'invisible': [('state','not in',['fg2_valuation','account_entry','done'])]}">
+                        <page name="fg_valuation" string="Finish Good Valuation"
+                                attrs="{'invisible': [('state','not in',['fg_valuation','account_entry','done'])]}">
                             <field name="fg2_valuation_ids" />
                         </page>
                     </notebook>
@@ -466,11 +585,12 @@
         <field name="model">closing.production</field>
         <field name="arch" type="xml">
             <tree>
+                <field name="varieties_type"/>
                 <field name="date_from" />
                 <field name="date_to" />
                 <field name="state" widget="badge"
                     decoration-info="state=='start'"
-                    decoration-danger="state in ('rm_valuation','fg1_valuation','fg2_valuation')"
+                    decoration-danger="state in ('rm_valuation','fg_valuation')"
                     decoration-success="state=='done'"
                     />
             </tree>
