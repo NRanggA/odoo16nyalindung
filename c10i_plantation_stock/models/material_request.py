@@ -33,6 +33,12 @@ class MaterialRequestLine(models.Model):
             
     #         line.doc_activity_ids = [(6, 0, activity_ids)]
 
+    # Menambahkan onchange tipe lokasi yang otomatis akan mengisi ke varieties_id 
+    @api.onchange('location_type_id')
+    def _onchange_location_type_id(self):
+        if self.location_type_id:
+            self.varieties_id = self.location_type_id.varieties_id.id
+
     @api.depends('varieties_id','location_type_id', 'mr_id.state')
     def _filter_locations(self):
         # biar tidak di run setiap saat
@@ -76,6 +82,9 @@ class MaterialRequestLine(models.Model):
                                 activities = line.varieties_id.general_charges_activity_ids
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
+                            # Menambahkan tipe lokasi Mills 
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
                             else:
                                 activities = line.varieties_id.harvest_activity_id
                                 activities |= line.varieties_id.upkeep_activity_ids

@@ -522,6 +522,9 @@ class HrEmployeeExpenseLine(models.Model):
                             activities = line.varieties_id.general_charges_activity_ids
                         elif line.location_type_id.indirect:
                             activities = line.varieties_id.indirect_cost_activity_ids
+                        # menambahkan tipe lokasi mills 
+                        elif line.location_type_id.mills:
+                            activities = line.varieties_id.mill_costs_ids
                         else:
                             activities = line.varieties_id.harvest_activity_id
                             activities |= line.varieties_id.upkeep_activity_ids
@@ -537,6 +540,11 @@ class HrEmployeeExpenseLine(models.Model):
                 else:
                     line.filtered_activities = [(6, 0, activities.ids)] if activities else []
 
+    # Menambahkan onchange tipe lokasi yang otomatis akan mengisi ke varieties_id 
+    @api.onchange('location_type_id')
+    def _onchange_location_type_id(self):
+        if self.location_type_id:
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.onchange('product_id')
     def onchange_product(self):

@@ -89,6 +89,7 @@ class lhm_location_type(models.Model):
     no_line                 = fields.Boolean("No Line", default=False, help="Centang jika tipe lokasi tidak ingin ditampilkan di Dokumen Plantation Manabun")
     station = fields.Boolean("Mills Station", default=False)
 
+    varieties_id = fields.Many2one('plant.varieties', string='ORG', required=True)
     # Boolean Mils
     mills                   = fields.Boolean('Mills', default=False)
 
@@ -2622,6 +2623,8 @@ class lhm_machine_line(models.Model):
                                 activities = line.varieties_id.general_charges_activity_ids
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
                             else:
                                 activities = line.varieties_id.harvest_activity_id
                                 activities |= line.varieties_id.upkeep_activity_ids
@@ -2642,6 +2645,7 @@ class lhm_machine_line(models.Model):
         if self.location_type_id:
             self.location_id    = False
             self.activity_id    = False
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.onchange('location_id')
     def _onchange_location_id(self):
@@ -2899,6 +2903,9 @@ class lhm_vehicle_line(models.Model):
                                 activities = line.varieties_id.general_charges_activity_ids
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
+                            # menambahkan tipe lokasi mills 
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
                             else:
                                 activities = line.varieties_id.harvest_activity_id
                                 activities |= line.varieties_id.upkeep_activity_ids
@@ -2969,6 +2976,7 @@ class lhm_vehicle_line(models.Model):
             self.location_id        = False
             self.activity_id        = False
             self.sub_activity_id    = False
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.onchange('location_id')
     def _onchange_location_id(self):
@@ -3197,6 +3205,8 @@ class lhm_workshop_line(models.Model):
                                 activities = line.varieties_id.general_charges_activity_ids
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
                             else:
                                 activities = line.varieties_id.harvest_activity_id
                                 activities |= line.varieties_id.upkeep_activity_ids
@@ -3217,6 +3227,7 @@ class lhm_workshop_line(models.Model):
         if self.location_type_id:
             self.location_id    = False
             self.activity_id    = False
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.onchange('location_id')
     def _onchange_location_id(self):
@@ -3802,6 +3813,9 @@ class lhm_contractor_line(models.Model):
                                 activities = line.varieties_id.general_charges_activity_ids
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
+                            # menambahkan tipe lokasi mills 
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
                             else:
                                 activities = line.varieties_id.harvest_activity_id
                                 activities |= line.varieties_id.upkeep_activity_ids
@@ -3831,6 +3845,7 @@ class lhm_contractor_line(models.Model):
         if self.location_type_id:
             self.location_id = False
             self.activity_id = False
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.onchange('location_id')
     def _onchange_location_id(self):

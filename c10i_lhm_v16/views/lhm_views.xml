@@ -101,6 +101,7 @@
                                 <field name="account_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="company_id" readonly="1"/>
                                 <field name="has_subtype" readonly="0"/>
+                                <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group string="Group">
                                 <group>
@@ -2319,13 +2320,13 @@
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_locations" invisible="1" />
                                         <!-- ('machine_line','=',True), -->
                                         <field name="location_type_id" 
                                             domain="[('code','not in',['WS','VH','MA'])]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
@@ -2495,9 +2496,9 @@
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" domain="[('code','not in',['WS','VH'])]"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="varieties_id" required="1"
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_locations" invisible="1" />
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
@@ -2671,12 +2672,12 @@
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <!-- ('workshop_line','=',True), -->
                                         <field name="location_type_id" 
                                             domain="[('code','!=','WS')]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_locations" invisible="1"/>
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 
@@ -2858,11 +2859,11 @@
                                         <field name="difference_value" optional="show"/>
                                         <field name="distance_value" optional="show"/>
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
                                             optional="show"/>
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_locations" invisible="1" />
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
@@ -2891,11 +2892,11 @@
                                         <!-- <field name="tidak_ditagihkan" optional="show"/> -->
                                         <field name="date" required="1" optional="show"/>
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" 
                                             domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_locations" invisible="1" />
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 

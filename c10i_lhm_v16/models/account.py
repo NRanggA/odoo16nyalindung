@@ -42,7 +42,7 @@ class AccountMoveLine(models.Model):
     plantation_validator        = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
     
     plantation_src_journal_id = fields.Many2one('account.journal', string="Asal Journal")
-
+    
     @api.depends('plantation_varieties_id','plantation_location_type_id', 'move_id.state')
     def _filter_locations(self):
         # biar tidak di run setiap saat
@@ -50,7 +50,7 @@ class AccountMoveLine(models.Model):
             if line.move_id.state!='draft' or not line.plantation_location_type_id:
                 line.filtered_locations = []
             else:
-                if line.plantation_location_type_id.code in ('WS','VH','MA'):
+                if line.plantation_location_type_id.code in ('WS','VH','MA', 'MC'): # Menambahkan tipe Mills (MC)
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
                 else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.plantation_location_type_id.id),('varieties_id','=',line.plantation_varieties_id.id)])
@@ -78,7 +78,8 @@ class AccountMoveLine(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS'):
+                    # menambahkan Mills (MC)
+                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS', 'MC'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.plantation_varieties_id:
@@ -86,7 +87,7 @@ class AccountMoveLine(models.Model):
                                 activities = line.plantation_varieties_id.general_charges_activity_ids
                             elif line.plantation_location_type_id.indirect:
                                 activities = line.plantation_varieties_id.indirect_cost_activity_ids
-                            # menambahkan tipe mills 
+                            # menambahkan tipe lokasi mills 
                             elif line.plantation_location_type_id.mills:
                                 activities = line.plantation_varieties_id.mill_costs_ids
                             else:
@@ -109,6 +110,10 @@ class AccountMoveLine(models.Model):
         if self.plantation_location_type_id:
             self.plantation_location_id = False
             self.plantation_activity_id = False
+            
+            # Menambahkan onchage ORG ketika memilih tipe lokasi
+            self.plantation_varieties_id = self.plantation_location_type_id.varieties_id.id
+            
             if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
                 self.account_id = False
             else:

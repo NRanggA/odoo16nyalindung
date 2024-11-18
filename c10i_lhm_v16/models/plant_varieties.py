@@ -22,3 +22,5 @@ class PlantVarieties(models.Model):
     indirect_cost_activity_ids = fields.Many2many('lhm.activity', 'varieties_idc_rel', string='General Charges Activities')
     
     mill_costs_ids = fields.Many2many('lhm.activity', 'varieties_mill_costs_rel', string='Mill Costs Activities')
+
+    panen = fields.Boolean('Panen', default=False)

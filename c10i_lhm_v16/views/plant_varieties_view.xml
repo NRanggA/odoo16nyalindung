@@ -11,6 +11,7 @@
                         <group>
                             <field name="name" />
                             <field name="code" />
+                            <field name="panen" />
                         </group>
                         <group>
                             <field name="product_id" />
@@ -23,7 +24,8 @@
                         </page>
                         <page name="plantation" string="Upkeep and Harvest">
                             <group>
-                                <field name="harvest_activity_id" required="1" domain="[('type_id.plantation','=',True)]"/>
+                                <field name="harvest_activity_id" domain="[('type_id.plantation','=',True)]" attrs="{'required': [('panen','=',True)]}"/>
+                                
                             </group>
                             <label for="upkeep_activity_ids"/>
                             <field name="upkeep_activity_ids" domain="[('type_id.plantation','=',True)]"/>

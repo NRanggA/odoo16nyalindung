@@ -75,6 +75,77 @@ class SeedMoveLine(models.Model):
     fil_location_src_ids         = fields.Many2many('lhm.location','rel_seed_location_src', string="Filter From", compute="_get_location")
     fil_location_dest_ids        = fields.Many2many('lhm.location', 'rel_seed_location_dest', string="Filter To", compute="_get_location")
 
+    varieties_id                 = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    no_line                      = fields.Boolean(string="No Line", related="location_type_id.no_line")
+    filtered_locations           = fields.Many2many('lhm.location', 'mrl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
+    filtered_activities          = fields.Many2many('lhm.activity', 'mrl_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
+
+    @api.depends('varieties_id','location_type_id', 'location_id', 'seed_move_id.state')
+    def _filter_activities(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.seed_move_id.state!='draft':
+                line.filtered_activities = []
+            else:
+                doc_form = self.env['res.doc.type'].search([('code','=','bkt')], limit=1)
+                if line.location_type_id and line.location_type_id.project and line.location_id:
+                    projects = self.env['lhm.project'].search([('location_id','=',line.location_id.id)])
+                    project_activity_ids = []
+                    for project in projects:
+                        # if doc_form:
+                        #     project_activity_ids += [x.activity_id.id for x in project.line_ids if doc_form.id in x.doc_ids.ids]
+                        # else:
+                            project_activity_ids += [x.activity_id.id for x in project.line_ids]
+
+                    if project_activity_ids:
+                        line.filtered_activities = [(6, 0, project_activity_ids)]
+                    else:
+                        line.filtered_activities = []
+                else:
+                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                        activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                    else: # GC, IDC, PLANTATION
+                        if line.varieties_id:
+                            if line.location_type_id.general_charge:
+                                activities = line.varieties_id.general_charges_activity_ids
+                            elif line.location_type_id.indirect:
+                                activities = line.varieties_id.indirect_cost_activity_ids
+                            # menambahkan tipe lokasi mills 
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
+                            else:
+                                activities = line.varieties_id.harvest_activity_id
+                                activities |= line.varieties_id.upkeep_activity_ids
+                        else:
+                            # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                            activities = []
+                    if False: #doc_form:
+                        act_ids = []
+                        for act in activities:
+                            if doc_form.id in act.doc_ids.ids:
+                                act_ids.append(act.id)
+                        line.filtered_activities = [(6, 0, act_ids)]
+                    else:
+                        line.filtered_activities = [(6, 0, activities.ids)] if activities else []
+    
+    @api.depends('varieties_id','location_type_id', 'seed_move_id.state')
+    def _filter_locations(self):
+        # biar tidak di run setiap saat
+        for line in self:
+            if line.seed_move_id.state!='draft':
+                line.filtered_locations = []
+            else:
+                if line.location_type_id.code in ('WS','VH','MA'):
+                    locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
+                else: # GC, IDC, PLANTATION, PJ, NS
+                    locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
+                line.filtered_locations = [(6,0,locations.ids)] if locations else []
+
+    @api.onchange('location_type_id')
+    def _onchange_location_type_id(self):
+        if self.location_type_id:
+            self.varieties_id = self.location_type_id.varieties_id.id
+
     @api.onchange('nursery_id', 'mutation_type_id')
     def _onchange_nursery_and_mutation_type(self):
         if self.nursery_id:

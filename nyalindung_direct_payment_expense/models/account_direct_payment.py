@@ -115,7 +115,7 @@ class DirectPayment(models.Model):
 class DirectPaymentLine(models.Model):
     _inherit = 'account.direct.payment.line'
 
-    plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas', ondelete='restrict')
+    plantation_varieties_id = fields.Many2one('plant.varieties', string='ORG', ondelete='restrict')
     plantation_location_type_id = fields.Many2one("lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     filtered_locations = fields.Many2many('lhm.location', 'adpl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     plantation_location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
@@ -167,6 +167,9 @@ class DirectPaymentLine(models.Model):
                                 activities = line.plantation_varieties_id.general_charges_activity_ids
                             elif line.plantation_location_type_id.indirect:
                                 activities = line.plantation_varieties_id.indirect_cost_activity_ids
+                            # Menambahkan tipe lokasi Mills (MC)
+                            elif line.plantation_location_type_id.mills:
+                                activities = line.plantation_varieties_id.mill_costs_ids
                             else:
                                 activities = line.plantation_varieties_id.harvest_activity_id
                                 activities |= line.plantation_varieties_id.upkeep_activity_ids
@@ -200,6 +203,8 @@ class DirectPaymentLine(models.Model):
         if self.plantation_location_type_id:
             self.plantation_location_id = False
             self.plantation_activity_id = False
+            # Menambahkan onchage ORG ketika memilih tipe lokasi
+            self.plantation_varieties_id = self.plantation_location_type_id.varieties_id.id
             # if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
             #     self.account_id = False
             # else:
