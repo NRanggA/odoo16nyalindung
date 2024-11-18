@@ -86,18 +86,20 @@
                                         <field name="name" invisible="1"/>
                                         <!-- <field name="varieties_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="150"/> -->
                                         <!-- <field name="location_type_id" domain="[('no_line','=',False)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" 
                                             domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="varieties_id" required="1"
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="block_id" optional="show" invisible="1"/>
                                         <field name="filtered_locations" invisible="1"/>
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <!-- <field name="filtered_activities" invisible="1"/> -->
-                                        <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
+                                        <field name="filtered_activities" invisible="1"/>
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
                                         <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
                                         <field name="nilai" optional="show" width="80"/>
