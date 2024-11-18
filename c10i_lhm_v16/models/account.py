@@ -33,7 +33,7 @@ class AccountMove(models.Model):
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
-    plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas', ondelete='restrict')
+    plantation_varieties_id = fields.Many2one('plant.varieties', string='ORG', ondelete='restrict')
     plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     filtered_locations = fields.Many2many('lhm.location', 'aml_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     plantation_location_id      = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
