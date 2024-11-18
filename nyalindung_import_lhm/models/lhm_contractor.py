@@ -93,7 +93,7 @@ class LHMContractor(models.Model):
 
             varieties_id = self.env['plant.varieties'].search([('name', '=', varieties_name)], limit=1)
             location_type_id = self.env['lhm.location.type'].search([('name', '=', type_name)], limit=1)
-            block_id = self.env['lhm.plant.block'].search([('name', '=', lokasi_name)], limit=1)
+            location_id = self.env['lhm.location'].search([('name', '=', lokasi_name)], limit=1)
             activity_id = self.env['lhm.activity'].search([('name', '=', aktivitas_name)], limit=1)
             product_id = self.env['product.product'].search([('name', '=', product_name)], limit=1)
             uom_id = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
@@ -113,7 +113,7 @@ class LHMContractor(models.Model):
                 'contractor_id': self.id, 
                 'varieties_id': varieties_id.id, 
                 'location_type_id': location_type_id.id, 
-                'block_id': block_id.id,
+                'location_id': location_id.id,
                 'activity_id': activity_id.id,
                 'product_id': product_id.id,
                 'uom_id': uom_id.id,
