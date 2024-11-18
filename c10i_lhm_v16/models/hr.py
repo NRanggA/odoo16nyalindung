@@ -378,6 +378,22 @@ class HrEmployee(models.Model):
         else:
             self.bpjs_kes_date_start = False
 
+    def _get_running_contract(self, type_id):
+        """
+        Fungsi untuk mendapatkan kontrak yang sedang berjalan berdasarkan type_id.
+        """
+        if not type_id:
+            return False
+
+        # Cari kontrak yang sedang berjalan untuk type_id tertentu
+        running_contract = self.env['hr.contract'].search([
+            ('employee_type_id', '=', type_id),
+            ('state', '=', 'open')
+        ], limit=1)
+
+        return running_contract
+
+
     @api.model
     def create(self, values):
         if values.get('type_id', False) and not values.get('custom_nik', False):
@@ -387,22 +403,56 @@ class HrEmployee(models.Model):
                 sequence_number = sequence_id.next_by_id()
                 values['no_induk'] = sequence_number
                 values['auto_generate'] = True
+        
+        # Cek kontrak yang sedang berjalan berdasarkan tipe karyawan
+        type_id = values.get('type_id')
+        if type_id:
+            running_contract = self._get_running_contract(type_id)
+            if running_contract:
+                values['contract_id'] = running_contract.id
+
         values['noedit_foreman'] = True
         employee = super(HrEmployee, self).create(values)
         return employee
 
     def write(self, values):
+        # Jika custom_nik tidak berubah, hapus dari values
         if 'custom_nik' in values:
             if values['custom_nik'] == self.custom_nik:
                 del values['custom_nik']
 
-        if 'type_id' in values and values['type_id'] == self.type_id.id:
-            employee_type = self.env['hr.employee.type'].browse(values['type_id'])
-            sequence_id = employee_type.sequence_id
-            if sequence_id and self.type_id.sequence_id.id != sequence_id.id:
-                sequence_number = sequence_id.next_by_id()
-                values['no_induk'] = sequence_number
-                values['auto_generate'] = True
+        # Jika tipe karyawan diubah, cek kontrak yang sedang berjalan
+        if 'type_id' in values:
+            new_type_id = values['type_id']
+            if new_type_id != self.type_id.id:
+                employee_type = self.env['hr.employee.type'].browse(new_type_id)
+                sequence_id = employee_type.sequence_id
+                if sequence_id:
+                    sequence_number = sequence_id.next_by_id()
+                    values['no_induk'] = sequence_number
+                    values['auto_generate'] = True
+
+                # Cari kontrak yang sedang berjalan untuk tipe baru
+                running_contract = self._get_running_contract(new_type_id)
+                if running_contract:
+                    values['contract_id'] = running_contract.id
 
         res = super(HrEmployee, self).write(values)
         return res
+
+
+    # def write(self, values):
+    #     if 'custom_nik' in values:
+    #         if values['custom_nik'] == self.custom_nik:
+    #             del values['custom_nik']
+
+    #     if 'type_id' in values and values['type_id'] == self.type_id.id:
+    #         employee_type = self.env['hr.employee.type'].browse(values['type_id'])
+    #         sequence_id = employee_type.sequence_id
+    #         if sequence_id and self.type_id.sequence_id.id != sequence_id.id:
+    #             sequence_number = sequence_id.next_by_id()
+    #             values['no_induk'] = sequence_number
+    #             values['auto_generate'] = True
+
+    #     res = super(HrEmployee, self).write(values)
+    #     return res
