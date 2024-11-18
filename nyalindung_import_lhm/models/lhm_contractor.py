@@ -100,6 +100,15 @@ class LHMContractor(models.Model):
             product_id_2 = self.env['product.product'].search([('name', '=', product_2_name)], limit=1)
             uom2_id = self.env['uom.uom'].search([('name', '=', uom2_name)], limit=1)
 
+            wage_borongan = self.env['lhm.wage.borongan.contractor'].search([
+                ('activity_id', '=', activity_id.id)
+            ], limit=1)
+
+            unit_price = 0.0
+            if wage_borongan:
+                if wage_borongan.price:
+                    unit_price = wage_borongan.price
+
             self.env['lhm.contractor.line'].create({
                 'contractor_id': self.id, 
                 'varieties_id': varieties_id.id, 
@@ -112,4 +121,5 @@ class LHMContractor(models.Model):
                 'product_id_2': product_id_2.id,
                 'uom2_id': uom2_id.id,
                 'nilai2': nilai2,
+                'unit_price': unit_price,
             })
