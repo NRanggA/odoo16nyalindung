@@ -320,7 +320,7 @@ class lhm_nap(models.Model):
                     ])
 
                     contractor_lines = self.env['lhm.contractor.nap.line'].search([
-                        ('block_id', '=', pabrik_line.block_id.id),
+                        ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('contractor_id.date', '=', pabrik_line.tgl_panen),
                     ])
 

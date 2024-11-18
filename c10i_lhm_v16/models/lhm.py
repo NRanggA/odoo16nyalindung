@@ -3451,7 +3451,7 @@ class lhm_contractor(models.Model):
             # if not contractor_line.date:
             #     contractor_line.date = self.date
             nap_line_data = {
-                'block_id': contractor_line.block_id.id,
+                'location_id': contractor_line.location_id.id,
                 'activity_id': contractor_line.activity_id.id,
                 'product_id': contractor_line.product_id.id,
                 'product_id_2': contractor_line.product_id_2.id,
