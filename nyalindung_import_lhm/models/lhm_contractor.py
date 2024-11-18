@@ -80,8 +80,8 @@ class LHMContractor(models.Model):
         for row_no in range(1, sheet.nrows):  
             row = sheet.row(row_no)
             
-            varieties_name = row[0].value
-            type_name = row[1].value
+            type_name = row[0].value
+            varieties_name = row[1].value
             lokasi_name = row[2].value
             aktivitas_name = row[3].value
             product_name = row[4].value
@@ -91,8 +91,8 @@ class LHMContractor(models.Model):
             uom2_name = row[8].value
             nilai2 = row[9].value
 
-            varieties_id = self.env['plant.varieties'].search([('name', '=', varieties_name)], limit=1)
             location_type_id = self.env['lhm.location.type'].search([('name', '=', type_name)], limit=1)
+            varieties_id = self.env['plant.varieties'].search([('name', '=', varieties_name)], limit=1)
             location_id = self.env['lhm.location'].search([('name', '=', lokasi_name)], limit=1)
             activity_id = self.env['lhm.activity'].search([('name', '=', aktivitas_name)], limit=1)
             product_id = self.env['product.product'].search([('name', '=', product_name)], limit=1)
@@ -111,8 +111,8 @@ class LHMContractor(models.Model):
 
             self.env['lhm.contractor.line'].create({
                 'contractor_id': self.id, 
-                'varieties_id': varieties_id.id, 
                 'location_type_id': location_type_id.id, 
+                'varieties_id': varieties_id.id, 
                 'location_id': location_id.id,
                 'activity_id': activity_id.id,
                 'product_id': product_id.id,
