@@ -722,7 +722,7 @@ class ClosingProduction(models.Model):
             self.mrp_cost_ids = summerize_mrp_cost
             
             # Get Pisang Receiving Qty from NAP
-            product_pisang = self.env['product.product'].search([('name','=','Pisang')], limit=1)
+            product_pisang = self.env['product.product'].search([('name','=','Pisang Mentah Cavendish')], limit=1)
             closing.pisang_product_id = product_pisang.id
             pisang_in = self.env['timbangan.pabrik'].search([('product_id','=',product_pisang.id),
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
@@ -731,7 +731,7 @@ class ClosingProduction(models.Model):
             print(">>>>>>>>>>>>>>>>>>>>pisang_in", sum(pisang_in.mapped('product_qty')) if pisang_in else 0.0)
             closing.pisang_incoming_qty = sum(pisang_in.mapped('product_qty')) if pisang_in else 0.0
             
-            fg_pisang_product = self.env['product.product'].search([('name','=','Pisang X')], limit=1)
+            fg_pisang_product = self.env['product.product'].search([('name','=','Pisang Cavendish')], limit=1)
             # GET PENDING MO PREV MONTH
             mrp_pisang_prev = closing._get_mrp_inprogress_prev_month(fg_pisang_product)
             print(">>>>>>>>>>>>>>>>>>>>mrp_pisang_prev", mrp_pisang_prev)
@@ -753,7 +753,7 @@ class ClosingProduction(models.Model):
                 rm_moves = mrp_pisang_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_pisang.id)
                 closing.pisang_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
-            closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
+            # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
         return True
     
     ############################### END VALUATION RAW MATERIAL ###################################
@@ -1142,6 +1142,9 @@ class ClosingProduction(models.Model):
             })
             move_lines_wip.append((0,0,vals_mrp_src2))
         # END: WIP Latex to WIP Sheet
+
+        # BEGIN: WIP Lump to WIP Compound
+        # END: WIP Lump to WIP Compound
 
         if move_lines_receiving:
             values = {
