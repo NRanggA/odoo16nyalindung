@@ -28,6 +28,10 @@
                         <group>
                             <field name="other_input_type_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}" attrs="{'readonly': [('state','!=','draft')]}"/>
                             <field name="batch_other_input_id" invisible="0" groups="base.group_no_one" readonly="1"/>
+                            <field name="is_import" />
+                            <field name="file" attrs="{'invisible': [('is_import', '!=', True)]}"/>
+                            <button name="import_data" class="oe_highlight" string="Import" type="object" 
+                                    attrs="{'invisible': [('is_import', '!=', True)]}"/>
                         </group>
                     </group>
                     <notebook>

@@ -2,6 +2,10 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
+import pandas as pd
+import numpy as np
+import io
+import base64
 from datetime import datetime, time
 
 class NyPremiPenyadap(models.Model):
@@ -32,6 +36,53 @@ class NyPremiPenyadap(models.Model):
     surplus_premi_rate_mandor = fields.Float("Lebih Produksi Mandor")
     surplus_premi_rate_kepala_mandor = fields.Float("Lebih Produksi Kepala Mandor")
     surplus_premi_rate_tap_kontrol = fields.Float("Lebih Produksi Tap Kontrol")
+
+    # Field untuk import
+    is_import       = fields.Boolean('Import Data', default=False)
+    file            = fields.Binary('File', attachment=True)
+    error_message   = fields.Text('Error Message')
+
+    def import_data(self):
+        def cell_to_string(cell_value):
+            if cell_value and (isinstance(cell_value, (float, np.floating)) or isinstance(cell_value, (int, np.integer))):
+                return str(int(cell_value)) if not np.isnan(cell_value) else ''
+            else:
+                return cell_value.strip()
+        
+        if self.is_import:
+            if not self.file:
+                raise UserError(_("Masukkan File Terlebih Dahulu"))
+        
+        data = base64.b64decode(self.file)
+        excel_file = io.BytesIO(data)
+        df = pd.read_excel(excel_file, header=0)
+        
+        to_update   = []
+        error_message_list = []
+
+        for index, row in df.iterrows():
+            premi_produksi_line = self.env['ny.premi.penyadap.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', ''))), ('ref_id', '=', self.id)], limit=1)
+            if not premi_produksi_line:
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')}, tidak ditemukan pada line saat ini!")
+
+            # Validasi nilai yang akan di import 
+            grade = self.env['ny.premi.penyadap.grade'].search([('name', '=', row.get('NILAI', ''))], limit=1)
+            if not grade:
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')}, Nilai tidak ditemukan !")
+
+            to_update.append((1, premi_produksi_line.id, {
+                'grade_id' : grade.id,
+            }))
+
+        if error_message_list:
+            error_message = '\n'.join(error_message_list)
+            self.error_message = error_message
+            raise ValidationError(_("Import data gagal dengan error berikut:\n%s") % error_message)
+
+        self.line_ids = to_update
+        return True
+
+
 
     def compute_base_production(self):
         self.line_ids.unlink()
