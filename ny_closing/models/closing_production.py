@@ -140,7 +140,7 @@ class ClosingProductionFinishGood(models.Model):
             line.closing_qty = line.onhand_qty - line.outgoing_qty
             line.closing_value = line.onhand_value - line.outgoing_value
     
-    def _compute_plantation_cost(self):
+    def _help_compute_plantation_cost(self):
         self.ensure_one()
         closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
         # Find Plantation Cost based on Business Unit
@@ -203,7 +203,7 @@ class ClosingProductionFinishGood(models.Model):
                                 ('date','<=',line.closing_process_id.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
             line.outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
-            plantation_cost_amt, plantation_cost_to_add = line._compute_plantation_cost()
+            plantation_cost_amt, plantation_cost_to_add = line._help_compute_plantation_cost()
             if line.plantation_cost_ids:
                 line.plantation_cost_ids.unlink()
             line.plantation_cost_ids = plantation_cost_to_add
