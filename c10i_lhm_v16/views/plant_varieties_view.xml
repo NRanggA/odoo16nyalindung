@@ -16,6 +16,7 @@
                         <group>
                             <field name="product_id" />
                             <field name="secondary_product_id" />
+                            <field name="other_product_ids" widget="many2many_tags"/>
                         </group>
                     </group>
                     <notebook>

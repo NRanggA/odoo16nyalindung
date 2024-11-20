@@ -5,12 +5,18 @@
         <field name="model">closing.production.finishgood</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button string="Summerize Cost" name="compute_initial_and_cost_oth_variant" type="object" class="oe_highlight" attrs="{'invisible': ['|',('closing_process_id','=',False),('closing_move_id','!=',False)]}"/>
+                    <button string="Create Joural Entry" name="create_move_entry_fg" type="object" class="oe_highlight" attrs="{'invisible': ['|',('closing_process_id','=',False),('closing_move_id','!=',False)]}"/>
+                </header>
                 <sheet>
+                    <field name="closing_process_id" invisible="1"/>
                     <group>
                         <group>
+                            <field name="varieties_id" />
                             <field name="product_id" />
                             <field name="prev_closing_fg_id" />
-                            <field name="closing_move_id" groups="base.group_no_one" readonly="1" />
+                            <field name="closing_move_id" readonly="1" />
                         </group>
                         <group>
                             <field name="inventory_account_id" />
@@ -37,7 +43,15 @@
                                 <td style="font-weight: bold;">Incoming</td>
                                 <td style="text-align: right;"><field name="incoming_qty"/></td>
                                 <td></td>
-                                <td style="text-align: right;"><field name="manufacturing_cost" /></td>
+                                <td style="text-align: right;"><field name="manufacturing_cost" /><br/>
+                                <field name="plantation_cost" /></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;"><label for="ripening_qty" string="Ripening" attrs="{'invisible': [('ripening_cost','=',0)]}"/></td>
+                                <td style="text-align: right;"><field name="ripening_qty" groups="base.group_no_one" attrs="{'invisible': [('ripening_cost','=',0)]}"/></td>
+                                <td></td>
+                                <td style="text-align: right;"><field name="ripening_cost" attrs="{'invisible': [('ripening_cost','=',0)]}"/></td>
                                 <td></td>
                             </tr>
                             <tr>
@@ -79,9 +93,9 @@
                             <field name="plantation_activity_id" />
                             <field name="plantation_src_journal_id" />
                             <field name="account_id" />
-                            <field name="total_cost_latex" />
-                            <field name="total_cost_lump" />
-                            <field name="total_cost" optional="hide" />
+                            <field name="total_cost_latex" invisible="1"/>
+                            <field name="total_cost_lump" invisible="1"/>
+                            <field name="total_cost" sum="total_cost"/>
                         </tree>
                     </field>
                 </sheet>
@@ -146,27 +160,21 @@
                         <group string="Account for Latex" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="latex_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                             <field name="latex_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
-                            <!-- <field name="latex_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                         </group>
                         <group string="Account for Lump" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="lump_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                             <field name="lump_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
-                            <!-- <field name="lump_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                         </group>
                         <group string="Account for Sheet" attrs="{'invisible': [('varieties_type','!=','karet')]}">
-                            <!-- <field name="sheet_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                             <field name="sheet_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
-                            <!-- <field name="sheet_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                         </group>
                         <group string="Account for Compo" attrs="{'invisible': [('varieties_type','!=','karet')]}">
-                            <!-- <field name="sheet_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                             <field name="compound_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
-                            <!-- <field name="sheet_consumption_account_id" string="Account Consumption" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('state','=','account_entry')]}"/> -->
                         </group>
-                        <group string="Account for Pisang" attrs="{'invisible': [('varieties_type','!=','pisang')]}">
+                        <!-- <group string="Account for Pisang" attrs="{'invisible': [('varieties_type','!=','pisang')]}">
                             <field name="pisang_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','pisang'),('state','=','account_entry')]}"/>
                             <field name="pisang_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','pisang'),('state','=','account_entry')]}"/>
-                        </group>
+                        </group> -->
                     </group>
                     <notebook>
                         <page name="rm_valuation_karet" string="Production Computation" 
@@ -423,126 +431,27 @@
                         <page name="rm_valuation_pisang" string="Production Computation" 
                                     attrs="{'invisible': ['|',('varieties_type','!=','pisang'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
                             <group>
-                                <field name="pisang_opening_qty_manual" invisible="1"/>
-                                <field name="pisang_opening_value_manual" invisible="1"/>
+                                <group>
+                                    <field name="pisang_varieties_id"/>
+                                    <field name="pisang_other_product_ids" invisible="1" readonly="1"/>
+                                    <field name="pisang_non_grade_ids" domain="[('id','in',pisang_other_product_ids)]" widget="many2many_tags" attrs="{'required': [('varieties_type','=','pisang'),('state','=','rm_valuation')]}"/>
+                                    <field name="pisang_with_grade_ids" domain="[('id','in',pisang_other_product_ids)]" widget="many2many_tags" attrs="{'required': [('varieties_type','=','pisang'),('state','=','rm_valuation')]}"/>
+                                </group>
+                                <group>
+                                    <field name="plantation_cost" />
+                                    <label for="manufacturing_cost_account_ids"/>
+                                    <div>
+                                        <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
+                                        <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
+                                    </div>
+                                    <field name="pisang_ripening_cost" />
+                                    <field name="pisang_ripening_qty" groups="base.group_no_one"/>
+                                    <field name="pisang_incoming_qty" groups="base.group_no_one"/>
+                                </group>
                             </group>
-                            <table class="w-100 table table-sm table-bordered table-hover" style="width: 70%;">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th rowspan="2" class="text-center" style="width: 20%;"></th>
-                                        <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Pisang</th>
-                                    </tr>
-                                    <tr>
-                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 15%;">Quantity</th>
-                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 25%;">Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="font-weight: bold;">Beginning</td>
-                                        <td style="width: 10%; text-align: right;"><field name="pisang_opening_qty" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td style="width: 5%;"></td>
-                                        <td style="width: 20%; text-align: right;"><field name="pisang_opening_value" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td style="width: 5%;"></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="font-weight: bold;">Incoming</td>
-                                        <td style="text-align: right;"><field name="pisang_incoming_qty" 
-                                            attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="font-weight: bold;">Plantation Cost</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="plantation_cost" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="font-weight: bold;">Onhand</td>
-                                        <td style="text-align: right;"><field name="pisang_onhand_qty" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_onhand_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">New Cost Price</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_new_cost_price" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="font-weight: bold;">Work in Process</td>
-                                        <td colspan="4" style="font-weight: bold; text-align: center;"></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">Beginning WIP</td>
-                                        <td style="text-align: right;"><field name="pisang_wip_opening_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_wip_opening_value" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">New MO</td>
-                                        <td style="text-align: right;"><field name="pisang_wip_incoming_qty" attrs="{'readonly': [('state','!=','rm_valuation')]}"/></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_wip_incoming_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">Manufacturing Cost
-                                            <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
-                                            <br/>
-                                            <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
-                                        </td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="manufacturing_cost" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">Total WIP</td>
-                                        <td style="text-align: right;"><field name="pisang_wip_onhand_qty" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_wip_onhand_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 40px;">WIP Cost Price</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_wip_cost_price" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">Finished MO</td>
-                                        <td style="text-align: right;"><field name="pisang_wip_outgoing_qty" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_wip_outgoing_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-left: 20px;">Ending WIP</td>
-                                        <td style="text-align: right;"><field name="pisang_wip_qty" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_wip_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="font-weight: bold;">Ending</td>
-                                        <td style="text-align: right;"><field name="pisang_closing_qty" /></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="pisang_closing_value" /></td>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
+                            <label for="fg2_valuation_ids" string="Inventory Status"/>
+                            <field name="fg2_valuation_ids" />
+                            
                             <label for="plantation_cost_ids" groups="base.group_no_one"/>
                             <field name="plantation_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
                                 <tree>
@@ -551,9 +460,9 @@
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" sum="total_cost_latex" />
-                                    <field name="total_cost_lump" sum="total_cost_lump" />
-                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
+                                    <field name="total_cost" sum="total_cost" />
                                 </tree>
                             </field>
                             <label for="mrp_cost_ids" groups="base.group_no_one"/>
@@ -564,14 +473,14 @@
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" sum="total_cost_latex" />
-                                    <field name="total_cost_lump" sum="total_cost_lump" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
                                     <field name="total_cost" sum="total_cost" optional="hide" />
                                 </tree>
                             </field>
                         </page>
                         <page name="fg_valuation" string="Finish Good Valuation"
-                                attrs="{'invisible': [('state','not in',['fg_valuation','account_entry','done'])]}">
+                                attrs="{'invisible': ['|',('varieties_type','=','pisang'),('state','not in',['fg_valuation','account_entry','done'])]}">
                             <field name="fg2_valuation_ids" />
                         </page>
                     </notebook>
@@ -590,7 +499,7 @@
                 <field name="date_to" />
                 <field name="state" widget="badge"
                     decoration-info="state=='start'"
-                    decoration-danger="state in ('rm_valuation','fg_valuation')"
+                    decoration-danger="state in ('rm_valuation','fg_valuation','account_entry')"
                     decoration-success="state=='done'"
                     />
             </tree>

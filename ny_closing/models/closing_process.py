@@ -313,19 +313,15 @@ class ClosingProcess(models.Model):
             if closing.closing_production_without_mrp_ids:
                 closing.closing_production_without_mrp_ids.unlink()
             for varietas in varieties:
+                print(">>>>>>>>>>> varitas", varietas.name)
                 product = varietas.product_id
                 if not product:
                     continue
                 # Find Previous Valuation
-                # prev_closing_fg_plant = False
-                # if closing.prev_closing_id:
-                #     for line in closing.prev_closing_id.fg2_valuation_ids:
-                #         if line.product_id.id==product.id:
-                #             prev_closing_fg_plant = line
                 prev_closing_fg_plant = self.env['closing.production.finishgood'].search([('without_mrp','=',True),
                             ('product_id','=',product.id),
-                            ('closing_process_id.state','=','done'),('date_to','<',closing.date_from)],
-                            order='date_from desc', limit=1)
+                            ('closing_process_id.state','=','done'),('closing_process_id.date_to','<',closing.date_from)],
+                            order='id desc', limit=1)
 
                 # Find Plantation Cost based on Business Unit
                 domain_plantation = [('parent_state','=','posted'),
@@ -366,11 +362,11 @@ class ClosingProcess(models.Model):
                 plantation_cost_to_add = [(0,0,vals) for vals in plantation_cost_grouped.values()]
 
                 # From NAP
-                incoming_naps = self.env['lhm.nap.line'].search([('product_id','=',product.id),
+                incoming_naps = self.env['timbangan.pabrik'].search([('product_id','=',product.id),
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-                incoming_qty = sum(incoming_naps.mapped('qty_nap')) if incoming_naps else 0.0
+                incoming_qty = sum(incoming_naps.mapped('product_qty')) if incoming_naps else 0.0
                 # Find Delivery/Sales
                 outgoing_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
                                 ('location_id.usage','=','internal'),('location_dest_id.usage','!=','internal'),
@@ -379,6 +375,8 @@ class ClosingProcess(models.Model):
                                 ])
                 outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
                 values_to_create = {
+                    'without_mrp': True,
+                    'varieties_id': varietas.id,
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg_plant.id if prev_closing_fg_plant else False,
                     'opening_qty': prev_closing_fg_plant.closing_qty if prev_closing_fg_plant else 0.0,
@@ -392,6 +390,7 @@ class ClosingProcess(models.Model):
                         'inventory_account_id': prev_closing_fg_plant.inventory_account_id.id if prev_closing_fg_plant.inventory_account_id else False,
                         'cogs_account_id': prev_closing_fg_plant.cogs_account_id.id if prev_closing_fg_plant.cogs_account_id else False,
                     })
+                print(">>>>>>>>>>>>>>other variant", values_to_create)
                 to_create.append((0,0,values_to_create))
             if to_create:
                 closing.closing_production_without_mrp_ids = to_create
@@ -430,12 +429,15 @@ class ClosingProcess(models.Model):
                         'varieties_type': 'pisang', 
                     }
                 prev_closing2 = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done'),
-                                                ('varieties_type','=','karet')], order='date_from desc', limit=1)
-                # if prev_closing2:
-                #     vals2.update({'prev_closing_id': prev_closing2.id,
-                #         'pisang_inventory_account_id': prev_closing2.pisang_inventory_account_id.id if prev_closing2.pisang_inventory_account_id else False,
-                #         'pisang_wip_account_id': prev_closing2.pisang_wip_account_id.id if prev_closing2.pisang_wip_account_id else False,
-                #     })
+                                                ('varieties_type','=','pisang')], order='date_from desc', limit=1)
+                if prev_closing2:
+                    vals2.update({'prev_closing_id': prev_closing2.id,
+                        # 'pisang_inventory_account_id': prev_closing2.pisang_inventory_account_id.id if prev_closing2.pisang_inventory_account_id else False,
+                        # 'pisang_wip_account_id': prev_closing2.pisang_wip_account_id.id if prev_closing2.pisang_wip_account_id else False,
+                        'pisang_varieties_id': prev_closing2.id,
+                        'pisang_non_grade_ids': [(6,0,prev_closing2.pisang_non_grade_ids.ids)] if prev_closing2.pisang_non_grade_ids else [],
+                        'pisang_with_grade_ids': [(6,0,prev_closing2.pisang_with_grade_ids.ids)] if prev_closing2.pisang_with_grade_ids else [],
+                    })
                 rec.closing_production_ids = [(0,0,vals2)]
             
             # CREATE PRODUCTION OTHER VARITAS

@@ -9,6 +9,7 @@ class PlantVarieties(models.Model):
     code = fields.Char('Code')
     product_id = fields.Many2one('product.product', string='Output Product')
     secondary_product_id = fields.Many2one('product.product', string='Secondary Product')
+    other_product_ids = fields.Many2many('product.product', 'varitas_product_rel', string='Other Products')
 
     plant_block_ids = fields.One2many('lhm.plant.block', 'varieties_id', string='Planted Block')
     harvest_activity_id = fields.Many2one('lhm.activity', string='Harvesting Activity')
