@@ -27,6 +27,27 @@ class DirectPayment(models.Model):
     ], string='Direct State')
     employee_expense_id = fields.Many2one('hr.employee.expense', string='Employee Expense')
 
+    partner_bank_id = fields.Many2one(
+        'res.partner.bank',
+        string='Partner Bank Account',
+        domain="[('partner_id', '=', partner_id)]",
+    )
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        if self.partner_id:
+            # Cari rekening bank partner yang memiliki allow_out_payment = True
+            partner_bank = self.env['res.partner.bank'].search([
+                ('partner_id', '=', self.partner_id.id),
+                # ('allow_out_payment', '=', True)
+                ('general', '=', True)
+            ], limit=1)
+            self.partner_bank_id = partner_bank.id if partner_bank else False
+        else:
+            # Kosongkan partner_bank_id jika partner_id dihapus
+            self.partner_bank_id = False
+
+
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
         if self.direct_state == 'send':
