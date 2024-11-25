@@ -14,10 +14,10 @@ class HrAttendanceCorrection(models.Model):
     state = fields.Selection([
         ('draft', 'New'),
         ('progres', 'Progres'),
-        ('approve', 'Approve'),
-        ('reject', 'Reject'),
+        ('review', 'Review'),
         ('cancel', 'Cancel'),
-        ('done', 'Done'),
+        ('reject', 'Reject'),
+        ('approve', 'Approve'),
     ], string='state', default="draft")
     line_ids = fields.One2many('hr.attendance.correction.line', 'correction_id', string="Correction Lines")
     
@@ -57,9 +57,13 @@ class HrAttendanceCorrection(models.Model):
         for rec in self:
             rec.state = 'progres'
 
-    def button_done(self):
+    def button_review(self):
         for rec in self:
-            rec.state = 'done'
+            rec.state = 'review'
+
+    # def button_done(self):
+    #     for rec in self:
+    #         rec.state = 'done'
 
     @api.model
     def create(self, vals):
@@ -109,6 +113,16 @@ class HrAttendanceCorrectionLine(models.Model):
                 else:
                     # Jika tidak ditemukan, kosongkan field terkait
                     raise ValidationError("Tanggal absensi yang Anda masukkan tidak ada dalam daftar batch absensi.")
+
+    @api.onchange('check_in', 'check_out')
+    def _onchange_check_in_check_out(self):
+        for line in self:
+            if line.correction_id and line.correction_id.date_attendance:
+                date_attendance = line.correction_id.date_attendance
+                if line.check_in and line.check_in.date() < date_attendance:
+                    raise ValidationError(f"Tanggal Checkin tidak boleh sebelum tanggal absensi : {date_attendance}")
+                if line.check_out and line.check_out.date() < date_attendance:
+                    raise ValidationError(f"Tanggal Checkout tidak boleh sebelum tanggal absensi : {date_attendance}")
 
     # @api.model
     # def create(self, vals):

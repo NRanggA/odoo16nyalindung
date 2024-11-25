@@ -11,7 +11,7 @@
                     <!-- <field name="kemandoran_id"/> -->
                     <field name="date_attendance"/>
                     <field name="attendance_type_id"/>
-                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-danger="state == 'reject'" decoration-info="state == 'approve'"/>
+                    <field name="state" widget="badge" decoration-success="state == 'approve'" decoration-warning="state == 'reject'" decoration-info="state == 'progres'" decoration-danger="state == 'cancel'"/>
                 </tree>
             </field>
         </record>
@@ -23,12 +23,12 @@
                 <form string="Perbaikan Absensi">
                     <header>
                         <button string="Request Approval" name="request_approval" states="draft" type="object" class="oe_highlight"/>
-                        <button string="Approve" name="button_approve" states="progres" type="object" class="oe_highlight"/>
-                        <button string="Reject" name="button_reject" states="progres" type="object" class="oe_highlight"/>
+                        <button string="Approve" name="button_approve" states="review" type="object" class="oe_highlight"/>
+                        <button string="Reject" name="button_reject" states="review" type="object" class="oe_highlight"/>
+                        <button string="Review" name="button_review" states="progres" type="object" class="oe_highlight"/>
                         <button string="Cancel" name="button_cancel" states="progres" type="object" class="oe_highlight"/>
-                        <button string="Done" name="button_done" states="approve" type="object" class="oe_highlight"/>
-                        <button string="Set to draft" name="set_to_draft" states="approve,reject,done" type="object" class="oe_stat_button"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,progres,approve,reject,cancel,done"/>
+                        <button string="Set to draft" name="set_to_draft" states="approve,reject,cancel" type="object" class="oe_stat_button"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,progres,review,cancel,reject,approve"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -43,7 +43,7 @@
                         </group>
                         <notebook>
                             <page string="Karyawan">
-                                <field name="line_ids">
+                                <field name="line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
                                     <tree editable="bottom">
                                         <field name="employee_id"/>
                                         <field name="nik"/>
