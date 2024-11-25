@@ -39,8 +39,8 @@ class DirectPayment(models.Model):
             # Cari rekening bank partner yang memiliki allow_out_payment = True
             partner_bank = self.env['res.partner.bank'].search([
                 ('partner_id', '=', self.partner_id.id),
-                # ('allow_out_payment', '=', True)
-                ('general', '=', True)
+                ('allow_out_payment', '=', True)
+                # ('general', '=', True)
             ], limit=1)
             self.partner_bank_id = partner_bank.id if partner_bank else False
         else:
