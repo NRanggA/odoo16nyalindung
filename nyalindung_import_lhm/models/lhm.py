@@ -13,9 +13,9 @@ class lhm_transaction(models.Model):
     _inherit = 'lhm.transaction'
 
     # Field untuk kebutuhan import LHM line 
-    is_import = fields.Boolean('Import LHM line', default=False)
-    file = fields.Binary('File', attachment=True)
-    error_message = fields.Text('Error Message')
+    is_import       = fields.Boolean('Import LHM line', default=False)
+    file            = fields.Binary('File', attachment=True)
+    error_message   = fields.Text('Error Message')
 
     def import_data(self):
         def cell_to_string(cell_value):
@@ -117,6 +117,7 @@ class lhm_transaction(models.Model):
                 # Update jika lhm_line ditemukan
                 if lhm_line:
                     to_update.append((1, lhm_line.id, {
+                        'employee_id'       : employee.id,
                         'attendance_id'     : absensi_kj.id,
                         'location_type_id'  : type_location.id,
                         'varieties_id'      : varietas_found.id,
@@ -136,7 +137,9 @@ class lhm_transaction(models.Model):
 
                     # Cek jika employee tidak berada pada kemandoran yang saat ini
                     if employee not in self.kemandoran_id.employee_ids:
-                        raise ValidationError(f"Employee dengan nama '{employee.name}' berasal dari kemandoran lain, silahkan 'Tambah Karyawan' terlebih dahulu !")
+                        error_message_list.append(
+                            f"Baris ke- {index + 2} Employee dengan nama '{employee.name}' berasal dari kemandoran lain, silahkan 'Tambah Karyawan' terlebih dahulu !"
+                        )
 
                     to_update.append((0, 0, {
                         'employee_id'       : employee.id,
@@ -154,21 +157,48 @@ class lhm_transaction(models.Model):
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                     }))
             else:
-                # Entri baru jika duplikat
+                # Log untuk melihat isi to_update sebelum melakukan pengecekan
+                # print(f"Data pada varibel: {to_update}")
+                # print(f"Cek Jika ada yang duplicate: Employee = {employee.id}, Location = {location.id}")
+
+                # Cek apakah employee_id dan location_id sudah ada di to_update
+                is_duplicate = False
+                for update in to_update:
+                    # Ambil data yang ada dalam to_update
+                    existing_employee_id = update[2].get('employee_id')
+                    existing_location_id = update[2].get('location_id')
+
+                    # Log untuk melihat nilai yang sedang dibandingkan
+                    # print(f"Bandingkan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}")
+
+                    # Pastikan perbandingan dilakukan dengan tipe data yang sesuai
+                    if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id):
+                        # print(f"Duplikat ditemukan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}")
+                        is_duplicate = True
+                        break
+
+                # print(f"Duplikat : {is_duplicate}")
+
+                if is_duplicate:
+                    error_message_list.append(
+                        f"Baris ke- {index + 2} Duplikat entri ditemukan untuk karyawan {employee.name} pada lokasi {location.code} dalam data yang sedang diimpor!"
+                    )
+                    continue
+                
                 to_update.append((0, 0, {
-                    'employee_id': employee.id,
-                    'attendance_id': absensi_kj.id,
-                    'location_type_id': type_location.id,
-                    'varieties_id': varietas_found.id,
-                    'location_id': location.id,
-                    'activity_id': activity.id,
-                    'is_borong': handle_nan(row.get('IS BORONG', ''), False),
-                    'is_hasil_2': handle_nan(row.get('IS HASIL 2', ''), False),
-                    'work_day': work_day,
-                    'product_id': varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                    'hasil_1': handle_nan(row.get('HASIL 1', ''), 0),
-                    'product_id_2': varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                    'hasil_2': handle_nan(row.get('HASIL 2', ''), 0),
+                    'employee_id'       : employee.id,
+                    'attendance_id'     : absensi_kj.id,
+                    'location_type_id'  : type_location.id,
+                    'varieties_id'      : varietas_found.id,
+                    'location_id'       : location.id,
+                    'activity_id'       : activity.id,
+                    'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
+                    'is_hasil_2'        : handle_nan(row.get('IS HASIL 2', ''), False),
+                    'work_day'          : work_day,
+                    'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
+                    'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
+                    'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
+                    'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                 }))
 
         if error_message_list:
@@ -179,6 +209,7 @@ class lhm_transaction(models.Model):
         self.lhm_line_ids = to_update
         return True
 
+    # Validasi Awal
     # def import_data(self):
     #     def cell_to_string(cell_value):
     #         if cell_value and (isinstance(cell_value, (float, np.floating)) or isinstance(cell_value, (int, np.integer))):
