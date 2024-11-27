@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="model_name_view_form" model="ir.ui.view">
+        <field name="name">lhm.location.type.inherit.form</field>
+        <field name="model">lhm.location.type</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_location_type_form"/>
+        <field name="arch" type="xml">
+            <field name="plantation" position="after">
+                <field name="laboratorium" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

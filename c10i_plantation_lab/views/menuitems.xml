@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_lab_root"
+        name="Laboratorium"
+        parent="c10i_lhm_v16.main_menu_lhm"
+        sequence="20"/>
+        <!-- groups="groups_id" -->
+    
+    <menuitem
+        id="menu_lab_production_order"
+        action="action_lab_production_order"
+        parent="menu_lab_root"
+        sequence="10"/>
+    
+    <menuitem
+        id="menu_lab_product"
+        action="action_lab_product"
+        parent="menu_lab_root"
+        sequence="11"/>
+    
+
+</odoo>

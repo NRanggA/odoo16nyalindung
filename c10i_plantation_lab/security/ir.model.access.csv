@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lab_product_user,lab.product user,model_lab_product,base.group_user,1,1,1,1
+access_lab_production_order_user,lab.production.order user,model_lab_production_order,base.group_user,1,1,1,1

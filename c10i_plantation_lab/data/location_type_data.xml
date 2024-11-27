@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+    
+        <record id="location_type_lab_seq" model="lhm.location.type">
+            <field name="name">Laboratorium</field>
+            <field name="code">LB</field>
+            <field name="laboratorium" eval="True"/>
+        </record>
+    
+    </data>
+
+</odoo>
