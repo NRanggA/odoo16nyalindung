@@ -29,7 +29,6 @@
         'views/hr_employee_expense.xml',
         'views/account_direct_payment.xml',
         'views/res_config_settings_view.xml',
-        'views/res_partner_bank_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
