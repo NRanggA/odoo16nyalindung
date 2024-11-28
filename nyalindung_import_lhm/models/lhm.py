@@ -42,6 +42,8 @@ class lhm_transaction(models.Model):
 
         # Lacak NIK yang sudah diperbarui pada iterasi pertama
         processed_employees = {}
+        # untuk melacak hk setiap employee
+        hk_tracker          = {}
 
         for index, row in df.iterrows():
             if not self.id:
@@ -50,7 +52,7 @@ class lhm_transaction(models.Model):
             employee_nik = cell_to_string(row.get('NIK', ''))
 
             # Cari employee di master data
-            employee = self.env['hr.employee'].search([('no_induk', '=', employee_nik)], limit=1)
+            employee = self.env['hr.employee'].sudo().search([('no_induk', '=', employee_nik)], limit=1)
             
             # Validasi employee di master data
             if not employee:
@@ -102,6 +104,17 @@ class lhm_transaction(models.Model):
             work_day = handle_nan(row.get('HK', ''), 0)
             if work_day > 1:
                 error_message_list.append(f"Baris ke- {index + 2} HK yang dimasukkan {row.get('HK', '')} tidak boleh lebih dari 1!")
+            
+            # Validasi total HK
+            if employee.id not in hk_tracker:
+                hk_tracker[employee.id] = 0
+            hk_tracker[employee.id] += work_day
+
+            if hk_tracker[employee.id] > 1:
+                error_message_list.append(
+                    f"Total HK untuk karyawan {employee.name} melebihi batas maksimum (1). HK saat ini: {hk_tracker[employee.id]} pada file yang di import."
+                )
+                # continue
             
             # Mendapatkan data absensi KJ
             absensi_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
@@ -167,24 +180,24 @@ class lhm_transaction(models.Model):
                     # Ambil data yang ada dalam to_update
                     existing_employee_id = update[2].get('employee_id')
                     existing_location_id = update[2].get('location_id')
+                    existing_activity_id = update[2].get('activity_id')
 
-                    # Log untuk melihat nilai yang sedang dibandingkan
-                    # print(f"Bandingkan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}")
+                    # cek dengan membangdingkan data
+                    print(f"Bandingkan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}, Activity ID = {existing_activity_id}")
 
-                    # Pastikan perbandingan dilakukan dengan tipe data yang sesuai
-                    if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id):
-                        # print(f"Duplikat ditemukan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}")
+                    if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id) and str(existing_activity_id) == str(activity.id):
+                        print(f"Duplikat ditemukan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}, Activity ID = {existing_activity_id}")
                         is_duplicate = True
                         break
 
-                # print(f"Duplikat : {is_duplicate}")
+                print(f"Duplikat : {is_duplicate}")
 
                 if is_duplicate:
                     error_message_list.append(
-                        f"Baris ke- {index + 2} Duplikat entri ditemukan untuk karyawan {employee.name} pada lokasi {location.code} dalam data yang sedang diimpor!"
+                        f"Baris ke- {index + 2} Duplikat entri ditemukan untuk karyawan {employee.name} pada lokasi {location.code} dan aktivitas {activity.code} dalam data yang sedang diimpor!"
                     )
                     continue
-                
+
                 to_update.append((0, 0, {
                     'employee_id'       : employee.id,
                     'attendance_id'     : absensi_kj.id,
