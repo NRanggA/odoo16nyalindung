@@ -50,7 +50,7 @@ class AccountMoveLine(models.Model):
             if line.move_id.state!='draft' or not line.plantation_location_type_id:
                 line.filtered_locations = []
             else:
-                if line.plantation_location_type_id.code in ('WS','VH','MA', 'MC'): # Menambahkan tipe Mills (MC)
+                if line.plantation_location_type_id.code in ('WS','VH','MA', 'MC','LB'): # Menambahkan tipe Mills (MC)
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
                 else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.plantation_location_type_id.id),('varieties_id','=',line.plantation_varieties_id.id)])
@@ -79,7 +79,7 @@ class AccountMoveLine(models.Model):
                         line.filtered_activities = []
                 else:
                     # menambahkan Mills (MC)
-                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS', 'MC'):
+                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS', 'MC','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.plantation_varieties_id:

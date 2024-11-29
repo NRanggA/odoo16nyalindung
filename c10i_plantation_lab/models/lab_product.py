@@ -9,6 +9,7 @@ class LabProduct(models.Model):
     code = fields.Char('Code', required=True)
     location_id = fields.Many2one('lhm.location', string='Plantation Location', ondelete='restrict')
     active = fields.Boolean(default=True)
+    account_id = fields.Many2one('account.account', string='Stock Valuation Account')
     
     def create_or_update_location(self):
         self.ensure_one()

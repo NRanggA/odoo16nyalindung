@@ -39,6 +39,8 @@ class LabOrder(models.Model):
     def action_cancel(self):
         for order in self:
             order.state = 'cancel'
+            order.date_start = False
+            order.date_end = False
     
     def action_set_draft(self):
         for order in self:

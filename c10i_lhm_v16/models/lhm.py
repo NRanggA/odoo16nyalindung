@@ -97,7 +97,7 @@ class lhm_location_type(models.Model):
     skb_declare             = fields.Boolean("SKB Declare", default=False)
     has_subtype             = fields.Boolean("Sub Tipe?", help="Centang jika memiliki sub tipe")
     # account_activity        = fields.Boolean("Use Account From Activity?", help="Langsung menggunakan account dari aktivitas")
-    account_id              = fields.Many2one("account.account", string="Allocation", ondelete="restrict")
+    account_id              = fields.Many2one("account.account", string="Default Activity Allocation Account", ondelete="restrict")
     
     location_ids            = fields.One2many("lhm.location", inverse_name="type_id", string="Daftar Lokasi", )
     activity_ids            = fields.One2many("lhm.activity", inverse_name="type_id", string="Daftar Aktivitas", )
@@ -1879,7 +1879,7 @@ class lhm_transaction_line(models.Model):
             if line.lhm_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('WS','VH','MA','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
                 else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
@@ -1907,7 +1907,7 @@ class lhm_transaction_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -3777,7 +3777,7 @@ class lhm_contractor_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('WS','VH','MA','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
                 else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
@@ -3997,7 +3997,7 @@ class lhm_contractor_nap_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('WS','VH','MA','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
                 else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])

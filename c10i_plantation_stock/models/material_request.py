@@ -46,7 +46,7 @@ class MaterialRequestLine(models.Model):
             if line.mr_id.state!='draft' or not line.location_type_id:
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('WS','VH','MA','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
                 else: # GC, IDC, PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
@@ -74,7 +74,7 @@ class MaterialRequestLine(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
