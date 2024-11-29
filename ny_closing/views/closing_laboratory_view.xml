@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="closing_laboratory_view_form" model="ir.ui.view">
+        <field name="name">closing.laboratory.view.form</field>
+        <field name="model">closing.laboratory</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Test Initialize" name="compute_initial_and_cost_value" type="object" groups="base.group_no_one"/>
+                    <button string="Test Create Journal Entry" name="create_account_move" type="object" groups="base.group_no_one"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="lab_product_id" />
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group>
+                            <field name="closing_move_id" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="wip" string="Work in Process">
+                            <table class="table table-sm table-bordered table-hover" style="width: 80%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th rowspan="2" class="text-center" style="width: 30%;"></th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="width: 30%; text-align: right;"><field name="opening_wip_qty"/></td>
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 30%; text-align: right;"><field name="opening_wip_value"/></td>
+                                        <td style="width: 5%;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="text-align: right;"><field name="incoming_wip_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="wip_cost_consumed" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Onhand Qty</td>
+                                        <td style="text-align: right;"><field name="onhand_wip_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="onhand_wip_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">New Cost Price</td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="new_wip_cost_price"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Outgoing</td>
+                                        <td style="text-align: right;"><field name="outgoing_wip_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="outgoing_wip_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Ending</td>
+                                        <td style="text-align: right;"><field name="closing_wip_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="closing_wip_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </page>
+                        <page name="fg" string="Finish Good Valuation">
+                            <table class="table table-sm table-bordered table-hover" style="width: 80%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th rowspan="2" class="text-center" style="width: 30%;"></th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="width: 30%; text-align: right;"><field name="opening_fg_qty"/></td>
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 30%; text-align: right;"><field name="opening_fg_value"/></td>
+                                        <td style="width: 5%;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="text-align: right;"><field name="incoming_fg_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="incoming_fg_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Onhand Qty</td>
+                                        <td style="text-align: right;"><field name="onhand_fg_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="onhand_fg_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">New Cost Price</td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="new_fg_cost_price"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Outgoing</td>
+                                        <td style="text-align: right;"><field name="outgoing_fg_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="outgoing_fg_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Ending</td>
+                                        <td style="text-align: right;"><field name="closing_fg_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="closing_fg_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <field name="outgoing_stock_move_ids" >
+                                <tree>
+                                    <field name="date" />
+                                    <field name="product_id" />
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="product_qty" sum="product_qty"/>
+                                    <field name="state" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="closing_laboratory_view_tree" model="ir.ui.view">
+        <field name="name">closing.laboratory.view.tree</field>
+        <field name="model">closing.laboratory</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="lab_product_id" />
+                <field name="date_from" />
+                <field name="date_to" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_laboratory_view_search" model="ir.ui.view">
+        <field name="name">closing.laboratory.view.search</field>
+        <field name="model">closing.laboratory</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="lab_product_id" />
+            </search>
+        </field>
+    </record>
+
+    <record id="closing_laboratory_action" model="ir.actions.act_window">
+        <field name="name">Closing Laboratory</field>
+        <field name="res_model">closing.laboratory</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

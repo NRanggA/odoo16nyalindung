@@ -17,6 +17,8 @@ access_closing_project_plant_deferred_user,closing.project.plant.deferred user,m
 
 access_closing_nursery_user,closing.nursery user,model_closing_nursery,base.group_user,1,1,1,1
 
+access_closing_laboratory_user,closing.laboratory user,model_closing_laboratory,base.group_user,1,1,1,1
+
 access_plantation_season_user,plantation.season user,model_plantation_season,base.group_user,1,1,1,1
 access_closing_plantation_line_user,closing.plantation.line user,model_closing_plantation_line,base.group_user,1,1,1,1
 access_closing_plantation_deferred_user,closing.plantation.deferred user,model_closing_plantation_deferred,base.group_user,1,1,1,1

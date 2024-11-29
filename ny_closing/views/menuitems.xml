@@ -55,6 +55,13 @@
             action="ny_closing.closing_nursery_action"
             sequence="14"
             groups="base.group_no_one"/>
+        
+        <menuitem
+            id="menu_closing_laboratory"
+            parent="ny_closing.menu_detail_closing_process"
+            action="ny_closing.closing_laboratory_action"
+            sequence="15"
+            groups="base.group_no_one"/>
 
         <menuitem
             id="menu_closing_plantation"

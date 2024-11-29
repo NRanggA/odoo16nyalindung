@@ -16,6 +16,7 @@ class ClosingProcess(models.Model):
         ('running_machine', 'Running Machine'),
         ('closing_project', 'Closing Project'),
         ('closing_nursery', 'Closing Nursery'),
+        ('closing_laboratory', 'Closing Laboratory'),
         ('closing_plantation', 'Closing Plantation'),
         ('closing_production', 'Closing Production'),
         ('done', 'Done'),
@@ -41,6 +42,8 @@ class ClosingProcess(models.Model):
     counterpart_closing_ns_account_id = fields.Many2one('account.account', string='Counterpart Closing Nursery Account')
     closing_nursery_ids = fields.One2many('closing.nursery', 'closing_process_id', string='Closing Nursery')
     mark_closing_nursery_is_done = fields.Boolean()
+    closing_laboratory_ids = fields.One2many('closing.laboratory', 'closing_process_id', string='Closing Laboratory')
+    mark_closing_laboratory_is_done = fields.Boolean()
     counterpart_closing_plant_account_id = fields.Many2one('account.account', string='Counterpart Closing Plantation Account')
     closing_plantation_ids = fields.One2many('closing.plantation', 'closing_process_id', string='Closing Plantation')
     mark_closing_plantation_is_done = fields.Boolean()
@@ -269,10 +272,43 @@ class ClosingProcess(models.Model):
     def summerize_nursery_cost(self):
         for rec in self:
             rec.closing_nursery_ids.compute_initial_and_cost_value()
+    
     def create_account_move_nursery(self):
         for rec in self:
             rec.closing_nursery_ids.create_account_move()
             rec.closing_nursery_ids.closing_move_id._post(soft=False)
+    
+    def get_laboratory(self):
+        for rec in self:
+            existing_cl_lab = rec.closing_laboratory_ids
+            if existing_cl_lab:
+                laboratory = self.env['lab.product'].search([('id','not in',rec.closing_laboratory_ids.lab_product_id.ids)])
+            else:
+                laboratory = self.env['lab.product'].search([])
+            
+            to_insert = []
+            for lb in laboratory:
+                to_insert.append((0,0,{
+                    'date_from': rec.date_from, 'date_to': rec.date_to,
+                    'lab_product_id': lb.id,
+                    # 'closing_account_id': rec.counterpart_closing_ns_account_id.id,
+                }))
+            if to_insert:
+                rec.closing_laboratory_ids = to_insert
+            
+            if existing_cl_lab:
+                existing_cl_lab.write({
+                    'date_from': rec.date_from, 'date_to': rec.date_to
+                })
+    
+    def summerize_laboratory_cost(self):
+        for rec in self:
+            rec.closing_laboratory_ids.compute_initial_and_cost_value()
+    
+    def create_account_move_laboratory(self):
+        for rec in self:
+            rec.closing_laboratory_ids.create_account_move()
+            rec.closing_laboratory_ids.closing_move_id._post(soft=False)
 
     def get_plantation(self):
         for rec in self:
@@ -509,9 +545,21 @@ class ClosingProcess(models.Model):
             'tag': 'reload',
         }
 
-    def button_continue_to_closing_plantation(self):
+    def button_continue_to_closing_laboratory(self):
         for rec in self:
             if not rec.mark_closing_nursery_is_done:
+                raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
+            rec.get_laboratory()
+            rec.write({'state': 'closing_laboratory'})
+            # rec.compute_initial_and_cost_fg2()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+
+    def button_continue_to_closing_plantation(self):
+        for rec in self:
+            if not rec.mark_closing_laboratory_is_done:
                 raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
             rec.get_plantation()
             rec.write({'state': 'closing_plantation'})
@@ -557,6 +605,7 @@ class ClosingProcess(models.Model):
                 'mark_running_machine_is_done': False,
                 'mark_closing_project_is_done': False,
                 'mark_closing_nursery_is_done': False,
+                'mark_closing_laboratory_is_done': False,
                 'mark_closing_plantation_is_done': False,
                 'mark_closing_production_is_done': False,
             })
@@ -678,6 +727,30 @@ class ClosingProcess(models.Model):
         ids_to_show = self.closing_nursery_ids.closing_move_id.line_ids.ids
         if self.closing_nursery_ids.closing_out_move_ids:
             ids_to_show.extend(self.closing_nursery_ids.closing_out_move_ids.line_ids.ids)
+        if src_move_lines:
+            ids_to_show.extend(src_move_lines.ids)
+        action['domain'] = [('id','in',ids_to_show)]
+        return action
+
+    def action_open_closing_laboratory(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.closing_laboratory_action")
+        action['domain'] = [('id','in',self.closing_laboratory_ids.ids)]
+        return action
+    
+    def action_open_output_journal_laboratory(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("account.action_move_journal_line")
+        # action['domain'] = [('id','in',self.closing_nursery_ids.closing_move_id.ids)]
+        ids_to_show = self.closing_laboratory_ids.closing_move_id.ids
+        action['domain'] = [('id','in',ids_to_show)]
+        return action
+    
+    def action_open_all_move_line_laboratory(self):
+        src_move_lines = self.env['account.move.line'].search([('plantation_location_type_id','in',self.closing_laboratory_ids.lab_product_id.location_id.type_id.ids),
+            ('plantation_location_id','in',self.closing_laboratory_ids.lab_product_id.location_id.ids),
+            ('date','>=',self.date_from),('date','<=',self.date_to),
+            ('parent_state','=','posted')])
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
+        ids_to_show = self.closing_laboratory_ids.closing_move_id.line_ids.ids
         if src_move_lines:
             ids_to_show.extend(src_move_lines.ids)
         action['domain'] = [('id','in',ids_to_show)]

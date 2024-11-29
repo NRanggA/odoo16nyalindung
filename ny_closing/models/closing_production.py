@@ -328,12 +328,25 @@ class ClosingProduction(models.Model):
     pct_cost_for_sheet = fields.Float('% Cost for Sheet', default=90)
     sheet_manufacturing_cost = fields.Float(compute='_compute_mrp_cost_distribution', store=True, string='Manufacturing Cost of Sheet')
     sheet_production_cost = fields.Float(compute='_compute_mrp_cost_distribution', store=True, string='Production Cost of Sheet')
+    
+    # Asam Semut
+    sheet_rm_opening_qty = fields.Float(string='Begining Qty of Asam Semut')
+    sheet_rm_opening_value = fields.Float(string='Begining Value of Asam Semut')
+    sheet_rm_incoming_qty = fields.Float(string='Incoming Qty of Asam Semut')
+    sheet_rm_incoming_value = fields.Float(string='Incoming Qty of Asam Semut')
+    sheet_rm_onhand_qty = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='Onhand Qty of Asam Semut')
+    sheet_rm_onhand_value = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='Onhand Value of Asam Semut')
+    sheet_rm_cost_price = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='New Cost Price of Asam Semut')
+    sheet_rm_outgoing_qty = fields.Float(string='Consumed Qty of Asam Semut')
+    sheet_rm_outgoing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Consumed Qty of Asam Semut')
+    sheet_rm_closing_qty = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Qty of Asam Semut')
+    sheet_rm_closing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Value of Asam Semut')
+    sheet_raw_material_cost = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Raw Material Cost of Sheet')
 
     latex_wip_onhand_qty = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current WIP Latex')
     latex_wip_onhand_value = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current Value WIP Latex')
     latex_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Latex')
     latex_wip_outgoing_qty = fields.Float(string='Finished Process Sheet')
-    sheet_raw_material_cost = fields.Float(string='Raw Material Cost of Sheet')
     
     latex_wip_outgoing_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Finished Process Value Sheet')
     latex_wip_qty = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Latex')
@@ -395,6 +408,7 @@ class ClosingProduction(models.Model):
     # # Sheet
     sheet_product_id = fields.Many2one('product.product', string='Product Sheet', ondelete='restrict')
     sheet_wip_account_id = fields.Many2one('account.account', 'Account WIP Sheet')
+    sheet_rm_account_id = fields.Many2one('account.account', 'Account Cost Asam Semut')
     # # Compound
     compound_product_id = fields.Many2one('product.product', string='Product Sheet', ondelete='restrict')
     compound_wip_account_id = fields.Many2one('account.account', 'Account WIP Compo')
@@ -456,14 +470,31 @@ class ClosingProduction(models.Model):
             closing.latex_plantation_cost = sum(closing.plantation_cost_ids.mapped('total_cost_latex')) if closing.plantation_cost_ids else 0.0
             closing.lump_plantation_cost = sum(closing.plantation_cost_ids.mapped('total_cost_lump')) if closing.plantation_cost_ids else 0.0
     
+    @api.depends('sheet_rm_opening_qty', 'sheet_rm_opening_value',
+                 'sheet_rm_incoming_qty', 'sheet_rm_incoming_value')
+    def _compute_onhand_asam_semut(self):
+        for closing in self:
+            closing.sheet_rm_onhand_qty = closing.sheet_rm_opening_qty + closing.sheet_rm_incoming_qty
+            closing.sheet_rm_onhand_value = closing.sheet_rm_opening_value + closing.sheet_rm_incoming_value
+            closing.sheet_rm_cost_price = closing.sheet_rm_onhand_value/closing.sheet_rm_onhand_qty if closing.sheet_rm_onhand_qty else 0.0
+    
+    @api.depends('sheet_rm_outgoing_qty', 'sheet_rm_cost_price',
+                 'sheet_rm_onhand_qty', 'sheet_rm_onhand_value')
+    def _compute_closing_asam_semut(self):
+        for closing in self:
+            closing.sheet_rm_outgoing_value = closing.sheet_rm_cost_price * closing.sheet_rm_outgoing_qty
+            closing.sheet_rm_closing_qty = closing.sheet_rm_onhand_qty - closing.sheet_rm_outgoing_qty
+            closing.sheet_rm_closing_value = closing.sheet_rm_onhand_value - closing.sheet_rm_outgoing_value
+            closing.sheet_raw_material_cost = closing.sheet_rm_outgoing_value
+
     @api.depends('latex_opening_qty', 'latex_opening_value', 
-            'latex_incoming_qty', 'latex_plantation_cost',
+            'latex_incoming_qty', 'latex_plantation_cost', 'sheet_raw_material_cost',
             'lump_opening_qty', 'lump_opening_value', 
             'lump_incoming_qty', 'lump_plantation_cost')
     def _compute_onhand_and_cost_price_rm(self):
         for closing in self:
             closing.latex_onhand_qty = closing.latex_opening_qty + closing.latex_incoming_qty
-            closing.latex_onhand_value = closing.latex_opening_value + closing.latex_plantation_cost
+            closing.latex_onhand_value = closing.latex_opening_value + closing.latex_plantation_cost + closing.sheet_raw_material_cost
             closing.latex_new_cost_price = closing.latex_onhand_value/closing.latex_onhand_qty if closing.latex_onhand_qty else 0.0
             closing.lump_onhand_qty = closing.lump_opening_qty + closing.lump_incoming_qty
             closing.lump_onhand_value = closing.lump_opening_value + closing.lump_plantation_cost
@@ -510,7 +541,7 @@ class ClosingProduction(models.Model):
             closing.lump_wip_onhand_value = closing.lump_wip_opening_value + closing.lump_wip_incoming_value + closing.compound_production_cost
             closing.lump_wip_cost_price = closing.lump_wip_onhand_value/closing.lump_wip_onhand_qty if closing.lump_wip_onhand_qty else 0.0
 
-    @api.depends('latex_wip_outgoing_qty', 'sheet_raw_material_cost', 
+    @api.depends('latex_wip_outgoing_qty', 
                 'latex_wip_cost_price', 'latex_wip_onhand_qty',
                  'lump_wip_outgoing_qty', 'lump_wip_cost_price', 'lump_wip_onhand_qty')
     def _compute_closing_wip_value_rm(self):

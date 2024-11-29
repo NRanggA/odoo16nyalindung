@@ -24,6 +24,7 @@
         'views/running_machine_view.xml',
         'views/closing_project_view.xml',
         'views/closing_nursery_view.xml',
+        'views/closing_laboratory_view.xml',
         'views/lhm_plant_block_view.xml',
         'views/plantation_season_view.xml',
         'views/lhm_activity_view.xml',

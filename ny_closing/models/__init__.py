@@ -5,6 +5,7 @@ from . import running_vehicle
 from . import running_machine
 from . import closing_project
 from . import closing_nursery
+from . import closing_laboratory
 # from . import closing_infra
 # from . import closing_general_charge
 from . import plantation_season

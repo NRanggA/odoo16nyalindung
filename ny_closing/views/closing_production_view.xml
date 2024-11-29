@@ -167,6 +167,7 @@
                         </group>
                         <group string="Account for Sheet" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="sheet_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <!-- <field name="sheet_rm_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/> -->
                         </group>
                         <group string="Account for Compo" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="compound_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
@@ -294,7 +295,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="padding-left: 20px;" rowspan="2">Manufacturing Cost
+                                        <td style="padding-left: 20px;" rowspan="9">Manufacturing Cost
                                             <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
                                             <br/>
                                             <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
@@ -313,16 +314,77 @@
                                         <td style="text-align: right;"><field name="compound_manufacturing_cost" /></td>
                                         <td></td>
                                     </tr>
-                                    <!-- <tr>
-                                        <td>Other Raw Material</td>
+                                    <!-- ASAM SEMUT -->
+                                    <tr>
+                                        <td style="padding-left: 20px;">Begining</td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="sheet_raw_material_cost" readonly="0" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_opening_qty" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_opening_value" /></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Incoming</td>
                                         <td></td>
-                                    </tr> -->
+                                        <td style="text-align: right;"><field name="sheet_rm_incoming_qty" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_incoming_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Onhand</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_onhand_qty" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_onhand_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 40px;">Cost Price</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_cost_price" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Consumed</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_outgoing_qty" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_outgoing_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Ending</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_closing_qty" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_closing_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cost Asam Semut</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_closing_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
                                     <!-- <tr>
                                         <td>Total Cost of Sheet</td>
                                         <td></td>
@@ -356,7 +418,8 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="padding-left: 20px;" rowspan="2">Finished MO</td>
+                                        <!-- <td style="padding-left: 20px;" rowspan="2">Finished MO</td> -->
+                                        <td style="padding-left: 20px;">Finished MO</td>
                                         <td style="text-align: right;"><field name="latex_wip_outgoing_qty" /></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="latex_wip_outgoing_value" /></td>
@@ -366,7 +429,7 @@
                                         <td style="text-align: right;"><field name="lump_wip_outgoing_value" /></td>
                                         <td></td>
                                     </tr>
-                                    <tr>
+                                    <!-- <tr>
                                         <td>Raw Material Cost</td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="sheet_raw_material_cost" readonly="0" /></td>
@@ -375,7 +438,7 @@
                                         <td></td>
                                         <td></td>
                                         <td></td>
-                                    </tr>
+                                    </tr> -->
                                     <tr>
                                         <td style="padding-left: 20px;">Ending WIP</td>
                                         <td style="text-align: right;"><field name="latex_wip_qty" /></td>
