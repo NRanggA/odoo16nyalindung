@@ -70,10 +70,10 @@
                             <page string="Detail DRC">
                                 <field name="drc_line_ids" widget="one2many_list">
                                     <tree editable="bottom">
-                                        <field name="block_id" options="{'no_create': True, 'no_open': True}"/>
-                                        <field name="date"/>
-                                        <field name="product"/>
-                                        <field name="uom"/>
+                                        <field name="block_id" readonly="1" force_save="1"/>
+                                        <field name="date" readonly="1" force_save="1"/>
+                                        <field name="product" readonly="1" force_save="1"/>
+                                        <field name="uom" readonly="1" force_save="1"/>
                                         <field name="drc"/>
                                     </tree>
                                 </field>
