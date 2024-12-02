@@ -5,12 +5,13 @@ class lhm_drc(models.Model):
     _description = 'Ini Header DRC'
 
     drc_line_ids = fields.One2many('lhm.drc.line', 'drc_id', string="Lines")
-    nap_id = fields.Many2one('lhm.nap', ondelete="cascade")
-    name = fields.Char(string="No. Dok", default='New')
-    date = fields.Date(string="Tanggal", required=True)
-    confirmed = fields.Boolean(string="Confirmed", default=False)
-    cancel = fields.Boolean(string="Cancelled", default=False)
-    state = fields.Selection([
+    nap_id       = fields.Many2one('lhm.nap', ondelete="cascade")
+    name         = fields.Char(string="No. Dok", default='New')
+    date         = fields.Date(string="Tanggal", required=True)
+    tgl_panen    = fields.Date("Tgl. Panen")
+    confirmed    = fields.Boolean(string="Confirmed", default=False)
+    cancel       = fields.Boolean(string="Cancelled", default=False)
+    state        = fields.Selection([
         ('draft', 'New'), 
         ('cancel', 'Cancelled'),
         ('confirmed', 'Confirmed')
@@ -25,6 +26,29 @@ class lhm_drc(models.Model):
         date_obj = fields.Date.from_string(date)
         values['name'] = f"DRC/{date_obj.strftime('%Y-%m-%d')}"
         return super(lhm_drc, self).create(values)
+    
+    @api.onchange('tgl_panen')
+    def _onchange_tgl_panen(self):
+        if not self.tgl_panen:
+            self.drc_line_ids = [(5, 0, 0)]
+            return
+
+        nap_lines = self.env['lhm.nap.line'].search([('tgl_panen', '=', self.tgl_panen)])
+
+        grouped_data = {}
+        for nap_line in nap_lines:
+            key = (nap_line.block_id.id, nap_line.product_id.id)
+            if key not in grouped_data:
+                grouped_data[key] = {
+                    'block_id': nap_line.block_id.id,
+                    'date': nap_line.tgl_panen,
+                    'product': nap_line.product_id.id,
+                    'uom': nap_line.uom_id.id,
+                }
+
+        drc_lines = [(0, 0, data) for data in grouped_data.values()]
+
+        self.drc_line_ids = drc_lines
     
     def action_draft(self):
         for record in self:
@@ -55,8 +79,8 @@ class lhm_drc_line(models.Model):
     drc_id = fields.Many2one('lhm.drc', string="Dokumen Utama", ondelete='cascade')
     block_id = fields.Many2one("lhm.plant.block", string="Lokasi")
     date = fields.Date(string="Tanggal")
-    product = fields.Many2one('product.product', string="Product", required=True)
-    uom = fields.Many2one('uom.uom', string="Unit of Measure", required=True)
+    product = fields.Many2one('product.product', string="Product")
+    uom = fields.Many2one('uom.uom', string="Unit of Measure")
     drc = fields.Float(string="DRC", required=True)
     nap_line_id = fields.Many2one('lhm.nap.line', string="NAP Line", ondelete="cascade")
 
