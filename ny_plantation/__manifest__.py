@@ -18,6 +18,7 @@
     'depends': [
         'c10i_lhm_v16',
         'hr',
+        'stock',
     ],
 
     # always loaded
@@ -29,5 +30,6 @@
         'views/lhm_plant_block_view.xml',
         'views/hr_employee.xml',
         'views/lhm_drc_view.xml',
+        'views/lhm_nap_view.xml',
     ],
 }

@@ -3447,6 +3447,7 @@
                         <!-- <button name="button_confirm" states="process" string="Confirm" type="object" class="btn-default btn-primary"/> -->
                     </header>
                     <sheet>
+                        <!-- <div name="button_box" class="oe_button_box" position="inside"> -->
                         <div class="oe_title">
                             <label for="name" string="No. Dok" class="oe_edit_only"/>
                             <h1><field name="name" readonly="1"/></h1>
@@ -3460,24 +3461,6 @@
                                 <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
 
-                            <!-- <field name="timbangan_kebun">
-                                <tree editable="bottom">
-                                    <field name="product_id"/>
-                                    <field name="product_qty"/>
-                                    <field name="product_uom"/>
-                                </tree>
-                            </field> Masih Error-->
-
-                            <!-- <group  name="timbangan_kebun" string="Timbangan Kebun">
-                                <field name="product_id"/>
-                                <field name="product_qty"/>
-                                <field name="uom_id"/>
-                                <field name="timbang_ksg_kbn" />
-                                <field name="timbang_isi_kbn" />
-                                <field name="timbang_tara_kbn" />
-                                <field name="janjang_jml" />
-                            </group> -->
-
                             <group  name="kendaraan" string="Unit Kendaraan">
                                 <field name="driver" />
                                 <field name="vehicle_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -3486,32 +3469,10 @@
                                 <field name="reg_number_subtitue" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','=',False)]}"/>
                                 <field name="ownership" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','!=',False)]}"/>
                                 <field name="ownership_subtitute" readonly="1" attrs="{'invisible': [('vehicle_subtitute_id','=',False)]}"/>
-
-                                <!-- error domain pada field ini, domain="[('supplier','=',True)]" -->
                                 <field name="contractor_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': ['|', ('ownership','=','rental'), ('ownership_subtitute','=','rental')], 'invisible': [('ownership','!=','rental'), ('ownership_subtitute','!=','rental')]}"/>
                                 <field name="lhm_contractor_id" invisible="1"/>
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
-
-                            <!-- <group name="timbangan_pks" string="Timbangan Pabrik">
-                                <field name="product_id"/>
-                                <field name="product_qty"/>
-                                <field name="uom_id"/>
-                                <field name="drc_latex"/>
-                                <field name="drc_lump"/>
-                                <field name="quality"/>
-                            </group> -->
-
-                            <!-- <group name="timbangan_pks" string="Timbangan PKS">
-                                <field name="pks_id" domain="[('is_pks','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="date_pks" />
-                                <field name="timbang_isi_pks" />
-                                <field name="timbang_ksg_pks" />
-                                <field name="timbang_tara_pks" />
-                                <field name="afkir" />
-                                <field name="grading" />
-                                <field name="netto" />
-                            </group> -->
                        </group>
 
                         <notebook>
@@ -3532,12 +3493,12 @@
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_qty"/>
-                                        <field name="uom_id"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="tgl_terima"/>
-                                        <field name="tgl_panen"/>
-                                        <field name="drc" invisible="1"/>
+                                        <field name="tgl_panen" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="quality_pabrik"/>
-                                        <!-- <field name="stock_picking_id"/> -->
+                                        <field name="drc" invisible="1"/>
+                                        <field name="stock_picking_id" invisible="1"/>
                                     </tree>
                                 </field>
                             </page>                                               

@@ -300,6 +300,13 @@ class lhm_nap(models.Model):
         self.state = 'process'
         self.process = True
         for record in self:
+            no_tgl_terima = record.pabrik_line_ids.filtered(lambda line: not line.tgl_terima)
+            if no_tgl_terima:
+                raise UserError("Mohon lengkapi Tanggal Terima di Timbangan Pabrik untuk semua baris.")
+            no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: not line.quality_pabrik)
+            if no_quality_pabrik:
+                raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris.")
+
             record.line_ids.unlink()
             employee_data = {}
             supplier_data = {}
@@ -740,10 +747,10 @@ class TimbanganPabrik(models.Model):
     lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
     product_id         = fields.Many2one('product.product', string='Product', readonly=True)
     product_qty        = fields.Float(string='Product Quantity')
-    uom_id             = fields.Many2one('uom.uom', string='UoM')
+    uom_id             = fields.Many2one('uom.uom', string='UoM', readonly=True)
     drc                = fields.Float(string='DRC')
     quality_pabrik     = fields.Many2one('lhm.quality.pabrik', string='Quality')
-    tgl_panen          = fields.Date(string='Tanggal Panen')
+    tgl_panen          = fields.Date(string='Tanggal Panen', readonly=True)
     tgl_terima         = fields.Date(string='Tanggal Terima')
     block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict", readonly=True)
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
@@ -761,25 +768,34 @@ class TimbanganPabrik(models.Model):
         if not self.uom_id:
             raise UserError("Unit of Measure (UoM) harus diisi sebelum menyimpan data.")
 
+        virtual_location = self.env['stock.location'].search([('name', '=', 'Virtual Locations')], limit=1)
+        if not virtual_location:
+            raise UserError("Lokasi virtual yang diinginkan tidak ditemukan. Harap konfigurasi lokasi virtual.")
+
+        # Logika untuk membuat nomor dokumen khusus
+        sequence_prefix = "NAP/IN/"
+        existing_docs = self.env['stock.picking'].search([('name', 'ilike', sequence_prefix)])
+        next_number = len(existing_docs) + 1
+        custom_name = f"{sequence_prefix}{str(next_number).zfill(3)}"  # Format nomor dengan 3 digit
+
         if not self.stock_picking_id:
             picking_vals = {
-                # 'partner_id': self.lhm_nap_id.partner_id.id if self.lhm_nap_id else False,
-                'location_id': self.env.ref('stock.stock_location_suppliers').id,
+                'name': custom_name,  # Set nama dokumen custom
+                'origin': self.lhm_nap_id.name if self.lhm_nap_id else '',  # Isi origin dengan name dari lhm.nap
+                'location_id': virtual_location.id,
                 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                 'move_ids_without_package': [(0, 0, {
                     'product_id': self.product_id.id,
                     'name': self.product_id.name,
                     'product_uom_qty': self.product_qty,
                     'product_uom': self.uom_id.id,
-                    'location_id': self.env.ref('stock.stock_location_suppliers').id,
+                    'location_id': virtual_location.id,
                     'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                 })],
                 'picking_type_id': self.env.ref('stock.picking_type_in').id,
             }
             picking = self.env['stock.picking'].create(picking_vals)
             self.stock_picking_id = picking.id
-            # print(">>>>>>>>>>>>>>>>", self.block_id.location_id)
-            # print(">>>>>>>>>>>>>>>>", stop)
         else:
             self.stock_picking_id.move_ids_without_package[0].write({
                 'product_uom_qty': self.product_qty,
