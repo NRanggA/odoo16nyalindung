@@ -49,7 +49,7 @@
                                             <!-- <img t-att-src="'%s/ny_account/static/src/img/logo.jpg' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/> -->
                                             <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                         </th>
-                                        <th style="font-size: 13px;">KASBON KELUAR</th>
+                                        <th style="font-size: 13px;">BUKTI KAS KELUAR</th>
                                     </tr>
                                     <tr>
                                         <td style="font-weight: bold;">PT. Nyalindung</td>
@@ -142,12 +142,13 @@
                                                         <td t-esc="jurnal.account_id.name" style="border: 1px solid black;"/>
                                                         <td style="text-align:right; border: 1px solid black;"><span t-esc="o.format_amount(line.amount_to_pay)"/></td>
                                                     </tr>
+                                                    
                                                 </t>
                                             </t>
                                         </t>
                                     </t>
                                     <tr>
-                                        <t t-if="o.charge_account_id">
+                                        <t t-if="o.no_memo and o.date_memo">
                                             <td style="border: 1px solid black;"/>
                                             <td style="border: 1px solid black;" t-esc="o.charge_account_id.name or ''"/> 
                                             <td style="text-align:right; border: 1px solid black;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
@@ -255,10 +256,10 @@
                                         <td></td>
                                     </tr>
                                     <tr class="signature-box-footer">
-                                        <td>(Nama dan Tanggal)</td>
-                                        <td>(Nama dan Tanggal)</td>
-                                        <td>(Nama dan Tanggal)</td>
-                                        <td>(Nama dan Tanggal)</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                 </table>
                             </td>
@@ -266,7 +267,7 @@
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
                                         <th style="width: 40%">Jenis Pembayaran</th>
-                                        <td>: </td>
+                                        <td>: <span t-field="o.jenis_pembayaran"/></td>
                                     </tr>
                                     <tr>
                                         <td></td>
@@ -276,15 +277,15 @@
                                     </tr>
                                     <tr>
                                         <th>Atas Nama</th>
-                                        <td>: </td>
+                                        <td>: <span t-field="o.atas_nama"/></td>
                                     </tr>
                                     <tr>
                                         <th>No. Rekening</th>
-                                        <td>: </td>
+                                        <td>: <span t-esc="o.partner_bank_id.acc_number if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].acc_number or ''"/></td>
                                     </tr>
                                     <tr>
                                         <th>Bank</th>
-                                        <td>: </td>
+                                        <td>: <span t-esc="o.partner_bank_id.bank_id.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.name or ''"/></td>
                                     </tr>
                                 </table>
                             </td>
@@ -324,7 +325,7 @@
                                         <td></td>
                                     </tr>
                                     <tr class="signature-box-footer">
-                                        <td style="text-align:center;">(Nama dan Tanggal)</td>
+                                        <td style="text-align:center;"></td>
                                     </tr>
                                 </table>
                             </td>

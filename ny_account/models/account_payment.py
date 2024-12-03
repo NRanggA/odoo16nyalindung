@@ -29,6 +29,14 @@ class AccountPayment(models.Model):
                             ('transfer', 'Transfer'),
                         ], string='Jenis Pembayaran')
     
+    atas_nama           = fields.Char('Atas Nama')
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        if self.partner_id:
+            self.atas_nama = self.partner_id.name
+        else:
+            self.atas_nama = ''
 
 
     # Fungsi untuk memformat jumlah

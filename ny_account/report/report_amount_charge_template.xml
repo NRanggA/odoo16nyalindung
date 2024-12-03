@@ -194,7 +194,7 @@
                                 <table style="border: none; font-size: 10px;">
                                     <tr>
                                         <th>Nama Penerima</th>
-                                        <td> : <span t-field="o.partner_id.name"/></td>
+                                        <td> : <span t-field="o.journal_id.bank_id.name"/></td>
                                     </tr>
                                     <tr>
                                         <th>Atas Nama</th>
@@ -253,7 +253,7 @@
                             <td><span t-field="o.no_memo"/></td>
                             <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
                             <td style="text-align:right;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
-                            <td><span t-field="o.ref"/></td>
+                            <td>Amount Adm</td>
                         </tr>
                     </table>
                     <table style="border: none; font-size: 10px; text-align: left; margin-top:10px;">
