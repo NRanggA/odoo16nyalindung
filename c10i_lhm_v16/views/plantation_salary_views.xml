@@ -262,7 +262,7 @@
         </record>
 
         <!-- <menuitem id="submenu_proses_penggajian" name="Proses Penggajian" parent="menu_lhm_transaction" groups="group_plantation_manager" sequence="40"/> -->
-        <menuitem id="submenu_proses_penggajian" name="Proses Penggajian" parent="menu_lhm_transaction" sequence="40"/>
+        <!-- <menuitem id="submenu_proses_penggajian" name="Proses Penggajian" parent="menu_lhm_transaction" sequence="40"/> -->
         <menuitem id="submenu_daftar_upah" name="Daftar Upah" action="view_plantation_salary_action" parent="menu_plantation_report" groups="group_plantation_manager" sequence="60"/>
         <!-- End of Report DU -->
 
@@ -466,7 +466,7 @@
             <field name="view_id" ref="view_plantation_allowance_other_form"/>
             <field name="act_window_id" ref="action_plantation_allowance_other"/>
         </record>
-        <menuitem id="menu_plantation_allowance_other" name="Potongan Lainnya" action="action_plantation_allowance_other" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="20"/>
+        <!-- <menuitem id="menu_plantation_allowance_other" name="Potongan Lainnya" action="action_plantation_allowance_other" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="20"/> -->
         <!--End Of Plantation Allowance Other -->
 
         <!--Plantation Allowance Tunjangan -->
@@ -550,7 +550,7 @@
             <field name="view_id" ref="view_plantation_allowance_tunjangan_form"/>
             <field name="act_window_id" ref="action_plantation_allowance_tunjangan"/>
         </record>
-        <menuitem id="menu_plantation_allowance_tunjangan" name="Tunjangan Lainnya" action="action_plantation_allowance_tunjangan" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="18"/>
+        <!-- <menuitem id="menu_plantation_allowance_tunjangan" name="Tunjangan Lainnya" action="action_plantation_allowance_tunjangan" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="18"/> -->
         <!--End Of Plantation Allowance Tunjangan -->
 
         <!--Plantation Allowance Rapel -->
@@ -634,7 +634,7 @@
             <field name="view_id" ref="view_plantation_allowance_rapel_form"/>
             <field name="act_window_id" ref="action_plantation_allowance_rapel"/>
         </record>
-        <menuitem id="menu_plantation_allowance_rapel" name="Rapelan/THR" action="action_plantation_allowance_rapel" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="17"/>
+        <!-- <menuitem id="menu_plantation_allowance_rapel" name="Rapelan/THR" action="action_plantation_allowance_rapel" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="17"/> -->
         <!--End Of Plantation Allowance Rapel -->
 
         <!--Plantation Allowance Koperasi -->
@@ -718,7 +718,7 @@
             <field name="view_id" ref="view_plantation_allowance_koperasi_form"/>
             <field name="act_window_id" ref="action_plantation_allowance_koperasi"/>
         </record>
-        <menuitem id="menu_plantation_allowance_koperasi" name="Potongan Koperasi" action="action_plantation_allowance_koperasi" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="19"/>
+        <!-- <menuitem id="menu_plantation_allowance_koperasi" name="Potongan Koperasi" action="action_plantation_allowance_koperasi" parent="submenu_proses_penggajian" groups="group_plantation_manager" sequence="19"/> -->
         <!--End Of Plantation Allowance Koperasi -->
     </data>
 </odoo>
