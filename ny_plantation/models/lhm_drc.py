@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 class lhm_drc(models.Model):
     _name = 'lhm.drc'
@@ -32,9 +33,7 @@ class lhm_drc(models.Model):
         if not self.tgl_panen:
             self.drc_line_ids = [(5, 0, 0)]
             return
-
         nap_lines = self.env['lhm.nap.line'].search([('tgl_panen', '=', self.tgl_panen)])
-
         grouped_data = {}
         for nap_line in nap_lines:
             key = (nap_line.block_id.id, nap_line.product_id.id)
@@ -45,10 +44,21 @@ class lhm_drc(models.Model):
                     'product': nap_line.product_id.id,
                     'uom': nap_line.uom_id.id,
                 }
-
         drc_lines = [(0, 0, data) for data in grouped_data.values()]
-
-        self.drc_line_ids = drc_lines
+        self.drc_line_ids = [(5, 0, 0)] + drc_lines
+    
+    @api.constrains('tgl_panen')
+    def _existing_tgl_panen(self):
+        for record in self:
+            if record.tgl_panen:
+                existing_drc = self.search([
+                    ('tgl_panen', '=', record.tgl_panen),
+                    ('id', '!=', record.id)
+                ])
+                if existing_drc:
+                    raise ValidationError(
+                        f"Tanggal Panen {record.tgl_panen} sudah digunakan di dokumen lain. Harap pilih tanggal yang berbeda."
+                    )
     
     def action_draft(self):
         for record in self:
