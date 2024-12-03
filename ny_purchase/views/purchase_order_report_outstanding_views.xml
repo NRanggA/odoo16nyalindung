@@ -12,6 +12,8 @@
                 <field name="purchase_order_id" />
                 <field name="purchase_order_date" widget="date" />
                 <field name="product_id" />
+                <field name="pr_product_qty" />
+                <field name="po_product_qty" />
                 <field name="date_planned" widget="date" />
                 <field name="days_count" decoration-danger="days_count &lt; 0" decoration-success="days_count &gt;= 0"/>
             </tree>

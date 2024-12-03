@@ -14,6 +14,9 @@ class PurchaseOrderReportOutstanding(models.Model):
     product_id              = fields.Many2one('product.product', string='Product')
     date_planned            = fields.Datetime('Expected Arrival')
     days_count              = fields.Integer('Days Count')
+    po_product_qty          = fields.Float('PO Qty')
+    pr_product_qty          = fields.Float('PR Qty')
+    
 
     # @api.model
     # def init(self):
@@ -119,6 +122,8 @@ class PurchaseOrderReportOutstanding(models.Model):
                         po.id AS purchase_order_id,
                         po.date_order AS purchase_order_date,
                         pol.product_id AS product_id,
+                        pol.product_qty as po_product_qty,
+                        prl.product_qty as pr_product_qty,
                         pol.date_planned AS date_planned,
                         pr.id AS purchase_request_id,
                         pr.date_start AS purchase_request_date,

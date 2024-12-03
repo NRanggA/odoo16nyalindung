@@ -13,6 +13,7 @@ class PurchaseRequestReportOutstanding(models.Model):
     product_id               = fields.Many2one('product.product', string='Product')
     date_required            = fields.Datetime('Date Required')
     days_count               = fields.Integer('Days Count')
+    pr_product_qty           = fields.Float('PR Qty')
 
     @api.model
     def init(self):
@@ -25,6 +26,7 @@ class PurchaseRequestReportOutstanding(models.Model):
                     pr.id AS purchase_request_id,
                     pr.date_start AS purchase_request_date,
                     prl.product_id AS product_id,
+                    prl.product_qty as pr_product_qty,
                     prl.date_required AS date_required,
                     EXTRACT(DAY FROM (prl.date_required - timezone('Asia/Jakarta', now())))::int AS days_count
                 FROM purchase_request_line prl
