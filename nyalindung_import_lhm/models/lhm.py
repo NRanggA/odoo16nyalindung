@@ -153,6 +153,17 @@ class lhm_transaction(models.Model):
                         error_message_list.append(
                             f"Baris ke- {index + 2} Employee dengan nama '{employee.name}' berasal dari kemandoran lain, silahkan 'Tambah Karyawan' terlebih dahulu !"
                         )
+            
+                    # Cek jika employee tidak ada absen.
+                    absensi = self.env['hr.attendance.sheet'].search([
+                        ('employee_id', '=', employee.id),
+                        ('date', '=', self.date),
+                        ('check_in', '!=', False),
+                    ])
+                    if not absensi:
+                        error_message_list.append(
+                            f"Baris ke- {index + 2} Employee dengan nama '{employee.name}' belum melakukan absensi, silahkan perbaiki absensi terlebih dahulu."
+                        )
 
                     to_update.append((0, 0, {
                         'employee_id'       : employee.id,
