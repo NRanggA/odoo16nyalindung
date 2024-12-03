@@ -174,12 +174,12 @@
 
 
         <!-- Parent menu nya tidak di ketahui -->
-        <menuitem id="submenu_laporan_monitor"
+        <!-- <menuitem id="submenu_laporan_monitor"
                   parent="submenu_proses_penggajian"
                   name="Monitoring DU Harian"
                   action="wizard_report_monitor_action"
                   groups="group_plantation_supervisor,group_plantation_operator_can_see_salary,group_plantation_reporting_all"
-                  sequence="11"/>
+                  sequence="11"/> -->
 
     </data>
 </odoo>
