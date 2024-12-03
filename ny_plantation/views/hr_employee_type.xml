@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_type_inherit_ny_plantation" model="ir.ui.view">
+        <field name="name">hr.employee.type.view.form.inherit</field>
+        <field name="model">hr.employee.type</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_employee_type_form"/>
+        <field name="arch" type="xml">
+            <field name="sequence_id" position="after">
+                <field name="penyadap"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

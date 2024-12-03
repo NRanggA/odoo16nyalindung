@@ -19,4 +19,21 @@
         </field>
     </record>
 
+    <!-- Menambahkan validasi untuk field lokasi pada hr -->
+    <record id="view_hr_employee_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.fom.inherit.custom</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_employee_form_inherit_lhm"/>
+        <field name="arch" type="xml">
+            <field name="plantation_location_id" position="after">
+                <field name="penyadap" invisible="1"/>
+            </field>
+            <field name="plantation_location_id" position="attributes">
+                <attribute name="attrs">{"required": [["penyadap", "=", True]]}</attribute>
+            </field>
+        </field>
+    </record>
+
+
+
 </odoo>

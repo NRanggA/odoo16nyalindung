@@ -5,3 +5,5 @@ class HrEmployee(models.Model):
 
     mandor_id           = fields.Many2one(comodel_name="hr.employee", string="Mandor", ondelete="restrict",
                                 related='kemandoran_id.mandor_id', readonly=True, store=True)
+    
+    penyadap              = fields.Boolean("Penyadap", related="type_id.penyadap", readonly=True)
