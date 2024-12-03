@@ -23,7 +23,7 @@
                             <tr>
                                 <td style="border: none;">Supplier</td>
                                 <td style="border: none;"> : </td>
-                                <td style="border: none;" t-esc="o.employee_id.name"/>
+                                <td style="border: none;" t-esc="o.partner_id.name"/>
                             </tr>
                             <tr>
                                 <td style="border: none;">Tanggal</td>
