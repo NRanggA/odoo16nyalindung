@@ -20,6 +20,12 @@
             <xpath expr="//field[@name='line_ids']/form//field[@name='product_id']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            
+            <!-- Menambahkan field jenis pembayaran -->
+            <xpath expr="//field[@name='description']" position="after">
+                <field name="jenis_pembayaran"/>
+                <field name="atas_nama"/>
+            </xpath>
 
         </field>
     </record>

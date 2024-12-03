@@ -48,7 +48,7 @@
                                         <th rowspan="4" width="40%">
                                             <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                         </th>
-                                        <th style="font-size: 13px;">KASBON KELUAR</th>
+                                        <th style="font-size: 13px;">BUKTI KAS KELUAR</th>
                                     </tr>
                                     <tr>
                                         <td style="font-weight: bold;">PT. Nyalindung</td>

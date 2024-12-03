@@ -17,9 +17,14 @@
         <field name="direct_state" widget="radio" string="Payment Type"/>
       </xpath>
       <xpath expr="//field[@name='company_id']" position="after">
+        <field name="general" invisible="1"/>
         <field name="partner_bank_id" 
               domain="[('partner_id', '=', partner_id)]" 
-              options="{'no_edit':True, 'no_create':True, 'no_open': True}"/>
+              options="{'no_edit':True, 'no_create':True, 'no_open': True}"
+              attrs="{'invisible' : [('general','=', True)]}"
+              />
+        <field name="partner_bank_name" attrs="{'invisible' : [('general','=', False)]}"/>
+        <field name="partner_bank_number" attrs="{'invisible' : [('general','=', False)]}"/>
       </xpath>
       <xpath expr="//field[@name='line_ids']/tree/field[@name='name']" position="after">
         <field name="plantation_location_type_id" 
@@ -52,5 +57,34 @@
       </field>
     </field>
   </record>
+
+
+
+
+  <!-- ovveride action bawaan account.direct.payment dengan menambahkan nilai default direct_state (send) -->
+  <record id="c10i_direct_payment.account_direct_payment_action" model="ir.actions.act_window">
+      <field name="name">Direct Payment</field>
+      <field name="res_model">account.direct.payment</field>
+      <field name="view_mode">tree,form</field>
+      <field name="domain">[('direct_state', '=', 'send')]</field>
+      <field name="context">{'default_direct_state': 'send'}</field>
+  </record>
+
+  <!-- Menambahkan Menu dan action Untuk Direct Payment Receive -->
+  <record id="direct_payment_receive_action" model="ir.actions.act_window">
+    <field name="name">Direct Payment Receive</field>
+    <field name="res_model">account.direct.payment</field>
+    <field name="view_mode">tree,form</field>
+    <field name="domain">[('direct_state', '=', 'receive')]</field>
+    <field name="context">{'default_direct_state': 'receive'}</field>
+  </record>
+
+  <menuitem
+    id="direct_payment_receive_menu"
+    name="Direct Payment Receive"
+    action="direct_payment_receive_action"
+    parent="account.menu_finance_payables"
+    sequence="30"/>
+    
 
 </odoo>

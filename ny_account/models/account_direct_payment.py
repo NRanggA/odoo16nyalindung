@@ -5,6 +5,19 @@ class DirectPayment(models.Model):
     _inherit = 'account.direct.payment'
 
     amount_text         = fields.Char(compute='amount_to_text', string='Terbilang')
+    jenis_pembayaran    = fields.Selection([
+                            ('tunai', 'Tunai'),
+                            ('transfer', 'Transfer'),
+                        ], string='Jenis Pembayaran')
+    atas_nama = fields.Char('Atas Nama')
+
+
+    @api.onchange('partner_id')
+    def _onchange_atas_nama(self):
+        if self.partner_id:
+            self.atas_nama = self.partner_id.name
+        else:
+            self.atas_nama = ''
 
     def format_amount(self, amount_total):
         if amount_total is not None:

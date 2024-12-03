@@ -24,24 +24,33 @@ class DirectPayment(models.Model):
     direct_state = fields.Selection([
         ('send', 'Send'),
         ('receive', 'Receive'),
-    ], string='Direct State')
+    ], string='Direct State', readonly=True)
     employee_expense_id = fields.Many2one('hr.employee.expense', string='Employee Expense')
 
+    # Partner Bank
     partner_bank_id = fields.Many2one(
         'res.partner.bank',
         string='Partner Bank Account',
         domain="[('partner_id', '=', partner_id)]",
     )
 
+    general             = fields.Boolean(related='partner_id.general',string="general")
+    partner_bank_name   = fields.Char('Partner Bank Name')
+    partner_bank_number = fields.Char('Partner Bank Number') 
+
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
-        if self.partner_id:
-            # Cari rekening bank partner yang memiliki allow_out_payment = True
-            partner_bank = self.env['res.partner.bank'].search([
-                ('partner_id', '=', self.partner_id.id),
-                ('allow_out_payment', '=', True)
-            ], limit=1)
-            self.partner_bank_id = partner_bank.id if partner_bank else False
+        if self.partner_id:  # Pastikan partner_id tidak kosong
+            if self.partner_id.general:
+                # Jika 'general' True, kosongkan partner_bank_id
+                self.partner_bank_id = False
+            else:
+                # Cari rekening bank partner yang memiliki allow_out_payment = True
+                partner_bank = self.env['res.partner.bank'].search([
+                    ('partner_id', '=', self.partner_id.id),
+                    ('allow_out_payment', '=', True),
+                ], limit=1)
+                self.partner_bank_id = partner_bank.id if partner_bank else False
         else:
             # Kosongkan partner_bank_id jika partner_id dihapus
             self.partner_bank_id = False

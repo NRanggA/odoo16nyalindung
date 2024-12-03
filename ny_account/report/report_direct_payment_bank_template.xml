@@ -108,7 +108,7 @@
                                         <th rowspan="4" width="40%">
                                             <img t-att-src="'%s/ny_account/static/src/img/logo1.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="170px" height="40px" alt="Logo"/>
                                         </th>
-                                        <th style="font-size: 13px;">BUKTI PENGELUARAN BANK</th>
+                                        <th style="font-size: 13px;">BUKTI BANK KELUAR</th>
                                     </tr>
                                     <tr>
                                         <td style="font-weight: bold;">PT. Nyalindung</td>
@@ -154,7 +154,7 @@
                                     </tr>
                                     <tr>
                                         <th>Jenis Pembayaran</th>
-                                        <td> : </td>
+                                        <td> : <span t-field="o.jenis_pembayaran"/></td>
                                     </tr>
                                 </table>
                             </td>
@@ -188,7 +188,7 @@
                                     </tr>
                                     <tr>
                                         <th>Atas Nama</th>
-                                        <td> : </td>
+                                        <td> : <span t-field="o.atas_nama"/></td>
                                     </tr>
                                 </table>
                             </td>
@@ -198,19 +198,24 @@
                                         <th>Bank</th>
                                         <td>
                                             : 
-                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.name"/> -->
+                                            <!-- <span t-field="o.partner_bank_id.bank_id.name"/> -->
+                                            <t t-esc="o.partner_bank_name if o.general else o.partner_bank_id.bank_id.name"/>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>Cabang</th>
                                         <td> : 
-                                            <!-- <span t-field="o.partner_id.bank_ids[0].bank_id.state.name"/> -->
+                                            <t t-if="o.general">-</t>
+                                            <t t-elif="not o.general">
+                                                <t t-esc="o.partner_bank_id.bank_id.street or ''"/>
+                                            </t>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>No. Rekening</th>
                                         <td> : 
-                                            <!-- <span t-field="o.partner_id.bank_ids[0].acc_number"/> -->
+                                            <!-- <span t-field="o.partner_bank_id.acc_number"/> -->
+                                            <t t-esc="o.partner_bank_number if o.general else o.partner_bank_id.acc_number"/>
                                         </td>
                                     </tr>
                                 </table>
