@@ -22,7 +22,8 @@
             <!-- <field name="mode">primary</field> -->
             <field name="arch" type="xml">
                 <field name="location_id" position="before">
-                    <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" options="{'no_create_edit':True, 'no_create':True}"/>
+                    <!-- <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" options="{'no_create_edit':True, 'no_create':True}"/> -->
+                    <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True}"/>
                     <field name="bpb_number"/>
                 </field>
                 <xpath expr="//div[label[@for='partner_id']]" position="attributes">
