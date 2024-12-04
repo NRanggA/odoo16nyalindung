@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mrp_manual_consume_user,mrp_manual_consume user,model_mrp_manual_consume,mrp.group_mrp_user,1,1,1,1
+access_mrp_production,mrp_production_user,model_mrp_production,mrp.group_mrp_user,1,1,1,1
+

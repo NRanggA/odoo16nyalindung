@@ -12,6 +12,9 @@
                             context="{'default_bom_id': bom_id, 'default_company_id': company_id}"/>
                 </page>
             </page>
+            <xpath expr="//header" position="inside">
+                <button name="action_draft" type="object" string="Draft" states="cancel" class="btn-default"/>
+            </xpath>
         </field>
     </record>
 
