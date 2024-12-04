@@ -24,6 +24,8 @@
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'data/stock_location_data.xml',
+        'data/picking_type_data.xml',
 
         'views/hr_foreman_view.xml',
         'views/lhm_transaction_view.xml',

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+        
+        <record id="picking_type_ripening_1" model="stock.picking.type">
+            <field name="name">Ripening Transfer</field>
+            <field name="code">internal</field>
+            <field name="sequence_code">RAP</field>
+            <field name="sequence">10</field>
+            <field name="default_location_src_id" ref="stock.stock_location_stock"/>
+            <field name="default_location_dest_id" ref="ny_plantation.loc_ripening_loc_1"/>
+        </record>
+    
+    </data>
+    
+
+</odoo>

@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_lhm_drc_operator,access_lhm_drc_operator,model_lhm_drc,c10i_lhm_v16.group_plantation_operator,1,1,1,1
 access_lhm_drc_line_operator,access_lhm_drc_line_operator,model_lhm_drc_line,c10i_lhm_v16.group_plantation_operator,1,1,1,1
+access_stock_ripening_pisang_operator,stock.ripening.pisang operator,model_stock_ripening_pisang,c10i_lhm_v16.group_plantation_operator,1,1,1,1
+access_stock_ripening_pisang_line_operator,stock.ripening.pisang.line operator,model_stock_ripening_pisang_line,c10i_lhm_v16.group_plantation_operator,1,1,1,1

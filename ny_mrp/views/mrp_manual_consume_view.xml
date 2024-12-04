@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_manual_consume_view_form" model="ir.ui.view">
+        <field name="name">mrp_manual_consume.view.form</field>
+        <field name="model">mrp.manual.consume</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="product_id" />
+                            <field name="consumed_qty" />
+                            <field name="product_uom" />
+                        </group>
+                        <group>
+                            <field name="date" />
+                            <field name="component_consume_production_id" />
+                            <field name="workorder_id" />
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_manual_consume_view_tree" model="ir.ui.view">
+        <field name="name">mrp_manual_consume.view.tree</field>
+        <field name="model">mrp.manual.consume</field>
+        <field name="arch" type="xml">
+            <tree editable="top">
+                <field name="company_id" invisible="1"/>
+                <field name="date" readonly="1"/>
+                <field name="component_consume_production_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="bom_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="bom_line_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="product_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="consumed_qty" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="product_uom" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="is_confirmed" invisible="1" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" attrs="{'invisible':[('is_confirmed','=',True)]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="mrp_manual_consume_view_search" model="ir.ui.view">
+        <field name="name">mrp_manual_consume.view.search</field>
+        <field name="model">mrp.manual.consume</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id" />
+                <field name="component_consume_production_id" />
+                <field name="bom_id" />
+                <separator/>
+                <filter name="filter_confirmed" string="Confirmed" domain="[('is_confirmed', '=', True)]" />
+
+                <group name="name" string="Group By">
+                    <filter name="groupby_product" string="Product" context="{'group_by': 'product_id'}" />
+                    <filter name="groupby_mrp_prod" string="Production Order" context="{'group_by': 'component_consume_production_id'}" />
+                    <filter name="groupby_bom" string="Bill of Material" context="{'group_by': 'bom_id'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mrp_manual_consume" model="ir.actions.act_window">
+        <field name="name">Manual Consumption</field>
+        <field name="res_model">mrp.manual.consume</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_mrp_manual_consume"
+        action="action_mrp_manual_consume"
+        parent="mrp.menu_mrp_manufacturing"
+        sequence="15"/>
+
+</odoo>

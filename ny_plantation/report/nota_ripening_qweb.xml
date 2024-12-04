@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+
+        <template id="nota_ripening_report_pdf">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="row justify-content-end mb16">
+                                <div class="col-4" name="right_box">
+                                    <div t-field="o.name" t-options="{'widget': 'barcode', 'width': 600, 'height': 100, 'img_style': 'width:300px;height:50px;'}"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6" name="div_outgoing_address">
+                                    <div>
+                                        <span><strong>Transfer To:</strong></span>
+                                        <div t-field="o.partner_id"
+                                            t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                                    </div>
+                                    <!-- <div t-elif="o.picking_type_id.code != 'internal' and o.picking_type_id.warehouse_id.partner_id">
+                                        <span><strong>Warehouse Address:</strong></span>
+                                        <div t-field="o.picking_type_id.warehouse_id.partner_id"
+                                            t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                                    </div> -->
+                                </div>
+                            </div>
+                            <br/>
+                            <h1 t-field="o.name" class="mt0"/>
+                            <div class="row mt48 mb32">
+                                <!-- <div t-if="o.origin" class="col-auto" name="div_origin">
+                                    <strong>Order:</strong>
+                                    <p t-field="o.origin"/>
+                                </div> -->
+                                <div class="col-auto" name="div_state">
+                                    <strong>Status:</strong>
+                                    <p t-field="o.state"/>
+                                </div>
+                                <div class="col-auto" name="div_sched_date">
+                                    <strong>Creation Date:</strong>
+                                    <p t-field="o.date"/>
+                                </div>
+                                <div class="col-auto" name="div_date_done">
+                                    <strong>Effective Date:</strong>
+                                    <p t-field="o.date_done"/>
+                                </div>
+                            </div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th width="50%">Product</th>
+                                        <th width="20%">Quantity</th>
+                                        <th width="5%"></th>
+                                        <th width="20%">Est. Weight</th>
+                                        <th width="5%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.line_ids" t-as="line">
+                                        <td><span t-field="line.product_id"/></td>
+                                        <td class="text-right"><span t-field="line.product_packaging_qty"/></td>
+                                        <td><span t-field="line.product_packaging_id"/></td>
+                                        <td class="text-right"><span t-field="line.out_product_qty"/></td>
+                                        <td><span t-field="line.product_uom"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p t-field="o.note"/>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+
+</odoo>
