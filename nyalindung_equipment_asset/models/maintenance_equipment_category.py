@@ -31,18 +31,20 @@ class MaintenanceEquipmentCategory(models.Model):
             self.fix_asset_state = 'registered'
 
     def _prepare_seq_vals(self,val):
+        code = val.get('name').replace(" ","").lower()
         return {
             'name': 'Sequence for Equipment Category %s'%val.get('name'),
-            'code': '%s.%s'%(self._name,val.get('name')),
-            'prefix': '%s/'%self.prefix_seq + '%(' +'month)s'+ '/'+ '%(' + 'year)s/',
+            'code': '%s.%s'%(self._name,code),
+            'prefix': '%s/'%val.get('prefix_seq') + '%(' +'month)s'+ '/'+ '%(' + 'year)s/',
             'padding': 4
         }
 
     @api.model_create_multi
     def create(self, vals):
         for val in vals:
+            code = val.get('name').replace(" ","").lower()
             
-            seq_id = self.env['ir.sequence'].search([('code', '=', '%s.%s'%(self._name,val.get('name')))],limit=1)
+            seq_id = self.env['ir.sequence'].search([('code', '=', '%s.%s'%(self._name,code))],limit=1)
             if not seq_id:
                 seq_id = self.env['ir.sequence'].create(self._prepare_seq_vals(val))
                 val['sequence_id'] = seq_id.id
@@ -53,7 +55,8 @@ class MaintenanceEquipmentCategory(models.Model):
 
     def write(self, vals):
         for val in vals:
-            seq_id = self.env['ir.sequence'].search([('code', '=', '%s.%s'%(self._name,self.name))],limit=1)
+            code = self.name.replace(" ","").lower()
+            seq_id = self.env['ir.sequence'].search([('code', '=', '%s.%s'%(self._name,code))],limit=1)
             if not seq_id:
                 seq_id = self.env['ir.sequence'].create(self._prepare_seq_vals())
                 val['sequence_id'] = seq_id.id
