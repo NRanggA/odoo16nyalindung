@@ -21,83 +21,151 @@
                         <group>
                             <field name="inventory_account_id" />
                             <field name="cogs_account_id" />
+                            <field name="scrap_account_id" attrs="{'invisible': [('ripening_qty','=',0)]}"/>
+                            <field name="inventory_ripening_account_id" attrs="{'invisible': [('ripening_qty','=',0)]}"/>
                         </group>
                     </group>
-                    <table class="table table-sm table-bordered table-hover" style="width: 80%">
-                        <thead class="thead-light">
-                            <tr>
-                                <th rowspan="2" class="text-center" style="width: 30%;"></th>
-                                <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Quantity</th>
-                                <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="font-weight: bold;">Beginning</td>
-                                <td style="width: 30%; text-align: right;"><field name="opening_qty"/></td>
-                                <td style="width: 5%;"></td>
-                                <td style="width: 30%; text-align: right;"><field name="opening_value"/></td>
-                                <td style="width: 5%;"></td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight: bold;">Incoming</td>
-                                <td style="text-align: right;"><field name="incoming_qty"/></td>
-                                <td></td>
-                                <td style="text-align: right;"><field name="manufacturing_cost" /><br/>
-                                <field name="plantation_cost" /></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight: bold;"><label for="ripening_qty" string="Ripening" attrs="{'invisible': [('ripening_cost','=',0)]}"/></td>
-                                <td style="text-align: right;"><field name="ripening_qty" groups="base.group_no_one" attrs="{'invisible': [('ripening_cost','=',0)]}"/></td>
-                                <td></td>
-                                <td style="text-align: right;"><field name="ripening_cost" attrs="{'invisible': [('ripening_cost','=',0)]}"/></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight: bold;">Onhand Qty</td>
-                                <td style="text-align: right;"><field name="onhand_qty"/></td>
-                                <td></td>
-                                <td style="text-align: right;"><field name="onhand_value"/></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 20px;">New Cost Price</td>
-                                <td style="text-align: right;"></td>
-                                <td></td>
-                                <td style="text-align: right;"><field name="new_cost_price"/></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight: bold;">Outgoing</td>
-                                <td style="text-align: right;"><field name="outgoing_qty"/></td>
-                                <td></td>
-                                <td style="text-align: right;"><field name="outgoing_value"/></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight: bold;">Ending</td>
-                                <td style="text-align: right;"><field name="closing_qty"/></td>
-                                <td></td>
-                                <td style="text-align: right;"><field name="closing_value"/></td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <notebook>
+                        <page name="valuation" string="Valuation">
+                            <table class="table table-sm table-bordered table-hover" style="width: 80%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th rowspan="2" class="text-center" style="width: 30%;"></th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="width: 30%; text-align: right;"><field name="opening_qty"/></td>
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 30%; text-align: right;"><field name="opening_value"/></td>
+                                        <td style="width: 5%;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="text-align: right;"><field name="incoming_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="manufacturing_cost" /><br/>
+                                        <field name="plantation_cost" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Onhand Qty</td>
+                                        <td style="text-align: right;"><field name="onhand_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="onhand_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">New Cost Price</td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="new_cost_price"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;"><label for="ripening_qty" string="Ripening" attrs="{'invisible': [('ripening_qty','=',0)]}"/></td>
+                                        <td style="text-align: right;"><field name="ripening_qty" attrs="{'invisible': [('ripening_qty','=',0)]}"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_value" attrs="{'invisible': [('ripening_qty','=',0)]}"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Scrap</td>
+                                        <td style="text-align: right;"><field name="scrap_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="scrap_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Delivery</td>
+                                        <td style="text-align: right;"><field name="outgoing_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="outgoing_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Ending</td>
+                                        <td style="text-align: right;"><field name="closing_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="closing_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                    <label for="plantation_cost_ids" groups="base.group_no_one"/>
-                    <field name="plantation_cost_ids" groups="base.group_no_one">
-                        <tree>
-                            <field name="plantation_location_type_id" />
-                            <field name="plantation_location_id" />
-                            <field name="plantation_activity_id" />
-                            <field name="plantation_src_journal_id" />
-                            <field name="account_id" />
-                            <field name="total_cost_latex" invisible="1"/>
-                            <field name="total_cost_lump" invisible="1"/>
-                            <field name="total_cost" sum="total_cost"/>
-                        </tree>
-                    </field>
+                            <label for="plantation_cost_ids" groups="base.group_no_one"/>
+                            <field name="plantation_cost_ids" groups="base.group_no_one">
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="account_id" />
+                                    <field name="total_cost_latex" invisible="1"/>
+                                    <field name="total_cost_lump" invisible="1"/>
+                                    <field name="total_cost" sum="total_cost"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="ripening" string="Ripening" attrs="{'invisible': [('ripening_qty','=',0)]}">
+                            <table class="table table-sm table-bordered table-hover" style="width: 80%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th rowspan="2" class="text-center" style="width: 30%;"></th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Quantity</th>
+                                        <th colspan="2" class="text-center" style="font-weight: bold;width: 35%;">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="width: 30%; text-align: right;"><field name="ripening_opening_qty"/></td>
+                                        <td style="width: 5%;"></td>
+                                        <td style="width: 30%; text-align: right;"><field name="ripening_opening_value"/></td>
+                                        <td style="width: 5%;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="text-align: right;"><field name="ripening_incoming_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_incoming_value" /><br/><field name="ripening_cost" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Onhand Qty</td>
+                                        <td style="text-align: right;"><field name="ripening_onhand_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_onhand_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">New Cost Price</td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="new_cost_price_ripening"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Delivery</td>
+                                        <td style="text-align: right;"><field name="ripening_outgoing_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_outgoing_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Ending</td>
+                                        <td style="text-align: right;"><field name="ripening_closing_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_closing_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

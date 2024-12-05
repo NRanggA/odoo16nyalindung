@@ -18,7 +18,7 @@ class ResourceCalendar(models.Model):
         """
         assert start_dt.tzinfo and end_dt.tzinfo
         self.ensure_one()
-        print(">>>>>>>>>>>>>>>>>>>>", self._context)
+        # print(">>>>>>>>>>>>>>>>>>>>", self._context)
         if not self._context.get('leave_premi_sadap',False):
             return super(ResourceCalendar, self)._leave_intervals_batch(start_dt, end_dt, resources=resources, domain=domain, tz=tz, any_calendar=any_calendar)
 

@@ -1,8 +1,8 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
 
-class SheetToProduct(models.TransientModel):
-    _name = 'wizard.sheet.to.product'
+class SheetToProduce(models.TransientModel):
+    _name = 'wizard.mrp.sheet.to.produce'
     _description = 'Helper : Sheet to Product'
 
     product_latex_id = fields.Many2one('product.product', string='Latex')
