@@ -129,6 +129,7 @@ class ReportStockMutation(models.AbstractModel):
 
         from_date   = obj.from_date.strftime('%d-%m-%Y') if obj.from_date else ''
         to_date     = obj.to_date.strftime('%d-%m-%Y') if obj.to_date else ''
+        location    = obj.location_id.complete_name
 
         if obj.product_ids:
             products = obj.product_ids
@@ -136,7 +137,7 @@ class ReportStockMutation(models.AbstractModel):
             products = self.env['product.product'].search([])
         
         # Nama worksheet
-        sheet = workbook.add_worksheet(f'Stock Mutation {from_date} s/d {to_date}')
+        sheet = workbook.add_worksheet(f"{location}")
 
         # lebar kolom
         sheet.set_column('A:A', 10)  # Kode
@@ -189,6 +190,150 @@ class ReportStockMutation(models.AbstractModel):
         
         for product in products:
             
+            # query = """
+            #     SELECT
+            #         pp.id, 
+            #         coalesce(opening.qty, 0.0) as opening_qty,
+            #         coalesce(opening.value, 0.0) as opening_value,
+            #         coalesce(incoming.qty, 0.0) as incoming_qty,
+            #         coalesce(incoming.value, 0.0) as incoming_value,
+            #         coalesce(outgoing.qty, 0.0) as outgoing_qty,
+            #         coalesce(outgoing.value, 0.0) as outgoing_value,
+            #         coalesce(adjustment.qty, 0.0) as adjustment_qty,
+            #         coalesce(adjustment.value, 0.0) as adjustment_value
+            #     FROM
+            #         product_product pp
+            #         LEFT JOIN (
+            #             SELECT
+            #                 product_id, 
+            #                 sum(qty) as qty,
+            #                 sum(value) as value
+            #             FROM (
+            #                 (SELECT 
+            #                     sm.product_id, 
+            #                     sm.product_uom_qty as qty,
+            #                     svl.value
+            #                 FROM 
+            #                     stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+            #                 WHERE sm.location_id = lsrc.id 
+            #                 AND svl.stock_move_id = sm.id 
+            #                 AND sm.location_dest_id = ldest.id 
+            #                 AND sm.location_dest_id = %(location_id)s
+            #                 AND lsrc.usage != 'internal' 
+            #                 AND ldest.usage = 'internal'
+            #                 AND sm.state = 'done'
+            #                 AND sm.product_id = %(product_id)s
+            #                 AND sm.date < %(date_from)s)
+            #                 UNION ALL
+            #                 (SELECT 
+            #                     sm.product_id, 
+            #                     -sm.product_uom_qty as qty,
+            #                     svl.value
+            #                 FROM 
+            #                     stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+            #                 WHERE sm.location_id = lsrc.id
+            #                 AND sm.location_id = %(location_id)s 
+            #                 AND svl.stock_move_id = sm.id 
+            #                 AND sm.location_dest_id = ldest.id 
+            #                 AND lsrc.usage = 'internal' 
+            #                 AND ldest.usage != 'internal'
+            #                 AND sm.state = 'done'
+            #                 AND sm.product_id = %(product_id)s 
+            #                 AND sm.date < %(date_from)s)
+            #             ) sub
+            #             GROUP BY product_id
+            #         ) opening ON opening.product_id = pp.id
+            #         LEFT JOIN (
+            #             SELECT 
+            #                 product_id, 
+            #                 sum(qty) as qty,
+            #                 sum(value) as value
+            #             FROM (
+            #                 SELECT 
+            #                     sm.product_id, 
+            #                     sm.product_uom_qty as qty,
+            #                     svl.value
+            #                 FROM 
+            #                     stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+            #                 WHERE sm.location_id = lsrc.id 
+            #                 AND svl.stock_move_id = sm.id 
+            #                 AND sm.location_dest_id = ldest.id
+            #                 AND sm.location_dest_id = %(location_id)s 
+            #                 AND lsrc.usage IN ('supplier', 'customer') 
+            #                 AND ldest.usage = 'internal' 
+            #                 AND sm.state = 'done'
+            #                 AND sm.product_id = %(product_id)s 
+            #                 AND sm.date BETWEEN %(date_from)s AND %(date_to)s
+            #             ) sub
+            #             GROUP BY product_id
+            #         ) incoming ON incoming.product_id = pp.id
+            #         LEFT JOIN (
+            #             SELECT 
+            #                 product_id, 
+            #                 sum(qty) as qty,
+            #                 sum(value * -1) as value
+            #             FROM (
+            #                 SELECT 
+            #                     sm.product_id, 
+            #                     sm.product_uom_qty as qty,
+            #                     svl.value
+            #                 FROM 
+            #                     stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+            #                 WHERE sm.location_id = lsrc.id
+            #                 AND sm.location_id = %(location_id)s 
+            #                 AND svl.stock_move_id = sm.id
+            #                 AND sm.location_dest_id = ldest.id 
+            #                 AND lsrc.usage = 'internal' 
+            #                 AND ldest.usage IN ('supplier', 'customer') 
+            #                 AND sm.state = 'done'
+            #                 AND sm.product_id = %(product_id)s  
+            #                 AND sm.date BETWEEN %(date_from)s AND %(date_to)s
+            #             ) sub
+            #             GROUP BY product_id
+            #         ) outgoing ON outgoing.product_id = pp.id
+            #         LEFT JOIN (
+            #             SELECT 
+            #                 product_id, 
+            #                 sum(qty) as qty,
+            #                 sum(value) as value 
+            #             FROM (
+            #                 (SELECT 
+            #                     sm.product_id, 
+            #                     sm.product_uom_qty as qty,
+            #                     svl.value 
+            #                 FROM 
+            #                     stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+            #                 WHERE sm.location_id = lsrc.id
+            #                 AND svl.stock_move_id = sm.id 
+            #                 AND sm.location_dest_id = ldest.id
+            #                 AND sm.location_dest_id = %(location_id)s  
+            #                 AND lsrc.usage = 'inventory' 
+            #                 AND ldest.usage = 'internal' 
+            #                 AND sm.state = 'done'
+            #                 AND sm.product_id = %(product_id)s  
+            #                 AND sm.date BETWEEN %(date_from)s AND %(date_to)s)
+            #                 UNION ALL
+            #                 (SELECT 
+            #                     sm.product_id, 
+            #                     -sm.product_uom_qty as qty,
+            #                     svl.value
+            #                 FROM 
+            #                     stock_move sm, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+            #                 WHERE sm.location_id = lsrc.id
+            #                 AND sm.location_id = %(location_id)s 
+            #                 AND svl.stock_move_id = sm.id
+            #                 AND sm.location_dest_id = ldest.id 
+            #                 AND lsrc.usage = 'internal' 
+            #                 AND ldest.usage = 'inventory' 
+            #                 AND sm.state = 'done' 
+            #                 AND sm.product_id = %(product_id)s 
+            #                 AND sm.date BETWEEN %(date_from)s AND %(date_to)s)
+            #             ) sub
+            #             GROUP BY product_id
+            #         ) adjustment ON adjustment.product_id = pp.id
+            #     WHERE pp.id = %(product_id)s
+            # """
+            
             query = """
                 SELECT
                     pp.id, 
@@ -199,7 +344,10 @@ class ReportStockMutation(models.AbstractModel):
                     coalesce(outgoing.qty, 0.0) as outgoing_qty,
                     coalesce(outgoing.value, 0.0) as outgoing_value,
                     coalesce(adjustment.qty, 0.0) as adjustment_qty,
-                    coalesce(adjustment.value, 0.0) as adjustment_value
+                    coalesce(adjustment.value, 0.0) as adjustment_value,
+                    coalesce(incoming_2.qty, 0.0) as incoming_2_qty,
+                    coalesce(outgoing_2.qty, 0.0) as outgoing_2_qty,
+                    coalesce(opening_2.qty, 0.0) as opening_2_qty
                 FROM
                     product_product pp
                     LEFT JOIN (
@@ -243,6 +391,41 @@ class ReportStockMutation(models.AbstractModel):
                         GROUP BY product_id
                     ) opening ON opening.product_id = pp.id
                     LEFT JOIN (
+                        SELECT
+                            product_id, 
+                            sum(qty) as qty
+                        FROM (
+                            (SELECT 
+                                sm.product_id, 
+                                sm.product_uom_qty as qty
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id 
+                            AND lsrc.id != %(location_id)s
+                            AND ldest.id = %(location_id)s
+                            AND lsrc.usage = 'internal' 
+                            AND ldest.usage = 'internal'
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s
+                            AND sm.date < %(date_from)s)
+                            UNION ALL
+                            (SELECT 
+                                sm.product_id, 
+                                -sm.product_uom_qty as qty
+                            FROM 
+                                stock_move sm, stock_location lsrc, stock_location ldest
+                            WHERE sm.location_id = lsrc.id
+                            AND lsrc.usage = 'internal'
+                            AND ldest.usage = 'internal'
+                            AND lsrc.id = %(location_id)s
+                            AND ldest.id != %(location_id)s
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s 
+                            AND sm.date < %(date_from)s)
+                        ) sub
+                        GROUP BY product_id
+                    ) opening_2 ON opening_2.product_id = pp.id
+                    LEFT JOIN (
                         SELECT 
                             product_id, 
                             sum(qty) as qty,
@@ -267,6 +450,24 @@ class ReportStockMutation(models.AbstractModel):
                         GROUP BY product_id
                     ) incoming ON incoming.product_id = pp.id
                     LEFT JOIN (
+                        SELECT
+                            sm.product_id,
+                            sum(sm.product_uom_qty) as qty
+                        FROM 
+                            stock_move sm
+                            JOIN stock_location lsrc ON sm.location_id = lsrc.id
+                            JOIN stock_location ldest ON sm.location_dest_id = ldest.id
+                        WHERE 
+                            lsrc.usage = 'internal'
+                            AND ldest.usage = 'internal'
+                            AND lsrc.id != %(location_id)s
+                            AND ldest.id = %(location_id)s
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s
+                            AND sm.date BETWEEN %(date_from)s AND %(date_to)s
+                        GROUP BY sm.product_id
+                    ) incoming_2 ON incoming_2.product_id = pp.id
+                    LEFT JOIN (
                         SELECT 
                             product_id, 
                             sum(qty) as qty,
@@ -290,6 +491,24 @@ class ReportStockMutation(models.AbstractModel):
                         ) sub
                         GROUP BY product_id
                     ) outgoing ON outgoing.product_id = pp.id
+                    LEFT JOIN (
+                        SELECT
+                            sm.product_id,
+                            sum(sm.product_uom_qty) as qty
+                        FROM 
+                            stock_move sm
+                            JOIN stock_location lsrc ON sm.location_id = lsrc.id
+                            JOIN stock_location ldest ON sm.location_dest_id = ldest.id
+                        WHERE 
+                            lsrc.usage = 'internal'
+                            AND ldest.usage = 'internal'
+                            AND lsrc.id = %(location_id)s
+                            AND ldest.id != %(location_id)s
+                            AND sm.state = 'done'
+                            AND sm.product_id = %(product_id)s
+                            AND sm.date BETWEEN %(date_from)s AND %(date_to)s
+                        GROUP BY sm.product_id
+                    ) outgoing_2 ON outgoing_2.product_id = pp.id
                     LEFT JOIN (
                         SELECT 
                             product_id, 
@@ -338,19 +557,26 @@ class ReportStockMutation(models.AbstractModel):
                     GROUP BY 
                         pp.id, 
                         opening.qty, 
+                        opening_2.qty, 
                         opening.value,  
                         incoming.qty,  
+                        incoming_2.qty,  
                         incoming.value,  
                         outgoing.qty,  
+                        outgoing_2.qty,  
                         outgoing.value,  
                         adjustment.qty,  
-                        adjustment.value 
+                        adjustment.value
                     HAVING 
                         (SUM(coalesce(opening.qty, 0.0)) != 0 OR
+                        SUM(coalesce(opening_2.qty, 0.0)) != 0 OR
                         SUM(coalesce(incoming.qty, 0.0)) != 0 OR
+                        SUM(coalesce(incoming_2.qty, 0.0)) != 0 OR
                         SUM(coalesce(outgoing.qty, 0.0)) != 0 OR
+                        SUM(coalesce(outgoing_2.qty, 0.0)) != 0 OR
                         SUM(coalesce(adjustment.qty, 0.0)) != 0)
                 """
+
 
             params = {
                 'product_id' : product.id,
@@ -360,13 +586,19 @@ class ReportStockMutation(models.AbstractModel):
             }
             self.env.cr.execute(query, params)
             mutasi_stock = self.env.cr.dictfetchone()
+
+            opening_qty         = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
+            opening_2_qty       = mutasi_stock.get('opening_2_qty') if mutasi_stock else 0.0 # Internal Transfer Opening
             
-            opening_qty     = mutasi_stock.get('opening_qty') if mutasi_stock else 0.0
-            incoming_qty    = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
-            outgoing_qty    = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
-            adjustment_qty  = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
-            closing_qty     = opening_qty + incoming_qty - outgoing_qty + adjustment_qty
+            incoming_qty        = mutasi_stock.get('incoming_qty') if mutasi_stock else 0.0
+            incoming_2_qty      = mutasi_stock.get('incoming_2_qty') if mutasi_stock else 0.0 ## Internal Transfer Incoming
             
+            outgoing_qty        = mutasi_stock.get('outgoing_qty') if mutasi_stock else 0.0
+            outgoing_2_qty      = mutasi_stock.get('outgoing_2_qty') if mutasi_stock else 0.0 # Internal Transfer Outgoing
+            
+            adjustment_qty      = mutasi_stock.get('adjustment_qty') if mutasi_stock else 0.0
+            closing_qty         = (opening_qty + opening_2_qty) + (incoming_qty + incoming_2_qty) - (outgoing_qty + outgoing_2_qty) + adjustment_qty
+
             if mutasi_stock:
 
                 # Menampilkan product nya 
@@ -382,15 +614,15 @@ class ReportStockMutation(models.AbstractModel):
                     closing_value       = opening_value + incoming_value - outgoing_value + adjustment_value
                     
                     # Opening
-                    sheet.write(row, 3, opening_qty, wbf['content_float']) 
+                    sheet.write(row, 3, opening_qty + opening_2_qty, wbf['content_float']) 
                     sheet.write(row, 4, opening_value, wbf['content_float'])  
                     
                     # Incoming
-                    sheet.write(row, 5, incoming_qty, wbf['content_float']) 
+                    sheet.write(row, 5, incoming_qty + incoming_2_qty, wbf['content_float']) 
                     sheet.write(row, 6, incoming_value, wbf['content_float'])  
                     
                     # Outgoing
-                    sheet.write(row, 7, outgoing_qty, wbf['content_float'])  
+                    sheet.write(row, 7, outgoing_qty + outgoing_2_qty, wbf['content_float'])  
                     sheet.write(row, 8, outgoing_value, wbf['content_float'])  
                     
                     # Adjustment
@@ -403,11 +635,11 @@ class ReportStockMutation(models.AbstractModel):
 
                 else:
                     # Opening
-                    sheet.write(row, 3, opening_qty, wbf['content_float'])
+                    sheet.write(row, 3, opening_qty + opening_2_qty, wbf['content_float'])
                     # Incoming
-                    sheet.write(row, 4, incoming_qty, wbf['content_float'])
+                    sheet.write(row, 4, incoming_qty + incoming_2_qty, wbf['content_float'])
                     # Outgoing
-                    sheet.write(row, 5, outgoing_qty, wbf['content_float'])
+                    sheet.write(row, 5, outgoing_qty + outgoing_2_qty, wbf['content_float'])
                     # Adjustment
                     sheet.write(row, 6, adjustment_qty, wbf['content_float'])
                     # Closing
