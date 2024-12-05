@@ -546,13 +546,14 @@ class ClosingProduction(models.Model):
             closing.sheet_raw_material_cost = closing.sheet_rm_outgoing_value
 
     @api.depends('latex_opening_qty', 'latex_opening_value', 
-            'latex_incoming_qty', 'latex_plantation_cost', 'sheet_raw_material_cost',
+            'latex_incoming_qty', 'latex_plantation_cost',
             'lump_opening_qty', 'lump_opening_value', 
             'lump_incoming_qty', 'lump_plantation_cost')
     def _compute_onhand_and_cost_price_rm(self):
         for closing in self:
             closing.latex_onhand_qty = closing.latex_opening_qty + closing.latex_incoming_qty
-            closing.latex_onhand_value = closing.latex_opening_value + closing.latex_plantation_cost + closing.sheet_raw_material_cost
+            print(">>>>>>>>>>>>>>>>>")
+            closing.latex_onhand_value = closing.latex_opening_value + closing.latex_plantation_cost
             closing.latex_new_cost_price = closing.latex_onhand_value/closing.latex_onhand_qty if closing.latex_onhand_qty else 0.0
             closing.lump_onhand_qty = closing.lump_opening_qty + closing.lump_incoming_qty
             closing.lump_onhand_value = closing.lump_opening_value + closing.lump_plantation_cost
@@ -589,11 +590,13 @@ class ClosingProduction(models.Model):
             'latex_wip_opening_value', 'latex_wip_incoming_value',
             'lump_wip_opening_qty', 'lump_wip_incoming_qty', 
             'lump_wip_opening_value', 'lump_wip_incoming_value',
-            'sheet_production_cost', 'compound_production_cost')
+            'sheet_production_cost', 'compound_production_cost',
+            'sheet_raw_material_cost')
     def _compute_onhand_wip_rm(self):
         for closing in self:
             closing.latex_wip_onhand_qty = closing.latex_wip_opening_qty + closing.latex_wip_incoming_qty
-            closing.latex_wip_onhand_value = closing.latex_wip_opening_value + closing.latex_wip_incoming_value + closing.sheet_production_cost
+            # closing.latex_wip_onhand_value = closing.latex_wip_opening_value + closing.latex_wip_incoming_value + closing.sheet_production_cost
+            closing.latex_wip_onhand_value = closing.latex_wip_opening_value + closing.latex_wip_incoming_value + closing.sheet_raw_material_cost
             closing.latex_wip_cost_price = closing.latex_wip_onhand_value/closing.latex_wip_onhand_qty if closing.latex_wip_onhand_qty else 0.0
             closing.lump_wip_onhand_qty = closing.lump_wip_opening_qty + closing.lump_wip_incoming_qty
             closing.lump_wip_onhand_value = closing.lump_wip_opening_value + closing.lump_wip_incoming_value + closing.compound_production_cost
@@ -920,6 +923,11 @@ class ClosingProduction(models.Model):
                 closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
             # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
+            # Get Incoming Asam Semut
+            # closing.sheet_rm_incoming_qty = 0.0
+            # closing.sheet_rm_incoming_value = 0.0
+            # closing.sheet_rm_outgoing_qty = 0.0
+            # closing.sheet_rm_outgoing_value = 0.0
         return True
     
     def compute_initial_and_cost_rm_pisang(self):
