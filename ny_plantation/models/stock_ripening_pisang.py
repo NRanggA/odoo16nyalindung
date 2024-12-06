@@ -187,7 +187,8 @@ class StockRipeningPisang(models.Model):
             # Create Scrap
             scrap_to_create = rec._prepare_scrap_lines(picking)
             scrap_datas = self.env['stock.scrap'].create(scrap_to_create)
-            scrap_datas.action_validate()
+            for scrap_data in scrap_datas:
+                scrap_data.action_validate()
             rec.scrap_ids = [(6,0,scrap_datas.ids)]
             rec.state = 'done'
             rec.date_done = picking.date_done
