@@ -47,18 +47,22 @@ class lhm_drc(models.Model):
         drc_lines = [(0, 0, data) for data in grouped_data.values()]
         self.drc_line_ids = [(5, 0, 0)] + drc_lines
     
-    @api.constrains('tgl_panen')
+    @api.constrains('tgl_panen', 'drc_line_ids')
     def _existing_tgl_panen(self):
         for record in self:
-            if record.tgl_panen:
-                existing_drc = self.search([
-                    ('tgl_panen', '=', record.tgl_panen),
-                    ('id', '!=', record.id)
-                ])
-                if existing_drc:
-                    raise ValidationError(
-                        f"Tanggal Panen {record.tgl_panen} sudah digunakan di dokumen lain. Harap pilih tanggal yang berbeda."
-                    )
+            if record.tgl_panen and record.drc_line_ids:
+                for line in record.drc_line_ids:
+                    if line.block_id:
+                        existing_drc = self.search([
+                            ('tgl_panen', '=', record.tgl_panen),
+                            ('drc_line_ids.block_id', '=', line.block_id.id),
+                            ('id', '!=', record.id)
+                        ])
+                        if existing_drc:
+                            raise ValidationError(
+                                f"Tanggal Panen {record.tgl_panen} dengan Lokasi {line.block_id.name} "
+                                f"sudah digunakan di dokumen lain. Harap pilih Tanggal atau Lokasi yang berbeda."
+                            )
     
     def action_draft(self):
         for record in self:
