@@ -3307,7 +3307,7 @@ class lhm_contractor(models.Model):
         return state
 
     name                          = fields.Char('Nama', required=False)
-    date                          = fields.Date("Tanggal", required=True)
+    date                          = fields.Date("Tanggal")
     type                          = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', index=False, readonly=True)
     supplier_id                   = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict")
     supplier_code                 = fields.Char('Kode', readonly=True, related="supplier_id.ref")
@@ -3437,10 +3437,11 @@ class lhm_contractor(models.Model):
         self.state = 'confirmed'
 
     def button_confirm_harian(self):
-        # move = self._account_move_entry()
         self.state = 'confirmed'
 
     def button_process(self):
+        if not self.date:
+            raise UserError(_('Data tanggal kosong, mohon diisi.'))
         self.state = 'process'
         self.env['lhm.contractor.nap.line'].search([('contractor_id', '=', self.id)]).unlink()
         
