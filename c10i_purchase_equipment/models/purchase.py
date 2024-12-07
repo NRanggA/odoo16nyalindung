@@ -87,7 +87,8 @@ class PurchaseOrder(models.Model):
         result = self.env["ir.actions.actions"]._for_xml_id('c10i_purchase_equipment.action_equipment_register_purchase')
         if not registers:
             register_lines =  self.env['equipment.register.line'].search([('purchase_line_id.order_id','=',self.id)])
-            registers = register_lines.mapped('register_id')
+            # registers = register_lines.mapped('register_id')
+            registers = self.env['equipment.register'].browse(list(set(register_lines.mapped('register_id').ids)))
         
         if not registers or len(registers) > 1:
             result['domain'] = "[('id','in',%s)]" % (registers.ids)

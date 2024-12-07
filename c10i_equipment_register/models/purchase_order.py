@@ -41,12 +41,22 @@ class PurcahaseOrder(models.Model):
             order = order.with_company(order.company_id)
             
             for line in order.order_line.filtered(lambda l: l.product_id and l.product_id.product_asset):
-                for qty in range(int(order.order_line.product_qty)):
+                qty_to_register = line.qty_received - sum(line.equipment_register_line_ids.mapped('product_qty'))
+                if qty_to_register <= 0:
+                    continue
+
+                for _ in range(int(qty_to_register)):
                     if not float_is_zero(line.qty_to_equip_register, precision_digits=precision):
                         register_vals = order._prepare_equipment_register()
                         register_vals['register_line_ids'] = [(0, 0, line._prepare_equipment_register_line())]
-                        
                         registers |= EquipmentRegister.with_company(register_vals['company_id']).create(register_vals)
+                
+                # for qty in range(int(order.order_line.qty_received )):
+                #     if not float_is_zero(line.qty_to_equip_register, precision_digits=precision):
+                #         register_vals = order._prepare_equipment_register()
+                #         register_vals['register_line_ids'] = [(0, 0, line._prepare_equipment_register_line())]
+                        
+                #         registers |= EquipmentRegister.with_company(register_vals['company_id']).create(register_vals)
         
         if not registers:
             raise UserError(_('There is not receiveable lines. You must receive the product before registering it into Equipment'))
