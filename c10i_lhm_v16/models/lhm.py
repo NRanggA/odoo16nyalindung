@@ -3383,6 +3383,8 @@ class lhm_contractor(models.Model):
 
     @api.onchange('supplier_id','account_period_id','payment_type','contractor_vehicle')
     def onchange_validate(self):
+        if self.env.context.get('is_harian'):
+            return
         if self.supplier_id and self.account_period_id and self.type:
             other_ids = self.env['lhm.contractor'].search([('id', '!=', self._origin.id), ('account_period_id', '=', self.account_period_id.id), ('supplier_id', '=', self.supplier_id.id), ('payment_type', '=', self.payment_type), ('type','=',self.type), ('contractor_vehicle','=',self.contractor_vehicle)])
             # other_ids = self.env['lhm.contractor'].search([('id', '!=', self._origin.id), 
