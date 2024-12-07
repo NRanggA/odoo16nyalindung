@@ -9,12 +9,12 @@
             <xpath expr="//page[@name='purchase_delivery_invoice']" position="inside">
                 <group>
                     <group name="dibuat_oleh" string="Dibuat Oleh">
-                        <field name="dibuat_oleh" string="Nama"/>
-                        <field name="jabatan_pembuat" string="Jabatan"/>
+                        <field name="dibuat_oleh" string="Nama" attrs="{'readonly': [('count_advanced_purchase', '>', 0)],'force_save': [('count_advanced_purchase', '>', 0)]}"/>
+                        <field name="jabatan_pembuat" string="Jabatan" attrs="{'readonly': [('count_advanced_purchase', '>', 0)],'force_save': [('count_advanced_purchase', '>', 0)]}"/>
                     </group>
                     <group name="disetuji" string="Disetujui Oleh">
-                        <field name="disetujui" string="Nama"/>
-                        <field name="jabatan_penyetuju" string="Jabatan"/>
+                        <field name="disetujui" string="Nama" attrs="{'readonly': [('count_advanced_purchase', '>', 0)],'force_save': [('count_advanced_purchase', '>', 0)]}"/>
+                        <field name="jabatan_penyetuju" string="Jabatan" attrs="{'readonly': [('count_advanced_purchase', '>', 0)],'force_save': [('count_advanced_purchase', '>', 0)]}"/>
                     </group>
                 </group>
             </xpath>
