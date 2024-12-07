@@ -58,6 +58,29 @@
                 <field name="partner_id" position="attributes">
                     <attribute name="required">False</attribute>
                 </field>
+
+                <field name="partner_id" position="attributes">
+                    <attribute name="attrs">{'invisible': [('action','=','dispose')]}</attribute>
+                </field>
+                
+                <field name="sales_profit" position="attributes">
+                    <attribute name="attrs">{'invisible': [('action','=','dispose')]}</attribute>
+                </field>
+                <field name="loss_account_id" position="attributes">
+                    <attribute name="attrs">{'invisible': [('action','=','dispose')]}</attribute>
+                </field>
+                
+                <field name="sales_profit" position="after">
+                    <field name="loss_disposal" attrs="{'invisible' : [('action', '!=','dispose')]}" />
+                </field>
+                
+                <field name="loss_account_id" position="after">
+                    <field name="disposal_account_id" attrs="{'invisible' : [('action', '!=','dispose')]}"/>
+                </field>
+                
+                
+
+
             </field>
         </record>
     
