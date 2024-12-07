@@ -27,7 +27,7 @@ class AccountBankStatement(models.Model):
 
     def button_validate(self):
         self.write({'state': 'validated'})
-        for line in self.line_ids:
+        for line in self.line_ids.filtered(lambda x: x.is_reconciled == False):
             line.reconcile_bank_line()
     
     def button_draft(self):
