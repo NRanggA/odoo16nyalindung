@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View account.account form -->
+    <record id="view_account_account_form" model="ir.ui.view">
+        <field name="name">view.account.account.form</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='account_type']" position="before">
+                <field name="parent_id"
+					domain="[('account_type','=','view')]"
+					groups="c10i_account_parent.group_coas_user"
+					context="{'show_parent_account':True}" />
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- View account.account tree -->
+    <record id="view_account_account_tree" model="ir.ui.view">
+        <field name="name">view.account.account.tree</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='account_type']" position="before">
+                <field name="parent_id" domain="[('account_type','=','view')]"
+					groups="c10i_account_parent.group_coas_user"
+					context="{'show_parent_account':True}" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="account.action_account_form"
+		model="ir.actions.act_window">
+		<field name="context">{'show_parent_account':True}</field>
+	</record>
+
+</odoo>
