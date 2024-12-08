@@ -23,6 +23,11 @@
                 <sheet>
 
                     <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_open_settlement"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o" attrs="{'invisible':['|',('expense_report', '=', True),('employee_expense_settlement_count','=',0)]}">
+                            <field name="employee_expense_settlement_count" string="Settlement" widget="statinfo"/>
+                        </button>
                         <button type="object" name="action_open_employee_expense_journal"
                             class="oe_stat_button"
                             icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_journal_count', '=', 0)]}">
@@ -75,8 +80,8 @@
                     </group>
                     <group>
                         <group string="Advance to Settle" attrs="{'invisible': [('advance_found','=',False),('advance_to_settle_ids','=',[])]}">
-                            <label for="advance_to_settle_ids"/>
-                            <field name="advance_to_settle_ids" nolabel="1" domain="[('employee_id','=',employee_id),('employee_expense_state','=','approved'),('advance_residual','!=',0)]">
+                            <!-- <label for="advance_to_settle_ids"/> -->
+                            <field name="advance_to_settle_ids" colspan="4" nolabel="1" domain="[('employee_id','=',employee_id),('employee_expense_state','=','approved'),('advance_residual','!=',0)]">
                                 <tree create="false">
                                     <field name="name"/>
                                     <field name="advance_residual" sum="amount_to_settle" attrs="{'column_invisible' : [('parent.has_amount','!=',True)]}"/>
@@ -84,7 +89,7 @@
                                 </tree>
                             </field>
                         </group>
-                        <group></group>
+                        <!-- <group></group> -->
                     </group>
                     <notebook>
                         <page string="Lines">

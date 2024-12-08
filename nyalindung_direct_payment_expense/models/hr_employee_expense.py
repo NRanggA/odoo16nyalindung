@@ -98,12 +98,28 @@ class HrEmployeeExpense(models.Model):
     advance_found = fields.Boolean(compute="_check_advance")
     advance_to_settle_ids = fields.Many2many('hr.employee.expense', 'hr_employee_account_direct_payment_to_advance_rel',
         'settlement_id', 'advance_id', string="Employee Advance", domain="[('advance_residual','>',0)]")
+    
+    settlement_ids = fields.Many2many('hr.employee.expense','hr_employee_expense_settlement_rel',
+        'advance_id','settlement_id', string='Settlement',compute="_compute_settlement")
+    
+    employee_expense_settlement_count = fields.Integer('Settlement Count', compute='_get_count_employee_expense_settlement')
 
     advance_amount_settle = fields.Monetary(compute="_compute_settlement_amount", string="Advance Amount", store=True)
     amount_total2 = fields.Monetary(compute="_compute_settlement_amount", string="Amount Total", store=True)
     account_direct_payment_id = fields.Many2one('account.direct.payment', string='Direct Payment')
     has_amount = fields.Boolean('Has Amount', compute='_compute_amount_to_clear')
     employee_expense_direct_payment_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
+
+    def _compute_settlement(self):
+        for record in self:
+            settlement_ids = []
+            if not record.expense_report:
+                report_ids = record.search([('expense_report', '=', True),('employee_id', '=', record.employee_id.id)])
+                for report_id in report_ids:
+                    advance_id = report_id.advance_to_settle_ids.filtered(lambda adv: adv.id == record.id)
+                    if advance_id:
+                        settlement_ids.append(report_id.id)
+            record.settlement_ids = [Command.set(settlement_ids)]
 
     @api.depends('advance_amount_settle')
     def _compute_amount_to_clear(self):
@@ -439,6 +455,9 @@ class HrEmployeeExpense(models.Model):
             direct_count = self.env['account.direct.payment'].search_count([('employee_expense_id', '=', record.id)])
             record.employee_expense_journal_count = journal_count
             record.employee_expense_direct_payment_count = direct_count
+    def _get_count_employee_expense_settlement(self):
+        for record in self:
+            record.employee_expense_settlement_count = len(record.settlement_ids.ids)
     
     def action_open_employee_expense_journal(self):
         result = self.env["ir.actions.actions"]._for_xml_id('account.action_move_journal_line')
@@ -449,6 +468,17 @@ class HrEmployeeExpense(models.Model):
     def action_open_direct_payment(self):
         result = self.env["ir.actions.actions"]._for_xml_id('c10i_direct_payment.account_direct_payment_action')
         result['domain'] = [('employee_expense_id', '=', self.id)]
+            
+        return result
+
+    def action_open_settlement(self):
+        result = self.env["ir.actions.actions"]._for_xml_id('nyalindung_direct_payment_expense.hr_account_employee_expense_action_all')
+        if len(self.settlement_ids.ids) == 1:
+            result['res_id'] = self.settlement_ids.id
+            result['view_mode'] = 'form'
+            result['views'] = [(self.env.ref('nyalindung_direct_payment_expense.account_employee_expense_form').id, 'form')]
+        else:
+            result['domain'] = [('id', 'in', self.settlement_ids.ids)]
             
         return result
 
