@@ -56,7 +56,7 @@
                 <form string="Dry Rubber Content">                    
                     <header>
                         <button name="action_confirm" type="object" string="Confirm" class="btn-primary" states="draft"/>
-                        <button name="action_draft" type="object" string="Draft" class="btn-default" states="cancel,confirmed"/>
+                        <button name="action_draft" type="object" string="Draft" class="btn-default" states="cancel"/>
                         <button name="action_cancel" type="object" string="Cancel" class="btn-default" states="confirmed"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed"/>
                     </header>

@@ -3435,11 +3435,11 @@
             <field name="arch" type="xml">
                 <form string="Nota Angkut Panen">
                     <header>
-                        <button name="button_draft" states="cancel,process,confirmed,done" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_draft" states="cancel,process,confirmed" string="Set Draft" type="object" class="btn-default"/>
                         <button name="button_save_to_nap_line" states="draft" string="Process" type="object" class="btn-primary" />
                         <button name="button_confirm" states="confirmed" string="Confirm" type="object" class="btn-default btn-primary"/>
                         <button name="create_material_receipt" states="process" string="Create Material Receipt" type="object" class="oe_highlight"/>
-                        <button name="button_cancel" states="process,confirmed,done" string="Cancel" type="object" class="btn-default"/>
+                        <button name="button_cancel" states="done" string="Cancel" type="object" class="btn-default"/>
                         <!-- <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/> -->
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,process,confirmed,done"/>
@@ -3580,8 +3580,8 @@
             <field name="arch" type="xml">
                 <tree string="Nota Angkut Panen">
                     <field name="name"/>
-                    <!-- <field name="date_pks"/> -->
                     <field name="no_nap"/>
+                    <field name="date_nap"/>
                     <field name="afdeling_id"/>
                     <field name="reg_number"/>
                     <field name="vehicle_id"/>

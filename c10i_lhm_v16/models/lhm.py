@@ -3864,6 +3864,20 @@ class lhm_contractor_line(models.Model):
         for harga in self:
             if harga.nilai and harga.unit_price:
                 harga.total = harga.unit_price * harga.nilai
+    
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if self.product_id:
+            self.uom_id = self.product_id.uom_id
+        else:
+            self.uom_id = False
+
+    @api.onchange('product_id_2')
+    def _onchange_product_id_2(self):
+        if self.product_id_2:
+            self.uom2_id = self.product_id_2.uom_id
+        else:
+            self.uom2_id = False
 
     @api.constrains('date', 'location_id', 'activity_id')
     def _check_date_unique(self):

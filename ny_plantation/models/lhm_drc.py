@@ -67,19 +67,33 @@ class lhm_drc(models.Model):
     def action_draft(self):
         for record in self:
             record.state = 'draft'
+
     def action_cancel(self):
         for record in self:
-            record.state = 'cancel'
-    def action_confirm(self):
-        NapLine = self.env['lhm.nap.line']
-        for record in self:
             for line in record.drc_line_ids:
-                nap_line_records = NapLine.search([
+                nap_lines = self.env['lhm.nap.line'].search([
                     ('block_id', '=', line.block_id.id),
                     ('tgl_panen', '=', line.date),
                     ('product_id', '=', line.product.id)
                 ])
-                
+                for nap_line in nap_lines:
+                    if nap_line.lhm_nap_id.state != 'draft':
+                        raise ValidationError("Anda tidak bisa membatalkan dokumen ini karena terdapat NAP yang lokasi dan tanggalnya sama tetapi Status nya belum 'draft'.")
+            record.state = 'cancel'
+
+    def action_confirm(self):
+        napline = self.env['lhm.nap.line']
+        for record in self:
+            for line in record.drc_line_ids:
+                if not line.drc or line.drc == 0:
+                    raise ValidationError(f"DRC pada baris dengan Lokasi '{line.block_id.name}' dan Produk '{line.product.name}' tidak boleh kosong atau nol.")
+                nap_line_records = napline.search([
+                    ('block_id', '=', line.block_id.id),
+                    ('tgl_panen', '=', line.date),
+                    ('product_id', '=', line.product.id)
+                ])
+                if not nap_line_records:
+                    raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}', dan Produk '{line.product.name}'.")
                 for nap_line in nap_line_records:
                     nap_line.write({'drc': line.drc})
                     
@@ -97,4 +111,11 @@ class lhm_drc_line(models.Model):
     uom = fields.Many2one('uom.uom', string="Unit of Measure")
     drc = fields.Float(string="DRC", required=True)
     nap_line_id = fields.Many2one('lhm.nap.line', string="NAP Line", ondelete="cascade")
+
+    # @api.onchange('product')
+    # def _onchange_product(self):
+    #     if self.product:
+    #         self.uom_id = self.product.uom_id
+    #     else:
+    #         self.uom_id = False
 

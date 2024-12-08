@@ -185,18 +185,20 @@ class lhm_nap(models.Model):
     
     @api.model
     def create(self, values):
-        if values.get('no_nap'):
-            values['name'] = values['no_nap']
+        afdeling = self.env['res.afdeling'].browse(values.get('afdeling_id'))
+        date_nap = values.get('date_nap')
+        if date_nap:
+            date_nap = fields.Date.from_string(date_nap)
+        
+        if afdeling and date_nap:
+            self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id = %s AND date_nap = %s", (afdeling.id, date_nap))
+            count = self.env.cr.fetchone()[0] + 1
+            values['name'] = f"{afdeling.code}/{date_nap.strftime('%Y-%m-%d')}/{count}"
         else:
-            afdeling = self.env['res.afdeling'].browse(values.get('afdeling_id'))
-            date_nap = values.get('date_nap')
-            if date_nap:
-                date_nap = fields.Date.from_string(date_nap)
-            if afdeling and date_nap:
-                values['name'] = f"{afdeling.name}/{date_nap.strftime('%Y-%m-%d')}"
-            else:
-                values['name'] = _('New')
+            values['name'] = _('New')
+        
         return super(lhm_nap, self).create(values)
+
     
     def create_material_receipt(self):
         self.state = 'confirmed'
@@ -238,6 +240,10 @@ class lhm_nap(models.Model):
                             'satuan_1_nap': nap_line.uom_id.id,
                         })
                 if nap_line.supplier_id:
+                    if nap_line.lhm_contractor_nap_id.contractor_id.state == 'draft':
+                        raise ValidationError(
+                            _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen tersebut.")
+                        )
                     if nap_line.product_id.name == "Latex":
                         nap_line.lhm_contractor_nap_id.write({
                             'product_id': nap_line.product_id.id,
@@ -277,6 +283,18 @@ class lhm_nap(models.Model):
         self.line_ids.write({'lhm_progress_ids': [(5,False,False)]})
 
     def button_cancel(self):
+        for record in self:
+            for nap_line in record.line_ids:
+                if nap_line.employee_id:
+                    if nap_line.lhm_transaction_nap_id.lhm_id.state != 'draft':
+                        raise ValidationError(
+                            _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status tidak 'draft'. Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu.")
+                        )
+                if nap_line.supplier_id:
+                    if nap_line.lhm_contractor_nap_id.contractor_id.state != 'draft':
+                        raise ValidationError(
+                            _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status tidak 'draft'. Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu.")
+                        )
         self.state = 'cancel'
         self.confirmed = False
         self.cancelled = True
@@ -557,7 +575,6 @@ class lhm_nap_line(models.Model):
             ])
             employee_ids = nap_lines.mapped('employee_id')
             return {'domain': {'employee_id': [('id', 'in', employee_ids.ids)]}}
-            # tambahkan looping
 
     def compute_weight(self):
         self.ensure_one()
@@ -689,6 +706,13 @@ class TimbanganKebun(models.Model):
         self._create_or_update_timbangan_pabrik()
         self._create_or_update_nota_angkut_panen()
         return res
+    
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if self.product_id:
+            self.uom_id = self.product_id.uom_id
+        else:
+            self.uom_id = False
 
     def _create_or_update_timbangan_pabrik(self):
         for record in self:
@@ -763,6 +787,13 @@ class TimbanganPabrik(models.Model):
 
     def write(self, vals):
         return super(TimbanganPabrik, self).write(vals)
+    
+    # @api.onchange('product_id')
+    # def _onchange_product_id(self):
+    #     if self.product_id:
+    #         self.uom_id = self.product_id.uom_id
+    #     else:
+    #         self.uom_id = False
 
     def _create_or_update_stock_picking(self):
         if not self.uom_id:
