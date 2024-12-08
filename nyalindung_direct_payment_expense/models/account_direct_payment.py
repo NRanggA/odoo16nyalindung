@@ -2,7 +2,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.tools.float_utils import float_is_zero, float_compare
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
-
+from datetime import datetime
 
 class DirectPayment(models.Model):
     _inherit = 'account.direct.payment'
@@ -55,7 +55,6 @@ class DirectPayment(models.Model):
             # Kosongkan partner_bank_id jika partner_id dihapus
             self.partner_bank_id = False
 
-
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
         if self.direct_state == 'send':
@@ -85,13 +84,13 @@ class DirectPayment(models.Model):
             'journal_id' : journal.id,
             'ref': self.name,
             'company_id': self.company_id.id,
+            'is_payment' : True,
         }
 
     def action_create_move(self):
         AccountMove = self.env['account.move']
         move_lines = [l._prepare_move_line() for l in self.line_ids]
         move_lines = self.direct_payment_hook(move_lines)
-        
         total = sum([ml['debit'] - ml['credit'] for ml in move_lines])
         if total:
             payable_move_lines = self._prepare_payable_move_line(-1*total)

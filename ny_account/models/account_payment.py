@@ -94,24 +94,24 @@ class AccountPayment(models.Model):
             if payment.amount_charge > 0:
                     if not payment.charge_account_id:
                         raise ValidationError("Charge Acount Harus di isi")
-                    
-                    # nomor dokumen baru untuk amount_charge pada account.move
-                    existing_name = payment.name
-                    name_parts = existing_name.split('/')
-                    if len(name_parts) == 3 and name_parts[2].isdigit():
+                    # # nomor dokumen baru untuk amount_charge pada account.move
+                    # existing_name = payment.name
+                    # name_parts = existing_name.split('/')
+                    # if len(name_parts) == 3 and name_parts[2].isdigit():
                         
-                        # Menambahkan satu angka pada nomor dokument amount_charge
-                        next_sequence = int(name_parts[2]) + 1
-                        charge_move_name = f"{name_parts[0]}/{name_parts[1]}/{str(next_sequence).zfill(len(name_parts[2]))}"
-                    else:
-                        # Jika nomor tikda valid seperti contoh : PBBS/2024/0001 maka ada pesan error.
-                        raise ValidationError("Format nomor dokumen tidak valid.")
+                    #     # Menambahkan satu angka pada nomor dokument amount_charge
+                    #     next_sequence = int(name_parts[2]) + 1
+                    #     charge_move_name = f"{name_parts[0]}/{name_parts[1]}/{str(next_sequence).zfill(len(name_parts[2]))}"
+                    # else:
+                    #     # Jika nomor tikda valid seperti contoh : PBBS/2024/0001 maka ada pesan error.
+                    #     raise ValidationError("Format nomor dokumen tidak valid.")
                     
                     # Membuat entri jurnal untuk biaya administrasi
                     move_vals = {
                         # 'name': charge_move_name,
                         'journal_id': payment.journal_id.id,
                         'move_type': 'entry',
+                        'is_payment': True,
                         'line_ids': [
                             # Baris debit 
                             (0, 0, {
@@ -136,7 +136,7 @@ class AccountPayment(models.Model):
                     charge_move = self.env['account.move'].create(move_vals)
 
                     # Posting jurnal entry yang baru dibuat
-                    charge_move._post(soft=False)
+                    charge_move.with_context(is_payment=True)._post(soft=False)
 
                     # Simpan jurnal kedua di charge_move_id
                     payment.charge_move_id = charge_move

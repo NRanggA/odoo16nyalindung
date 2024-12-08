@@ -2,6 +2,7 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import RedirectWarning, UserError, ValidationError, AccessError
+import re
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -13,12 +14,82 @@ class AccountMove(models.Model):
     # Menambahkan default tanggal hari ini
     invoice_date            = fields.Date(string='Invoice/Bill Date', readonly=True, states={'draft': [('readonly', False)]}, index=True, copy=False, default=fields.Date.today)
 
+    is_payment = fields.Boolean('Is Payment')
+
     # invoice_advance_allocate_ids = fields.One2many('account.invoice.advance.allocated', 'move_id', string='Advance Allocated')
     # invoice_advance_allocate_ids = fields.One2many('account.move.line', 'move_id', string='Advance Allocated',
     #     copy=False, readonly=True,
     #     domain=[('exclude_from_advance_tab', '=', False)],
     #     states={'draft': [('readonly', False)]})
     # add_advance_to_move_line = fields.Boolean(string='Add advance to line', compute='_compute_flag_add_advance', store=True)
+
+    # inherit fungsi sequence
+    # def _get_last_sequence_domain(self, relaxed=False):
+    #     where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
+
+    #     is_payment = self.payment_id or self._context.get('is_payment') or self.is_payment
+
+    #     if self.journal_id.payment_sequence:
+    #         if is_payment:
+    #             where_string += " AND (is_payment = 'true' OR payment_id IS NOT NULL)"
+    #         else:
+    #             where_string += " AND (payment_id IS NULL AND is_payment = 'false')"
+        
+    #     return where_string, param
+
+    def _get_last_sequence_domain(self, relaxed=False):
+        # EXTENDS account sequence.mixin
+        self.ensure_one()
+        if not self.date or not self.journal_id:
+            return "WHERE FALSE", {}
+        where_string = "WHERE journal_id = %(journal_id)s AND name != '/'"
+        param = {'journal_id': self.journal_id.id}
+        # is_payment = self.payment_id or self._context.get('is_payment')
+        is_payment = self.payment_id or self._context.get('is_payment') or self.is_payment
+
+        # print(f"===== is_payment: {is_payment}")
+        # print(f"===== self: {self.is_payment}")
+
+        if not relaxed:
+            domain = [('journal_id', '=', self.journal_id.id), ('id', '!=', self.id or self._origin.id), ('name', 'not in', ('/', '', False))]
+            if self.journal_id.refund_sequence:
+                refund_types = ('out_refund', 'in_refund')
+                domain += [('move_type', 'in' if self.move_type in refund_types else 'not in', refund_types)]
+            if self.journal_id.payment_sequence:
+                domain += [('payment_id', '!=' if is_payment else '=', False)]
+            reference_move_name = self.search(domain + [('date', '<=', self.date)], order='date desc', limit=1).name
+            if not reference_move_name:
+                reference_move_name = self.search(domain, order='date asc', limit=1).name
+            sequence_number_reset = self._deduce_sequence_number_reset(reference_move_name)
+            date_start, date_end = self._get_sequence_date_range(sequence_number_reset)
+            where_string += """ AND date BETWEEN %(date_start)s AND %(date_end)s"""
+            param['date_start'] = date_start
+            param['date_end'] = date_end
+            if sequence_number_reset in ('year', 'year_range'):
+                param['anti_regex'] = re.sub(r"\?P<\w+>", "?:", self._sequence_monthly_regex.split('(?P<seq>')[0]) + '$'
+            elif sequence_number_reset == 'never':
+                param['anti_regex'] = re.sub(r"\?P<\w+>", "?:", self._sequence_yearly_regex.split('(?P<seq>')[0]) + '$'
+
+            if param.get('anti_regex') and not self.journal_id.sequence_override_regex:
+                where_string += " AND sequence_prefix !~ %(anti_regex)s "
+
+        if self.journal_id.refund_sequence:
+            if self.move_type in ('out_refund', 'in_refund'):
+                where_string += " AND move_type IN ('out_refund', 'in_refund') "
+            else:
+                where_string += " AND move_type NOT IN ('out_refund', 'in_refund') "
+        elif self.journal_id.payment_sequence:
+            if is_payment:
+                # where_string += " AND payment_id IS NOT NULL "
+                where_string += " AND (is_payment = 'true' OR payment_id is NOT NULL) "
+            else:
+                # where_string += " AND payment_id IS NULL "
+                where_string += " AND (payment_id IS NULL AND is_payment = 'false') "
+
+        # print(f"==== string: {where_string}")
+
+        return where_string, param
+
 
     ########################################
     #           HELPER METHOD              #
