@@ -1,4 +1,23 @@
 <odoo>
-  <data>
-  </data>
+	<data>
+		<record id="stock_picking_type_kanban_inherit_stock" model="ir.ui.view">
+			<field name="name">stock.picking.type.view.form.inherit</field>
+			<field name="model">stock.picking.type</field>
+			<field name="inherit_id" ref="stock.stock_picking_type_kanban"/>
+			<field name="arch" type="xml">
+
+				<xpath expr="//div[@name='stock_picking']" position="attributes">
+					<attribute name="t-if">['incoming', 'outgoing', 'internal', 'plantation', 'plantation_return','issue'].indexOf(record.code.raw_value) &gt; -1</attribute>
+					
+				</xpath>
+
+				<xpath expr="//button[@name='get_action_picking_tree_ready']" position="inside">
+					<span t-if="record.code.raw_value =='issue'"><t t-esc="record.count_picking_ready.value"/> Transfers</span>
+					
+				</xpath>
+				
+			</field>
+		</record>
+
+	</data>
 </odoo>

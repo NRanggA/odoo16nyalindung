@@ -19,7 +19,7 @@ The specific and easy-to-use Purchase Order Asset module in Odoo that allow you 
                 'security/material_request.xml',
                 'security/ir.model.access.csv',
                 'views/material_request_view.xml',
-                # 'views/stock_picking_type_view.xml',
+                'views/stock_picking_type_view.xml',
                 # 'views/stock_picking_view.xml',
                 # 'views/stock_move_view.xml',
     ],
