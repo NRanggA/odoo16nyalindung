@@ -2185,8 +2185,8 @@ class lhm_transaction_line(models.Model):
     def _check_work_day(self):
         for line in self:
             if line.attendance_id and line.attendance_id.special and line.attendance_id.type == 'kj':
-                if line.work_day <= 0:
-                    raise UserError(_('HK Wajib Diisi!'))
+                if not line.is_borong and line.work_day <= 0:
+                    raise UserError(_('HK Wajib Diisi jika Is Borong tidak aktif !'))
 
     @api.model
     def create(self, values):
