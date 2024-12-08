@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="after">
                 <field name="asset_type" invisible="1" />
-                <field name="equipment_category_id" domain="[('asset_type','=',asset_type)]" options="{'no_create':True}" />
+                <field name="equipment_category_id" domain="[('asset_type','=',asset_type)]" options="{'no_create':True}" attrs="{'readonly':[('qty_invoiced','!=',0)]}" />
             </xpath>
         </field>
     </record>
