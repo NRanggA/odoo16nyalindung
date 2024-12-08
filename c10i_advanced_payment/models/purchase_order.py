@@ -22,6 +22,8 @@ class PurchaseOrder(models.Model):
         return result
 
     def action_create_advanced_payment(self):
+        if hasattr(self, 'button_done') and callable(getattr(self, 'button_done')):
+            self.button_done()
         return {
             'name': _('Create Advanced'),
             'type': 'ir.actions.act_window',
