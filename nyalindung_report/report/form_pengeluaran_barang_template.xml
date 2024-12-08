@@ -1,6 +1,5 @@
 <odoo>
     <data>
-
         <template id="form_pengeluaran_barang_template">
             <t t-call="web.html_container"> 
                 <t t-foreach="docs" t-as="o">      
@@ -17,7 +16,10 @@
                                 </td>
                                 <td style="width : 60%; padding-top: 40px; text-align: right">
                                     <p style="font-size: 18px; font-weight: bold; padding-right: 40px">BON PERMINTAAN / PENGELUARAN BARANG</p>
-                                    <p style="padding-right: 128px">Bagian : ........................................... No. ............</p>
+                                    <p style="padding-right: 128px">
+                                        Bagian: <t t-esc="o.location_id.display_name or ''"/> 
+                                        No.: <t t-esc="o.name or ''"/>
+                                    </p>
                                 </td>
                             </tr>
                         </table>
@@ -35,18 +37,29 @@
                                     <td style="text-align: center;">Diminta</td>
                                     <td style="text-align: center;">Dikeluarkan</td>
                                 </tr>
-                                <tr>
-                                    <td height="280px;" style="border-left: 1px solid white"></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td style="border-right: 1px solid white"></td>
-                                </tr>
+                                <t t-set="counter" t-value="0"/>
+                                <t t-foreach="o.move_ids_without_package" t-as="line">
+                                    <t t-set="counter" t-value="counter + 1"/>
+                                    <tr>
+                                        <td style="border-left: 1px solid white; text-align: center;"><t t-esc="counter"/></td>
+                                        <td style="text-align: center;"><t t-esc="line.product_id.name"/></td>
+                                        <td style="text-align: center;"><t t-esc="line.product_uom_qty"/></td>
+                                        <td style="text-align: center;"><t t-esc="line.quantity_done"/></td>
+                                        <td style="text-align: center;"><t t-esc="line.product_uom.name"/></td>
+                                        <td style="text-align: center; border-right: 1px solid white;"><t t-esc="line.description_picking or ''"/></td>
+                                    </tr>
+                                </t>
                             </tbody>
                         </table>
 
-                        <p style="margin-top: 18px; text-align: right; padding-right: 40px">Nyalindung, ................................20....</p>
+                        <p style="margin-top: 18px; text-align: right; padding-right: 40px">
+                            Nyalindung, <t t-esc="o.date_done and o.date_done.strftime('%d-%m-%Y') or ''"/>
+                        </p>
+                        
+                        <!-- pakai yang dibawah ini kalau mau tanggal hari ini -->
+                        <!-- <p style="margin-top: 18px; text-align: right; padding-right: 40px">
+                            Nyalindung, <t t-esc="o.date.today().strftime('%d-%m-%Y') or ''"/>
+                        </p> -->
 
                         <table width="89%" style="margin-top: 20px; text-align: center; margin-left: 58px;">
                             <tbody>
@@ -58,10 +71,10 @@
                                 </tr>
                                 <tr height="100px"></tr>
                                 <tr>
-                                    <td>( ........................................... )</td>
-                                    <td>( ........................................... )</td>
-                                    <td>( ........................................... )</td>
-                                    <td>( ........................................... )</td>
+                                    <td>( .............................. )</td>
+                                    <td>( .............................. )</td>
+                                    <td>( .............................. )</td>
+                                    <td>( .............................. )</td>
                                 </tr>
                             </tbody>
                         </table>
