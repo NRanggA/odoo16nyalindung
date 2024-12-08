@@ -1915,6 +1915,9 @@ class lhm_transaction_line(models.Model):
                                 activities = line.varieties_id.general_charges_activity_ids
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
+                            # Menambahkan tipe lokasi Mills 
+                            elif line.location_type_id.mills:
+                                activities = line.varieties_id.mill_costs_ids
                             else:
                                 activities = line.varieties_id.harvest_activity_id
                                 activities |= line.varieties_id.upkeep_activity_ids
@@ -2142,6 +2145,7 @@ class lhm_transaction_line(models.Model):
             self.location_id    = False
             self.activity_id    = False
             # self.satuan_id      = False
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.onchange('location_id')
     def _onchange_location_id(self):
