@@ -11,8 +11,8 @@ class AccountMove(models.Model):
         for record in self:
             if record.move_type == 'out_invoice':
                 continue
-            print(">>>>>>>>>>>>>>>>>>", record.partner_id)
-            print(">>>>>>>>>>>>>>>>>>", record.l10n_id_tax_number)
+            # print(">>>>>>>>>>>>>>>>>>", record.partner_id)
+            # print(">>>>>>>>>>>>>>>>>>", record.l10n_id_tax_number)
             # print(">>>>>>>>>>>>>>>>>>", stop)
             if record.partner_id and record.l10n_id_tax_number:
                 this_nomor_faktur = record.l10n_id_tax_number[3:]
