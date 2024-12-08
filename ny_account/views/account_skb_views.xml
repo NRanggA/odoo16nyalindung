@@ -13,6 +13,11 @@
                     <!-- <field name="taxes_exclude" attrs="{'invisible': [('is_skb', '!=', True)]}"/> -->
                     <field name="taxes_exclude" widget="many2many_tags" attrs="{'invisible': [('is_skb', '!=', True)]}"/>
                 </xpath>
+                <xpath expr="//group/group" position="inside">
+                    <field name="employee_category"/>
+                    <field name="customer_category"/>
+                    <field name="vendor_category"/>
+                </xpath>
             </field>
         </record>
     </data>

@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'account', 'product', 'c10i_lhm_v16', 'c10i_direct_payment'],
+    'depends': ['base', 'contacts', 'account', 'product', 'c10i_lhm_v16', 'c10i_direct_payment'],
 
     # always loaded
     'data': [

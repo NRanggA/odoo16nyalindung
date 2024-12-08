@@ -8,6 +8,11 @@ class ResPartner(models.Model):
     masa_berlaku = fields.Date(string="Masa Berlaku")
     taxes_exclude = fields.Many2many('account.tax', string="Taxes Exclude")
 
+    # category_type = fields.Boolean(string="Choose Category")
+    employee_category = fields.Boolean(string="Employee")
+    vendor_category = fields.Boolean(string="Vendor")
+    customer_category = fields.Boolean(string="Customer")
+
 class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 

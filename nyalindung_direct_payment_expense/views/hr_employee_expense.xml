@@ -61,7 +61,11 @@
                     </div>
                     <group>
                         <group>
-                            <field name="employee_id" options="{'no_create_edit': True, 'no_create': True}" required="1" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/>
+                            <field name="employee_id" options="{'no_create_edit': True, 'no_create': True}" invisible="1" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/>
+                            <field name="partner_id" options="{'no_create_edit': True, 'no_create': True}" required="1" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/>
+                            <!-- <field name="partner_id" options="{'no_create_edit': True, 'no_create': True}" required="1" domain="[('employee_category', '=', True)]" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/> -->
+                            <!-- <field name="employee_category" invisible="1"/> -->
+                            <!-- <field name="partner_id" options="{'no_create_edit': True, 'no_create': True}" required="1" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/> -->
                             <field name="date" required="1" attrs="{'readonly': [('employee_expense_state','!=','draft')]}"/>
                             <field name="requested_by" required="1" attrs="{'readonly': [('employee_expense_state','!=','draft')]}" options="{'no_create_edit': True, 'no_create': True}"/>
                             <field name="approved_by" readonly="1" attrs="{'invisible': [('approved_by','=',False)]}"/>

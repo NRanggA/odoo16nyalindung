@@ -22,6 +22,7 @@ class HrEmployeeExpense(models.Model):
     name = fields.Char(string="Number", default="New")
     date = fields.Date('Date', default=fields.Date.context_today)
     partner_id = fields.Many2one('res.partner', string='Partner', copy=False, ondelete='restrict')
+    # employee_category = fields.Boolean(string="Employee", related="partner_id.employee_category")
     # payment_request_type = fields.Selection([
     #     ('direct_inbound', 'Direct Inbound Payment'), 
     #     ('direct_outbound', 'Direct Outbound Payment')])
