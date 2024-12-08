@@ -47,7 +47,8 @@
                     <field name="cash_count_line_ids" attrs="{'invisible': [('type','!=','cash')]}">
                         <tree create="0" delete="0" editable="bottom" >
                             <field name="cash_type_id" force_save="1" readonly="1"/>
-                            <field name="amount" />
+                            <field name="amount" string="Quantity" />
+                            <field name="total" />
                         </tree>
                     </field>
                 </xpath>
