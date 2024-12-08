@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from datetime import datetime
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
@@ -11,6 +12,21 @@ class MrpProduction(models.Model):
     #         production.state = 'draft'
     #         # production.reservation_state = False
     #         # production.consumption = 'flexible'
+
+    @api.model
+    def create(self, vals):
+        current_date = datetime.today().strftime("%Y-%m-%d")
+
+        sequence_count = self.env['mrp.production'].search_count([
+            ('create_date', '>=', f"{current_date} 00:00:00"),
+            ('create_date', '<=', f"{current_date} 23:59:59")
+        ]) + 1
+
+        sequence_str = f"{sequence_count:02d}"
+
+        vals['name'] = f"MO/{current_date}/{sequence_str}"
+
+        return super(MrpProduction, self).create(vals)
 
     def action_draft(self):
         for production in self:
