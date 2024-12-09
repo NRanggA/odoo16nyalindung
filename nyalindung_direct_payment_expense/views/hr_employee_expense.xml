@@ -382,6 +382,17 @@
         <field name="padding">4</field>
     </record>
 
+    <record id="account_employee_direct_payment_sequence_advance" model="ir.sequence">
+        <field name="name">Employee Expense (Uang Muka)</field>
+        <field name="code">hr.employee.expense.advance</field>
+        <field name="prefix">DUM/%(year)s/%(month)s/</field>
+        <field eval="1" name="number_next"/>
+        <field eval="1" name="number_increment"/>
+        <field eval="True" name="use_date_range"/>
+        <field eval="False" name="company_id"/>
+        <field name="padding">4</field>
+    </record>
+
     <menuitem id="menu_account_direct_payment_expense_id" name="Expenses" sequence="45"
         web_icon="c10i_direct_payment_employee_expense,static/description/icon.png"/>
     <menuitem id="menu_employee_my_expense_root_id" action="account_employee_advance_action" parent="menu_account_direct_payment_expense_id" name="My Advance" sequence="5"/>

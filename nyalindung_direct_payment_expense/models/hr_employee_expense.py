@@ -318,8 +318,11 @@ class HrEmployeeExpense(models.Model):
             for line in payment.line_ids:
                 if line.amount is not None and line.amount <= 0:
                     raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
-            if payment.name == 'New':
-                payment.name = self.env['ir.sequence'].next_by_code('hr.employee.expense')
+            if payment.name == 'New':    
+                if payment.is_advance == False:
+                    payment.name = self.env['ir.sequence'].next_by_code('hr.employee.expense.advance')
+                else:
+                    payment.name = self.env['ir.sequence'].next_by_code('hr.employee.expense')
             payment.state="confirm"
 
     def action_cancel(self):
