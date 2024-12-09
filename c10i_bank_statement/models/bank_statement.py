@@ -23,6 +23,13 @@ class AccountBankStatement(models.Model):
     def unlink(self):
         if any(self.filtered(lambda rec: rec.state != 'draft')):
             raise UserError(_('You cannot delete a bank statement which is not Draft.'))
+        for statement in self:
+            reconciled_lines = statement.line_ids.filtered(lambda line: line.is_reconciled)
+            if reconciled_lines:
+                raise UserError(_(
+                    "You cannot delete a bank statement if one of its lines is reconciled. "
+                    "Please remove the reconciled status from the statement lines before deleting."
+                ))
         return super(AccountBankStatement, self).unlink()    
 
     def button_validate(self):
@@ -103,6 +110,18 @@ class AccountBankStatement(models.Model):
                 'amount': amount_payment,
             })]
 
+class AccountBankStatementLine(models.Model):
+    _inherit = 'account.bank.statement.line'
+
+    def unlink(self):
+        for line in self:
+            if line.is_reconciled:
+                raise UserError(_(
+                    "You cannot delete a bank statement line that is reconciled."
+                    "Please unreconcile the line before deleting it."
+                ))
+        return super(AccountBankStatementLine, self).unlink()
+
 class AccountBankStatementImport(models.TransientModel):
     _inherit = 'account.bank.statement.import'
 
@@ -113,3 +132,4 @@ class AccountBankStatementImport(models.TransientModel):
         res['date'] = self.date
         res['name'] = 'Statement Of ' + str(self.date)
         return res
+    
