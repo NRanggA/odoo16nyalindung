@@ -6,7 +6,7 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//label[@for='product_qty']" position="before">
+            <xpath expr="//field[@name='product_qty']" position="after">
                 <button string="Qty To Produce" name="get_target_production" type="object" class="btn-warning" states="draft"/>
             </xpath>
             <page name="finished_products" position="before">
