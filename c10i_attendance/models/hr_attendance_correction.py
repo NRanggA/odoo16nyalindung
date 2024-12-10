@@ -14,7 +14,7 @@ class HrAttendanceCorrection(models.Model):
     attendance_type_id = fields.Many2one('hr.attendance.type', string='Tipe Absensi')
     state = fields.Selection([
         ('draft', 'New'),
-        ('progres', 'Progres'),
+        ('progres', 'Waiting Approval'),
         ('review', 'Review'),
         ('cancel', 'Cancel'),
         ('reject', 'Reject'),
