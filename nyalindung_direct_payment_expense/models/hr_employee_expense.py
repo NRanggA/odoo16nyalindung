@@ -535,7 +535,7 @@ class HrEmployeeExpenseLine(models.Model):
     name = fields.Char(string="Description", required=True)
     amount = fields.Monetary('Amount')
 
-    varieties_id = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
+    varieties_id = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
