@@ -17,25 +17,19 @@
                     <button name="employee_set_draft" string="Set to Draft" type="object" attrs="{'invisible': [('employee_expense_state','!=','reject')]}"/>
                     <button name="employee_reject" string="Reject" type="object" attrs="{'invisible': [('employee_expense_state','!=','submit')]}"/>
                     <button name="employee_cancel" string="Cancel" type="object" attrs="{'invisible': [('employee_expense_state','not in',['draft','submit','reject'])]}"/>
-                    
+
                     <field name="employee_expense_state" widget="statusbar" statusbar_visible="draft,submit,approved"/>
                 </header>
                 <sheet>
 
                     <div class="oe_button_box" name="button_box">
-                        <button type="object" name="action_open_settlement"
-                            class="oe_stat_button"
-                            icon="fa-pencil-square-o" attrs="{'invisible':['|',('expense_report', '=', True),('employee_expense_settlement_count','=',0)]}">
+                        <button type="object" name="action_open_settlement" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible':['|',('expense_report', '=', True),('employee_expense_settlement_count','=',0)]}">
                             <field name="employee_expense_settlement_count" string="Settlement" widget="statinfo"/>
                         </button>
-                        <button type="object" name="action_open_employee_expense_journal"
-                            class="oe_stat_button"
-                            icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_journal_count', '=', 0)]}">
+                        <button type="object" name="action_open_employee_expense_journal" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_journal_count', '=', 0)]}">
                             <field name="employee_expense_journal_count" string="Journal Item" widget="statinfo"/>
                         </button>
-                        <button type="object" name="action_open_direct_payment"
-                            class="oe_stat_button"
-                            icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_direct_payment_count', '=', 0)]}">
+                        <button type="object" name="action_open_direct_payment" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible':[('employee_expense_direct_payment_count', '=', 0)]}">
                             <field name="employee_expense_direct_payment_count" string="Direct Payment" widget="statinfo"/>
                         </button>
                     </div>
@@ -47,12 +41,9 @@
                     <field name="advance_found" invisible="1"/>
 
                     <!-- Payment status -->
-                    <widget name="web_ribbon" title="Paid"
-                            attrs="{'invisible': [('payment_state', '!=', 'paid')]}"/>
-                    <widget name="web_ribbon" title="In Payment"
-                            attrs="{'invisible': [('payment_state', '!=', 'in_payment')]}"/>
-                    <!-- <widget name="web_ribbon" title="Partial"
-                            attrs="{'invisible': [('payment_state', '!=', 'paid')]}"/> -->
+                    <widget name="web_ribbon" title="Paid" attrs="{'invisible': [('payment_state', '!=', 'paid')]}"/>
+                    <widget name="web_ribbon" title="In Payment" attrs="{'invisible': [('payment_state', '!=', 'in_payment')]}"/>
+                    <!-- <widget name="web_ribbon" title="Partial" attrs="{'invisible': [('payment_state', '!=', 'paid')]}"/> -->
 
                     <div class="oe_title">
                         <h1>
@@ -77,8 +68,9 @@
                             <field name="account_move_id" readonly="1" groups="account.group_account_user" invisible="1"/>
                             <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')], 'required' : [('is_advance','=',True)], 'invisible' : [('is_advance','!=',True)]}"/>
                             <field name="has_amount" invisible="1"/>
-                            
-                            <field name="company_id" options="{'no_create_edit': True, 'no_create': True}"/> <!-- groups="base.group_multi_company"-->
+
+                            <field name="company_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                            <!-- groups="base.group_multi_company"-->
                         </group>
                     </group>
                     <group>
@@ -96,28 +88,21 @@
                     </group>
                     <notebook>
                         <page string="Lines">
-                            <field name="line_ids" required="1" attrs="{'readonly': [('employee_expense_state','not in',['draft', 'submit', 'approved'])]}" >
+                            <field name="line_ids" required="1" attrs="{'readonly': [('employee_expense_state','not in',['draft', 'submit', 'approved'])]}">
                                 <tree editable="bottom">
                                     <field name="currency_id" invisible="1"/>
-                                    <field name="product_id" 
-                                        options="{'no_create_edit': True, 'no_create': True}" 
-                                        attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}" invisible="1"/>
+                                    <field name="product_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}" invisible="1"/>
                                     <field name="name" attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}"/>
-                                    
+
                                     <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                     <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
-                                    <field name="filtered_locations" invisible="1"/>                                    
+                                    <field name="filtered_locations" invisible="1"/>
                                     <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]"/>
                                     <field name="filtered_activities" invisible="1"/>
                                     <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                    
-                                    <field name="account_id" 
-                                        options="{'no_create_edit': True, 'no_create': True}" 
-                                        attrs="{'readonly': ['|',('parent.employee_expense_state', 'not in', ['draft','submit','approved']),('parent.is_advance','=',True)]}" force_save="1"/>
-                                    <field name="analytic_account_id" 
-                                        options="{'no_create_edit': True, 'no_create': True}" 
-                                        attrs="{'readonly': [('parent.employee_expense_state', 'not in', ['draft','submit','approved'])]}"
-                                        groups="analytic.group_analytic_accounting"/>
+
+                                    <field name="account_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': ['|',('parent.employee_expense_state', 'not in', ['draft','submit','approved']),('parent.is_advance','=',True)]}" force_save="1"/>
+                                    <field name="analytic_account_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.employee_expense_state', 'not in', ['draft','submit','approved'])]}" groups="analytic.group_analytic_accounting"/>
                                     <field name="amount"/>
                                 </tree>
                                 <form>
@@ -188,6 +173,7 @@
                 <field name="currency_id" optional="hide"/>
                 <field name="amount_total"/>
                 <field name="advance_residual"/>
+                <field name="settelement_date" widget="remaining_days" options="{'allow_order':'1'}"/>
                 <!-- <field name="amount_to_clear"/> -->
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="employee_expense_state" widget="badge" decoration-danger="employee_expense_state=='reject'" decoration-warning="employee_expense_state=='submit'" decoration-success="employee_expense_state=='approved'"/>
@@ -206,27 +192,27 @@
                 <field name="requested_by"/>
                 <filter string="My Advance" name="my_advances" domain="[('employee_id.user_id', '=', uid)]"/>
                 <filter string="My Reports" name="my_reports" domain="[('employee_id.user_id', '=', uid)]"/>
-                
+
                 <separator/>
-                    <filter name="submit" string="To Approve" domain="[('employee_expense_state','=','submit')]"/>
-                    <filter name="approve" string="To Post" domain="[('employee_expense_state','=','approved')]"/>
-                    <filter name="posted" string="Posted" domain="[('employee_expense_state', '=', 'posted')]"/>
-                    <filter name="cancel" string="Cancelled" domain="[('employee_expense_state', '=', 'cancel')]"/>
-                    <filter name="reject" string="Rejected" domain="[('employee_expense_state', '=', 'reject')]"/>
+                <filter name="submit" string="To Approve" domain="[('employee_expense_state','=','submit')]"/>
+                <filter name="approve" string="To Post" domain="[('employee_expense_state','=','approved')]"/>
+                <filter name="posted" string="Posted" domain="[('employee_expense_state', '=', 'posted')]"/>
+                <filter name="cancel" string="Cancelled" domain="[('employee_expense_state', '=', 'cancel')]"/>
+                <filter name="reject" string="Rejected" domain="[('employee_expense_state', '=', 'reject')]"/>
                 <separator/>
-                    <filter name="in_payment" string="In Payment" domain="[('payment_state', '=', 'in_payment'), ('state', '=', 'posted')]"/>
-                    <!-- <filter name="partial" string="Partially Paid" domain="[('payment_state', '=', 'partial'), ('state', '=', 'posted')]"/> -->
-                    <filter name="paid" string="Paid" domain="[('payment_state', '=', 'paid'), ('state', '=', 'posted')]"/>
-                    <filter name="unpaid" string="Not Paid" domain="[('payment_state', '=', 'not_paid'), ('state', '=', 'posted')]"/>
+                <filter name="in_payment" string="In Payment" domain="[('payment_state', '=', 'in_payment'), ('state', '=', 'posted')]"/>
+                <!-- <filter name="partial" string="Partially Paid" domain="[('payment_state', '=', 'partial'), ('state', '=', 'posted')]"/> -->
+                <filter name="paid" string="Paid" domain="[('payment_state', '=', 'paid'), ('state', '=', 'posted')]"/>
+                <filter name="unpaid" string="Not Paid" domain="[('payment_state', '=', 'not_paid'), ('state', '=', 'posted')]"/>
                 <group expand="0" string="Group By">
                     <filter name="status" string="Status" context="{'group_by':'employee_expense_state'}"/>
                     <separator/>
                     <filter string="Date" name="groupdate" context="{'group_by': 'date'}"/>
                 </group>
-             </search>
+            </search>
         </field>
     </record>
-    
+
     <record model="ir.actions.act_window" id="hr_account_employee_expense_action">
         <field name="name">My Reports</field>
         <field name="type">ir.actions.act_window</field>
@@ -236,7 +222,7 @@
         <field name="context">{'default_expense_report': 1, 'search_default_my_reports': 1}</field>
         <field name="search_view_id" ref="account_employee_expense_search" />
     </record>
-    
+
     <record id="hr_account_employee_expense_action_tree" model="ir.actions.act_window.view">
         <field name="sequence" eval="2"/>
         <field name="view_mode">tree</field>
@@ -393,8 +379,7 @@
         <field name="padding">4</field>
     </record>
 
-    <menuitem id="menu_account_direct_payment_expense_id" name="Expenses" sequence="45"
-        web_icon="c10i_direct_payment_employee_expense,static/description/icon.png"/>
+    <menuitem id="menu_account_direct_payment_expense_id" name="Expenses" sequence="45" web_icon="c10i_direct_payment_employee_expense,static/description/icon.png"/>
     <menuitem id="menu_employee_my_expense_root_id" action="account_employee_advance_action" parent="menu_account_direct_payment_expense_id" name="My Advance" sequence="5"/>
     <menuitem id="menu_employee_expense_report_root_id" parent="menu_account_direct_payment_expense_id" name="Expense Reports" sequence="6"/>
     <menuitem action="hr_account_employee_expense_action" id="menu_employee_my_expense" parent="menu_employee_expense_report_root_id" sequence="10"/>

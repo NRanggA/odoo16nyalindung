@@ -3,6 +3,7 @@ from datetime import datetime
 from odoo.tools.float_utils import float_is_zero, float_compare
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
+from dateutil.relativedelta import relativedelta
 
 
 
@@ -61,7 +62,7 @@ class HrEmployeeExpense(models.Model):
     requested_by = fields.Many2one("res.users", string="Requested by", 
         default=lambda s: s.env.uid, tracking=True, index=True,
     )
-    settelement_date = fields.Date('Settelement Date')
+    settelement_date = fields.Date('Settlement Date')
     contra_account_for_advance = fields.Many2one(
         comodel_name='account.account',
         related='company_id.contra_account_for_advance', readonly=False,
@@ -385,6 +386,26 @@ class HrEmployeeExpense(models.Model):
                 'name': 'Request of Employee Advance',
                 'account_id': account.id,
                 })]
+    @api.constrains('date','settelement_date')
+    def _constrains_settelement_date(self):
+        for record in self:
+            if not record.expense_report:
+                advanced_ids = record.search([
+                    ('id', '!=', record.id),
+                    ('expense_report', '=', False),
+                    ('employee_id', '=', record.employee_id.id),
+                    ('state', 'not in', ('done','reject','cancel')),
+
+                    ])
+                if advanced_ids:
+                    for advanced_id in advanced_ids:
+                        if advanced_id.settelement_date < fields.Date.today():
+                            for settle_id in record.settlement_ids:
+                                if settle_id.state not in ('done'):
+                                    raise ValidationError('Cash advance number %s has not been settled yet. Please finalize the settlement before continuing'%(advanced_id.name))
+
+
+
 
     def get_advance_move_line(self):
         move_lines = []
