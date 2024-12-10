@@ -19,10 +19,10 @@ class AccountPayment(models.Model):
 
     # menambahkan field deparment
     department_id       = fields.Many2one('hr.department', string='Department')
-    beban               = fields.Selection([
-                            ('kebun', 'Kebun'),
-                            ('pasir', 'Pasir'),
-                        ], string='Beban')
+    alokasi               = fields.Selection([
+                            ('biaya', 'Biaya'),
+                            ('persediaan', 'Persediaan'),
+                        ], string='Alokasi')
     
     jenis_pembayaran    = fields.Selection([
                             ('tunai', 'Tunai'),

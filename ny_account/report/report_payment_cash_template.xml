@@ -110,8 +110,8 @@
                             <td class="header-right" colspan="2">
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
-                                        <th style="width: 20%">Beban</th>
-                                        <td style="width: 80%">: <span t-field="o.beban"/></td>
+                                        <th style="width: 20%">Alokasi</th>
+                                        <td style="width: 80%">: <span t-field="o.alokasi"/></td>
                                     </tr>
                                     <tr>
                                         <th>Dept/Divisi</th>

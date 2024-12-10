@@ -43,7 +43,7 @@
 
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="department_id" />
-                <field name="beban" />
+                <field name="alokasi" />
                 <field name="jenis_pembayaran" />
                 <field name="atas_nama" />
             </xpath>
