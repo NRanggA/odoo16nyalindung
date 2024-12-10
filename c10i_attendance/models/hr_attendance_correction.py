@@ -6,6 +6,7 @@ from odoo.exceptions import ValidationError, UserError
 class HrAttendanceCorrection(models.Model):
     _name           = 'hr.attendance.correction'
     _description    = 'Attendance Correction'
+    _inherit        = ['mail.thread', 'mail.activity.mixin']
 
     name            = fields.Char('Name', readonly=True)
     date            = fields.Date('Tanggal', required=True, default=lambda self: fields.Date.context_today(self))
