@@ -10,6 +10,7 @@
         	<field name="date" position="after">
                 <field name="gain_account_id" attrs="{'readonly': [('state', '!=', 'draft')]}" />
                 <field name="loss_account_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                <field name="write_on_asset_sales_account_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
         		<field name="asset_acquisition_id" readonly="1"/>
         	</field>
             <xpath expr="//page[child::field[@name='depreciation_line_ids']]" position="after">
@@ -49,8 +50,23 @@
                 <group string="Disposal Information">
                     <field name="gain_account_id" />
                     <field name="loss_account_id" />
+                    <field name="write_on_asset_sales_account_id" />
                 </group>
             </xpath>
         </field>
     </record>
+
+    <!-- Inherit View search -->
+    <record id="view_account_asset_search_inherit" model="ir.ui.view">
+        <field name="name">account.asset.search.inherit</field>
+        <field name="model">account.asset.asset</field>
+        <field name="inherit_id" ref="om_account_asset.view_account_asset_search"/>
+        <field name="arch" type="xml">
+            <filter name="closed" position="after">
+                <filter string="Archive" name="archive" domain="[('active', '=', False)]" help="Inactive assets"/>
+            </filter>
+        </field>
+    </record>
+
+
 </odoo>

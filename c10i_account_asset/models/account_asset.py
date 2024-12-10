@@ -14,6 +14,7 @@ class AccountAsset(models.Model):
     acquisition_date = fields.Date('Acquisition Date')
     gain_account_id = fields.Many2one('account.account', string='Gain Account on Sales')
     loss_account_id = fields.Many2one('account.account', string='Loss Account on Sales')  
+    write_on_asset_sales_account_id = fields.Many2one('account.account', string='Write-Off Asset Account')  
 
     @api.onchange('category_id')
     def _set_gain_and_loss_account(self):
@@ -21,9 +22,11 @@ class AccountAsset(models.Model):
             try:
                 self.gain_account_id = self.category_id.gain_account_id.id
                 self.loss_account_id = self.category_id.loss_account_id.id
+                self.write_on_asset_sales_account_id = self.category_id.write_on_asset_sales_account_id.id
             except:
                 self.gain_account_id = False
                 self.loss_account_id = False
+                self.write_on_asset_sales_account_id = False
     
     def validate(self):
         res = super(AccountAsset, self).validate()
@@ -43,3 +46,5 @@ class AccountAssetCategory(models.Model):
 
     gain_account_id = fields.Many2one('account.account', string='Gain Account on Sales')
     loss_account_id = fields.Many2one('account.account', string='Loss Account on Sales')    
+    write_on_asset_sales_account_id = fields.Many2one('account.account', string='Write-Off Asset Account')
+    
