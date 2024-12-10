@@ -6,36 +6,31 @@
                     <div class="header" style="font-family: 'Arial', sans-serif;">
                     </div>
                     <div class="page" style="font-family: 'Arial', sans-serif;">
-                        <table width="100%">
+                        <table class="no-border" width="100%">
                             <tr>
-                                <td style="width : 40%">
-                                    <p style="text-align: center; font-size: 12px">PERKEBUNAN TEH DAN KARET <br/>
-                                    <span style="font-size: 18px; font-weight: bold">PT.NYALINDUNG</span><br/>
-                                    <span style="text-decoration : underline">POST ADDRESS PADALARANG BANDUNG</span>
-                                    </p>
+                                <td rowspan="3" colspan="3" style="width: 50%; text-align: center;">
+                                    <div style="font-size: 12px;">PERKEBUNAN TEH DAN KARET</div>
+                                    <div style="font-size: 18px; font-weight: bold;">PT. NYALINDUNG</div>
+                                    <div style="font-size: 12px; text-decoration : underline;">POST ADDRESS PADALARANG BANDUNG</div>
                                 </td>
-                                <td style="width : 60%; padding-top: 40px; text-align: right">
-                                    <p style="font-size: 18px; font-weight: bold; padding-right: 40px">BON PERMINTAAN / PENGELUARAN BARANG</p>
-                                    <p style="padding-right: 128px">
-                                        Bagian: <t t-esc="o.location_id.display_name or ''"/> 
-                                        No.: <t t-esc="o.name or ''"/>
-                                    </p>
+                                <td colspan="3" style="font-size: 18px; font-weight: bold; text-align: center;">
+                                    BON PENGELUARAN BARANG
                                 </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Bagian.: <t t-esc="o.afdeling_id.name or ''"/></td>
+                                <td>No.: <t t-esc="o.name or ''"/></td>
                             </tr>
                         </table>
 
                         <table width="89%" style="margin-top: 14px; margin-left: 58px; border-collapse: collapse;" border="1">
                             <tbody>
                                 <tr>
-                                    <td style="text-align: center; border-left: 1px solid white" rowspan="2">No.</td>
-                                    <td style="text-align: center;" rowspan="2">Nama Barang</td>
-                                    <td style="text-align: center;" colspan="2">Banyaknya</td>
-                                    <td style="text-align: center;" rowspan="2">Satuan</td>
-                                    <td style="text-align: center; border-right: 1px solid white" rowspan="2">Keterangan</td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align: center;">Diminta</td>
+                                    <td style="text-align: center; border-left: 1px solid white">No.</td>
+                                    <td style="text-align: center;">Nama Barang</td>
                                     <td style="text-align: center;">Dikeluarkan</td>
+                                    <td style="text-align: center;">Satuan</td>
+                                    <td style="text-align: center; border-right: 1px solid white">Keterangan</td>
                                 </tr>
                                 <t t-set="counter" t-value="0"/>
                                 <t t-foreach="o.move_ids_without_package" t-as="line">
@@ -43,7 +38,6 @@
                                     <tr>
                                         <td style="border-left: 1px solid white; text-align: center;"><t t-esc="counter"/></td>
                                         <td style="text-align: center;"><t t-esc="line.product_id.name"/></td>
-                                        <td style="text-align: center;"><t t-esc="line.product_uom_qty"/></td>
                                         <td style="text-align: center;"><t t-esc="line.quantity_done"/></td>
                                         <td style="text-align: center;"><t t-esc="line.product_uom.name"/></td>
                                         <td style="text-align: center; border-right: 1px solid white;"><t t-esc="line.description_picking or ''"/></td>
@@ -71,10 +65,10 @@
                                 </tr>
                                 <tr height="100px"></tr>
                                 <tr>
+                                    <td>( WAHYU )</td>
+                                    <td>( BUDI PURWANDI )</td>
                                     <td>( .............................. )</td>
-                                    <td>( .............................. )</td>
-                                    <td>( .............................. )</td>
-                                    <td>( .............................. )</td>
+                                    <td>( <t t-esc="o.employee_id.name or ''"/> )</td>
                                 </tr>
                             </tbody>
                         </table>

@@ -12,6 +12,11 @@ class MaterialRequest(models.Model):
 
     requested_by_2 = fields.Many2one('hr.employee', string='Requested by')
 
+    def _prepare_picking(self):
+        res = super(MaterialRequest, self)._prepare_picking()
+        res.update({'employee_id': self.requested_by_2.id})
+        return res
+
     def _create_picking(self):
         StockPicking = self.env['stock.picking']
         if not any(line.requested_by for line in self.line_ids):
