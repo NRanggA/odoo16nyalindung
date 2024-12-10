@@ -229,7 +229,7 @@
                                         <th>Cabang</th>
                                         <td> 
                                             : 
-                                            <span t-esc="o.partner_bank_id.bank_id.state.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.state.name or ''"/>
+                                            <span t-esc="o.partner_bank_id.bank_id.street if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.street or ''"/>
                                         </td>
                                         
                                     </tr>
