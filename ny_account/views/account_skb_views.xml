@@ -20,5 +20,15 @@
                 </xpath>
             </field>
         </record>
+        <record id="view_res_partner_tree_vendor_filter" model="ir.ui.view">
+            <field name="name">res.partner.tree.vendor.filter</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.res_partner_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='supplier']" position="attributes">
+                    <attribute name="domain">[('vendor_category', '=', True)]</attribute>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>
