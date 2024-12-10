@@ -75,6 +75,15 @@ class SeedMoveLine(models.Model):
     fil_location_src_ids         = fields.Many2many('lhm.location','rel_seed_location_src', string="Filter From", compute="_get_location")
     fil_location_dest_ids        = fields.Many2many('lhm.location', 'rel_seed_location_dest', string="Filter To", compute="_get_location")
 
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     varieties_id                 = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     no_line                      = fields.Boolean(string="No Line", related="location_type_id.no_line")
     filtered_locations           = fields.Many2many('lhm.location', 'mrl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
@@ -102,7 +111,7 @@ class SeedMoveLine(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -135,9 +144,9 @@ class SeedMoveLine(models.Model):
             if line.seed_move_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 

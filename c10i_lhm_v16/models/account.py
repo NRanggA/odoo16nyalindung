@@ -36,10 +36,20 @@ class AccountMoveLine(models.Model):
     plantation_varieties_id = fields.Many2one('plant.varieties', string='ORG', ondelete='restrict')
     plantation_location_type_id = fields.Many2one(comodel_name="lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     filtered_locations = fields.Many2many('lhm.location', 'aml_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
-    plantation_location_id      = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
+    plantation_location_id = fields.Many2one(comodel_name="lhm.location", string="Lokasi", ondelete="restrict")
     filtered_activities = fields.Many2many('lhm.activity', 'aml_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
-    plantation_activity_id      = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
-    plantation_validator        = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
+    plantation_activity_id = fields.Many2one(comodel_name="lhm.activity", string="Aktivitas", ondelete="restrict")
+    plantation_validator = fields.Boolean(string="Plantation Validator", related="plantation_location_type_id.no_line")
+
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('plantation_location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.plantation_location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.plantation_location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     
     plantation_src_journal_id = fields.Many2one('account.journal', string="Asal Journal")
     
@@ -50,9 +60,9 @@ class AccountMoveLine(models.Model):
             if line.move_id.state!='draft' or not line.plantation_location_type_id:
                 line.filtered_locations = []
             else:
-                if line.plantation_location_type_id.code in ('WS','VH','MA', 'MC','LB'): # Menambahkan tipe Mills (MC)
+                if line.plantation_location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.plantation_location_type_id.id),('varieties_id','=',line.plantation_varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -79,7 +89,7 @@ class AccountMoveLine(models.Model):
                         line.filtered_activities = []
                 else:
                     # menambahkan Mills (MC)
-                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS', 'MC','LB'):
+                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS','MC','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.plantation_varieties_id:

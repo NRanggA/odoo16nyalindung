@@ -1838,6 +1838,15 @@ class lhm_transaction_line(models.Model):
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
     varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     activity_id         = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
@@ -1879,9 +1888,9 @@ class lhm_transaction_line(models.Model):
             if line.lhm_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','LB'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -2573,8 +2582,17 @@ class lhm_machine_line(models.Model):
 
     name                = fields.Char("Nama", readonly=True, related="lhm_machine_id.name", store=True)
     date                = fields.Date("Tanggal", copy=False)
-    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_ma_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     filtered_activities = fields.Many2many('lhm.activity', 'lhm_ma_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
@@ -2591,9 +2609,9 @@ class lhm_machine_line(models.Model):
             if line.lhm_machine_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, NS, PJ
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -2619,7 +2637,7 @@ class lhm_machine_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -2846,8 +2864,17 @@ class lhm_vehicle_line(models.Model):
     start_value         = fields.Float("km/hm Berangkat")
     end_value           = fields.Float("km/hm Kembali")
     difference_value    = fields.Float("km/hm Terpakai", compute="_compute_difference", store=True)
-    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_vh_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     filtered_activities = fields.Many2many('lhm.activity', 'lhm_vh_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
@@ -2871,9 +2898,9 @@ class lhm_vehicle_line(models.Model):
             if line.lhm_vehicle_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -2899,7 +2926,7 @@ class lhm_vehicle_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -3156,8 +3183,17 @@ class lhm_workshop_line(models.Model):
 
     name                = fields.Char("Nama", readonly=True, related="lhm_workshop_id.name", store=True)
     date                = fields.Date("Tanggal", )
-    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_ws_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     doc_activity_ids    = fields.Many2many('lhm.activity', store=True, compute=_get_doc_activity_ids)
@@ -3173,9 +3209,9 @@ class lhm_workshop_line(models.Model):
             if line.lhm_workshop_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA'):
+                if line.location_type_id.code in ('VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -3201,7 +3237,7 @@ class lhm_workshop_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -3758,6 +3794,15 @@ class lhm_contractor_line(models.Model):
     date                = fields.Date("Tanggal")
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
@@ -3794,9 +3839,9 @@ class lhm_contractor_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','LB'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -3822,7 +3867,7 @@ class lhm_contractor_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -3977,6 +4022,15 @@ class lhm_contractor_nap_line(models.Model):
     date                = fields.Date("Tanggal")
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
     varieties_id        = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
@@ -4031,9 +4085,9 @@ class lhm_contractor_nap_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','LB'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -4059,7 +4113,7 @@ class lhm_contractor_nap_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:

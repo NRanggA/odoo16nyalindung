@@ -7,8 +7,17 @@ from odoo.exceptions import UserError
 class MaterialRequestLine(models.Model):
     _inherit = 'material.request.line'
 
-    varieties_id = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_type_id = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
+    varieties_validator = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
+    @api.depends('location_type_id')
+    def _set_plantation_validator(self):
+        for line in self:
+            validator = False
+            if line.location_type_id:
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+            line.varieties_validator = validator
+    varieties_id = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     filtered_locations = fields.Many2many('lhm.location', 'mrl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     filtered_activities = fields.Many2many('lhm.activity', 'mrl_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
@@ -46,9 +55,9 @@ class MaterialRequestLine(models.Model):
             if line.mr_id.state!='draft' or not line.location_type_id:
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','LB'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # GC, IDC, PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 

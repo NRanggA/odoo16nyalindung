@@ -32,25 +32,25 @@
             attrs="{'readonly': [('parent.state', '!=', 'draft')],
                 'required': [('plantation_validator','=',False)]}"/>
         <!-- Akan dibuat tidak mandatory -->
+        <field name="plantation_validator" invisible="1"/>
+        <field name="varieties_validator" invisible="1"/>
         <field name="plantation_varieties_id" 
             options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
-            attrs="{'required': [('plantation_validator', '=', False)]}"
+            attrs="{'readonly': [('varieties_validator','=',False)], 
+                    'required': [('varieties_validator','=',True)]}"
             />
         <field name="filtered_locations" invisible="1"/> 
-            <!-- domain="[('type_id','=',plantation_location_type_id)]"  -->
         <field name="plantation_location_id" 
             domain="[('id','in',filtered_locations)]" 
             options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
             attrs="{'readonly': [('parent.state', '!=', 'draft')],
                 'required': [('plantation_validator','=',False)]}"/>
-        <field name="filtered_activities" invisible="1"/> 
-            <!-- domain="[('type_id','=',plantation_location_type_id)]"  -->
+        <field name="filtered_activities" invisible="1"/>
         <field name="plantation_activity_id" 
             domain="[('id','in',filtered_activities)]" 
             options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
             attrs="{'readonly': [('parent.state', '!=', 'draft')],
                 'required': [('plantation_validator','=',False)]}"/>
-        <field name="plantation_validator" invisible="1"/>
       </xpath>
       <field name="account_id" position="after">
         <field name="has_plantation" invisible="1"/>

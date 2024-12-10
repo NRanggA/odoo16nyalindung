@@ -57,11 +57,13 @@
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
                                         <field name="distance_value" optional="show"/>
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
                                             optional="show"/>
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1" />
                                         <field name="block_id" optional="show"/>
                                         <field name="filtered_activities" invisible="1" />
@@ -89,8 +91,10 @@
                                         <field name="location_type_id" 
                                             domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="block_id" optional="show" invisible="1"/>
                                         <field name="filtered_locations" invisible="1"/>
                                         <field name="location_id" 
@@ -351,11 +355,12 @@
                                         <!-- <field name="date"/> -->
                                         <!-- <field name="vehicle_id" domain="[('ownership','=','rental')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1" />
                                         <field name="block_id" optional="show"/>
                                         <field name="filtered_activities" invisible="1" />

@@ -95,7 +95,13 @@
                                     <field name="name" attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}"/>
 
                                     <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                    <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                    <!-- <field name="plantation_validator" invisible="1"/> -->
+                                    <field name="varieties_validator" invisible="1"/>
+                                    <field name="varieties_id" 
+                                        options="{'no_edit':True, 'no_create':True, 'no_open': True}" 
+                                        attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                'required': [('varieties_validator','=',True)]}"
+                                        />
                                     <field name="filtered_locations" invisible="1"/>
                                     <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]"/>
                                     <field name="filtered_activities" invisible="1"/>

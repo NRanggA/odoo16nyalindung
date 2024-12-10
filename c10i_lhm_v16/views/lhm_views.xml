@@ -1899,7 +1899,10 @@
                                         <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         
                                         <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"  attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
-                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'required': [('attendance_type','in',['kj','na'])]}" />
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True),('attendance_type','in',['kj','na'])]}"/>
                                         <field name="no_line" invisible="1" />
                                         <field name="filtered_locations" invisible="1"/>
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
@@ -2319,15 +2322,14 @@
                                     <tree editable="bottom">
                                         <field name="date" optional="show"/>
                                         <field name="name" invisible="1"/>
-                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="filtered_locations" invisible="1" />
-                                        <!-- ('machine_line','=',True), -->
                                         <field name="location_type_id" 
                                             domain="[('code','not in',['WS','VH','MA'])]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
-                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
+                                        <field name="filtered_locations" invisible="1" />
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -2498,14 +2500,14 @@
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="location_type_id" domain="[('code','not in',['WS','VH'])]"
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1" />
-                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
-                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
                                         <field name="filtered_activities" invisible="1" />
                                         <field name="activity_id" 
                                             domain="[('id','in',filtered_activities)]" 
@@ -2676,15 +2678,15 @@
                                         <field name="location_type_id" 
                                             domain="[('code','!=','WS')]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1"/>
-                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="filtered_activities" invisible="1"/>
-                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
                                         <field name="activity_id" 
                                             domain="[('id','in',filtered_activities)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -2858,18 +2860,18 @@
                                         <field name="end_value" optional="show"/>
                                         <field name="difference_value" optional="show"/>
                                         <field name="distance_value" optional="show"/>
-                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="location_type_id" domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
                                             optional="show"/>
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1" />
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="filtered_activities" invisible="1" />
-                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
                                         <field name="activity_id" 
                                             domain="[('id','in',filtered_activities)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
@@ -2891,19 +2893,18 @@
                                         <field name="name" invisible="1"/>
                                         <!-- <field name="tidak_ditagihkan" optional="show"/> -->
                                         <field name="date" required="1" optional="show"/>
-                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                         <field name="location_type_id" 
                                             domain="[('no_line','=',False)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1" />
-                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="filtered_activities" invisible="1" />
-                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
                                         <field name="activity_id" 
                                             domain="[('id','in',filtered_activities)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
@@ -3132,12 +3133,12 @@
                                         <field name="name" invisible="1"/>
                                         <field name="date"/>
                                         <!-- <field name="vehicle_id" domain="[('ownership','=','rental')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
-                                        <field name="varieties_id" required="1"
-                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
                                         <field name="location_type_id" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
                                         <field name="filtered_locations" invisible="1" />
                                         <field name="location_id" 
                                             domain="[('id','in',filtered_locations)]" 
