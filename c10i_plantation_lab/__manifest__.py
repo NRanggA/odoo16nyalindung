@@ -21,6 +21,9 @@
         'views/lab_product_view.xml',
         'views/lab_production_order_view.xml',
         'views/menuitems.xml',
+        
+        'data/stock_location_data.xml',
+        'data/picking_type_data.xml',
 
         'data/location_type_data.xml',
     ],

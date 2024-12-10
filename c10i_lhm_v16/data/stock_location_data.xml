@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+    
+        <record id="loc_virtual_kebun_loc_1" model="stock.location">
+            <field name="name">Kebun</field>
+            <field name="usage">production</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+        </record>
+
+        <record id="loc_stock_kebun_loc_1" model="stock.location">
+            <field name="name">Kebun</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+        </record>
+    
+    </data>
+    
+
+</odoo>

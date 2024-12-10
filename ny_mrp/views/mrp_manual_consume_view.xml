@@ -32,7 +32,7 @@
             <tree editable="top">
                 <field name="company_id" invisible="1"/>
                 <field name="date" readonly="1"/>
-                <field name="component_consume_production_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
+                <field name="component_consume_production_id" attrs="{'readonly': [('is_confirmed','=',True)]}" domain="[('state','=','progress')]"/>
                 <field name="bom_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
                 <field name="bom_line_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>
                 <field name="product_id" attrs="{'readonly': [('is_confirmed','=',True)]}"/>

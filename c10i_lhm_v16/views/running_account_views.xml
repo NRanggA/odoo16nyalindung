@@ -182,7 +182,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_running_account" name="Running Account" action="action_running_account" parent="menu_lhm_running" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="menu_running_account" name="Running Account" action="action_running_account" parent="menu_lhm_running" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End Of Running Account -->
     </data>
 </odoo>

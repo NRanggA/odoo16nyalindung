@@ -100,12 +100,14 @@
                     <field name="basic_salary_type" required="1" widget="radio" options="{'horizontal': true}"/>
                     <!-- Tidak bisa di munculkan karena model nya masih belom ditemukan atau modul cost center belom ada -->
                     <!-- <field name="cost_center_id"/>  -->
-                    <field name="plantation_location_type_id"/>
-                    <field name="plantation_location_id"/>
-                    <field name="plantation_activity_hkne_id"/>
-                    <field name="plantation_activity_natura_id"/>
-                    <field name="plantation_activity_bpjs_tk_id"/>
-                    <field name="plantation_activity_bpjs_kes_id"/>
+                    <field name="plantation_varieties_id" />
+                    <field name="plantation_location_type_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <field name="plantation_location_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <!-- <field name="plantation_activity_hkne_id"/> -->
+                    <!-- <field name="plantation_activity_natura_id"/> -->
+                    <!-- <field name="plantation_activity_bpjs_tk_id"/> -->
+                    <!-- <field name="plantation_activity_bpjs_kes_id"/> -->
                 </xpath>
 
                 <xpath expr="//page[@name='public']//group[@name='employee_authority']" position="inside">
@@ -464,6 +466,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='name']" position="before">
                     <field name="is_lhm" invisible="1"/>
+                    <field name="plantation_varieties_id" />
+                    <field name="plantation_location_type_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <field name="plantation_location_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                 </xpath>
             </field>
         </record>
@@ -895,6 +901,12 @@
                                 <field name="nik_kerani_1" readonly="1"/>
                                 <field name="nik_kerani" readonly="1"/>
                                 <field name="company_id" readonly="1"/>
+                            </group>
+                            <group string="Payroll Cost Distribution">
+                                <field name="plantation_varieties_id" />
+                                <field name="plantation_location_type_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                                <field name="plantation_location_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                                <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                             </group>
                         </group>
                         <notebook>

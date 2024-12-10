@@ -814,31 +814,36 @@ class TimbanganPabrik(models.Model):
         if not self.uom_id:
             raise UserError("Unit of Measure (UoM) harus diisi sebelum menyimpan data.")
 
-        virtual_location = self.env['stock.location'].search([('name', '=', 'Virtual Locations')], limit=1)
-        if not virtual_location:
-            raise UserError("Lokasi virtual yang diinginkan tidak ditemukan. Harap konfigurasi lokasi virtual.")
+        # virtual_location = self.env['stock.location'].search([('name', '=', 'Virtual Locations')], limit=1)
+        # if not virtual_location:
+            # raise UserError("Lokasi virtual yang diinginkan tidak ditemukan. Harap konfigurasi lokasi virtual.")
 
         # Logika untuk membuat nomor dokumen khusus
-        sequence_prefix = "NAP/IN/"
-        existing_docs = self.env['stock.picking'].search([('name', 'ilike', sequence_prefix)])
-        next_number = len(existing_docs) + 1
-        custom_name = f"{sequence_prefix}{str(next_number).zfill(3)}"  # Format nomor dengan 3 digit
+        # sequence_prefix = "NAP/IN/"
+        # existing_docs = self.env['stock.picking'].search([('name', 'ilike', sequence_prefix)])
+        # next_number = len(existing_docs) + 1
+        # custom_name = f"{sequence_prefix}{str(next_number).zfill(3)}"  # Format nomor dengan 3 digit
 
         if not self.stock_picking_id:
             picking_vals = {
-                'name': custom_name,  # Set nama dokumen custom
+                # 'name': custom_name,  # Set nama dokumen custom
                 'origin': self.lhm_nap_id.name if self.lhm_nap_id else '',  # Isi origin dengan name dari lhm.nap
-                'location_id': virtual_location.id,
-                'location_dest_id': self.env.ref('stock.stock_location_stock').id,
+                # 'location_id': virtual_location.id,
+                'location_id': self.env.ref('c10i_lhm_v16.loc_virtual_kebun_loc_1').id,
+                # 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
+                'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
                 'move_ids_without_package': [(0, 0, {
                     'product_id': self.product_id.id,
                     'name': self.product_id.name,
                     'product_uom_qty': self.product_qty,
                     'product_uom': self.uom_id.id,
-                    'location_id': virtual_location.id,
-                    'location_dest_id': self.env.ref('stock.stock_location_stock').id,
+                    # 'location_id': virtual_location.id,
+                    'location_id': self.env.ref('c10i_lhm_v16.loc_virtual_kebun_loc_1').id,
+                    # 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
+                    'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
                 })],
-                'picking_type_id': self.env.ref('stock.picking_type_in').id,
+                # 'picking_type_id': self.env.ref('stock.picking_type_in').id,
+                'picking_type_id': self.env.ref('c10i_lhm_v16.picking_type_nap_1').id,
             }
             picking = self.env['stock.picking'].create(picking_vals)
             self.stock_picking_id = picking.id

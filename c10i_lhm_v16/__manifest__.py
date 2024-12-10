@@ -38,6 +38,8 @@
         'data/running_sequence_data.xml',
         'data/allowance_type_data.xml',
         'data/account_journal.xml',
+        'data/stock_location_data.xml',
+        'data/picking_type_data.xml',
 
         'wizard/wizard_move_employee_views.xml',
 

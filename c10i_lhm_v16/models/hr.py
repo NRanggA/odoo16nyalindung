@@ -89,6 +89,12 @@ class HrForeman(models.Model):
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     employee_ids        = fields.One2many('hr.employee', 'kemandoran_id', string="Daftar Karyawan")
     
+    plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas Payroll')
+    plantation_location_type_id = fields.Many2one('lhm.location.type', 'Tipe Lokasi Payroll')
+    plantation_location_id = fields.Many2one('lhm.location', 'Lokasi Payroll')
+    plantation_activity_id = fields.Many2one('lhm.location', 'Aktifitas Payroll')
+    plantation_activity_bpjs_tk_id = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
+    plantation_activity_bpjs_kes_id = fields.Many2one('lhm.activity', 'BPJS Kesehatan')
 
     def name_get(self):
         result = []
@@ -287,6 +293,12 @@ class hr_department(models.Model):
     _description    = 'HR Department LHM'
 
     is_lhm          = fields.Boolean("Data LHM")
+    plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas Payroll')
+    plantation_location_type_id = fields.Many2one('lhm.location.type', 'Tipe Lokasi Payroll')
+    plantation_location_id = fields.Many2one('lhm.location', 'Lokasi Payroll')
+    plantation_activity_id = fields.Many2one('lhm.location', 'Aktifitas Payroll')
+    plantation_activity_bpjs_tk_id = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
+    plantation_activity_bpjs_kes_id = fields.Many2one('lhm.activity', 'BPJS Kesehatan')
 
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
@@ -351,11 +363,13 @@ class HrEmployee(models.Model):
                                    string='Move Status', readonly=True)
     movement_ids        = fields.One2many(comodel_name="hr.foreman.movement", inverse_name="employee_id", string="History Movement")
     umr_ids             = fields.One2many(comodel_name="hr.minimum.wage", inverse_name="employee_id", string="History UMR")
-    plantation_location_type_id     = fields.Many2one('lhm.location.type', 'Tipe Lokasi')
-    plantation_location_id          = fields.Many2one('lhm.location', 'Lokasi')
-    plantation_activity_hkne_id     = fields.Many2one('lhm.activity', 'HKNE')
-    plantation_activity_natura_id   = fields.Many2one('lhm.activity', 'Natura')
-    plantation_activity_bpjs_tk_id  = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
+    plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas Payroll')
+    plantation_location_type_id = fields.Many2one('lhm.location.type', 'Tipe Lokasi Payroll')
+    plantation_location_id = fields.Many2one('lhm.location', 'Lokasi Payroll')
+    plantation_activity_id = fields.Many2one('lhm.location', 'Aktifitas Payroll')
+    plantation_activity_hkne_id = fields.Many2one('lhm.activity', 'HKNE')
+    plantation_activity_natura_id = fields.Many2one('lhm.activity', 'Natura')
+    plantation_activity_bpjs_tk_id = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
     plantation_activity_bpjs_kes_id = fields.Many2one('lhm.activity', 'BPJS Kesehatan')
 
     @api.onchange('kemandoran_id')
@@ -456,3 +470,42 @@ class HrEmployee(models.Model):
 
     #     res = super(HrEmployee, self).write(values)
     #     return res
+
+    def get_default_location_activity_payroll(self):
+        self.ensure_one()
+        res = {
+            'plantation_varieties_id': False,
+            'plantation_location_type_id': False,
+            'plantation_location_id': False,
+            'plantation_activity_id': False,
+            'plantation_activity_bpjs_tk_id': False,
+            'plantation_activity_bpjs_kes_id': False,
+        }
+        if self.plantation_location_id and self.plantation_activity_id:
+            res.update({
+                'plantation_varieties_id': self.plantation_varieties_id.id,
+                'plantation_location_type_id': self.plantation_location_type_id.id,
+                'plantation_location_id': self.plantation_location_id.id,
+                'plantation_activity_id': self.plantation_activity_id.id,
+                'plantation_activity_bpjs_tk_id': self.plantation_activity_bpjs_tk_id.id,
+                'plantation_activity_bpjs_kes_id': self.plantation_activity_bpjs_kes_id.id,
+            })
+        elif self.kemandoran_id and self.kemandoran_id.plantation_location_id and self.kemandoran_id.plantation_activity_id:
+            res.update({
+                'plantation_varieties_id': self.kemandoran_id.plantation_varieties_id.id,
+                'plantation_location_type_id': self.kemandoran_id.plantation_location_type_id.id,
+                'plantation_location_id': self.kemandoran_id.plantation_location_id.id,
+                'plantation_activity_id': self.kemandoran_id.plantation_activity_id.id,
+                'plantation_activity_bpjs_tk_id': self.kemandoran_id.plantation_activity_bpjs_tk_id.id,
+                'plantation_activity_bpjs_kes_id': self.kemandoran_id.plantation_activity_bpjs_kes_id.id,
+            })
+        elif self.department_id and self.department_id.plantation_location_id and self.department_id.plantation_activity_id:
+            res.update({
+                'plantation_varieties_id': self.department_id.plantation_varieties_id.id,
+                'plantation_location_type_id': self.department_id.plantation_location_type_id.id,
+                'plantation_location_id': self.department_id.plantation_location_id.id,
+                'plantation_activity_id': self.department_id.plantation_activity_id.id,
+                'plantation_activity_bpjs_tk_id': self.department_id.plantation_activity_bpjs_tk_id.id,
+                'plantation_activity_bpjs_kes_id': self.department_id.plantation_activity_bpjs_kes_id.id,
+            })
+        return res

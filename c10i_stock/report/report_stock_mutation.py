@@ -441,7 +441,7 @@ class ReportStockMutation(models.AbstractModel):
                             AND svl.stock_move_id = sm.id 
                             AND sm.location_dest_id = ldest.id
                             AND sm.location_dest_id = %(location_id)s 
-                            AND lsrc.usage IN ('supplier', 'customer') 
+                            AND lsrc.usage IN ('supplier', 'customer','production') 
                             AND ldest.usage = 'internal' 
                             AND sm.state = 'done'
                             AND sm.product_id = %(product_id)s 
@@ -484,7 +484,7 @@ class ReportStockMutation(models.AbstractModel):
                             AND svl.stock_move_id = sm.id
                             AND sm.location_dest_id = ldest.id 
                             AND lsrc.usage = 'internal' 
-                            AND ldest.usage IN ('supplier', 'customer') 
+                            AND ldest.usage IN ('supplier', 'customer','production') 
                             AND sm.state = 'done'
                             AND sm.product_id = %(product_id)s  
                             AND sm.date BETWEEN %(date_from)s AND %(date_to)s

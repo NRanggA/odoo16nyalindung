@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+        
+        <record id="picking_type_nap_1" model="stock.picking.type">
+            <field name="name">Nota Angkut Buah</field>
+            <field name="code">incoming</field>
+            <field name="sequence_code">NAP/IN/</field>
+            <field name="sequence">10</field>
+            <field name="default_location_src_id" ref="c10i_lhm_v16.loc_virtual_kebun_loc_1"/>
+            <field name="default_location_dest_id" ref="c10i_lhm_v16.loc_stock_kebun_loc_1"/>
+        </record>
+    
+    </data>
+    
+
+</odoo>
