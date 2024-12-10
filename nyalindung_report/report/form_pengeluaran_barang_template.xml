@@ -65,7 +65,7 @@
                                 </tr>
                                 <tr height="100px"></tr>
                                 <tr>
-                                    <td>( WAHYU )</td>
+                                    <td>( WAHYU WIDIYANTO )</td>
                                     <td>( BUDI PURWANDI )</td>
                                     <td>( .............................. )</td>
                                     <td>( <t t-esc="o.employee_id.name or ''"/> )</td>
