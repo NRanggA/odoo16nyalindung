@@ -41,14 +41,14 @@
                     <attribute name="attrs">{'invisible' : [('lva','=',True)], 'required' : [('lva','!=',True)], 'readonly': [('state', '!=', 'draft')]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='invoice_id']" position="attributes">
-                    <!-- <attribute name="attrs">{'invisible': ['|',('action', '!=', 'sell'),('lva','=',True)]}</attribute> -->
-                    <attribute name="attrs">{'invisible': [('action', '!=', 'sell')]}</attribute>
+                    <attribute name="attrs">{'invisible': ['|',('action', '!=', 'sell'),('lva','=',True)]}</attribute>
+                    <!-- <attribute name="attrs">{'invisible': [('action', '!=', 'sell')]}</attribute> -->
                 </xpath>
                 <xpath expr="//field[@name='gain_account_id']" position="attributes">
                     <attribute name="attrs">{'invisible' : ['|',('gain_or_loss', '!=', 'gain'),('lva','=',True)]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='loss_account_id']" position="attributes">
-                    <attribute name="attrs">{'invisible' : ['|','|',('gain_or_loss', '=', 'gain'),('lva','=',True),('action','=',False)]}</attribute>
+                    <attribute name="attrs">{'invisible' : ['|','|','|', ('gain_or_loss', '=', 'gain'),('lva','=',True),('action','=',False), ('loss_disposal', '=', 0)]}</attribute>
                 </xpath>
                 <field name="sell_account_move_id" position="after">
                     <!-- <field name="gross_value" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>                    
@@ -66,18 +66,17 @@
                 <field name="sales_profit" position="attributes">
                     <attribute name="attrs">{'invisible': [('action','=','dispose')]}</attribute>
                 </field>
-                <field name="loss_account_id" position="attributes">
+                <!-- <field name="loss_account_id" position="attributes">
                     <attribute name="attrs">{'invisible': [('action','=','dispose')]}</attribute>
-                </field>
+                </field> -->
                 
                 <field name="sales_profit" position="after">
                     <field name="loss_disposal" attrs="{'invisible' : [('action', '!=','dispose')]}" />
                 </field>
                 
                 <field name="loss_account_id" position="after">
-                    <field name="disposal_account_id" attrs="{'invisible' : [('action', '!=','dispose')]}"/>
+                    <field name="disposal_account_id" attrs="{'invisible' : ['|', ('action', '!=','dispose'), ('loss_disposal', '=', 0)]}"/>
                 </field>
-                
                 
 
 

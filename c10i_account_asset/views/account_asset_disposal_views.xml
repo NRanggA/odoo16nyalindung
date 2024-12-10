@@ -21,8 +21,8 @@
                             <field name="action" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                             <field name="asset_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                             <field name="gross_value" force_save="1" readonly="1" />
-                            <field name="value_residual" attrs="{'invisible': [('value_residual', '=', 0)]}" force_save="1" readonly="1"/>
-                            <field name="cumulative_depreciation" attrs="{'invisible': [('cumulative_depreciation', '=', 0)]}" force_save="1" readonly="1"/>
+                            <field name="value_residual" force_save="1" readonly="1"/>
+                            <field name="cumulative_depreciation" force_save="1" readonly="1"/>
                             <field name="sell_value" attrs="{'invisible':[('action', '!=', 'sell')], 'required': [('invoice_id', '=', False)], 'readonly': [('state', '!=', 'draft')]}"/>
                             <field name="select_invoice_line_id" invisible="1"/>
                             <field name="reason" attrs="{'readonly': [('state', '!=', 'draft')]}"/>

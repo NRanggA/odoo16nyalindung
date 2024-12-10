@@ -192,7 +192,11 @@ class AccountAssetDisposal(models.Model):
         full_asset = self.asset_id
         # full_asset = self.asset_id + self.asset_id.children_ids
         move_ids = self._get_disposal_moves([invoice_line_id] * len(full_asset), disposal_date)
-        full_asset.write({'state': 'close', 'disposal_id': self.id})
+        full_asset.write({
+            'state': 'close', 
+            'disposal_id': self.id,
+            'active': False,
+            })
         self.state="closed"
         if move_ids:
             return self.asset_id._return_disposal_view(move_ids)

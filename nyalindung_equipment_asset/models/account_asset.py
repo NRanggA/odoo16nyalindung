@@ -62,12 +62,10 @@ class AccountAssetDisposal(models.Model):
                     record.loss_account_id                  = product.loss_on_asset_sales_account_id if product else False
                     record.write_on_asset_sales_account_id  = product.write_on_asset_sales_account_id if product else False
                     record.disposal_account_id              = product.write_on_asset_sales_account_id if product else False
-                    print(f"=== Product ada")
                 else:
                     record.gain_account_id      = record.asset_id.gain_account_id.id
                     record.loss_account_id      = record.asset_id.loss_account_id.id
                     record.disposal_account_id  = record.asset_id.loss_account_id.id
-                    print(f"=== Product tidak ada")
 
     @api.onchange('asset_id')
     def _onchange_asset_id(self):
@@ -87,7 +85,8 @@ class AccountAssetDisposal(models.Model):
     def do_action(self):
         self.ensure_one()
         if self.lva and self.equip_id:
-            self.equip_id.unlink()
+            # self.equip_id.unlink()
+            self.equip_id.write({'active': False})
             self.update({
                 'state' : 'closed',
             })
@@ -235,28 +234,44 @@ class AccountAssetDisposal(models.Model):
             old_values = {
                 'method_number': asset.method_number,
             }
-
-            # Remove all unposted depreciation lines
             commands = [(2, line_id.id, False) for line_id in unposted_depreciation_move_ids]
 
-            # Create a new depreciation line with the residual amount and post it
             asset_sequence = len(asset.depreciation_line_ids) - len(unposted_depreciation_move_ids) + 1
 
-            initial_amount = asset.value  # Gross Value
-            initial_account = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.category_id.account_asset_id
-            depreciation_account = asset.category_id.account_depreciation_id
-            disposal_account = self.disposal_account_id  # Account untuk disposal atau difference
+            initial_amount          = asset.value  # Gross Value pada asset
+            initial_account         = asset.invoice_id.line_ids[-1].account_id if len(asset.invoice_id) == 1 else asset.category_id.account_asset_id
+            depreciation_account    = asset.category_id.account_depreciation_id
+            disposal_account        = self.disposal_account_id  
 
-            # Ambil nilai cumulative depreciation dan residual value dari asset
-            cumulative_depreciation_value = self.cumulative_depreciation  # Ambil dari field cumulative depreciation
-            residual_value = self.value_residual  # Ambil dari field residual value
+            cumulative_depreciation_value   = self.cumulative_depreciation  or 0.0
+            residual_value                  = self.value_residual  or 0.0
 
-            # Definisikan line_datas dengan urutan yang sesuai
-            line_datas = [
-                (initial_amount, initial_account, False),                # Account pertama, credit dengan initial_amount
-                (cumulative_depreciation_value, depreciation_account, True),  # Account kedua, debit dengan cumulative depreciation
-                (residual_value, disposal_account, True),                # Account ketiga, debit dengan residual value
-            ]
+            # jika residual value dan cumulative depreciation 0, maka nilai yang dikirim untuk jurnalnya adalah nilai dari gross value
+            if self.loss_disposal == 0:
+                if self.cumulative_depreciation == 0:
+                    raise ValidationError('Accumulative Depreciation tidak boleh kosong, silahkan check asset terlebih dahulu !')
+
+                line_datas = [
+                    (asset.value, initial_account, False),                           
+                    (cumulative_depreciation_value, asset.category_id.account_depreciation_id, True),   
+                ]
+            # jika tidak maka dia aman mengambil sesuai dengan field nya.
+            else:
+                line_datas = [
+                    (initial_amount, initial_account, False),                
+                    (cumulative_depreciation_value, depreciation_account, True),
+                    (residual_value, disposal_account, True),                
+                ]
+            
+            total_debit = sum(amount for amount, account, is_debit in line_datas if is_debit)
+            total_credit = sum(amount for amount, account, is_debit in line_datas if not is_debit)
+
+            # validasi agar debit dan kredit sama
+            if total_debit != total_credit:
+                difference = abs(total_debit - total_credit)
+                is_debit = total_debit < total_credit
+                balancing_account = initial_account  # Akun balancing bisa disesuaikan
+                line_datas.append((difference, balancing_account, is_debit))
 
             # Set commands untuk jurnal entry baru
             vals = {
@@ -264,8 +279,10 @@ class AccountAssetDisposal(models.Model):
                 'name': asset.name + ': ' + (_('Disposal') if not invoice_line_id and self.action != 'sell' else _('Sale')),
                 'sequence': asset_sequence,
                 'remaining_value': 0,
-                'depreciated_value': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check).depreciated_value,
-                'amount': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check).amount,
+                # 'depreciated_value': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check).depreciated_value,
+                'depreciated_value': asset.depreciation_line_ids.filtered(lambda x: x.move_posted_check)[-1].depreciated_value if asset.depreciation_line_ids.filtered(lambda x: x.move_posted_check) else 0.0,
+                # 'amount': asset.depreciation_line_ids[-1].filtered(lambda x: x.move_posted_check).amount,
+                'amount': asset.depreciation_line_ids.filtered(lambda x: x.move_posted_check)[-1].amount if asset.depreciation_line_ids.filtered(lambda x: x.move_posted_check) else 0.0,
                 'depreciation_date': disposal_date,
             }
             
