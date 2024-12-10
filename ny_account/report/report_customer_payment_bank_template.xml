@@ -154,8 +154,8 @@
                             <td class="table-list-name">
                                 <table style="border: none; font-size: 10px;">
                                     <tr>
-                                        <th>Beban</th>
-                                        <td> : <span t-field="o.beban"/></td>
+                                        <th>Alokasi</th>
+                                        <td> : <span t-field="o.alokasi"/></td>
                                     </tr>
                                     <tr>
                                         <th>Dept. / Divisi</th>
