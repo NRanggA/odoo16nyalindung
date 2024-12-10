@@ -16,7 +16,7 @@ from odoo.tools.translate import _
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from odoo.addons import decimal_precision as dp
-from odoo import models, fields, tools, api, _
+from odoo import models, fields, tools, exceptions, api, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 import base64
@@ -3325,8 +3325,8 @@ class lhm_contractor(models.Model):
     contractor_vehicle            = fields.Boolean(string="Vehicle")
     total_type                    = fields.Selection([('used', 'HM/KM Terpakai'), ('result', 'Hasil Kerja')], string='Kalkulasi')
     company_id                    = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
-    line_ids                      = fields.One2many('lhm.contractor.line', 'contractor_id', string="Detail Kontraktor", )
-    line_nap_ids                  = fields.One2many('lhm.contractor.nap.line', 'contractor_id', string="Data Panen Kontraktor")
+    line_ids                      = fields.One2many('lhm.contractor.line', 'contractor_id', string="Detail Kontraktor")
+    line_nap_ids                  = fields.One2many('lhm.contractor.nap.line', 'contractor_id', string="Total Biaya Panen Kontraktor Harian")
     line_vehicle_ids              = fields.One2many('lhm.contractor.vehicle.line', 'contractor_id', string="Detail Kontraktor Alat", )
     payment_type                  = fields.Selection([('payment0', 'Pembayaran 1 Bulan Penuh'),('payment1','Pembayaran Ke-1'),('payment2','Pembayaran Ke-2')], string='Pembayaran', index=False, readonly=False)
     user_id                       = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
@@ -3443,6 +3443,9 @@ class lhm_contractor(models.Model):
         self.state = 'confirmed'
 
     def button_confirm_harian(self):
+        for contractor_nap in self.line_nap_ids:
+            if not contractor_nap.nilai:
+                raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" tidak memiliki nilai. Silahkan isi melalui Dokumen NAP'))
         self.state = 'confirmed'
 
     def button_process(self):
@@ -3489,6 +3492,7 @@ class lhm_contractor(models.Model):
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Vendor Bill'))
             if contractor.move_id:
                 contractor.move_id.unlink()
+            contractor.line_nap_ids.unlink()
         self.state = 'cancel'
 
     @api.model
@@ -3513,6 +3517,11 @@ class lhm_contractor(models.Model):
                 values['name'] = supplier.ref or supplier.name or 'Bulanan'
 
         return super(lhm_contractor, self).create(values)
+    def unlink(self):
+        for record in self:
+            if record.state == 'confirmed':
+                raise exceptions.UserError(_("Dokumen dengan status 'Confirmed' tidak dapat dihapus!"))
+        return super(lhm_contractor, self).unlink()
 
     def _account_move_entry(self):
         AccountMove = self.env['account.move']
@@ -3761,6 +3770,7 @@ class lhm_contractor_line(models.Model):
     nilai2              = fields.Float('Hasil 2')
     uom2_id             = fields.Many2one("uom.uom", string="Satuan 2", ondelete="restrict")
     unit_price          = fields.Float('Tarif Satuan')
+    unit_price_2        = fields.Float('Tarif Satuan 2')
     total               = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
     type                = fields.Selection([('vehicle', 'Alat'), ('vendor', 'Vendor')], string='Type', related="contractor_id.type", readonly=True)
     supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
@@ -3843,9 +3853,10 @@ class lhm_contractor_line(models.Model):
         if self.activity_id:
             borongan_contractor = self.env['lhm.wage.borongan.contractor'].search([('activity_id', '=', self.activity_id.id)]);
             
-            self.unit_price = borongan_contractor.price if borongan_contractor.price else 0.0
-            self.uom_id     = self.activity_id.uom_id and self.activity_id.uom_id.id or False
-            self.uom2_id    = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
+            self.unit_price   = borongan_contractor.price if borongan_contractor.price else 0.0
+            self.unit_price_2 = borongan_contractor.price2 if borongan_contractor.price2 else 0.0
+            self.uom_id       = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            self.uom2_id      = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
 
     @api.onchange('location_type_id')
     def _onchange_location_type_id(self):
@@ -3859,11 +3870,14 @@ class lhm_contractor_line(models.Model):
         if self.location_id:
             self.activity_id = False
 
-    @api.depends('unit_price', 'nilai')
+    @api.depends('unit_price', 'nilai', 'line_nap_ids.hasil_convert_latex', 'line_nap_ids.hasil_convert_lump')
     def _compute_harga_satuan(self):
-        for harga in self:
-            if harga.nilai and harga.unit_price:
-                harga.total = harga.unit_price * harga.nilai
+        for line in self:
+            if line.line_nap_ids:
+                line.total = line.unit_price * sum(line.line_nap_ids.mapped('hasil_convert_latex'))
+                line.total += line.unit_price_2 * sum(line.line_nap_ids.mapped('hasil_convert_lump'))
+            else:
+                line.total = (line.unit_price * line.nilai) + (line.unit_price_2 * line.nilai2)
     
     @api.onchange('product_id')
     def _onchange_product_id(self):
@@ -3980,7 +3994,6 @@ class lhm_contractor_nap_line(models.Model):
     supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
     contractor_vehicle  = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
     contractor_id       = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
-    # line_ids            = fields.Many2one('lhm.contractor.line', string="Contractor Lines", ondelete="cascade")
     contractor_line_id  = fields.Many2one('lhm.contractor.line', string="Contractor Lines", ondelete="cascade")
     tidak_ditagihkan    = fields.Boolean(string="Tidak Ditagihkan")
     skip_constraint     = fields.Boolean(string="Skip Constraint")

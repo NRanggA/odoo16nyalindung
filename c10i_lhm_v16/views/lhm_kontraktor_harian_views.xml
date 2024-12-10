@@ -7,11 +7,11 @@
             <field name="arch" type="xml">
                 <form string="Buku Kontraktor Harian">
                     <header attrs="{'invisible': [('approval','!=',True)]}">
-                        <button name="button_draft" states="cancel,process,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_draft" states="cancel,process" string="Set Draft" type="object" class="btn-default"/>
                         <!-- <button name="get_material" string="Material" states="draft" type="object" groups="c10i_lhm_v16.group_plantation_operator"/> -->
                         <button name="button_confirm_harian" states="process" string="Confirm" type="object" class="btn-default btn-primary"/>
                         <button name="button_process" states="draft" string="Process" type="object" class="btn-default btn-primary"/>
-                        <button name="button_cancel" states="process,confirmed" string="Cancel" type="object" class="btn-default"/>
+                        <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,process,confirmed,done"/>
                     </header>
                     <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
@@ -101,21 +101,20 @@
                                             domain="[('id','in',filtered_activities)]" 
                                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
-                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
                                         <field name="nilai" optional="show" width="80"/>
+                                        <field name="uom_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
                                         <field name="product_id_2" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="120"/>
-                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
                                         <field name="nilai2" optional="show" width="80"/>
-                                        <!-- <field name="drc_latex_nap" optional="show" width="100"/> -->
-                                        <!-- <field name="drc_lump_nap" optional="show" width="100"/> -->
-                                        <field name="unit_price" optional="show" width="80"/>
+                                        <field name="uom2_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" width="80" optional="show"/>
+                                        <field name="unit_price"/>
+                                        <field name="unit_price_2"/>
                                         <field name="total" optional="show" width="80"/>
                                         <field name="contractor_vehicle" invisible="1"/>
                                         <field name="type" invisible="1"/>
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Data Panen Kontraktor">
+                            <page string="NAP Kontraktor Harian">
                                 <field name="line_nap_ids" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',False)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form_harian'}">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>

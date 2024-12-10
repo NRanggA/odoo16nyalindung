@@ -1,4 +1,4 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 from dateutil.relativedelta import relativedelta
@@ -198,6 +198,11 @@ class lhm_nap(models.Model):
             values['name'] = _('New')
         
         return super(lhm_nap, self).create(values)
+    def unlink(self):
+        for record in self:
+            if record.state == 'done':
+                raise exceptions.UserError(_("Dokumen dengan status 'Done' tidak dapat dihapus!"))
+        return super(lhm_nap, self).unlink()
 
     
     def create_material_receipt(self):
@@ -210,7 +215,7 @@ class lhm_nap(models.Model):
         for record in self:
             for nap_line in record.line_ids:
                 if nap_line.employee_id:
-                    if nap_line.product_id.name in ["Latex", "Lump"] and nap_line.drc == 0:
+                    if nap_line.product_id.name in ["Lateks", "Lump"] and nap_line.drc == 0:
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena DRC untuk produk '%s' bernilai 0. Harap periksa dan masukkan nilai DRC di form DRC.")
                             % nap_line.product_id.name
@@ -219,7 +224,11 @@ class lhm_nap(models.Model):
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
                         )
-                    if nap_line.product_id.name == "Latex":
+                    if nap_line.lhm_contractor_nap_id.contractor_id.state == 'draft':
+                        raise ValidationError(
+                            _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
+                        )
+                    if nap_line.product_id.name == "Lateks":
                         nap_line.lhm_transaction_nap_id.write({
                             'product_id': nap_line.product_id.id,
                             'hasil_1_nap': nap_line.qty_nap,
@@ -244,7 +253,7 @@ class lhm_nap(models.Model):
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen tersebut.")
                         )
-                    if nap_line.product_id.name == "Latex":
+                    if nap_line.product_id.name == "Lateks":
                         nap_line.lhm_contractor_nap_id.write({
                             'product_id': nap_line.product_id.id,
                             'nilai': nap_line.qty_nap,
@@ -291,9 +300,15 @@ class lhm_nap(models.Model):
                             _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status tidak 'draft'. Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu.")
                         )
                 if nap_line.supplier_id:
-                    if nap_line.lhm_contractor_nap_id.contractor_id.state != 'draft':
+                    nap_date = nap_line.tgl_panen
+                    contractor_nap = nap_line.lhm_contractor_nap_id
+
+                    if contractor_nap.contractor_id.state != 'draft' and contractor_nap.contractor_id.date == nap_date:
                         raise ValidationError(
-                            _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status tidak 'draft'. Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu.")
+                            _(
+                                "Tidak dapat membatalkan dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status tidak 'draft'. "
+                                "Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu."
+                            )
                         )
         self.state = 'cancel'
         self.confirmed = False

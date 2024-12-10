@@ -11,8 +11,13 @@
                         <field name="activity_code" />
                         <field name="activity_id" />
                         <field name="qty" />
+                        <field name="is_harian" />
+                        <field name="product_id" attrs="{'invisible': [('is_harian', '!=', True)]}"/>
+                        <field name="product_id2" attrs="{'invisible': [('is_harian', '!=', True)]}"/>
                         <field name="satuan_id" />
+                        <field name="satuan_id2" attrs="{'invisible': [('is_harian', '!=', True)]}"/>
                         <field name="price" />
+                        <field name="price2" attrs="{'invisible': [('is_harian', '!=', True)]}"/>
                     </group>
                 </sheet>
             </form>

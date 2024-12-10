@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import ValidationError
 
 class lhm_drc(models.Model):
@@ -27,6 +27,11 @@ class lhm_drc(models.Model):
         date_obj = fields.Date.from_string(date)
         values['name'] = f"DRC/{date_obj.strftime('%Y-%m-%d')}"
         return super(lhm_drc, self).create(values)
+    def unlink(self):
+        for record in self:
+            if record.state == 'confirmed':
+                raise exceptions.UserError(_("Dokumen dengan status 'Confirmed' tidak dapat dihapus!"))
+        return super(lhm_drc, self).unlink()
     
     @api.onchange('tgl_panen')
     def _onchange_tgl_panen(self):
