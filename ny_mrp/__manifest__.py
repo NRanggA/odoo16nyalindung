@@ -26,5 +26,6 @@
 
         'views/mrp_manual_consume_view.xml',
         'views/mrp_production_view.xml',
+        'wizard/sheet_to_produce_view.xml',
     ],
 }

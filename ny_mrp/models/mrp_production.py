@@ -36,3 +36,10 @@ class MrpProduction(models.Model):
             for workorder in production.workorder_ids:
                 workorder.state = 'pending'
             production.state = 'draft'
+    
+    def get_target_production(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_mrp.wizard_mrp_sheet_to_produce_action")
+        action['context'] = {'default_mrp_id': self.id,
+                             'default_product_latex_id': self.bom_id.bom_line_ids.filtered(lambda x: x.product_id.name=='Latex').product_id.id,
+                             'default_bom_id': self.bom_id.id}
+        return action

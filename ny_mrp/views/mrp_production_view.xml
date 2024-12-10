@@ -6,9 +6,13 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
         <field name="arch" type="xml">
+            <xpath expr="//label[@for='product_qty']" position="before">
+                <button string="Qty To Produce" name="get_target_production" type="object" class="btn-warning" states="draft"/>
+            </xpath>
             <page name="finished_products" position="before">
                 <page name="manual_consume" string="Manual Consume">
-                    <field name="manual_consume_ids" attrs="{'readonly': ['|', ('state', '=', 'cancel'), '&amp;', ('state', '=', 'done'), ('is_locked', '=', True)]}" 
+                    <!-- attrs="{'readonly': ['|', ('state', '=', 'cancel'), '&amp;', ('state', '=', 'done'), ('is_locked', '=', True)]}" -->
+                    <field name="manual_consume_ids"  readonly="1"
                             context="{'default_bom_id': bom_id, 'default_company_id': company_id}"/>
                 </page>
             </page>

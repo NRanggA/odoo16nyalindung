@@ -5,18 +5,17 @@
         <field name="model">wizard.mrp.sheet.to.produce</field>
         <field name="arch" type="xml">
             <form>
-                <sheet>
+                <group>
                     <group>
-                        <group>
-                            <field name="product_latex_id" />
-                            <field name="bom_id" invisible="1"/>
-                        </group>
-                        <group>
-                            <field name="latex_onhand_qty" />
-                            <field name="sheet_to_produce" />
-                        </group>
+                        <field name="mrp_id" invisible="1"/>
+                        <field name="product_latex_id" />
+                        <field name="bom_id" invisible="1"/>
                     </group>
-                </sheet>
+                    <group>
+                        <field name="latex_onhand_qty" />
+                        <field name="sheet_to_produce" />
+                    </group>
+                </group>
                 <footer>
                     <button string="Apply" name="action_apply" type="object" class="oe_highlight"/>
                 </footer>
@@ -27,6 +26,7 @@
     <record id="wizard_mrp_sheet_to_produce_action" model="ir.actions.act_window">
         <field name="name">Sheet to Produce</field>
         <field name="res_model">wizard.mrp.sheet.to.produce</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">form</field>
+        <field name="target" >new</field>
     </record>
 </odoo>
