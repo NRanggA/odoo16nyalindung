@@ -336,9 +336,9 @@ class lhm_nap(models.Model):
             no_tgl_terima = record.pabrik_line_ids.filtered(lambda line: not line.tgl_terima)
             if no_tgl_terima:
                 raise UserError("Mohon lengkapi Tanggal Terima di Timbangan Pabrik untuk semua baris.")
-            no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: not line.quality_pabrik)
+            no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: (line.product_id.name in ["Lateks", "Lump"]) and not line.quality_pabrik)
             if no_quality_pabrik:
-                raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris.")
+                raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris yang memiliki produk 'Lateks' atau 'Lump'!!!!!!!!!!!!!!!")
 
             record.line_ids.unlink()
             employee_data = {}
