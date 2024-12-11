@@ -115,7 +115,7 @@ class LHMContractor(models.Model):
                 if not varieties_id:
                     raise UserError(_(f"Varietas '{varieties_name}' tidak ditemukan dalam database."))
 
-                lokasi_code = lokasi_name.split('.')[0] if '.0' in lokasi_name else lokasi_name
+                lokasi_code = str(lokasi_name).rstrip('.0') if isinstance(lokasi_name, (int, float)) else lokasi_name
                 location_id = self.env['lhm.location'].search([('code', '=', lokasi_code)], limit=1)
                 if not location_id:
                     raise UserError(_(f"Lokasi '{lokasi_name}' tidak ditemukan dalam database."))
