@@ -9,7 +9,8 @@
             <field name="inherit_id" ref="om_account_asset.view_account_asset_asset_form"/>
             <field name="arch" type="xml">
                 <field name="category_id" position="before">
-                    <field name="register_id" />
+                    <field name="register_id"/>
+                    <field name="equipment_code" />
                 </field>
             </field>
         </record>
@@ -48,7 +49,7 @@
                     <attribute name="attrs">{'invisible' : ['|',('gain_or_loss', '!=', 'gain'),('lva','=',True)]}</attribute>
                 </xpath>
                 <xpath expr="//field[@name='loss_account_id']" position="attributes">
-                    <attribute name="attrs">{'invisible' : ['|','|','|', ('gain_or_loss', '=', 'gain'),('lva','=',True),('action','=',False), ('loss_disposal', '=', 0)]}</attribute>
+                    <attribute name="attrs">{'invisible' : ['|','|', ('gain_or_loss', '=', 'gain'),('lva','=',True),('loss_disposal', '=', 0)]}</attribute>
                 </xpath>
                 <field name="sell_account_move_id" position="after">
                     <!-- <field name="gross_value" attrs="{'invisible' : ['|',('action','=',False), ('lva', '=',True)]}"/>                    

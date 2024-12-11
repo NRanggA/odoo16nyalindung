@@ -10,6 +10,11 @@ class AccountAsset(models.Model):
     _inherit = 'account.asset.asset'
 
     register_id = fields.Many2one('equipment.register', string='Register', compute='get_register_id', store=True)
+    equipment_code = fields.Char(
+        string="Equipment Code",
+        related='register_id.register_line_ids.equipment_ids.seq_no',
+        store=True
+    )
 
     @api.depends('acquisition_line_ids')
     def get_register_id(self):
@@ -21,7 +26,8 @@ class AccountAsset(models.Model):
         result = []        
         for rec in self:
             if rec.register_id:
-                result.append((rec.id, '%s - %s' % (rec.name,rec.register_id.name)))
+                # result.append((rec.id, '%s - %s' % (rec.name,rec.register_id.name)))
+                result.append((rec.id, '%s - %s' % (rec.name,rec.equipment_code)))
             else:
                 result.append((rec.id, '%s' % (rec.name)))
         return result
