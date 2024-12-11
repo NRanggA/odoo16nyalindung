@@ -119,7 +119,7 @@
 
     <menuitem
         id="maintenance.menu_maintenance_title"
-        name="Equipments"
+        name="Asset Register"
         web_icon="maintenance,static/description/icon.png"
         sequence="110"/>
 
