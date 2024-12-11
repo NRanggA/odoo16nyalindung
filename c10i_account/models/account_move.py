@@ -14,7 +14,7 @@ class AccountMove(models.Model):
     # Menambahkan default tanggal hari ini
     invoice_date            = fields.Date(string='Invoice/Bill Date', readonly=True, states={'draft': [('readonly', False)]}, index=True, copy=False, default=fields.Date.today)
 
-    is_payment = fields.Boolean('Is Payment')
+    is_payment = fields.Boolean('Is Payment', default=False)
 
     # invoice_advance_allocate_ids = fields.One2many('account.invoice.advance.allocated', 'move_id', string='Advance Allocated')
     # invoice_advance_allocate_ids = fields.One2many('account.move.line', 'move_id', string='Advance Allocated',
@@ -86,7 +86,7 @@ class AccountMove(models.Model):
                 # where_string += " AND payment_id IS NULL "
                 where_string += " AND (payment_id IS NULL AND is_payment = 'false') "
 
-        # print(f"==== string: {where_string}")
+        # print(f"==== string: {where_string%param}")
 
         return where_string, param
 
