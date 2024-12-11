@@ -55,11 +55,19 @@ class LHMContractor(models.Model):
             if not activity_id:
                 raise UserError(_(f"Aktivitas '{aktivitas_name}' tidak ditemukan dalam database."))
 
-            uom_id = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
-            if not uom_id:
-                raise UserError(_(f"Satuan UoM '{uom_name}' tidak ditemukan dalam database."))
+            if uom_name:
+                uom_id = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
+                if not uom_id:
+                    raise UserError(_(f"UoM '{uom_name}' tidak ditemukan dalam database."))
+            else:
+                uom_id = False
 
-            uom2_id = self.env['uom.uom'].search([('name', '=', uom2_name)], limit=1)
+            if uom2_name:
+                uom2_id = self.env['uom.uom'].search([('name', '=', uom2_name)], limit=1)
+                if not uom2_id:
+                    raise UserError(_(f"UoM 2 '{uom2_name}' tidak ditemukan dalam database."))
+            else:
+                uom2_id = False
 
             wage_borongan = self.env['lhm.wage.borongan.contractor'].search([
                 ('activity_id', '=', activity_id.id)
@@ -77,9 +85,9 @@ class LHMContractor(models.Model):
                 'location_type_id': location_type_id.id,
                 'location_id': location_id.id,
                 'activity_id': activity_id.id,
-                'uom_id': uom_id.id,
+                'uom_id': uom_id.id if uom_id else None,
                 'nilai': hasil1,
-                'uom2_id': uom2_id.id,
+                'uom2_id': uom2_id.id if uom2_id else None,
                 'nilai2': hasil2,
                 'unit_price': unit_price, 
             })
