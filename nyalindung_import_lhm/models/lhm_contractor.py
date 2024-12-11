@@ -38,12 +38,29 @@ class LHMContractor(models.Model):
             uom2_name = row[7].value
             hasil2 = row[8].value
 
-            varieties_id = self.env['plant.varieties'].search([('name', '=', varieties_name)], limit=1)
-            location_type_id = self.env['lhm.location.type'].search([('name', '=', tipe_name)], limit=1)
-            location_id = self.env['lhm.location'].search([('name', '=', lokasi_name)], limit=1)
-            activity_id = self.env['lhm.activity'].search([('name', '=', aktivitas_name)], limit=1)
+            varieties_id = self.env['plant.varieties'].search([('code', '=', varieties_name)], limit=1)
+            if not varieties_id:
+                raise UserError(_(f"Varietas '{varieties_name}' tidak ditemukan dalam database."))
+
+            location_type_id = self.env['lhm.location.type'].search([('code', '=', tipe_name)], limit=1)
+            if not location_type_id:
+                raise UserError(_(f"Tipe lokasi '{tipe_name}' tidak ditemukan dalam database."))
+
+            location_id = self.env['lhm.location'].search([('code', '=', lokasi_name)], limit=1)
+            if not location_id:
+                raise UserError(_(f"Lokasi '{lokasi_name}' tidak ditemukan dalam database."))
+
+            activity_id = self.env['lhm.activity'].search([('code', '=', aktivitas_name)], limit=1)
+            if not activity_id:
+                raise UserError(_(f"Aktivitas '{aktivitas_name}' tidak ditemukan dalam database."))
+
             uom_id = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
+            if not uom_id:
+                raise UserError(_(f"Satuan UOM '{uom_name}' tidak ditemukan dalam database."))
+
             uom2_id = self.env['uom.uom'].search([('name', '=', uom2_name)], limit=1)
+            if not uom2_id:
+                raise UserError(_(f"Satuan UOM kedua '{uom2_name}' tidak ditemukan dalam database."))
 
             wage_borongan = self.env['lhm.wage.borongan.contractor'].search([
                 ('activity_id', '=', activity_id.id)
@@ -91,14 +108,37 @@ class LHMContractor(models.Model):
             uom2_name = row[8].value
             nilai2 = row[9].value
 
-            location_type_id = self.env['lhm.location.type'].search([('name', '=', type_name)], limit=1)
-            varieties_id = self.env['plant.varieties'].search([('name', '=', varieties_name)], limit=1)
-            location_id = self.env['lhm.location'].search([('name', '=', lokasi_name)], limit=1)
-            activity_id = self.env['lhm.activity'].search([('name', '=', aktivitas_name)], limit=1)
+            location_type_id = self.env['lhm.location.type'].search([('code', '=', type_name)], limit=1)
+            if not location_type_id:
+                raise UserError(_(f"Tipe lokasi '{type_name}' tidak ditemukan dalam database."))
+
+            varieties_id = self.env['plant.varieties'].search([('code', '=', varieties_name)], limit=1)
+            if not varieties_id:
+                raise UserError(_(f"Varietas '{varieties_name}' tidak ditemukan dalam database."))
+
+            location_id = self.env['lhm.location'].search([('code', '=', lokasi_name)], limit=1)
+            if not location_id:
+                raise UserError(_(f"Lokasi '{lokasi_name}' tidak ditemukan dalam database."))
+
+            activity_id = self.env['lhm.activity'].search([('code', '=', aktivitas_name)], limit=1)
+            if not activity_id:
+                raise UserError(_(f"Aktivitas '{aktivitas_name}' tidak ditemukan dalam database."))
+
             product_id = self.env['product.product'].search([('name', '=', product_name)], limit=1)
+            if not product_id:
+                raise UserError(_(f"Produk '{product_name}' tidak ditemukan dalam database."))
+
             uom_id = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
+            if not uom_id:
+                raise UserError(_(f"Satuan UOM '{uom_name}' tidak ditemukan dalam database."))
+
             product_id_2 = self.env['product.product'].search([('name', '=', product_2_name)], limit=1)
+            if not product_id_2:
+                raise UserError(_(f"Produk kedua '{product_2_name}' tidak ditemukan dalam database."))
+
             uom2_id = self.env['uom.uom'].search([('name', '=', uom2_name)], limit=1)
+            if not uom2_id:
+                raise UserError(_(f"Satuan UOM kedua '{uom2_name}' tidak ditemukan dalam database."))
 
             wage_borongan = self.env['lhm.wage.borongan.contractor'].search([
                 ('activity_id', '=', activity_id.id)
@@ -108,6 +148,11 @@ class LHMContractor(models.Model):
             if wage_borongan:
                 if wage_borongan.price:
                     unit_price = wage_borongan.price
+            
+            unit_price_2 = 0.0
+            if wage_borongan:
+                if wage_borongan.price2:
+                    unit_price_2 = wage_borongan.price2
 
             self.env['lhm.contractor.line'].create({
                 'contractor_id': self.id, 
@@ -122,4 +167,5 @@ class LHMContractor(models.Model):
                 'uom2_id': uom2_id.id,
                 'nilai2': nilai2,
                 'unit_price': unit_price,
+                'unit_price_2': unit_price_2,
             })
