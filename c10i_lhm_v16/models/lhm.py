@@ -3479,6 +3479,9 @@ class lhm_contractor(models.Model):
         self.state = 'confirmed'
 
     def button_confirm_harian(self):
+        if not any(line.nilai for line in self.line_ids):
+            self.state = 'confirmed'
+            return
         for contractor_nap in self.line_nap_ids:
             if not contractor_nap.nilai:
                 raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" tidak memiliki nilai. Silahkan isi melalui Dokumen NAP'))
