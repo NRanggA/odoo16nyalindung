@@ -5,7 +5,7 @@
     'description': 'Costum Jurnal',
     'category': 'Sales',
     'author': 'Your Name',
-    'depends': ['purchase','account', 'purchase_request'],
+    'depends': ['purchase','account', 'purchase_request', 'ny_account'],
     'data': [
         'security/ir.model.access.csv',
         'views/purchase_order_views.xml',

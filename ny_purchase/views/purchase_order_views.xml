@@ -7,6 +7,9 @@
             <xpath expr="//field[@name='currency_id']" position="after">
                 <field name="non_credit"/>
             </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">[('vendor_category', '=', True)]</attribute>
+            </xpath>
         </field>
     </record>
     <record id="view_order_form_inherit_readonly_advanced" model="ir.ui.view">
