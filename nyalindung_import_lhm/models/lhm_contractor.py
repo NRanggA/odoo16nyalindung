@@ -51,7 +51,8 @@ class LHMContractor(models.Model):
             if not location_id:
                 raise UserError(_(f"Lokasi '{lokasi_name}' tidak ditemukan dalam database."))
 
-            activity_id = self.env['lhm.activity'].search([('code', '=', aktivitas_name)], limit=1)
+            activity_code = str(aktivitas_name).rstrip('.0') if isinstance(aktivitas_name, (int, float)) else aktivitas_name
+            activity_id = self.env['lhm.activity'].search([('code', '=', activity_code)], limit=1)
             if not activity_id:
                 raise UserError(_(f"Aktivitas '{aktivitas_name}' tidak ditemukan dalam database."))
 
@@ -129,7 +130,8 @@ class LHMContractor(models.Model):
                 if not location_id:
                     raise UserError(_(f"Lokasi '{lokasi_name}' tidak ditemukan dalam database."))
 
-                activity_id = self.env['lhm.activity'].search([('code', '=', aktivitas_name)], limit=1)
+                activity_code = str(aktivitas_name).rstrip('.0') if isinstance(aktivitas_name, (int, float)) else aktivitas_name
+                activity_id = self.env['lhm.activity'].search([('code', '=', activity_code)], limit=1)
                 if not activity_id:
                     raise UserError(_(f"Aktivitas '{aktivitas_name}' tidak ditemukan dalam database."))
 
