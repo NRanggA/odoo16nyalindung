@@ -63,10 +63,10 @@
                             </th>
                             <th class="header-right" colspan="2">
                                 <table style="border: none; font-size: 8px;">
-                                    <tr>
+                                    <!-- <tr>
                                         <th>No. DBIS</th>
                                         <td> : </td>
-                                    </tr>
+                                    </tr> -->
                                     <tr>
                                         <th>No. Invoice</th>
                                         <td>

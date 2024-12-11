@@ -95,7 +95,7 @@
                                 <table style="border: none; font-size: 8px;">
                                     <tr>
                                         <th>Dibayar Kepada</th>
-                                        <td> : <span t-field="o.partner_id.name"/></td>
+                                        <td> : PT. Nyalindung</td>
                                     </tr>
                                     <tr>
                                         <th>Nominal</th>
@@ -269,7 +269,7 @@
                                     </tr>
                                     <tr>
                                         <th>Atas Nama</th>
-                                        <td>: <span t-field="o.atas_nama"/></td>
+                                        <td>: PT. Nyalindung</td>
                                     </tr>
                                     <tr>
                                         <th>No. Rekening</th>

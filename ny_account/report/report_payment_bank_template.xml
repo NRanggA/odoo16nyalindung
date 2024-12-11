@@ -124,10 +124,10 @@
                             </td>
                             <td class="header-right table-list-name" colspan="2">
                                 <table style="border: none; font-size: 10px;">
-                                    <tr>
+                                    <!-- <tr>
                                         <th>No. DBIS</th>
                                         <td> : </td>
-                                    </tr>
+                                    </tr> -->
                                     <tr>
                                         <th>No. Invoice</th>
                                         <td> 

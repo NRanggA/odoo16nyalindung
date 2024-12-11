@@ -8,8 +8,15 @@ class DirectPayment(models.Model):
     jenis_pembayaran    = fields.Selection([
                             ('tunai', 'Tunai'),
                             ('transfer', 'Transfer'),
+                            ('auto_debit', 'Auto Debit')
                         ], string='Jenis Pembayaran')
-    atas_nama = fields.Char('Atas Nama')
+    atas_nama           = fields.Char('Atas Nama')
+    
+    department_id       = fields.Many2one('hr.department', string='Department')
+    alokasi             = fields.Selection([
+                            ('biaya', 'Biaya'),
+                            ('persediaan', 'Persediaan'),
+                        ], string='Alokasi')
 
 
     @api.onchange('partner_id')

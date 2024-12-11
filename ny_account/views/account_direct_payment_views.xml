@@ -27,6 +27,11 @@
                 <field name="atas_nama"/>
             </xpath>
 
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="department_id"/>
+                <field name="alokasi"/>
+            </xpath>
+
         </field>
     </record>
 

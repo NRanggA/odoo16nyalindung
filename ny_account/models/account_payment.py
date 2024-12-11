@@ -27,6 +27,7 @@ class AccountPayment(models.Model):
     jenis_pembayaran    = fields.Selection([
                             ('tunai', 'Tunai'),
                             ('transfer', 'Transfer'),
+                            ('auto_debit', 'Auto Debit')
                         ], string='Jenis Pembayaran')
     
     atas_nama           = fields.Char('Atas Nama')
