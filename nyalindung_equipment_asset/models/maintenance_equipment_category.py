@@ -22,6 +22,14 @@ class MaintenanceEquipmentCategory(models.Model):
     prefix_seq = fields.Char('Prefix Sequence',required=True)
     sequence_id = fields.Many2one('ir.sequence', string='Sequence')
 
+    
+    # Validasi agar field prefix_seq unik
+    @api.constrains('prefix_seq')
+    def _check_unique_prefix_seq(self):
+        for record in self:
+            if self.search_count([('prefix_seq', '=', record.prefix_seq), ('id', '!=', record.id)]) > 0:
+                raise ValidationError('Prefix Sequence "%s" sudah ada, gunakan nilai yang berbeda!' % record.prefix_seq)
+
 
     @api.onchange('asset_category_id','asset_type')
     def _onchange_asset_type(self):
