@@ -6,7 +6,7 @@ class SheetToProduce(models.TransientModel):
     _description = 'Helper : Sheet to Product'
 
     mrp_id = fields.Many2one('mrp.production', 'Production Order')
-    product_latex_id = fields.Many2one('product.product', string='Latex')
+    product_latex_id = fields.Many2one('product.product', string='Product')
     latex_onhand_qty = fields.Float(related='product_latex_id.qty_available')
 
     bom_id = fields.Many2one('mrp.bom', string='Bill of Material')

@@ -10,7 +10,6 @@ class LabOrder(models.Model):
     name = fields.Char('Order No.')
     lab_product_id = fields.Many2one('lab.product', string='Product', required=True, ondelete='restrict')
     lab_product_satuan_id = fields.Many2one('uom.uom',string='Satuan', related='lab_product_id.product_id.uom_id', store=True, readonly=True)
-    lab_uom_id = fields.Many2one('uom.uom', string='Product', required=True, ondelete='restrict')
     product_qty = fields.Float('Quantity to Produce', tracking=True)
     qty_done = fields.Float('Finished Qty', tracking=True)
     
