@@ -42,6 +42,8 @@
                                 <th style="border: 1px solid black;">Produk</th>
                                 <th style="border: 1px solid black;">UoM</th>
                                 <th style="border: 1px solid black;">Qty</th>
+                                <th style="border: 1px solid black;">Unit Price</th>
+                                <th style="border: 1px solid black;">PPN</th>
                                 <th style="border: 1px solid black;">Deskripsi</th>
                             </tr>
                         </thead>
@@ -54,10 +56,21 @@
                                     <td style="border: 1px solid black;"><t t-esc="line.product_id.name"/></td>
                                     <td style="border: 1px solid black;"><t t-esc="line.product_uom.name"/></td>
                                     <td style="border: 1px solid black;"><t t-esc="line.product_uom_qty"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="line.price_unit"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="str(line.tax_id.amount) + '%'"/></td>
                                     <td style="border: 1px solid black;"><t t-esc="line.name"/></td>
                                 </tr>
                             </t>
                         </tbody>
+                    </table>
+
+                    <table style="width: 100%; margin-bottom: 20px; font-family: Arial, sans-serif; font-size: 7px; text-align: left;">
+                        <tr>
+                            <td>Total Harga : Rp<span t-esc="doc.env['report.ny_salesorder_report.sales_order_template_custom'].format_price(line.price_total)"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-style: italic;">Terbilang : # <span t-esc="doc.env['report.ny_salesorder_report.sales_order_template_custom'].price_to_text(line.price_total)"/> rupiah #</td>
+                        </tr>
                     </table>
 
                     <!-- Tanggal dan Lokasi -->
