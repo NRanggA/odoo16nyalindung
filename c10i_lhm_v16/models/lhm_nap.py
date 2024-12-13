@@ -452,6 +452,8 @@ class lhm_nap(models.Model):
         self.state = 'process'
         self.process = True
         for record in self:
+            if not record.pabrik_line_ids:
+                raise UserError("Tidak ada data di Timbangan Kebun/Pabrik. Mohon diisi barisnya terlebih dahulu.")
             no_tgl_terima = record.pabrik_line_ids.filtered(lambda line: not line.tgl_terima)
             if no_tgl_terima:
                 raise UserError("Mohon lengkapi Tanggal Terima di Timbangan Pabrik untuk semua baris.")
