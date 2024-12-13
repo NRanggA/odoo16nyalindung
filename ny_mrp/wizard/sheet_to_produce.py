@@ -7,11 +7,13 @@ class SheetToProduce(models.TransientModel):
 
     mrp_id = fields.Many2one('mrp.production', 'Production Order')
     product_latex_id = fields.Many2one('product.product', string='Product')
+    product_satuan_id = fields.Many2one('uom.uom', related='product_latex_id.uom_id', string='Satuan', readonly=True, store=True)
     latex_onhand_qty = fields.Float(related='product_latex_id.qty_available')
 
     bom_id = fields.Many2one('mrp.bom', string='Bill of Material')
 
     sheet_to_produce = fields.Float(compute='_compute_qty', readonly=False, store=True, precompute=True, string='Qty To Produce')
+    mrp_product_satuan_id = fields.Many2one('uom.uom', related='mrp_id.product_id.uom_id', string='Satuan To Produce', readonly=True, store=True)
 
     @api.depends('latex_onhand_qty', 'bom_id')
     def _compute_qty(self):
