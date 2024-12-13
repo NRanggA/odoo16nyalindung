@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_financial_report_inhrtd_form" model="ir.ui.view">
+        <field name="name">account.financial.report.inherit.form</field>
+        <field name="model">account.financial.report</field>
+        <field name="inherit_id" ref="accounting_pdf_reports.view_account_financial_report_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[1]" position="attributes">
+                <attribute name="attrs">{'invisible': [('type','not in',['accounts','account_type', 'account_report','code'])]}</attribute>
+            </xpath>
+            <field name="display_detail" position="attributes">
+                <attribute name="attrs">{'invisible': [('type','not in',['accounts','account_type','code'])]}</attribute>
+            </field>
+            <field name="display_detail" position="before">
+                <field name="account_code" attrs="{'invisible': [('type','!=','code')], 'required': [('type','=','code')]}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="accounting_pdf_reports.action_account_financial_report_tree" model="ir.actions.act_window">
+        <field name="domain">[('parent_id','=',False)]</field>
+    </record>
+
+</odoo>

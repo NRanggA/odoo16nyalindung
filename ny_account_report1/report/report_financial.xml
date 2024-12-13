@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_financial2" inherit_id="accounting_pdf_reports.report_financial">
+        <xpath expr="//div[@class='page']/table/thead/tr" position="attributes">
+            <attribute name="style">{'color': #875A7B;}</attribute>
+        </xpath>
+    </template>
+
+    <record id="accounting_pdf_reports.action_report_financial" model="ir.actions.report">
+        <field name="report_name">ny_account_report1.report_financial2</field>
+        <field name="report_file">ny_account_report1.report_financial2</field>
+        <field name="report_type">qweb-pdf</field>
+    </record>
+
+    <record id="action_report_financial_xlsx" model="ir.actions.report">
+        <field name="name">Financial Report Excel</field>
+        <field name="model">account.financial.report</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_account_report1.report_financial2_xlsx</field>
+        <field name="report_file">ny_account_report1.report_financial2_xlsx</field>
+    </record>
+</odoo>
