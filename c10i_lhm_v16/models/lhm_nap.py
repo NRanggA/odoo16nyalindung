@@ -460,6 +460,9 @@ class lhm_nap(models.Model):
             no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: (line.product_id.name in ["Lateks", "Lump"]) and not line.quality_pabrik)
             if no_quality_pabrik:
                 raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris yang memiliki produk 'Lateks' atau 'Lump'.")
+            no_product_qty = record.pabrik_line_ids.filtered(lambda line: not line.product_qty)
+            if no_product_qty:
+                raise UserError("Mohon lengkapi Product Quantity di Timbangan Pabrik untuk semua baris, dan juga Product Quantity tidak boleh bernilai 0.")
 
             record.line_ids.unlink()
             employee_data = {}
