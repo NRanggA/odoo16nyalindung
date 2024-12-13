@@ -832,6 +832,14 @@ class TimbanganKebun(models.Model):
     uom_id      = fields.Many2one('uom.uom', string='UoM')
     block_id    = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict")
     tgl_panen   = fields.Date(string='Tanggal Panen')
+    timbangan_pabrik_ids = fields.One2many('timbangan.pabrik', 'timbangan_kebun_id', string="Data Timbangan Pabrik")
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if self.product_id:
+            self.uom_id = self.product_id.uom_id
+        else:
+            self.uom_id = False
 
     @api.model
     def create(self, vals):
@@ -845,13 +853,18 @@ class TimbanganKebun(models.Model):
         self._create_or_update_timbangan_pabrik()
         self._create_or_update_nota_angkut_panen()
         return res
-    
-    @api.onchange('product_id')
-    def _onchange_product_id(self):
-        if self.product_id:
-            self.uom_id = self.product_id.uom_id
-        else:
-            self.uom_id = False
+
+    def unlink(self):
+        for record in self:
+            related_pabrik = self.env['timbangan.pabrik'].search([
+                ('lhm_nab_id', '=', record.lhm_nab_id.id),
+                ('lhm_nap_id', '=', record.lhm_nap_id.id),
+                ('product_id', '=', record.product_id.id),
+                ('block_id', '=', record.block_id.id)
+            ])
+            if related_pabrik:
+                related_pabrik.unlink()
+        return super(TimbanganKebun, self).unlink()
 
     def _create_or_update_timbangan_pabrik(self):
         for record in self:
@@ -859,20 +872,22 @@ class TimbanganKebun(models.Model):
                 'lhm_nab_id': record.lhm_nab_id.id,
                 'lhm_nap_id': record.lhm_nap_id.id,
                 'product_id': record.product_id.id,
+                'product_qty': record.product_qty,
                 'uom_id': record.uom_id.id,
                 'block_id': record.block_id.id,
                 'tgl_panen': record.tgl_panen,
+                'timbangan_kebun_id': record.id,
             }
+
             existing_pabrik = self.env['timbangan.pabrik'].search([
-                ('lhm_nab_id', '=', record.lhm_nab_id.id),
-                ('lhm_nap_id', '=', record.lhm_nap_id.id),
-                ('product_id', '=', record.product_id.id),
-                ('block_id', '=', record.block_id.id)
-            ])
+                ('timbangan_kebun_id', '=', record.id),
+            ], limit=1)
+
             if existing_pabrik:
                 existing_pabrik.write(pabrik_vals)
             else:
                 self.env['timbangan.pabrik'].create(pabrik_vals)
+
 
     def _create_or_update_nota_angkut_panen(self):
         for record in self:
@@ -917,6 +932,7 @@ class TimbanganPabrik(models.Model):
     tgl_terima         = fields.Date(string='Tanggal Terima')
     block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict", readonly=True)
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
+    timbangan_kebun_id = fields.Many2one('timbangan.kebun', string="Data Timbangan Kebun", ondelete='cascade')
     # drc_line_ids       = fields.One2many('lhm.drc.line', 'timbangan_pabrik_id', string="DRC Lines", ondelete="cascade")
 
 
