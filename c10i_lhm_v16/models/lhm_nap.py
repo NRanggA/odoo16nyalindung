@@ -872,7 +872,6 @@ class TimbanganKebun(models.Model):
                 'lhm_nab_id': record.lhm_nab_id.id,
                 'lhm_nap_id': record.lhm_nap_id.id,
                 'product_id': record.product_id.id,
-                'product_qty': record.product_qty,
                 'uom_id': record.uom_id.id,
                 'block_id': record.block_id.id,
                 'tgl_panen': record.tgl_panen,
@@ -884,10 +883,9 @@ class TimbanganKebun(models.Model):
             ], limit=1)
 
             if existing_pabrik:
-                existing_pabrik.write(pabrik_vals)
+                existing_pabrik.write({key: value for key, value in pabrik_vals.items() if key != 'product_qty'})
             else:
                 self.env['timbangan.pabrik'].create(pabrik_vals)
-
 
     def _create_or_update_nota_angkut_panen(self):
         for record in self:
