@@ -13,9 +13,14 @@ class HrPayslipRunCostMap(models.Model):
     debit_amount = fields.Float('Amount Debit')
     credit_amount = fields.Float('Amount Credit')
 
-    slip_id = fields.Many2one('hr.payslip', string='Pay Slip', required=True, ondelete='cascade')
-    payslip_run_id = fields.Many2one(related='slip_id.payslip_run_id', string='Payslip Batches', store=True, copy=False)
+    slip_id = fields.Many2one('hr.payslip', string='Pay Slip', required=False, ondelete='cascade')
+    # payslip_run_id = fields.Many2one(related='slip_id.payslip_run_id', string='Payslip Batches', store=True, copy=False)
+    payslip_run_id = fields.Many2one('hr.payslip.run', string='Payslip Batches')
 
+    plantation_varieties_id = fields.Many2one("plant.varieties", string="ORG", ondelete="restrict")
     plantation_location_type_id = fields.Many2one("lhm.location.type", string="Tipe Lokasi", ondelete="restrict")
     plantation_location_id = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
     plantation_activity_id = fields.Many2one("lhm.activity", string="Aktivitas", ondelete="restrict")
+
+    gc_distributed = fields.Boolean(default=False)
+    gc_distribution = fields.Boolean(default=False)

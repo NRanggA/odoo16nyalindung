@@ -40,6 +40,7 @@
         'views/ny_ongkos_pikul_view.xml',
         'views/hr_payslip_view.xml',
         'views/hr_payslip_run_view.xml',
+        'views/ny_payslip_batch_other_input_view.xml',
 
         'report/report_action.xml',
         'wizard/payroll_report_wizard_view.xml',

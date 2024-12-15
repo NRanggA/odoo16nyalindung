@@ -106,8 +106,8 @@
                     <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                     <!-- <field name="plantation_activity_hkne_id"/> -->
                     <!-- <field name="plantation_activity_natura_id"/> -->
-                    <!-- <field name="plantation_activity_bpjs_tk_id"/> -->
-                    <!-- <field name="plantation_activity_bpjs_kes_id"/> -->
+                    <field name="plantation_activity_bpjs_tk_id"/>
+                    <field name="plantation_activity_bpjs_kes_id"/>
                 </xpath>
 
                 <xpath expr="//page[@name='public']//group[@name='employee_authority']" position="inside">
@@ -470,6 +470,8 @@
                     <field name="plantation_location_type_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                     <field name="plantation_location_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                     <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <field name="plantation_activity_bpjs_tk_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                    <field name="plantation_activity_bpjs_kes_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                 </xpath>
             </field>
         </record>
@@ -907,6 +909,8 @@
                                 <field name="plantation_location_type_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                                 <field name="plantation_location_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                                 <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                                <field name="plantation_activity_bpjs_tk_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                                <field name="plantation_activity_bpjs_kes_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                             </group>
                         </group>
                         <notebook>

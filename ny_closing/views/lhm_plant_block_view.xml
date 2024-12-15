@@ -29,9 +29,9 @@
                 <attribute name="attrs">{'invisible': [('type_of_plant','=','shorterm')]}</attribute>
             </group>
 
-            <field name="afdeling_id" position="attributes">
+            <!-- <field name="afdeling_id" position="attributes">
                 <attribute name="invisible">1</attribute>
-            </field>
+            </field> -->
             <field name="land_block_id" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>

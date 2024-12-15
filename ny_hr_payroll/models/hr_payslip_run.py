@@ -11,3 +11,8 @@ class BatchHrPayslip(models.Model):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.payroll_report_wizard_action")
         action['context'] = {'default_payslip_ids': [(6,0,self.slip_ids.ids)]}
         return action
+    
+    def action_edit_payroll_gc_distribution(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.action_edit_payroll_gc_distribution")
+        # action['domain'] = [('varieties_id.name','=','Karet')]
+        return action

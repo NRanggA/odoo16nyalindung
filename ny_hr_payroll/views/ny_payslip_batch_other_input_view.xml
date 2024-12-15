@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="ny_payslip_batch_other_input_view_form" model="ir.ui.view">
+		<field name="name">ny_payslip_batch_other_input.view.form</field>
+		<field name="model">ny.payslip.batch.other.input</field>
+		<field name="arch" type="xml">
+			<form>
+				<header>
+					<button string="Confirm" name="action_confirm" type="object" class="oe_highlight" states="draft"/>
+					<button string="Set to New" name="action_set_draft" type="object" states="confirm"/>
+					
+					<field name="state" widget="statusbar" statusbar_visible="draft,confirm" />
+				</header>
+				<sheet>
+					<group>
+						<group>
+							<field name="name" attrs="{'readonly': [('state','!=','draft')]}"/>
+							<field name="date" attrs="{'readonly': [('state','!=','draft')]}"/>
+						</group>
+						<group attrs="{'invisible': [('state','!=','draft')]}">
+							<field name="uploaded_file" filename="uploaded_filename" attrs="{'readonly': [('state','!=','draft')]}"/>
+							<field name="uploaded_filename" invisible="1"/>
+							
+							<button name="consume_file_excel" string="Upload" type="object" states="draft"/>
+							<button name="remove_line_to_upload" string="Reset" type="object" states="draft"/>
+							<field name="error_upload_msg" attrs="{'invisible': [('error_upload_msg','=',False)]}" readonly="1"/>
+						</group>
+					</group>
+					<field name="line_ids" attrs="{'readonly': [('state','!=','draft')]}">
+						<tree editable="bottom">
+							<field name="employee_id" />
+							<field name="type_id"/>
+							<field name="amount" />
+						</tree>
+					</field>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids" groups="base.group_user"/>
+					<field name="activity_ids"/>
+					<field name="message_ids"/>
+				</div>
+			</form>
+		</field>
+	</record>
+
+	<record id="ny_payslip_batch_other_input_view_tree" model="ir.ui.view">
+		<field name="name">ny_payslip_batch_other_input.view.tree</field>
+		<field name="model">ny.payslip.batch.other.input</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="date" />
+				<field name="name" />
+				<field name="state" widget="badge" decoration-info="state=='draft'" decoration-success="state=='confirm'"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="ny_payslip_batch_other_input_view_search" model="ir.ui.view">
+		<field name="name">ny_payslip_batch_other_input.view.search</field>
+		<field name="model">ny.payslip.batch.other.input</field>
+		<field name="arch" type="xml">
+			<search>
+				<field name="name" />
+				<!-- <filter name="filter_name" string="filter_name" domain="[('field_name', '=', 'value')]" context="{'group_by': 'field_name'}" /> -->
+			</search>
+		</field>
+	</record>
+
+	<record id="ny_payslip_batch_other_input_action" model="ir.actions.act_window">
+		<field name="name">Batch Other Input</field>
+		<field name="res_model">ny.payslip.batch.other.input</field>
+		<field name="view_mode">tree,form</field>
+	</record>
+
+    <menuitem
+        id="menu_ny_payslip_batch_other_input"
+        action="ny_payslip_batch_other_input_action"
+        parent="c10i_hr_payroll_other_inputs.hr_payroll_other_input_misc_menu"
+        sequence="12"/>
+</odoo>

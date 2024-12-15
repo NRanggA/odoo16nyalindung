@@ -596,7 +596,7 @@ class ClosingProduction(models.Model):
         for closing in self:
             closing.latex_wip_onhand_qty = closing.latex_wip_opening_qty + closing.latex_wip_incoming_qty
             # closing.latex_wip_onhand_value = closing.latex_wip_opening_value + closing.latex_wip_incoming_value + closing.sheet_production_cost
-            closing.latex_wip_onhand_value = closing.latex_wip_opening_value + closing.latex_wip_incoming_value + closing.sheet_raw_material_cost
+            closing.latex_wip_onhand_value = closing.latex_wip_opening_value + closing.latex_wip_incoming_value + closing.sheet_production_cost + closing.sheet_raw_material_cost
             closing.latex_wip_cost_price = closing.latex_wip_onhand_value/closing.latex_wip_onhand_qty if closing.latex_wip_onhand_qty else 0.0
             closing.lump_wip_onhand_qty = closing.lump_wip_opening_qty + closing.lump_wip_incoming_qty
             closing.lump_wip_onhand_value = closing.lump_wip_opening_value + closing.lump_wip_incoming_value + closing.compound_production_cost

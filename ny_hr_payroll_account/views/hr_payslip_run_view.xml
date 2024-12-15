@@ -9,11 +9,14 @@
             <button name="draft_payslip_run" position="before">
                 <button string="Cost Mapping" name="action_map_cost" type="object" class="oe_highlight" states="close" />
                 <button string="Create Bill" name="create_account_move" type="object" class="oe_highlight" states="close,done" groups="base.group_no_one" />
+                <button string="Create General Charge Allocation" name="create_account_move_general_charge" type="object" class="oe_highlight" states="close,done" groups="base.group_no_one" />
             </button>
             <xpath expr="//sheet/label[@for='name']" position="before">
                 <div class="oe_button_box" name="button_box">
                     <button string="Cost Map" name="action_view_cost_map" type="object" class="oe_stat_button" icon="fa-search" />
                     <button string="Bills" name="action_view_bill_moves" type="object" class="oe_stat_button" icon="fa-dollar" groups="base.group_no_one"/>
+                    <button string="GC Distribution" name="action_view_accrued_moves" type="object" class="oe_stat_button" icon="fa-dollar" groups="base.group_no_one"/>
+                    <button name="action_edit_payroll_gc_distribution" type="object" class="oe_stat_button" string="Set GC Blok Tanam"/>
                 </div>
             </xpath>
         </field>

@@ -33,21 +33,21 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="font-weight: bold;">Beginning</td>
+                                        <td style="font-weight: bold;">Beginning WIP</td>
                                         <td style="width: 30%; text-align: right;"><field name="opening_wip_qty"/></td>
                                         <td style="width: 5%;"></td>
                                         <td style="width: 30%; text-align: right;"><field name="opening_wip_value"/></td>
                                         <td style="width: 5%;"></td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="font-weight: bold;">New Production</td>
                                         <td style="text-align: right;"><field name="incoming_wip_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="wip_cost_consumed" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">Onhand Qty</td>
+                                        <td style="font-weight: bold;">Onhand WIP</td>
                                         <td style="text-align: right;"><field name="onhand_wip_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="onhand_wip_value"/></td>
@@ -61,7 +61,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">Outgoing</td>
+                                        <td style="font-weight: bold;">Finished<br/>(Based on Plan)</td>
                                         <td style="text-align: right;"><field name="outgoing_wip_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="outgoing_wip_value"/></td>
@@ -95,7 +95,7 @@
                                         <td style="width: 5%;"></td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">Incoming</td>
+                                        <td style="font-weight: bold;">Produced</td>
                                         <td style="text-align: right;"><field name="incoming_fg_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="incoming_fg_value" /></td>
@@ -116,7 +116,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">Outgoing</td>
+                                        <td style="font-weight: bold;">Consumed</td>
                                         <td style="text-align: right;"><field name="outgoing_fg_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="outgoing_fg_value"/></td>

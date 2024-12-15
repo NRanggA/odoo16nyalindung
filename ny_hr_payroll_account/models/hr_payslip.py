@@ -8,6 +8,6 @@ class HrPayslip(models.Model):
 
     def action_map_cost(self):
         for slip in self:
-            if slip.cost_map_ids:
-                slip.cost_map_ids.unlink()
+            # if slip.cost_map_ids:
+            #     slip.cost_map_ids.unlink()
             slip.line_ids._create_cost_map()

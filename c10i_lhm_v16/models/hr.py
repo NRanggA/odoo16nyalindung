@@ -92,7 +92,7 @@ class HrForeman(models.Model):
     plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas Payroll')
     plantation_location_type_id = fields.Many2one('lhm.location.type', 'Tipe Lokasi Payroll')
     plantation_location_id = fields.Many2one('lhm.location', 'Lokasi Payroll')
-    plantation_activity_id = fields.Many2one('lhm.location', 'Aktifitas Payroll')
+    plantation_activity_id = fields.Many2one('lhm.activity', 'Aktifitas Payroll')
     plantation_activity_bpjs_tk_id = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
     plantation_activity_bpjs_kes_id = fields.Many2one('lhm.activity', 'BPJS Kesehatan')
 
@@ -296,7 +296,7 @@ class hr_department(models.Model):
     plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas Payroll')
     plantation_location_type_id = fields.Many2one('lhm.location.type', 'Tipe Lokasi Payroll')
     plantation_location_id = fields.Many2one('lhm.location', 'Lokasi Payroll')
-    plantation_activity_id = fields.Many2one('lhm.location', 'Aktifitas Payroll')
+    plantation_activity_id = fields.Many2one('lhm.activity', 'Aktifitas Payroll')
     plantation_activity_bpjs_tk_id = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
     plantation_activity_bpjs_kes_id = fields.Many2one('lhm.activity', 'BPJS Kesehatan')
 
@@ -366,7 +366,7 @@ class HrEmployee(models.Model):
     plantation_varieties_id = fields.Many2one('plant.varieties', string='Varietas Payroll')
     plantation_location_type_id = fields.Many2one('lhm.location.type', 'Tipe Lokasi Payroll')
     plantation_location_id = fields.Many2one('lhm.location', 'Lokasi Payroll')
-    plantation_activity_id = fields.Many2one('lhm.location', 'Aktifitas Payroll')
+    plantation_activity_id = fields.Many2one('lhm.activity', 'Aktifitas Payroll')
     plantation_activity_hkne_id = fields.Many2one('lhm.activity', 'HKNE')
     plantation_activity_natura_id = fields.Many2one('lhm.activity', 'Natura')
     plantation_activity_bpjs_tk_id = fields.Many2one('lhm.activity', 'BPJS Tenaga Kerja')
@@ -478,8 +478,11 @@ class HrEmployee(models.Model):
             'plantation_location_type_id': False,
             'plantation_location_id': False,
             'plantation_activity_id': False,
+            'plantation_account_id': False,
             'plantation_activity_bpjs_tk_id': False,
+            'plantation_account_bpjs_tk_id': False,
             'plantation_activity_bpjs_kes_id': False,
+            'plantation_account_bpjs_kes_id': False,
         }
         if self.plantation_location_id and self.plantation_activity_id:
             res.update({
@@ -489,6 +492,10 @@ class HrEmployee(models.Model):
                 'plantation_activity_id': self.plantation_activity_id.id,
                 'plantation_activity_bpjs_tk_id': self.plantation_activity_bpjs_tk_id.id,
                 'plantation_activity_bpjs_kes_id': self.plantation_activity_bpjs_kes_id.id,
+                'plantation_account_id': self.plantation_activity_id.account_id.id,
+                'plantation_account_bpjs_tk_id': self.plantation_activity_bpjs_tk_id.account_id.id,
+                'plantation_account_bpjs_kes_id': self.plantation_activity_bpjs_kes_id.account_id.id,
+
             })
         elif self.kemandoran_id and self.kemandoran_id.plantation_location_id and self.kemandoran_id.plantation_activity_id:
             res.update({
@@ -498,6 +505,9 @@ class HrEmployee(models.Model):
                 'plantation_activity_id': self.kemandoran_id.plantation_activity_id.id,
                 'plantation_activity_bpjs_tk_id': self.kemandoran_id.plantation_activity_bpjs_tk_id.id,
                 'plantation_activity_bpjs_kes_id': self.kemandoran_id.plantation_activity_bpjs_kes_id.id,
+                'plantation_account_id': self.kemandoran_id.plantation_activity_id.account_id.id,
+                'plantation_account_bpjs_tk_id': self.kemandoran_id.plantation_activity_bpjs_tk_id.account_id.id,
+                'plantation_account_bpjs_kes_id': self.kemandoran_id.plantation_activity_bpjs_kes_id.account_id.id,
             })
         elif self.department_id and self.department_id.plantation_location_id and self.department_id.plantation_activity_id:
             res.update({
@@ -507,5 +517,8 @@ class HrEmployee(models.Model):
                 'plantation_activity_id': self.department_id.plantation_activity_id.id,
                 'plantation_activity_bpjs_tk_id': self.department_id.plantation_activity_bpjs_tk_id.id,
                 'plantation_activity_bpjs_kes_id': self.department_id.plantation_activity_bpjs_kes_id.id,
+                'plantation_account_id': self.department_id.plantation_activity_id.account_id.id,
+                'plantation_account_bpjs_tk_id': self.department_id.plantation_activity_bpjs_tk_id.account_id.id,
+                'plantation_account_bpjs_kes_id': self.department_id.plantation_activity_bpjs_kes_id.account_id.id,
             })
         return res

@@ -12,8 +12,11 @@
                         <tree editable="bottom">
                             <field name="partner_id" />
                             <field name="is_map_from_lhm" attrs="{'readonly': ['|',('default_debit_account_id','!=',False),('default_credit_account_id','!=',False)]}" />
-                            <field name="default_debit_account_id" attrs="{'readonly': ['|',('is_map_from_lhm','=',True),('default_credit_account_id','!=',False)]}" />
-                            <field name="default_credit_account_id" attrs="{'readonly': ['|',('is_map_from_lhm','=',True),('default_debit_account_id','!=',False)]}" />
+                            <field name="is_general_charge" attrs="{'readonly': ['|',('default_debit_account_id','!=',False),('default_credit_account_id','!=',False)]}" />
+                            <field name="is_bpjs_tk" attrs="{'readonly': [('is_general_charge','=',False)]}" />
+                            <field name="is_bpjs_kes" attrs="{'readonly': [('is_general_charge','=',False)]}" />
+                            <field name="default_debit_account_id" attrs="{'readonly': ['|','|',('is_map_from_lhm','=',True),('is_general_charge','=',True),('default_credit_account_id','!=',False)]}" />
+                            <field name="default_credit_account_id" attrs="{'readonly': ['|','|',('is_map_from_lhm','=',True),('is_general_charge','=',True),('default_debit_account_id','!=',False)]}" />
                         </tree>
                     </field>
                 </page>

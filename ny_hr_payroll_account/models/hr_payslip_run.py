@@ -1,29 +1,110 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _, Command
+from odoo.exceptions import ValidationError
 
 class HrPayslipRun(models.Model):
     _inherit = 'hr.payslip.run'
 
+    cost_map_ids = fields.One2many('hr.payslip.cost.map', 'payslip_run_id', string='Cost Mapping')
+
     accrued_move_ids = fields.Many2many('account.move', 'hr_payslip_run_accrued_move_rel', 'payslip_run_id', 'move_id', string='Accrued Journal Entries')
     bill_move_ids = fields.Many2many('account.move', 'hr_payslip_run_bill_move_rel', 'payslip_run_id', 'move_id', string='Vendor Bills')
 
+    def action_gc_distribution(self):
+        self.ensure_one()
+        query_get_gc = f"""SELECT 
+                cm.partner_id, cm.plantation_varieties_id, cm.plantation_location_type_id, 
+                cm.plantation_location_id,sum(cm.debit_amount) as cost  
+            FROM hr_payslip_cost_map cm, lhm_location_type llt \
+            WHERE cm.plantation_location_type_id=llt.id
+                and llt.general_charge='true'
+                and cm.payslip_run_id={self.id} 
+                and cm.debit_amount>0 
+            GROUP BY cm.partner_id,cm.plantation_varieties_id,cm.plantation_location_type_id,
+                cm.plantation_location_id"""
+        self.env.cr.execute(query_get_gc)
+        gc_lines = self.env.cr.fetchall()
+        cost_map_to_add = []
+        field_cost_type = self.env['lhm.location.type'].search([('plantation','=',True)], limit=1)
+        for partner_id, varieties_id, type_id, location_id, debit_amt in gc_lines:
+            afdeling_found = self.env['res.afdeling'].search([('location_id','=',location_id)], limit=1)
+            cost_center_found = self.env['account.cost.center'].search([('location_id','=',location_id)], limit=1)
+            if afdeling_found:
+                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('afdeling_id','=',afdeling_found.id)])
+            elif cost_center_found:
+                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id)])
+            else:
+                continue
+            total_planted = sum(block_tanams.mapped('planted'))
+            total_planted = total_planted if total_planted else 1
+            n_block = len(block_tanams.ids)
+            remaining_cost = debit_amt
+            for block_tanam in block_tanams:
+                if not block_tanam.payroll_gc_dest_activity_id:
+                    raise ValidationError(_(f"Block Tanam {block_tanam.code} belum dapat setting Payroll GC to Block Activity"))
+                pct_cost = block_tanam.planted / total_planted
+                if n_block==1:
+                    dr_amount = remaining_cost
+                else:
+                    dr_amount = (pct_cost/100.0)*debit_amt
+                cost_map_to_add.append({
+                        'payslip_line_id': False,
+                        'partner_id': partner_id,
+                        'plantation_varieties_id': varieties_id,
+                        'plantation_location_type_id': field_cost_type.id,
+                        'plantation_location_id': block_tanam.location_id.id,
+                        'plantation_activity_id': block_tanam.payroll_gc_dest_activity_id.id,
+                        'account_id': block_tanam.payroll_gc_dest_activity_id.account_id.id,
+                        'debit_amount': dr_amount,
+                        'credit_amount': 0.0,
+                        'slip_id': False,
+                        'payslip_run_id': self.id,
+                        'gc_distribution': True,
+                    })
+                n_block -= 1
+                remaining_cost -= (pct_cost/100.0)*debit_amt
+            
+            query_update_gc = f"""UPDATE hr_payslip_cost_map SET gc_distributed='true' 
+                    WHERE plantation_varieties_id={varieties_id}
+                            and plantation_location_type_id={type_id}
+                            and plantation_location_id={location_id}
+                            and payslip_run_id={self.id}
+                            and debit_amount>0 
+                    """
+            self.env.cr.execute(query_update_gc)
+
+        if cost_map_to_add:
+            self.env['hr.payslip.cost.map'].create(cost_map_to_add)
+
+            
     def action_map_cost(self):
+        self.cost_map_ids.unlink()
         self.slip_ids.action_map_cost()
+        for batch in self:
+            batch.action_gc_distribution()
+
     
     def action_view_cost_map(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
         action['domain'] = [('payslip_run_id','=',self.id)]
         return action
+
+    # def action_view_cost_map_gc(self):
+    #     action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
+    #     action['domain'] = [('payslip_run_id','=',self.id)]
+    #     return action
     
     def create_account_move(self):
         lhm_journal = self.env.ref('c10i_lhm_v16.plantation_lhm_journal')
         for batch in self:
+            if not batch.cost_map_ids:
+                raise ValidationError(_("Please click Cost Mapping before creating the journal"))
             query_partner = f"SELECT partner_id FROM hr_payslip_cost_map WHERE payslip_run_id={batch.id} GROUP BY partner_id"
             self.env.cr.execute(query_partner)
             partner_ids = [result[0] for result in self.env.cr.fetchall()]
             accrual_to_create = []
             bill_to_create = []
-            print("::::::::::::::::::::", partner_ids)
+            # print("::::::::::::::::::::", partner_ids)
             for partner in self.env['res.partner'].browse(partner_ids):
                         # sum(map.debit_amount) as debit,
                         # sum(map.credit_amount) as credit,
@@ -35,49 +116,26 @@ class HrPayslipRun(models.Model):
                         sum(debit_amount-credit_amount) as price_unit,
                         partner_id
                     FROM hr_payslip_cost_map
-                    WHERE payslip_run_id=%s and partner_id=%s
+                    WHERE payslip_run_id=%s and partner_id=%s and gc_distribution='false'
                     GROUP BY partner_id, account_id, plantation_location_type_id,
                         plantation_location_id, plantation_activity_id 
                 """
                 self.env.cr.execute(query%(self.id, partner.id))
                 accrual_move_lines = []
-                # bill_move_lines = []
-                # balance = 0.0
-                ## Cost Accrual
+                
                 for vals in self.env.cr.dictfetchall():
+                    print(">>>>>>>>>>>>>>>>>>>", vals)
                     vals.update({
                         'name': 'Gaji Karyawan',
                         'quantity': 1.0,
                         'tax_ids': False,
                         'plantation_src_journal_id': lhm_journal.id,
                     })
-                    print(".................", vals)
+                    # print(".................", vals)
                     accrual_move_lines.append((0,0,vals))
                     # balance += vals['debit'] - vals['credit']
-                ## Counterpart Accrual
-                # accrual_move_lines.append((0,0,{
-                #     'partner_id': partner.id,
-                #     'account_id': False,
-                #     'name': f"Accrual Salary {batch.name} Period {batch.date_end.strftime('%m/%y')}",
-                #     'debit': abs(balance) if balance < 0 else 0.0,
-                #     'credit': balance if balance > 0 else 0.0,
-                # }))
-                ## reconcile Accrual on Bill
-                # bill_move_lines.append((0,0,{
-                #     'partner_id': partner.id,
-                #     'account_id': False,
-                #     'name': f"Payment Salary {batch.name} Period {batch.date_end.strftime('%m/%y')}",
-                #     'price_unit': balance if balance > 0 else 0.0,
-                #     'quantity': 1.0,
-                # }))
-
-                # accrual_to_create.append({
-                #     'date': batch.date_end,
-                #     'journal_id': self.env['account.journal'].search([('code','=','MISC')], limit=1).id,
-                #     'move_type': 'entry',
-                #     'line_ids': accrual_move_lines,
-                # })
-                print("::::::::::::::::::::", partner_ids)
+                
+                # print("::::::::::::::::::::", partner_ids)
                 bill_to_create.append({
                     'date': batch.date_end,
                     'partner_id': partner.id,
@@ -86,13 +144,77 @@ class HrPayslipRun(models.Model):
                     'invoice_line_ids': accrual_move_lines,
                 })
 
-            # accrued_moves = self.env['account.move'].create(accrual_to_create)
             bill_moves = self.env['account.move'].create(bill_to_create)
             print("::::::::::::::::::::bill_moves", bill_moves)
             
             batch.write({
                 # 'accrued_move_ids': list(map(lambda x1: Command.add(x1.id), accrued_moves)),
                 'bill_move_ids': list(map(lambda x2: Command.link(x2.id), bill_moves))
+            })
+    
+    def create_account_move_general_charge(self):
+        lhm_journal = self.env.ref('c10i_lhm_v16.plantation_lhm_journal')
+        for batch in self:
+            if not batch.cost_map_ids:
+                raise ValidationError(_("Please click Cost Mapping before creating the journal"))
+            accrual_to_create = []
+            # print("::::::::::::::::::::", partner_ids)
+            query = """(SELECT 
+                    plantation_location_type_id,
+                    plantation_location_id,
+                    plantation_activity_id,
+                    account_id,
+                    sum(debit_amount-credit_amount) as balance
+                FROM hr_payslip_cost_map
+                WHERE payslip_run_id=%s and gc_distribution='true'
+                GROUP BY account_id, plantation_location_type_id,
+                    plantation_location_id, plantation_activity_id)
+                UNION ALL
+                (SELECT 
+                    plantation_location_type_id,
+                    plantation_location_id,
+                    plantation_activity_id,
+                    account_id,
+                    sum(credit_amount-debit_amount) as balance
+                FROM hr_payslip_cost_map
+                WHERE payslip_run_id=%s and gc_distributed='true'
+                GROUP BY account_id, plantation_location_type_id,
+                    plantation_location_id, plantation_activity_id)
+            """
+            self.env.cr.execute(query%(self.id,self.id))
+            accrual_move_lines = []
+            
+            for vals in self.env.cr.dictfetchall():
+                dr_amt = cr_amt = 0.0
+                if vals['balance']>0:
+                    dr_amt = vals['balance']
+                else:
+                    cr_amt = vals['balance']
+
+                vals.update({
+                    'name': 'Gaji Karyawan',
+                    'plantation_src_journal_id': lhm_journal.id,
+                    'debit': dr_amt,
+                    'credit': cr_amt,
+                })
+                print(".................", vals)
+                accrual_move_lines.append((0,0,vals))
+                # balance += vals['debit'] - vals['credit']
+            
+            # print("::::::::::::::::::::", partner_ids)
+            accrual_to_create.append({
+                'date': batch.date_end,
+                'journal_id': self.env['account.journal'].search([('type','=','general')], limit=1).id,
+                'move_type': 'entry',
+                'line_ids': accrual_move_lines,
+            })
+
+            gc_moves = self.env['account.move'].create(accrual_to_create)
+            # print("::::::::::::::::::::bill_moves", bill_moves)
+            
+            batch.write({
+                # 'accrued_move_ids': list(map(lambda x1: Command.add(x1.id), accrued_moves)),
+                'bill_move_ids': list(map(lambda x2: Command.link(x2.id), gc_moves))
             })
     
     def action_view_accrued_moves(self):
