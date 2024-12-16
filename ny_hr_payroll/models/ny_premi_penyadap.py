@@ -146,11 +146,16 @@ class NyPremiPenyadap(models.Model):
             else:
                 domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
             blok_tanams = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).blok_tanam_id
-            locations = blok_tanams.location_id
-            if len(locations)==1:
-                domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # locations = blok_tanams.location_id
+            # if len(locations)==1:
+            #     domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            kemandoranx = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id)
+            if len(kemandoranx)==1:
+                domain.append(('lhm_id.kemandoran_id','=',kemandoranx.id))
             else:
-                domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+                domain.append(('lhm_id.kemandoran_id','in',kemandoranx.ids))
             domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
             lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
             
@@ -162,7 +167,8 @@ class NyPremiPenyadap(models.Model):
                 'kemandoran_id': False,
                 'block_tanam_id': False,
                 'total_karet_kering_qty': karet_kering,
-                'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                # 'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                'target_qty': sum(kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).mapped('production_daily_target_mandor')),
             }))
         for tap_kontrol in kemandorans.tap_kontrol_id:
             domain = [('lhm_id.state','=','done'), \
@@ -177,11 +183,16 @@ class NyPremiPenyadap(models.Model):
             else:
                 domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
             blok_tanams = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).blok_tanam_id
-            locations = blok_tanams.location_id
-            if len(locations)==1:
-                domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # locations = blok_tanams.location_id
+            # if len(locations)==1:
+            #     domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            kemandoranx = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id)
+            if len(kemandoranx)==1:
+                domain.append(('lhm_id.kemandoran_id','=',kemandoranx.id))
             else:
-                domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+                domain.append(('lhm_id.kemandoran_id','in',kemandoranx.ids))
             domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
             lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
             
@@ -193,7 +204,9 @@ class NyPremiPenyadap(models.Model):
                 'kemandoran_id': False,
                 'block_tanam_id': False,
                 'total_karet_kering_qty': karet_kering,
-                'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                # 'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                'target_qty': sum(kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).mapped('production_daily_target_mandor')),
+
             }))
         for mandor in kemandorans.mandor_id:
             domain = [('lhm_id.state','=','done'), \
@@ -208,11 +221,16 @@ class NyPremiPenyadap(models.Model):
             else:
                 domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
             blok_tanams = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).blok_tanam_id
-            locations = blok_tanams.location_id
-            if len(locations)==1:
-                domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # locations = blok_tanams.location_id
+            # if len(locations)==1:
+            #     domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            kemandoranx = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id)
+            if len(kemandoranx)==1:
+                domain.append(('lhm_id.kemandoran_id','=',kemandoranx.id))
             else:
-                domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+                domain.append(('lhm_id.kemandoran_id','in',kemandoranx.ids))
             domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
             lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
             
@@ -224,7 +242,8 @@ class NyPremiPenyadap(models.Model):
                 'kemandoran_id': False,
                 'block_tanam_id': False,
                 'total_karet_kering_qty': karet_kering,
-                'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                # 'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                'target_qty': sum(kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).mapped('production_daily_target_mandor')),
             }))
         if to_create:
             self.mandor_line_ids = to_create
