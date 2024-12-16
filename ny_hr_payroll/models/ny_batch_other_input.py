@@ -93,7 +93,7 @@ class NyBatchOtherInput(models.Model):
         for rec in self:
             for type in rec.line_ids.type_id:
                 values = {
-                    'name': f"{rec.other_input_type_id.name} Periode {rec.date_from.strftime('%d/%m/%Y')} s.d {rec.date_to.strftime('%d/%m/%Y')}",
+                    'name': f"{type.name} Periode {rec.date_from.strftime('%d/%m/%Y')} s.d {rec.date_to.strftime('%d/%m/%Y')}",
                     'date': rec.date_to,
                     'type_id': type.id,
                 }
