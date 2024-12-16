@@ -17,6 +17,7 @@
     # any module necessary for this one to work correctly
     'depends': [
         'resource',
+        'c10i_lhm_v16',
         'ny_plantation',
         'ny_hr_attendance',
         'c10i_hr_payroll',
@@ -32,6 +33,7 @@
         'data/other_input_type_data.xml',
         
         'views/hr_contract_view.xml',
+        'views/hr_employee_view.xml',
         'views/ny_premi_penyadap_view.xml',
         'views/resource_calendar_view.xml',
         'views/hr_foreman_view.xml',

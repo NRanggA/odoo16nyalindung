@@ -39,7 +39,7 @@
                             <field name="line_ids" attrs="{'readonly': [('state','!=','draft')]}">
                                 <tree editable="bottom">
                                     <field name="employee_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}"/>
-                                    <field name="block_tanam_id" readonly="1" />
+                                    <field name="block_tanam_id" readonly="0" />
                                     <field name="base_hk" optional="hide"/>
                                     <field name="base_libur" optional="hide"/>
                                     <field name="base_total_days" optional="hide"/>

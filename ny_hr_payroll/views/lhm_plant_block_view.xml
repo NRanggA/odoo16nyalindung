@@ -10,7 +10,7 @@
                 <field name="code" readonly="1" />
                 <field name="varieties_id" readonly="1" options="{'no_open': True}" />
                 <field name="production_daily_target" sum="production_daily_target" />
-                <field name="production_daily_target_mandor" sum="production_daily_target_mandor" />
+                <!-- <field name="production_daily_target_mandor" sum="production_daily_target_mandor" /> -->
             </tree>
         </field>
     </record>

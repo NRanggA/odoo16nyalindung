@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_employee_form_inherit_lhm" model="ir.ui.view">
+        <field name="name">view.employee.form.inherit.lhm</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_employee_form_inherit_lhm"/>    
+        <field name="arch" type="xml">
+            <field name="plantation_varieties_id" position="before" >
+                <field name="blok_tanam_id" />
+            </field>
+        </field>
+    </record>
+</odoo>
