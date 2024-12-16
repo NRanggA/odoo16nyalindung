@@ -101,12 +101,16 @@ class NyPremiPenyadapMandor(models.Model):
                 domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
         else:
             domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
-        blok_tanams = kemandorans.blok_tanam_id
-        locations = blok_tanams.location_id
-        if len(locations)==1:
-            domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+        # blok_tanams = kemandorans.blok_tanam_id
+        # locations = blok_tanams.location_id
+        # if len(locations)==1:
+        #     domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+        # else:
+        #     domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+        if len(kemandorans)==1:
+            domain.append(('lhm_id.kemandoran_id','=',kemandorans.id))
         else:
-            domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            domain.append(('lhm_id.kemandoran_id','in',kemandorans.ids))
         domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.lhm_trans_nap_line_action")
         action['domain'] = domain

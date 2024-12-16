@@ -315,5 +315,5 @@ class NyPremiPenyadap(models.Model):
 
     def action_view_foreman(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll.action_edit_production_target_foreman")
-        action['domain'] = [('blok_tanam_id','!=',False)]
+        # action['domain'] = [('blok_tanam_id','!=',False)]
         return action
