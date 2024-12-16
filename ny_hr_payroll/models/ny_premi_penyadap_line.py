@@ -86,5 +86,5 @@ class NyPremiPenyadapLine(models.Model):
                   ('lhm_transaction_line_id.date','>=',self.ref_id.date_from), \
                   ('lhm_transaction_line_id.date','<=',self.ref_id.date_to), \
                   ('employee_id','=',self.employee_id.id), \
-                  '|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump')]
+                  '|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump')]
         return action

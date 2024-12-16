@@ -28,7 +28,7 @@ class NyOngkosPikulLine(models.Model):
                   ('lhm_transaction_line_id.date','<=',self.ref_id.date_to), \
                   ('employee_id','=',self.employee_id.id), \
                   ('lhm_transaction_line_id.location_id','=',self.plant_block_id.location_id.id), \
-                  '|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump')]
+                  '|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump')]
         return action
 
 class NyOngkosPikul(models.Model):
@@ -65,7 +65,7 @@ class NyOngkosPikul(models.Model):
                   ('lhm_transaction_line_id.date','>=',rec.date_from), \
                   ('lhm_transaction_line_id.date','<=',rec.date_to), \
                   ('lhm_transaction_line_id.location_id','=',block.location_id.id), \
-                  '|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump')])
+                  '|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump')])
                 for employee in lhm_naps.lhm_transaction_line_id.employee_id:
                     emp_naps = lhm_naps.filtered(lambda n: n.lhm_transaction_line_id.employee_id.id==employee.id)
                     vals = {

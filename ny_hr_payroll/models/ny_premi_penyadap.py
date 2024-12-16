@@ -90,7 +90,7 @@ class NyPremiPenyadap(models.Model):
         domain = [('lhm_id.state','=','done'), \
                   ('lhm_transaction_line_id.date','>=',self.date_from), \
                   ('lhm_transaction_line_id.date','<=',self.date_to), \
-                  '|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump')]
+                  '|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump')]
         result = self.env['lhm.transaction.nap.line'].search(domain)
         to_create = []
         for employee in result.employee_id:
@@ -151,7 +151,7 @@ class NyPremiPenyadap(models.Model):
                 domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
             else:
                 domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
-            domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
             lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
             
             karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
@@ -182,7 +182,7 @@ class NyPremiPenyadap(models.Model):
                 domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
             else:
                 domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
-            domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
             lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
             
             karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
@@ -213,7 +213,7 @@ class NyPremiPenyadap(models.Model):
                 domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
             else:
                 domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
-            domain.extend(['|',('product_id.name','=','Latex'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
             lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
             
             karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
