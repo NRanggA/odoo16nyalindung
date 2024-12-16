@@ -72,6 +72,7 @@ class NyPremiPenyadap(models.Model):
 
             to_update.append((1, premi_produksi_line.id, {
                 'grade_id' : grade.id,
+                'rate' : grade.rate,
             }))
 
         if error_message_list:
