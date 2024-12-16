@@ -134,7 +134,8 @@ class NyPremiPenyadap(models.Model):
     def compute_mandor_production(self):
         self.mandor_line_ids.unlink()
         to_create = []
-        kemandorans = self.env['hr.foreman'].search([('blok_tanam_id.varieties_id.name','=','Karet')])
+        # kemandorans = self.env['hr.foreman'].search([('blok_tanam_id.varieties_id.name','=','Karet')])
+        kemandorans = self.env['hr.foreman'].search([])
         for kepala_mandor in kemandorans.kepala_mandor_id:
             domain = [('lhm_id.state','=','done'), \
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
