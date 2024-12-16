@@ -330,7 +330,7 @@ class ReportSummaryBkm(models.AbstractModel):
                         AND nap_line.product_id IN (
                             SELECT id FROM product_product 
                             WHERE product_tmpl_id IN (
-                                SELECT id FROM product_template WHERE name = '{"en_US": "Latex"}'
+                                SELECT id FROM product_template WHERE name = '{"en_US": "Lateks"}'
                             )
                         )
                 ),
