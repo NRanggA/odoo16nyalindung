@@ -136,11 +136,12 @@ class NyPremiPenyadap(models.Model):
         to_create = []
         # kemandorans = self.env['hr.foreman'].search([('blok_tanam_id.varieties_id.name','=','Karet')])
         kemandorans = self.env['hr.foreman'].search([])
+        varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
         for kepala_mandor in kemandorans.kepala_mandor_id:
             domain = [('lhm_id.state','=','done'), \
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
                     ('lhm_transaction_line_id.date','<=',self.date_to)]
-            varieties = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).mapped('blok_tanam_id.varieties_id')
+            # varieties = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).mapped('blok_tanam_id.varieties_id')
             if len(varieties)>1:
                 if len(varieties.harvest_activity_id)>1:
                     domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
@@ -177,7 +178,7 @@ class NyPremiPenyadap(models.Model):
             domain = [('lhm_id.state','=','done'), \
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
                     ('lhm_transaction_line_id.date','<=',self.date_to)]
-            varieties = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).mapped('blok_tanam_id.varieties_id')
+            # varieties = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).mapped('blok_tanam_id.varieties_id')
             if len(varieties)>1:
                 if len(varieties.harvest_activity_id)>1:
                     domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
@@ -215,7 +216,7 @@ class NyPremiPenyadap(models.Model):
             domain = [('lhm_id.state','=','done'), \
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
                     ('lhm_transaction_line_id.date','<=',self.date_to)]
-            varieties = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).mapped('blok_tanam_id.varieties_id')
+            # varieties = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).mapped('blok_tanam_id.varieties_id')
             if len(varieties)>1:
                 if len(varieties.harvest_activity_id)>1:
                     domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
