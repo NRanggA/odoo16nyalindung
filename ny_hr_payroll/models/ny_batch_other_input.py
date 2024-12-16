@@ -93,8 +93,8 @@ class NyBatchOtherInput(models.Model):
         for rec in self:
             for type in rec.line_ids.type_id:
                 values = {
-                    'name': f"{type.name} Periode {rec.date_from.strftime('%d/%m/%Y')} s.d {rec.date_to.strftime('%d/%m/%Y')}",
-                    'date': rec.date_to,
+                    'name': f"{type.name} Periode {rec.date.strftime('%d/%m/%Y')}",
+                    'date': rec.date,
                     'type_id': type.id,
                 }
                 new_batch_oth_input = self.env['hr.payslip.batch.other.input'].create(values)
