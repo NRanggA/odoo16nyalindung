@@ -1945,22 +1945,35 @@ class lhm_transaction_line(models.Model):
                         line.filtered_activities = [(6, 0, activities.ids)] if activities else []
 
     # Fungsi untuk menghitung konversi latex dan lump
-    def compute_conversion(self, lhm_nap_line, is_hasil_2):
+    # def compute_conversion(self, lhm_nap_line, is_hasil_2):
+    def compute_conversion(self, lhm_nap_line):
         """
         Fungsi untuk menghitung konversi hasil latex dan lump.
         """
         convert_hasil_latex = 0
         convert_hasil_lump = 0
 
-        if is_hasil_2:
-            # Menghitung konversi untuk hasil latex
-            drc_latex           = lhm_nap_line.drc_latex_nap
-            convert_hasil_latex = lhm_nap_line.hasil_1_nap * drc_latex / 100
+        # Menghitung konversi untuk hasil latex
+        drc_latex           = lhm_nap_line.drc_latex_nap
+        convert_hasil_latex = lhm_nap_line.hasil_1_nap * drc_latex / 100
 
-            # Menghitung konversi untuk hasil lump
-            drc_lump            = lhm_nap_line.drc_lump_nap
-            convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+        # Menghitung konversi untuk hasil lump
+        drc_lump            = lhm_nap_line.drc_lump_nap
+        convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
 
+        # if is_hasil_2:
+        #     # Menghitung konversi untuk hasil latex
+        #     drc_latex           = lhm_nap_line.drc_latex_nap
+        #     convert_hasil_latex = lhm_nap_line.hasil_1_nap * drc_latex / 100
+
+        #     # Menghitung konversi untuk hasil lump
+        #     drc_lump            = lhm_nap_line.drc_lump_nap
+        #     convert_hasil_lump  = lhm_nap_line.hasil_2_nap * drc_lump / 100
+        # else:
+        #     # Menghitung konversi untuk hasil latex
+        #     drc_latex           = lhm_nap_line.drc_latex_nap
+        #     convert_hasil_latex = lhm_nap_line.hasil_1_nap * drc_latex / 100
+            
         lhm_nap_line.write({
             'hasil_convert_latex'   : convert_hasil_latex,
             'hasil_convert_lump'    : convert_hasil_lump
@@ -1976,10 +1989,12 @@ class lhm_transaction_line(models.Model):
             # Panggil fungsi untuk mengecek apakah employee ini bulanan atau bukan
             record._check_employee_bulanan()
             lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+            
+            # Hitung konversi menggunakan fungsi compute_conversion
+            # convert_hasil_latex, convert_hasil_lump = record.compute_conversion(lhm_nap_line, record.is_hasil_2)
+            convert_hasil_latex, convert_hasil_lump = record.compute_conversion(lhm_nap_line)
 
             if record.is_hasil_2:
-                # Hitung konversi menggunakan fungsi compute_conversion
-                convert_hasil_latex, convert_hasil_lump = record.compute_conversion(lhm_nap_line, record.is_hasil_2)
                 
                 # Dapatkan harga borongan berdasarkan DRC
                 price_1     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_latex_nap, product=record.product_id)
