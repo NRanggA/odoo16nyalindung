@@ -609,6 +609,13 @@ class HrEmployeeExpenseLine(models.Model):
         if self.location_type_id:
             self.varieties_id = self.location_type_id.varieties_id.id
 
+    # onchange untuk membuat account terisi otomatis ketika memilih aktivitas
+    @api.onchange('activity_id')
+    def _onchange_activity_id(self):
+        if self.activity_id:
+            self.account_id = self.activity_id.account_id.id
+
+
     @api.onchange('product_id')
     def onchange_product(self):
         if self.product_id:

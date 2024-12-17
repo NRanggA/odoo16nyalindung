@@ -4008,6 +4008,19 @@ class lhm_contractor_line(models.Model):
                               'Kode Aktivitas   : %s.\n'
                               'Ganti salah satu detail atau hapus baris yang sama') % (self.date, self.location_id.code, self.activity_id.code))
         return True
+    
+    # validasi tanggal pada buku kontraktor harian
+    @api.onchange('date')
+    def _onchange_(self):
+        for line in self:
+            if line.contractor_id and line.contractor_id.date_start and line.contractor_id.date_end:
+                date_start  = line.contractor_id.date_start
+                date_end    = line.contractor_id.date_end
+                if line.date and line.date < date_start:
+                    raise ValidationError(f"Tanggal tidak boleh sebelum tanggal : {date_start}")
+                if line.date and line.date > date_end:
+                    raise ValidationError(f"Tanggal tidak boleh melebihi tanggal : {date_end}")
+                
 
 class lhm_contractor_nap_line(models.Model):
     _name = 'lhm.contractor.nap.line'
