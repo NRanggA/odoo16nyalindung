@@ -1524,6 +1524,16 @@ class ClosingProduction(models.Model):
         # END: WIP Lump to WIP Compound
 
         if move_lines_receiving:
+            # handling Pembuatan
+            first_bal = check_balance = 0.0
+            for x,y,val in move_lines_receiving:
+                first_bal = val['debit'] - val['credit']
+                check_balance += val['debit'] - val['credit']
+            if check_balance>0.0 or check_balance<0:
+                if first_bal>0:
+                    move_lines_receiving[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+                else:
+                    move_lines_receiving[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
             values = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -1533,6 +1543,15 @@ class ClosingProduction(models.Model):
             new_move = self.env['account.move'].create(values)
             self.closing_move_ids = [(4,new_move.id)]
         if move_lines_wip:
+            first_bal = check_balance = 0.0
+            for x,y,val in move_lines_wip:
+                first_bal = val['debit'] - val['credit']
+                check_balance += val['debit'] - val['credit']
+            if check_balance>0.0 or check_balance<0:
+                if first_bal>0:
+                    move_lines_wip[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+                else:
+                    move_lines_wip[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
             values2 = {
                 'date': self.date_from + relativedelta(months=1),
                 'journal_id': misc_journal.id,
