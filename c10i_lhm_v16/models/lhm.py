@@ -3495,7 +3495,7 @@ class lhm_contractor(models.Model):
         #     return
         for contractor_nap in self.line_nap_ids:
             if not contractor_nap.nilai and not contractor_nap.nilai2:
-                raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai kosong di kedua kolom "Nilai" dan "Nilai2". Silahkan isi melalui Dokumen NAP'))
+                raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai. Silahkan isi melalui Dokumen NAP'))
         self.state = 'confirmed'
 
     def button_process(self):
