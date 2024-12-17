@@ -3489,6 +3489,15 @@ class lhm_contractor(models.Model):
                 raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" tidak memiliki nilai. Silahkan isi melalui Dokumen NAP'))
         self.state = 'confirmed'
 
+    # def button_confirm_harian(self):
+    #     if not any(line.nilai for line in self.line_ids):
+    #         self.state = 'confirmed'
+    #         return
+    #     for contractor_nap in self.line_nap_ids:
+    #         if not contractor_nap.nilai or contractor_nap.nilai == 0:
+    #             raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai kosong atau 0. Silahkan isi melalui Dokumen NAP'))
+    #     self.state = 'confirmed'
+
     def button_process(self):
         if not self.date:
             raise UserError(_('Data tanggal kosong, mohon diisi.'))
@@ -3518,6 +3527,9 @@ class lhm_contractor(models.Model):
 
         if contractor_nap_lines:
             self.env['lhm.contractor.nap.line'].create(contractor_nap_lines)
+        for line in self.line_ids:
+            line._onchange_activity_id()
+        self.line_ids.invalidate_cache(['total'])
 
     def button_draft(self):
         for contractor in self:
@@ -3535,6 +3547,9 @@ class lhm_contractor(models.Model):
                 contractor.move_id.unlink()
             contractor.line_nap_ids.unlink()
         self.state = 'cancel'
+        for line in self.line_ids:
+            line._onchange_activity_id()
+        self.line_ids.invalidate_cache(['total'])
 
     @api.model
     def create(self, values):
