@@ -19,10 +19,13 @@ class ClosingProductionPlantationCost(models.Model):
     total_cost_lump = fields.Float(compute='_compute_cost', store=True)
     is_plantation_cost = fields.Boolean()
     is_manufacturing_cost = fields.Boolean()
+    is_mrp_sheet_cost = fields.Boolean()
+    is_mrp_compound_cost = fields.Boolean()
     is_rm_sheet_cost = fields.Boolean()
 
     @api.depends('total_cost', 'closing_id', 'closing_fg_id', 
-        'is_manufacturing_cost', 'is_rm_sheet_cost', 'is_plantation_cost',
+        'is_manufacturing_cost','is_mrp_sheet_cost', 'is_mrp_compound_cost',
+        'is_rm_sheet_cost', 'is_plantation_cost',
         'closing_id.pct_cost_for_latex', 'closing_id.pct_cost_for_lump',
         'closing_id.pct_cost_for_sheet', 'closing_id.pct_cost_for_compound',
         )
@@ -30,8 +33,15 @@ class ClosingProductionPlantationCost(models.Model):
         for l in self:
             if l.closing_id:
                 if l.is_manufacturing_cost:
-                    l.total_cost_latex = l.total_cost * l.closing_id.pct_cost_for_latex / 100.0
-                    l.total_cost_lump = l.total_cost * l.closing_id.pct_cost_for_lump / 100.0
+                    if l.is_mrp_sheet_cost:
+                        l.total_cost_latex = l.total_cost
+                        l.total_cost_lump = 0.0
+                    elif l.is_mrp_compound_cost:
+                        l.total_cost_latex = 0.0
+                        l.total_cost_lump = l.total_cost
+                    else:
+                        l.total_cost_latex = l.total_cost * l.closing_id.pct_cost_for_latex / 100.0
+                        l.total_cost_lump = l.total_cost * l.closing_id.pct_cost_for_lump / 100.0
                 elif l.is_rm_sheet_cost:
                     l.total_cost_latex = l.total_cost
                     l.total_cost_lump = 0.0
@@ -351,33 +361,37 @@ class ClosingProduction(models.Model):
     closing_move_ids = fields.Many2many('account.move', 'closing_prod_acc_move_rel', string='Closing Entries')
 
     manufacturing_cost_account_ids = fields.Many2many('account.account', 'closing_prod_mrp_cost_account_rel', string='Manufacturing Cost Accounts')
+    mrp_sheet_cost_account_ids = fields.Many2many('account.account', 'closing_prod_sheet_cost_account_rel', string='Sheet Cost Accounts')
+    mrp_compound_cost_account_ids = fields.Many2many('account.account', 'closing_prod_compound_cost_account_rel', string='Compo Cost Accounts')
     mrp_cost_ids = fields.One2many('closing.production.plantation.cost', 'closing_id', domain=[('is_manufacturing_cost','=',True)], string='Plantation Cost Summs')
     manufacturing_cost = fields.Float('Total Manufacturing Cost')
+    mrp_sheet_cost = fields.Float('Total Sheet Cost')
+    mrp_compound_cost = fields.Float('Total Compound Cost')
     ############################## BEGIN VALUATION RAW MATERIAL ##################################
-    # The product are only for Latex and Lump
+    # The product are only for Lateks and Lump
     ##############################
-    # Latex
-    latex_product_id = fields.Many2one('product.product', string='Product Latex', ondelete='restrict')
-    latex_inventory_account_id = fields.Many2one('account.account', 'Account Inventory Latex')
-    latex_wip_account_id = fields.Many2one('account.account', 'Account WIP Latex')
-    latex_consumption_account_id = fields.Many2one('account.account', 'Account Consumption Latex')
+    # Lateks
+    latex_product_id = fields.Many2one('product.product', string='Product Lateks', ondelete='restrict')
+    latex_inventory_account_id = fields.Many2one('account.account', 'Account Inventory Lateks')
+    latex_wip_account_id = fields.Many2one('account.account', 'Account WIP Lateks')
+    latex_consumption_account_id = fields.Many2one('account.account', 'Account Consumption Lateks')
     
-    latex_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Qty of Latex')
+    latex_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Qty of Lateks')
     latex_opening_qty_manual = fields.Float()
-    latex_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Value of Latex')
+    latex_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Value of Lateks')
     latex_opening_value_manual = fields.Float()
-    latex_incoming_qty = fields.Float(string='Incoming Qty of Latex')
+    latex_incoming_qty = fields.Float(string='Incoming Qty of Lateks')
     
-    pct_cost_for_latex = fields.Float('% Cost for Latex', default=90)
-    latex_plantation_cost = fields.Float(compute='_compute_plantation_cost', store=True, string='Plantation Cost of Latex')
-    latex_onhand_qty = fields.Float(compute='_compute_onhand_and_cost_price_rm', store=True, string='Onhand Qty of Latex')
-    latex_onhand_value = fields.Float(compute='_compute_onhand_and_cost_price_rm', store=True, string='Onhand Value of Latex')
-    latex_new_cost_price = fields.Float(compute='_compute_onhand_and_cost_price_rm', store=True, string='New Cost Price of Latex')
+    pct_cost_for_latex = fields.Float('% Cost for Lateks', default=90)
+    latex_plantation_cost = fields.Float(compute='_compute_plantation_cost', store=True, string='Plantation Cost of Lateks')
+    latex_onhand_qty = fields.Float(compute='_compute_onhand_and_cost_price_rm', store=True, string='Onhand Qty of Lateks')
+    latex_onhand_value = fields.Float(compute='_compute_onhand_and_cost_price_rm', store=True, string='Onhand Value of Lateks')
+    latex_new_cost_price = fields.Float(compute='_compute_onhand_and_cost_price_rm', store=True, string='New Cost Price of Lateks')
     
-    # latex_wip_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning WIP Latex')
-    latex_wip_opening_qty = fields.Float(string='Beginning WIP Latex')
+    # latex_wip_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning WIP Lateks')
+    latex_wip_opening_qty = fields.Float(string='Beginning WIP Lateks')
     latex_wip_opening_qty_manual = fields.Float()
-    latex_wip_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Value WIP Latex')
+    latex_wip_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Value WIP Lateks')
     latex_wip_opening_value_manual = fields.Float()
     latex_wip_value_manual = fields.Float()
     latex_wip_incoming_qty = fields.Float(string='New Prod. Order Sheet')
@@ -401,19 +415,19 @@ class ClosingProduction(models.Model):
     sheet_rm_closing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Value of Asam Semut')
     sheet_raw_material_cost = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Raw Material Cost of Sheet')
 
-    latex_wip_onhand_qty = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current WIP Latex')
-    latex_wip_onhand_value = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current Value WIP Latex')
-    latex_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Latex')
+    latex_wip_onhand_qty = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current WIP Lateks')
+    latex_wip_onhand_value = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current Value WIP Lateks')
+    latex_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Lateks')
     latex_wip_outgoing_qty = fields.Float(string='Finished Process Sheet')
     
     latex_wip_outgoing_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Finished Process Value Sheet')
-    latex_wip_qty = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Latex')
-    latex_wip_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Latex Value WIP Latex')
+    latex_wip_qty = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Lateks')
+    latex_wip_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Lateks Value WIP Lateks')
 
-    # latex_outgoing_qty = fields.Float(string='Consumed Qty of Latex')
-    # # latex_outgoing_value = fields.Float(compute='_compute_outgoing_value_rm', store=True, string='Consumed Value of Latex')
-    latex_closing_qty = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Qty of Latex')
-    latex_closing_value = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Value of Latex')
+    # latex_outgoing_qty = fields.Float(string='Consumed Qty of Lateks')
+    # # latex_outgoing_value = fields.Float(compute='_compute_outgoing_value_rm', store=True, string='Consumed Value of Lateks')
+    latex_closing_qty = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Qty of Lateks')
+    latex_closing_value = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Value of Lateks')
     ##############################
     # Lump
     lump_product_id = fields.Many2one('product.product', string='Product Lump', ondelete='restrict')
@@ -755,7 +769,67 @@ class ClosingProduction(models.Model):
                 })
             plantation_cost_grouped[key]['total_cost'] += aml.balance
         return sum(manufacturing_cost.mapped('balance')) if manufacturing_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
+
+    def _compute_mrp_sheet_cost(self):
+        self.ensure_one()
+        # Get Manufacturing Cost
+        manufacturing_cost = self.env['account.move.line'].search([('parent_state','=','posted'),
+            ('date','>=',self.date_from),('date','<=',self.date_to),
+            # ('plantation_location_type_id.mill','=',True),
+            # ('plantation_location_id','!=',False),
+            # ('plantation_activity_id','!=',False),
+            ('account_id','in',self.mrp_sheet_cost_account_ids.ids),
+            # ('journal_id','!=',closing_journal.id)
+            ])
+        # Grouping by Loc Type, Loc, Activity, Src Journal
+        plantation_cost_grouped = {}
+        for aml in manufacturing_cost:
+            key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+            if key not in plantation_cost_grouped.keys():
+                plantation_cost_grouped.update({key: {
+                        'plantation_location_type_id': aml.plantation_location_type_id.id,
+                        'plantation_location_id': aml.plantation_location_id.id,
+                        'plantation_activity_id': aml.plantation_activity_id.id,
+                        'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                        'account_id': aml.account_id.id,
+                        'total_cost': 0.0,
+                        'is_manufacturing_cost': True,
+                        'is_mrp_sheet_cost': True,
+                    }
+                })
+            plantation_cost_grouped[key]['total_cost'] += aml.balance
+        return sum(manufacturing_cost.mapped('balance')) if manufacturing_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
     
+    def _compute_mrp_compound_cost(self):
+        self.ensure_one()
+        # Get Manufacturing Cost
+        manufacturing_cost = self.env['account.move.line'].search([('parent_state','=','posted'),
+            ('date','>=',self.date_from),('date','<=',self.date_to),
+            # ('plantation_location_type_id.mill','=',True),
+            # ('plantation_location_id','!=',False),
+            # ('plantation_activity_id','!=',False),
+            ('account_id','in',self.mrp_compound_cost_account_ids.ids),
+            # ('journal_id','!=',closing_journal.id)
+            ])
+        # Grouping by Loc Type, Loc, Activity, Src Journal
+        plantation_cost_grouped = {}
+        for aml in manufacturing_cost:
+            key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+            if key not in plantation_cost_grouped.keys():
+                plantation_cost_grouped.update({key: {
+                        'plantation_location_type_id': aml.plantation_location_type_id.id,
+                        'plantation_location_id': aml.plantation_location_id.id,
+                        'plantation_activity_id': aml.plantation_activity_id.id,
+                        'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                        'account_id': aml.account_id.id,
+                        'total_cost': 0.0,
+                        'is_manufacturing_cost': True,
+                        'is_mrp_compound_cost': True,
+                    }
+                })
+            plantation_cost_grouped[key]['total_cost'] += aml.balance
+        return sum(manufacturing_cost.mapped('balance')) if manufacturing_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
+
     def _compute_manufacturing_cost_pisang(self):
         self.ensure_one()
         # Get Manufacturing Cost
@@ -810,7 +884,7 @@ class ClosingProduction(models.Model):
     def _compute_rm_cost_sheet(self):
         self.ensure_one()
         mrp = self._get_mrp_done_this_month(self.sheet_product_id)
-        rm_moves = mrp.move_raw_ids.filtered(lambda s: s.product_id.name not in ('Latex','Lump'))
+        rm_moves = mrp.move_raw_ids.filtered(lambda s: s.product_id.name not in ('Lateks','Lump'))
         rm_cost = 0.0
         if rm_moves:
             # print(">>>>>>>>>>>>>>", rm_moves)
@@ -832,7 +906,15 @@ class ClosingProduction(models.Model):
                 closing.pisang_ripening_cost = mrp_cost
             else:
                 mrp_cost, summerize_mrp_cost = closing._compute_manufacturing_cost()
+                sheet_cost, summerize_mrp_cost1 = closing._compute_mrp_sheet_cost()
+                compound_cost, summerize_mrp_cost2 = closing._compute_mrp_compound_cost()
+                if summerize_mrp_cost1:
+                    summerize_mrp_cost.extend(summerize_mrp_cost1)
+                if summerize_mrp_cost2:
+                    summerize_mrp_cost.extend(summerize_mrp_cost2)
                 closing.manufacturing_cost = mrp_cost
+                closing.mrp_sheet_cost = sheet_cost
+                closing.mrp_compound_cost = compound_cost
             closing.mrp_cost_ids = summerize_mrp_cost
     
     def action_compute_rm_cost_sheet(self):
@@ -856,25 +938,27 @@ class ClosingProduction(models.Model):
             closing.plantation_cost = plantation_cost
             closing.plantation_cost_ids = summerize_cost
             mrp_cost, summerize_mrp_cost = closing._compute_manufacturing_cost()
+            mrp_sheet_cost, summerize_mrp_cost1 = closing._compute_mrp_sheet_cost()
+            mrp_compound_cost, summerize_mrp_cost2 = closing._compute_mrp_compound_cost()
+            if summerize_mrp_cost1:
+                summerize_mrp_cost.extend(summerize_mrp_cost1)
+            if summerize_mrp_cost2:
+                summerize_mrp_cost.extend(summerize_mrp_cost2)
+            closing.manufacturing_cost = mrp_cost
+            closing.mrp_sheet_cost = mrp_sheet_cost
+            closing.mrp_compound_cost = mrp_compound_cost
             if closing.mrp_cost_ids:
                 closing.mrp_cost_ids.unlink()
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_cost", mrp_cost)
-            # print(">>>>>>>>>>>>>>>>>>>>", summerize_mrp_cost)
             closing.manufacturing_cost = mrp_cost
             closing.mrp_cost_ids = summerize_mrp_cost
             
-            # Get Latex and Lump Receiving Qty from NAP
-            product_latex = self.env['product.product'].search([('name','=','Latex')], limit=1)
+            # Get Lateks and Lump Receiving Qty from NAP
+            product_latex = self.env['product.product'].search([('name','=','Lateks')], limit=1)
             closing.latex_product_id = product_latex.id
-            # latex_in = self.env['lhm.nap.line'].search([('product_id','=',product_latex.id),
-            #                 ('lhm_nap_id.date_nap','>=',closing.date_from),
-            #                 ('lhm_nap_id.date_nap','<=',closing.date_to),
-            #                 ('lhm_nap_id.state','in',['confirmed','done'])])
             latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            # print(">>>>>>>>>>>>>>>>>>>>latex_in", sum(latex_in.mapped('product_qty')) if latex_in else 0.0)
             closing.latex_incoming_qty = sum(latex_in.mapped('product_qty')) if latex_in else 0.0
             
             product_lump = self.env['product.product'].search([('name','=','Lump')], limit=1)
@@ -883,41 +967,34 @@ class ClosingProduction(models.Model):
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            # print(">>>>>>>>>>>>>>>>>>>>compound_in", sum(compound_in.mapped('product_qty')) if compound_in else 0.0)
             closing.lump_incoming_qty = sum(compound_in.mapped('product_qty')) if compound_in else 0.0
             
             # GET PENDING MO PREV MONTH
             mrp_sheet_prev = closing._get_mrp_inprogress_prev_month(sheet_product)
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_sheet_prev", mrp_sheet_prev)
             if mrp_sheet_prev:
                 rm_moves = mrp_sheet_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_opening_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             mrp_compound_prev = closing._get_mrp_inprogress_prev_month(compound_product)
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_compound_prev", mrp_compound_prev)
             if mrp_compound_prev:
                 rm_moves = mrp_compound_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_opening_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
             # GET NEW MO THIS MONTH
             mrp_sheet = closing._get_mrp_inprogress_this_month(sheet_product)
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_sheet", mrp_sheet)
             if mrp_sheet:
                 rm_moves = mrp_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             mrp_compound = closing._get_mrp_inprogress_this_month(compound_product)
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_compound", mrp_compound)
             if mrp_compound:
                 rm_moves = mrp_compound.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
             # GET MO DONE THIS MONTH
             mrp_sheet_done = closing._get_mrp_done_this_month(sheet_product)
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_sheet_done", mrp_sheet_done)
             if mrp_sheet_done:
                 rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             mrp_compound_done = closing._get_mrp_done_this_month(compound_product)
-            # print(">>>>>>>>>>>>>>>>>>>>mrp_compound_done", mrp_compound_done)
             if mrp_compound_done:
                 rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
@@ -926,7 +1003,10 @@ class ClosingProduction(models.Model):
             # Get Incoming Asam Semut
             # closing.sheet_rm_incoming_qty = 0.0
             # closing.sheet_rm_incoming_value = 0.0
-            # closing.sheet_rm_outgoing_qty = 0.0
+            out_asam_semut = self.env['mrp.manual.consume'].search([('product_id.name','=','Asam Semut'),
+                                    ('date','>=',closing.date_from),('date','<=',closing.date_to),
+                                    ('is_confirmed','=',True)])
+            closing.sheet_rm_outgoing_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
             # closing.sheet_rm_outgoing_value = 0.0
         return True
     
@@ -1149,10 +1229,10 @@ class ClosingProduction(models.Model):
         return True
 
     def create_move_entries_rm_karet(self):
-        # Output untuk Latex dan Lump
+        # Output untuk Lateks dan Lump
         # 1. Journal Receiving (Plantation Cost > Inventory) 
-        # 2. Journal Addition WIP (Inventory > WIP Latex/Lump) 
-        # 3. Journal Finished Sheet (WIP Latex > WIP Sheet ) 
+        # 2. Journal Addition WIP (Inventory > WIP Lateks/Lump) 
+        # 3. Journal Finished Sheet (WIP Lateks > WIP Sheet ) 
         self.ensure_one()
         misc_journal = self.env['account.journal'].search([('type','=','general')], limit=1)
 
@@ -1174,7 +1254,7 @@ class ClosingProduction(models.Model):
             
             for ll in self.plantation_cost_ids:
                 vals_src = {
-                    'name': 'Move Cost to Inventory Latex',
+                    'name': 'Move Cost to Inventory Lateks',
                     'plantation_location_type_id': ll.plantation_location_type_id.id,
                     'plantation_location_id': ll.plantation_location_id.id,
                     'plantation_activity_id': ll.plantation_activity_id.id,
@@ -1211,10 +1291,10 @@ class ClosingProduction(models.Model):
                 move_lines_receiving.append((0,0,vals_src))
         # END: Receiving from NAP
         
-        # BEGIN: Inventory Latex/Lump to WIP  
+        # BEGIN: Inventory Lateks/Lump to WIP  
         if self.latex_wip_incoming_qty:
             vals_wip_in = {
-                'name': 'Work in Process Latex',
+                'name': 'Work in Process Lateks',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1252,12 +1332,12 @@ class ClosingProduction(models.Model):
                 'credit': vals_wip_in['debit']
             })
             move_lines_wip.append((0,0,vals_wip_in_src))
-        # END: Inventory Latex/Lum to WIP            
+        # END: Inventory Lateks/Lum to WIP            
         
-        # BEGIN: FOH to WIP Latex/Lump  
+        # BEGIN: FOH to WIP Lateks/Lump  
         if self.sheet_production_cost:
             vals_mrp = {
-                'name': 'Manufacturing Cost to WIP Latex',
+                'name': 'Manufacturing Cost to WIP Lateks',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1270,7 +1350,7 @@ class ClosingProduction(models.Model):
             move_lines_wip.append((0,0,vals_mrp))
             for ll in self.mrp_cost_ids:
                 vals_wip_src = {
-                    'name': 'Move Cost to WIP Latex',
+                    'name': 'Move Cost to WIP Lateks',
                     # 'plantation_location_type_id': ll.plantation_location_type_id.id,
                     # 'plantation_location_id': ll.plantation_location_id.id,
                     # 'plantation_activity_id': ll.plantation_activity_id.id,
@@ -1283,7 +1363,7 @@ class ClosingProduction(models.Model):
         
         if self.compound_production_cost:
             vals_mrp = {
-                'name': 'Manufacturing Cost to WIP Latex',
+                'name': 'Manufacturing Cost to WIP Lateks',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1306,12 +1386,12 @@ class ClosingProduction(models.Model):
                     'credit': ll.total_cost_lump if ll.total_cost_lump>0 else 0.0,
                 }
                 move_lines_wip.append((0,0,vals_wip_src))
-        # END: FOH to WIP Latex/Lump
+        # END: FOH to WIP Lateks/Lump
         
-        # BEGIN: WIP Latex to WIP Sheet
+        # BEGIN: WIP Lateks to WIP Sheet
         if self.latex_wip_outgoing_qty:
             vals_mrp2 = {
-                'name': 'WIP Latex to WIP Sheet',
+                'name': 'WIP Lateks to WIP Sheet',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1330,7 +1410,7 @@ class ClosingProduction(models.Model):
                 'credit': self.latex_wip_outgoing_value if self.latex_wip_outgoing_value>0.0 else 0.0,
             })
             move_lines_wip.append((0,0,vals_mrp_src2))
-        # END: WIP Latex to WIP Sheet
+        # END: WIP Lateks to WIP Sheet
 
         # BEGIN: WIP Lump to WIP Compound
         if self.lump_wip_outgoing_qty:

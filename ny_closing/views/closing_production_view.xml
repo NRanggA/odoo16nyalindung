@@ -225,7 +225,7 @@
                         <field name="closing_move_ids" groups="base.group_no_one" readonly="1" />
                     </group>
                     <group name="acc_config" string="Account Configuration" attrs="{'invisible': [('state','!=','account_entry')]}">
-                        <group string="Account for Latex" attrs="{'invisible': [('varieties_type','!=','karet')]}">
+                        <group string="Account for Lateks" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="latex_inventory_account_id" string="Account Inventory Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                             <field name="latex_wip_account_id" string="Account WIP Valuation" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                         </group>
@@ -258,7 +258,7 @@
                                 <thead class="thead-light">
                                     <tr>
                                         <th rowspan="2" class="text-center" style="width: 20%;"></th>
-                                        <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Latex</th>
+                                        <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Lateks</th>
                                         <th colspan="4" class="text-center" style="font-weight: bold;width: 40%;">Lump</th>
                                     </tr>
                                     <tr>
@@ -302,7 +302,7 @@
                                         <td colspan="8" class="text-center"><field name="plantation_cost" /></td>
                                     </tr>
                                     <tr>
-                                        <td>% Cost for Latex</td>
+                                        <td>% Cost for Lateks</td>
                                         <td><field name="pct_cost_for_latex" 
                                             attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
                                         <td style="text-align: right;"><field name="latex_plantation_cost" /></td>
@@ -363,7 +363,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="padding-left: 20px;" rowspan="9">Manufacturing Cost
+                                        <td style="padding-left: 20px;" rowspan="10">Manufacturing Cost
                                             <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
                                             <br/>
                                             <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
@@ -371,6 +371,16 @@
                                         <td colspan="8" class="text-center">
                                             <field name="manufacturing_cost" />
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cost Account for Sheet</td>
+                                        <td></td>
+                                        <td><field name="mrp_sheet_cost_account_ids" widget="many2many_tags" /></td>
+                                        <td></td>
+                                        <td>Cost Account for Compo</td>
+                                        <td></td>
+                                        <td><field name="mrp_compound_cost_account_ids" widget="many2many_tags" /></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>% Cost for Sheet</td>
