@@ -240,7 +240,7 @@ class lhm_nap(models.Model):
                 product = kebun_data.product_id_2
             else:# Pisang, Melon, Durian, selain Lump
                 product = kebun_data.lhm_transaction_line_id.varieties_id.secondary_product_id # Tidak berlaku untuk pisang
-            if not product:
+            if not product or product.name not in ["Lateks", "Lump"]:
                 continue
             key = (blok_tanam, product) # (JATIROKE1, LUMP)
             if key not in grouped.keys():

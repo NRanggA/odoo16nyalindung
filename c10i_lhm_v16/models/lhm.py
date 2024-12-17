@@ -1379,12 +1379,12 @@ class lhm_transaction(models.Model):
                 SUM(ltl.work_day) AS hk,
                 SUM(ltl.work_day * ltl.contract_wage_value) + SUM(ltl.premi + ltl.overtime_value - ltl.penalty) AS realisasi,
                 SUM(ltl.hasil_1) AS nilai,
-                CASE WHEN la.is_hasil_2 IS TRUE THEN SUM(ltl.hasil_2) ELSE 0 END AS nilai2,
+                CASE WHEN la.is_panen IS TRUE THEN SUM(ltl.hasil_2) ELSE 0 END AS nilai2,
                 SUM(ltl.premi + ltl.overtime_value - ltl.penalty) AS premi,
                 SUM(ltl.non_work_day) AS hkne,
                 SUM(ltl.contract_value_date) + SUM(ltl.work_day * ltl.contract_wage_value) + SUM(ltl.premi + ltl.overtime_value - ltl.penalty) - SUM(CASE WHEN ltl.contract_value_date > 0 THEN ltl.contract_wage_value ELSE 0 END) AS realisasi_date,
                 ltl.satuan_1,
-                CASE WHEN la.is_hasil_2 IS TRUE THEN ltl.satuan_2 ELSE NULL END AS satuan_2
+                CASE WHEN la.is_panen IS TRUE THEN ltl.satuan_2 ELSE NULL END AS satuan_2
             FROM 
                 lhm_transaction_line ltl
             LEFT JOIN 
@@ -1392,7 +1392,7 @@ class lhm_transaction(models.Model):
             WHERE 
                 ltl.activity_id IS NOT NULL AND ltl.lhm_id = %s 
             GROUP BY 
-                ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, la.is_hasil_2, ltl.satuan_1, ltl.satuan_2;
+                ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, la.is_panen, ltl.satuan_1, ltl.satuan_2;
         """, (self.id,))
 
         for progres in self.env.cr.fetchall():
@@ -1406,7 +1406,7 @@ class lhm_transaction(models.Model):
                 if progress_line and len(progress_line) == 1:
                     if progress_line.nilai != progres[6] and progress_line.activity_id:
                         progress_line.write({'nilai': progres[6], 'updated': True})
-                    if progress_line.nilai2 != progres[7] and progress_line.activity_id.is_hasil_2:
+                    if progress_line.nilai2 != progres[7] and progress_line.activity_id.is_panen:
                         progress_line.write({'nilai2': progres[7], 'updated': True})
                     if progress_line.work_day != progres[4]:
                         progress_line.write({'work_day': progres[4], 'updated': True})
@@ -1423,15 +1423,16 @@ class lhm_transaction(models.Model):
                     if progress_line.product_id_2.id != progres[3]:
                         progress_line.write({'product_id_2': progres[3]})
                     if progres[7] > 0:  # Jika ada hasil_2
-                        if progress_line.uom_id.id != progres[11]:
-                            progress_line.write({'uom_id': progres[11]})
-                        if progress_line.uom2_id.id != progres[12]:
-                            progress_line.write({'uom2_id': progres[12]})
-                    else:  # Jika tidak ada hasil_2
                         if progress_line.uom_id.id != activity_data.uom_id.id:
                             progress_line.write({'uom_id': activity_data.uom_id.id})
                         if progress_line.uom2_id.id != activity_data.uom2_id.id:
                             progress_line.write({'uom2_id': activity_data.uom2_id.id})
+                    else:  # Jika tidak ada hasil_2
+                        if progress_line.uom_id.id != progres[11]:
+                            # progress_line.write({'uom_id': progres[11]})
+                            progress_line.write({'uom_id': activity_data.uom_id.id})
+                        if progress_line.uom2_id.id != progres[12]:
+                            progress_line.write({'uom2_id': progres[12]})
                     lhm_removed_list.append(progress_line.id)
                 else:
                     new_lines = {
@@ -1880,6 +1881,7 @@ class lhm_transaction_line(models.Model):
     satuan_2        = fields.Many2one('uom.uom', string='Satuan 2', ondelete="restrict")
     is_hasil_2      = fields.Boolean("Is Hasil 2", default=False)
     is_borong       = fields.Boolean("Is Borong", default=False)
+    is_panen        = fields.Boolean(related='activity_id.is_panen', readonly=True, store=True)
 
     @api.depends('varieties_id','location_type_id', 'lhm_id.state')
     def _filter_locations(self):
