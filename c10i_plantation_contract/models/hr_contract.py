@@ -21,10 +21,12 @@ class HrContract(models.Model):
         if vals.get('state') == 'open':
             # self._assign_open_contract()
 
-            if self.employee_type_id:
-                employees = self.env['hr.employee'].search([('type_id', '=', self.employee_type_id.id)])
+            if self.structure_type_id.id==2 and self.employee_type_id:
+                employees = self.env['hr.employee'].search([('type_id', '=', self.employee_type_id.id),('basic_salary_type','=','employee_type')])
                 for employee in employees:
                     employee.write({'contract_id': self.id})
-                    print(f"== Memperbaruhi field contract id untuk employee : {employee.name}")
+                    # print(f"== Memperbaruhi field contract id untuk employee : {employee.name}")
+            elif self.structure_type_id.id==1 and self.employee_type_id:
+                self.employee_id.write({'contract_id': self.id})
         
         return res
