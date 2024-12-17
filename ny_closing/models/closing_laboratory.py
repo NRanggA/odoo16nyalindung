@@ -114,7 +114,7 @@ class ClosingLaboratory(models.Model):
             closing.opening_wip_qty = sum(open_prod_orders.mapped('product_qty')) if open_prod_orders else 0.0
 
             domain_op_wip = closing._get_domain_source_move_lines()
-            domain_op_wip.extend([('date','<',self.date_from)])
+            domain_op_wip.extend([('date','<',closing.date_from)])
             begining_moves_wip = self.env['account.move.line'].search(domain_op_wip)
             closing.opening_wip_value = sum(begining_moves_wip.mapped('balance')) if begining_moves_wip else 0.0
             
@@ -124,9 +124,11 @@ class ClosingLaboratory(models.Model):
             closing.incoming_wip_qty = sum(new_prod_ordres.mapped('product_qty')) if new_prod_ordres else 0.0
 
             domain_in_wip = closing._get_domain_source_move_lines()
-            domain_in_wip.extend([('date','>=',self.date_from),('date','<=',self.date_to)])
+            domain_in_wip.extend([('date','>=',closing.date_from),('date','<=',closing.date_to)])
             cost_addition_moves = self.env['account.move.line'].search(domain_in_wip)
+            # print(">>>>>>>>>>>>>>>>>>>>> wip_cost_consumed", cost_addition_moves)
             closing.wip_cost_consumed = sum(cost_addition_moves.mapped('balance')) if cost_addition_moves else 0.0
+            # print(">>>>>>>>>>>>>>>>>>>>> wip_cost_consumed", closing.wip_cost_consumed)
 
             # Outgoing WIP
             out_prod_ordres = self.env['lab.production.order'].search([('lab_product_id','=',closing.lab_product_id.id),
@@ -147,7 +149,7 @@ class ClosingLaboratory(models.Model):
             closing.opening_fg_qty = (sum(all_in_moves.mapped('product_uom_qty')) if all_in_moves else 0.0) + (sum(all_out_moves.mapped('product_uom_qty')) if all_out_moves else 0.0)
 
             domain_op = closing._get_domain_source_move_lines_fg()
-            domain_op.extend([('date','<',self.date_from)])
+            domain_op.extend([('date','<',closing.date_from)])
             begining_moves = self.env['account.move.line'].search(domain_op)
             closing.opening_fg_value = sum(begining_moves.mapped('balance')) if begining_moves else 0.0
 
@@ -177,6 +179,7 @@ class ClosingLaboratory(models.Model):
                 if closing.closing_move_id.state=='posted':
                     closing.closing_move_id.button_draft()
             move_lines = []
+            print("........closing journal", closing.incoming_fg_qty)
             if closing.incoming_fg_qty:
                 vals_dest = {
                     'name': 'Lab Cost to Inventory',
@@ -218,17 +221,21 @@ class ClosingLaboratory(models.Model):
                     })
                     move_lines.append((0,0,vals_src2))
 
-                move_values1 = {
-                    'date': closing.date_to,
-                    'journal_id': lab_journal.id,
-                    'move_type': 'entry',
-                    'line_ids': move_lines,
-                }
-                if closing.closing_move_id:
-                    closing.closing_move_id.write(move_values1)
-                else:
-                    new_move = self.env['account.move'].create(move_values1)
-                    closing.closing_move_id = new_move.id
+            move_values1 = {
+                'date': closing.date_to,
+                'journal_id': lab_journal.id,
+                'move_type': 'entry',
+                'line_ids': move_lines,
+            }
+            print("........closing journal", move_values1)
+            if closing.closing_move_id:
+                closing.closing_move_id.write(move_values1)
+            else:
+                new_move = self.env['account.move'].create(move_values1)
+                closing.closing_move_id = new_move.id
+            print("........closing journal", closing.closing_move_id)
+            
+
         return True
 
     # def action_view_src_move_lines(self):
