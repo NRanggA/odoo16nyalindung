@@ -74,6 +74,7 @@ class ClosingProductionFinishGood(models.Model):
     opening_value_manual = fields.Float(string='Opening Value')
 
     manufacturing_cost = fields.Float(string='Manufacturing Cost')
+    plantation_other_cost_account_ids = fields.Many2many('account.account', 'cls_prod_fg_account_karet_rel', string="Other Plantation Cost Account")
     plantation_cost = fields.Float(compute='_compute_plantation_cost', store=True, string='Plantation Cost')
     plantation_cost_ids = fields.One2many('closing.production.plantation.cost', 'closing_fg_id', 'Plantation Cost Summs')
     
@@ -251,6 +252,39 @@ class ClosingProductionFinishGood(models.Model):
             plantation_cost_amt += aml.balance
         plantation_cost_to_add = [(0,0,vals) for vals in plantation_cost_grouped.values()]
         # print(":::::::::::::::::::::::", plantation_cost_to_add)
+
+        # >>>>>>>>>>>>>> Plantation Cost Other Accounts
+        # Find Plantation Cost based on Business Unit
+        if self.plantation_other_cost_account_ids:
+            domain_plantation2 = [('parent_state','=','posted'),
+                ('date','>=',self.closing_process_id.date_from),('date','<=',self.closing_process_id.date_to),
+                # ('plantation_varieties_id','=',self.varieties_id.id),
+                # ('plantation_location_type_id.plantation','=',True),
+                # ('plantation_location_id','!=',False),
+                ('journal_id','!=',closing_journal.id),
+                ]
+            if len(self.plantation_other_cost_account_ids.ids)==1:
+                domain_plantation.append(('account_id','=',self.plantation_other_cost_account_ids.id))
+            else:
+                domain_plantation.append(('account_id','in',self.plantation_other_cost_account_ids.ids))
+            plantation_cost2 = self.env['account.move.line'].search(domain_plantation)
+            # Grouping by Loc Type, Loc, Activity, Src Journal
+            plantation_cost_grouped2 = {}
+            for aml in plantation_cost2:
+                key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+                if key not in plantation_cost_grouped2.keys():
+                    plantation_cost_grouped2.update({key: {
+                            'plantation_location_type_id': aml.plantation_location_type_id.id,
+                            'plantation_location_id': aml.plantation_location_id.id,
+                            'plantation_activity_id': aml.plantation_activity_id.id,
+                            'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                            'account_id': aml.account_id.id,
+                            'total_cost': 0.0,
+                        }
+                    })
+                plantation_cost_grouped2[key]['total_cost'] += aml.balance
+                plantation_cost_amt += aml.balance
+            plantation_cost_to_add.extend([(0,0,vals) for vals in plantation_cost_grouped2.values()])
         return plantation_cost_amt, plantation_cost_to_add
     #########################################
     #           BUSINESS METHOD             #
@@ -271,6 +305,14 @@ class ClosingProductionFinishGood(models.Model):
                                 ('date','<=',line.closing_process_id.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
             line.outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
+            plantation_cost_amt, plantation_cost_to_add = line._help_compute_plantation_cost()
+            if line.plantation_cost_ids:
+                line.plantation_cost_ids.unlink()
+            line.plantation_cost_ids = plantation_cost_to_add
+            line.plantation_cost = plantation_cost_amt
+    
+    def action_compute_plant_cost(self):
+        for line in self:
             plantation_cost_amt, plantation_cost_to_add = line._help_compute_plantation_cost()
             if line.plantation_cost_ids:
                 line.plantation_cost_ids.unlink()
@@ -354,7 +396,8 @@ class ClosingProduction(models.Model):
             ('account_entry','Jurnal Creation'),
             ('done','Done'),
             ('cancel','Cancelled')], string='Status', default='start')
-    
+
+    plantation_other_cost_account_ids = fields.Many2many('account.account', 'cls_prod_account_karet_rel', string="Other Plantation Cost Account")    
     plantation_cost_ids = fields.One2many('closing.production.plantation.cost', 'closing_id', domain=[('is_plantation_cost','=',True)], string='Plantation Cost Summs')
     plantation_cost = fields.Float(compute='_compute_plantation_cost', store=True, string='Total Plantation Cost')
 
@@ -363,7 +406,7 @@ class ClosingProduction(models.Model):
     manufacturing_cost_account_ids = fields.Many2many('account.account', 'closing_prod_mrp_cost_account_rel', string='Manufacturing Cost Accounts')
     mrp_sheet_cost_account_ids = fields.Many2many('account.account', 'closing_prod_sheet_cost_account_rel', string='Sheet Cost Accounts')
     mrp_compound_cost_account_ids = fields.Many2many('account.account', 'closing_prod_compound_cost_account_rel', string='Compo Cost Accounts')
-    mrp_cost_ids = fields.One2many('closing.production.plantation.cost', 'closing_id', domain=[('is_manufacturing_cost','=',True)], string='Plantation Cost Summs')
+    mrp_cost_ids = fields.One2many('closing.production.plantation.cost', 'closing_id', domain=[('is_manufacturing_cost','=',True)], string='Manufacturing Cost Summs')
     manufacturing_cost = fields.Float('Total Manufacturing Cost')
     mrp_sheet_cost = fields.Float('Total Sheet Cost')
     mrp_compound_cost = fields.Float('Total Compound Cost')
@@ -694,7 +737,43 @@ class ClosingProduction(models.Model):
                     }
                 })
             plantation_cost_grouped[key]['total_cost'] += aml.balance
-        return sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
+        plantation_cost_amt = sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0
+        plantation_cost_line_ids = [(0,0,vals) for vals in plantation_cost_grouped.values()]
+        # >>>>>>>>>>>>>> Plantation Cost Other Accounts
+        # Find Plantation Cost based on Business Unit
+        if self.plantation_other_cost_account_ids:
+            domain_plantation2 = [('parent_state','=','posted'),
+                ('date','>=',self.closing_process_id.date_from),('date','<=',self.closing_process_id.date_to),
+                # ('plantation_varieties_id','=',self.varieties_id.id),
+                # ('plantation_location_type_id.plantation','=',True),
+                # ('plantation_location_id','!=',False),
+                ('journal_id','!=',closing_journal.id),
+                ]
+            if len(self.plantation_other_cost_account_ids.ids)==1:
+                domain_plantation2.append(('account_id','=',self.plantation_other_cost_account_ids.id))
+            else:
+                domain_plantation2.append(('account_id','in',self.plantation_other_cost_account_ids.ids))
+            plantation_cost2 = self.env['account.move.line'].search(domain_plantation2)
+            # Grouping by Loc Type, Loc, Activity, Src Journal
+            plantation_cost_grouped2 = {}
+            for aml in plantation_cost2:
+                key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+                if key not in plantation_cost_grouped2.keys():
+                    plantation_cost_grouped2.update({key: {
+                            'plantation_location_type_id': aml.plantation_location_type_id.id,
+                            'plantation_location_id': aml.plantation_location_id.id,
+                            'plantation_activity_id': aml.plantation_activity_id.id,
+                            'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                            'account_id': aml.account_id.id,
+                            'total_cost': 0.0,
+                            'is_plantation_cost': True,
+                        }
+                    })
+                plantation_cost_grouped2[key]['total_cost'] += aml.balance
+                plantation_cost_amt += aml.balance
+            plantation_cost_line_ids.extend([(0,0,vals) for vals in plantation_cost_grouped2.values()])
+        # return sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
+        return plantation_cost_amt, plantation_cost_line_ids
     
     def _compute_plantation_cost_pisang(self):
         closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
@@ -896,6 +975,14 @@ class ClosingProduction(models.Model):
             if svl_search:
                 rm_cost = -1* sum(svl_search.mapped('value'))
         return rm_cost
+
+    def action_compute_plant_cost(self):
+        for closing in self:
+            if closing.plantation_cost_ids:
+                closing.plantation_cost_ids.unlink()
+            plantation_cost, summerize_cost = closing._compute_plantation_cost_karet()
+            closing.plantation_cost = plantation_cost
+            closing.plantation_cost_ids = summerize_cost
 
     def action_compute_mrp_cost(self):
         for closing in self:

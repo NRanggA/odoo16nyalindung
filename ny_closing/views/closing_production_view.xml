@@ -47,8 +47,20 @@
                                         <td style="font-weight: bold;">Incoming</td>
                                         <td style="text-align: right;"><field name="incoming_qty"/></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="manufacturing_cost" /><br/>
-                                        <field name="plantation_cost" /></td>
+                                        <td style="text-align: right;">
+                                            <field name="manufacturing_cost" />
+                                            <br/>
+                                            <field name="plantation_cost" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Plantation Cost
+                                            <button name="action_compute_plant_cost" type="object" icon="fa-refresh"/>
+                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags"/>
+                                        </td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="plantation_cost" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
@@ -298,7 +310,11 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td rowspan="2" style="font-weight: bold;">Plantation Cost</td>
+                                        <td rowspan="2" style="font-weight: bold;">Plantation Cost
+                                            <button name="action_compute_plant_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
+                                            <br/>
+                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" />
+                                        </td>
                                         <td colspan="8" class="text-center"><field name="plantation_cost" /></td>
                                     </tr>
                                     <tr>
