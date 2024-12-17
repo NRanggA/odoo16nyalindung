@@ -12,7 +12,8 @@
         'c10i_lhm_v16',
         'ny_plantation',
         'account',
-        'c10i_plantation_seed'
+        'c10i_plantation_seed',
+        'c10i_plantation_lab'
     ],
     # always loaded
     'data': [
