@@ -72,7 +72,8 @@ class NyOngkosPikul(models.Model):
                         'employee_id': employee.id,
                         'plant_block_id': block.id,
                         'rate': rec.rate,
-                        'qty': sum(emp_naps.mapped('hasil_convert_latex')) + sum(emp_naps.mapped('hasil_convert_lump')),
+                        # 'qty': sum(emp_naps.mapped('hasil_convert_latex')) + sum(emp_naps.mapped('hasil_convert_lump')),
+                        'qty': sum(emp_naps.mapped('hasil_1_nap')) + sum(emp_naps.mapped('hasil_2_nap')),
                     }
                     to_create.append((0,0,vals))
             if to_create:

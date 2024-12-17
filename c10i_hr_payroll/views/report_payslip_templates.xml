@@ -82,32 +82,48 @@
                                 <tr>
                                     <th>Code</th>
                                     <th>Name</th>
-                                    <th>Quantity/rate</th>
+                                    <!-- <th>Quantity/rate</th> -->
+                                    <!-- <th>Amount</th> -->
                                     <th>Amount</th>
-                                    <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip)" t-as="line">
-                                    <td>
-                                        <span t-field="line.code"/>
-                                    </td>
-                                    <td>
-                                        <span t-field="line.name"/>
-                                    </td>
-                                    <td>
-                                        <span t-field="line.quantity"/>
-                                    </td>
-                                    <td>
-                                        <span t-esc="line.amount"
-                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
-                                    </td>
-                                    <td>
-                                        <span t-esc="line.total"
-                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
-                                    </td>
-
-                                </tr>
+                                <t t-foreach="o.line_ids.filtered(lambda line: line.salary_rule_id.appears_on_payslip)" t-as="line">
+                                    <t t-set="line_style" />
+                                    <t t-set="line_class" />
+                                    <t t-set="td_line_style" />
+                                    <t t-if="line.code == 'NET'">
+                                        <t t-set="line_style" t-value="'color:#875A7B;'"/>
+                                        <t t-set="line_class" t-value="'o_total o_border_bottom'"/>
+                                        <!-- <t t-set="amount_total" t-value="line.total"/> -->
+                                    </t>
+                                    <t t-if="line.code == 'GROSS'">
+                                        <t t-set="line_style" t-value="'color:#00A09D;'"/>
+                                        <t t-set="line_class" t-value="'o_subtotal o_border_bottom'"/>
+                                    </t>
+                                    <t t-if="line.salary_rule_id.category_id.code!='BASIC' and line.code not in ['GROSS','NET']">
+                                        <t t-set="td_line_style" t-value="'padding-left: 20px;'"/>
+                                    </t>
+                                    <tr t-att-class="line_class" t-att-style="line_style">
+                                        <td t-att-style="td_line_style">
+                                            <span t-field="line.code"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <!-- <td>
+                                            <span t-field="line.quantity"/>
+                                        </td> -->
+                                        <!-- <td>
+                                            <span t-esc="line.amount"
+                                                t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                        </td> -->
+                                        <td style="text-align: right;">
+                                            <span t-esc="line.total"
+                                                t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </t>
                             </tbody>
                         </table>
 

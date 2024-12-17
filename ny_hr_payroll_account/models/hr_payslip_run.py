@@ -46,7 +46,7 @@ class HrPayslipRun(models.Model):
                 if n_block==1:
                     dr_amount = remaining_cost
                 else:
-                    dr_amount = (pct_cost/100.0)*debit_amt
+                    dr_amount = round((pct_cost/100.0)*debit_amt, 0)
                 cost_map_to_add.append({
                         'payslip_line_id': False,
                         'partner_id': partner_id,
