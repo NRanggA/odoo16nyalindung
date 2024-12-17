@@ -1652,7 +1652,8 @@ class lhm_transaction(models.Model):
 
     def button_confirm(self):
         for nap_line in self.lhm_nap_line_ids:
-            if (not nap_line.hasil_1_nap or nap_line.hasil_1_nap == 0) and nap_line.lhm_transaction_line_id.is_hasil_2:
+            # if (not nap_line.hasil_1_nap or nap_line.hasil_1_nap == 0 or nap_line.hasil_2_nap or nap_line.hasil_2_nap == 0) and nap_line.lhm_transaction_line_id.is_hasil_2:
+            if not nap_line.hasil_1_nap or nap_line.hasil_1_nap == 0 or nap_line.hasil_2_nap or nap_line.hasil_2_nap == 0:
                 raise ValidationError(_(f'Nilai NAP belum terisi, silahkan melakukan proses Nota Angkut Panen !'))
 
         self.state = 'confirmed'
