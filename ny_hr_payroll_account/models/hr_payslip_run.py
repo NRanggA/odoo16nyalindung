@@ -62,7 +62,7 @@ class HrPayslipRun(models.Model):
                         'gc_distribution': True,
                     })
                 n_block -= 1
-                remaining_cost -= (pct_cost/100.0)*debit_amt
+                remaining_cost -= round((pct_cost/100.0)*debit_amt,0)
             
             query_update_gc = f"""UPDATE hr_payslip_cost_map SET gc_distributed='true' 
                     WHERE plantation_varieties_id={varieties_id}
