@@ -6,10 +6,12 @@ class HrPayslipLine(models.Model):
     _inherit = 'hr.payslip.line'
 
     def _get_mapping_account(self, config):
+        if not self.total:
+            return []
         self.ensure_one()
         mappings = []
         gc_default_location_result = self.slip_id.employee_id.get_default_location_activity_payroll()
-        if not config.is_map_from_lhm and self.total:
+        if not config.is_map_from_lhm:
             dr_amount = cr_amount = 0.0
             if config.default_debit_account_id or config.is_general_charge:
                 dr_amount = self.total
