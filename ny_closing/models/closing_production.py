@@ -1139,7 +1139,8 @@ class ClosingProduction(models.Model):
 
                 ripening_location = self.env.ref('ny_plantation.loc_ripening_loc_1')
                 # Find Delivery/Sales
-                outgoing_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                outgoing_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                # ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
                                 ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
                                 ('location_dest_id.usage','=','customer'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
@@ -1148,7 +1149,7 @@ class ClosingProduction(models.Model):
                 outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
                 # Find Scrap
                 
-                scrap_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                scrap_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
                                 '|',('location_id.scrap_location','=',True),('location_dest_id.scrap_location','=',True),
                                 '|',('location_id','!=',ripening_location.id),('location_dest_id','!=',ripening_location.id),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
@@ -1157,7 +1158,7 @@ class ClosingProduction(models.Model):
                 scrap_qty = sum(scrap_moves.mapped('product_uom_qty')) if scrap_moves else 0.0
 
                 # Search Ripening Qty Receive from Internal Transfer
-                ripening_int_move_in = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                ripening_int_move_in = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
                                 ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
                                 ('location_dest_id.usage','=','internal'),('location_dest_id','=',ripening_location.id),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
@@ -1166,7 +1167,7 @@ class ClosingProduction(models.Model):
                 ripening_qty = sum(ripening_int_move_in.mapped('product_uom_qty')) if ripening_int_move_in else 0.0
 
                 # Search Delivery from Ripening Location
-                ripening_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                ripening_out_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
                                 ('location_id.usage','=','internal'),('location_id','=',ripening_location.id),
                                 ('location_dest_id.usage','=','customer'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
