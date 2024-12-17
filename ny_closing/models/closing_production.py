@@ -1334,8 +1334,8 @@ class ClosingProduction(models.Model):
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
                 'account_id': self.latex_inventory_account_id.id,
-                'debit': self.latex_plantation_cost if self.latex_plantation_cost>0 else 0.0,
-                'credit': abs(self.latex_plantation_cost) if self.latex_plantation_cost<0 else 0.0,
+                'debit': round(self.latex_plantation_cost if self.latex_plantation_cost>0 else 0.0, 2),
+                'credit': round(abs(self.latex_plantation_cost) if self.latex_plantation_cost<0 else 0.0, 2),
             }
             move_lines_receiving.append((0,0,vals_dest))
             
@@ -1347,8 +1347,8 @@ class ClosingProduction(models.Model):
                     'plantation_activity_id': ll.plantation_activity_id.id,
                     'plantation_src_journal_id': ll.plantation_src_journal_id.id,
                     'account_id': ll.account_id.id,
-                    'debit': abs(ll.total_cost_latex) if ll.total_cost_latex<0 else 0.0,
-                    'credit': ll.total_cost_latex if ll.total_cost_latex>0 else 0.0,
+                    'debit': round(abs(ll.total_cost_latex) if ll.total_cost_latex<0 else 0.0, 2),
+                    'credit': round(ll.total_cost_latex if ll.total_cost_latex>0 else 0.2),
                 }
                 move_lines_receiving.append((0,0,vals_src))
         
@@ -1360,8 +1360,8 @@ class ClosingProduction(models.Model):
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
                 'account_id': self.lump_inventory_account_id.id,
-                'debit': self.lump_plantation_cost if self.lump_plantation_cost>0 else 0.0,
-                'credit': abs(self.lump_plantation_cost) if self.lump_plantation_cost<0 else 0.0,
+                'debit': round(self.lump_plantation_cost if self.lump_plantation_cost>0 else 0.0, 2),
+                'credit': round(abs(self.lump_plantation_cost) if self.lump_plantation_cost<0 else 0.0, 2),
             }
             move_lines_receiving.append((0,0,vals_dest))
             for ll in self.plantation_cost_ids:
@@ -1372,8 +1372,8 @@ class ClosingProduction(models.Model):
                     'plantation_activity_id': ll.plantation_activity_id.id,
                     'plantation_src_journal_id': ll.plantation_src_journal_id.id,
                     'account_id': ll.account_id.id,
-                    'debit': abs(ll.total_cost_lump) if ll.total_cost_lump<0 else 0.0,
-                    'credit': ll.total_cost_lump if ll.total_cost_lump>0 else 0.0,
+                    'debit': round(abs(ll.total_cost_lump) if ll.total_cost_lump<0 else 0.0, 2),
+                    'credit': round(ll.total_cost_lump if ll.total_cost_lump>0 else 0.0, 2),
                 }
                 move_lines_receiving.append((0,0,vals_src))
         # END: Receiving from NAP
@@ -1388,8 +1388,8 @@ class ClosingProduction(models.Model):
                 'plantation_src_journal_id': False,
                 'account_id': self.latex_wip_account_id.id,
                 'product_id': self.latex_product_id.id,
-                'debit': self.latex_wip_incoming_value if self.latex_wip_incoming_value>0 else 0.0,
-                'credit': abs(self.latex_wip_incoming_value) if self.latex_wip_incoming_value<0 else 0.0,
+                'debit': round(self.latex_wip_incoming_value if self.latex_wip_incoming_value>0 else 0.0, 2),
+                'credit': round(abs(self.latex_wip_incoming_value) if self.latex_wip_incoming_value<0 else 0.0, 2),
             }
             vals_wip_in_src = vals_wip_in.copy()
             vals_wip_in_src.update({
@@ -1408,8 +1408,8 @@ class ClosingProduction(models.Model):
                 'plantation_src_journal_id': False,
                 'account_id': self.lump_wip_account_id.id,
                 'product_id': self.lump_product_id.id,
-                'debit': self.lump_wip_incoming_value if self.lump_wip_incoming_value>0 else 0.0,
-                'credit': abs(self.lump_wip_incoming_value) if self.lump_wip_incoming_value<0 else 0.0,
+                'debit': round(self.lump_wip_incoming_value if self.lump_wip_incoming_value>0 else 0.0, 2),
+                'credit': round(abs(self.lump_wip_incoming_value) if self.lump_wip_incoming_value<0 else 0.0, 2),
             }
             move_lines_wip.append((0,0,vals_wip_in))
             vals_wip_in_src = vals_wip_in.copy()
@@ -1431,8 +1431,8 @@ class ClosingProduction(models.Model):
                 'plantation_src_journal_id': False,
                 'account_id': self.latex_wip_account_id.id,
                 'product_id': self.latex_product_id.id,
-                'debit': self.sheet_production_cost if self.sheet_production_cost>0 else 0.0,
-                'credit': abs(self.sheet_production_cost) if self.sheet_production_cost<0 else 0.0,
+                'debit': round(self.sheet_production_cost if self.sheet_production_cost>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_production_cost) if self.sheet_production_cost<0 else 0.0, 2),
             }
             move_lines_wip.append((0,0,vals_mrp))
             for ll in self.mrp_cost_ids:
@@ -1443,8 +1443,8 @@ class ClosingProduction(models.Model):
                     # 'plantation_activity_id': ll.plantation_activity_id.id,
                     # 'plantation_src_journal_id': ll.plantation_src_journal_id.id,
                     'account_id': ll.account_id.id,
-                    'debit': abs(ll.total_cost_latex) if ll.total_cost_latex<0 else 0.0,
-                    'credit': ll.total_cost_latex if ll.total_cost_latex>0 else 0.0,
+                    'debit': round(abs(ll.total_cost_latex) if ll.total_cost_latex<0 else 0.0, 2),
+                    'credit': round(ll.total_cost_latex if ll.total_cost_latex>0 else 0.0, 2),
                 }
                 move_lines_wip.append((0,0,vals_wip_src))
         
@@ -1457,8 +1457,8 @@ class ClosingProduction(models.Model):
                 'plantation_src_journal_id': False,
                 'account_id': self.lump_wip_account_id.id,
                 'product_id': self.lump_product_id.id,
-                'debit': self.compound_production_cost if self.compound_production_cost>0 else 0.0,
-                'credit': abs(self.compound_production_cost) if self.compound_production_cost<0 else 0.0,
+                'debit': round(self.compound_production_cost if self.compound_production_cost>0 else 0.0, 2),
+                'credit': round(abs(self.compound_production_cost) if self.compound_production_cost<0 else 0.0, 2),
             }
             move_lines_wip.append((0,0,vals_mrp))
             for ll in self.mrp_cost_ids:
@@ -1469,8 +1469,8 @@ class ClosingProduction(models.Model):
                     # 'plantation_activity_id': ll.plantation_activity_id.id,
                     # 'plantation_src_journal_id': ll.plantation_src_journal_id.id,
                     'account_id': ll.account_id.id,
-                    'debit': abs(ll.total_cost_lump) if ll.total_cost_lump<0 else 0.0,
-                    'credit': ll.total_cost_lump if ll.total_cost_lump>0 else 0.0,
+                    'debit': round(abs(ll.total_cost_lump) if ll.total_cost_lump<0 else 0.0, 2),
+                    'credit': round(ll.total_cost_lump if ll.total_cost_lump>0 else 0.0, 2),
                 }
                 move_lines_wip.append((0,0,vals_wip_src))
         # END: FOH to WIP Lateks/Lump
@@ -1485,16 +1485,16 @@ class ClosingProduction(models.Model):
                 'plantation_src_journal_id': False,
                 'account_id': self.sheet_wip_account_id.id,
                 'product_id': self.sheet_product_id.id,
-                'debit': self.latex_wip_outgoing_value if self.latex_wip_outgoing_value>0 else 0.0,
-                'credit': abs(self.latex_wip_outgoing_value) if self.latex_wip_outgoing_value<0 else 0.0,
+                'debit': round(self.latex_wip_outgoing_value if self.latex_wip_outgoing_value>0 else 0.0, 2),
+                'credit': round(abs(self.latex_wip_outgoing_value) if self.latex_wip_outgoing_value<0 else 0.0, 2),
             }
             move_lines_wip.append((0,0,vals_mrp2))
             vals_mrp_src2 = vals_mrp2.copy()
             vals_mrp_src2.update({
                 'product_id': self.latex_product_id.id,
                 'account_id': self.latex_wip_account_id.id,
-                'debit': abs(self.latex_wip_outgoing_value) if self.latex_wip_outgoing_value<0.0 else 0.0,
-                'credit': self.latex_wip_outgoing_value if self.latex_wip_outgoing_value>0.0 else 0.0,
+                'debit': round(abs(self.latex_wip_outgoing_value) if self.latex_wip_outgoing_value<0.0 else 0.0, 2),
+                'credit': round(self.latex_wip_outgoing_value if self.latex_wip_outgoing_value>0.0 else 0.0, 2),
             })
             move_lines_wip.append((0,0,vals_mrp_src2))
         # END: WIP Lateks to WIP Sheet
@@ -1509,8 +1509,8 @@ class ClosingProduction(models.Model):
                 'plantation_src_journal_id': False,
                 'account_id': self.compound_wip_account_id.id,
                 'product_id': self.compound_product_id.id,
-                'debit': self.lump_wip_outgoing_value if self.lump_wip_outgoing_value>0 else 0.0,
-                'credit': abs(self.lump_wip_outgoing_value) if self.lump_wip_outgoing_value<0 else 0.0,
+                'debit': round(self.lump_wip_outgoing_value if self.lump_wip_outgoing_value>0 else 0.0, 2),
+                'credit': round(abs(self.lump_wip_outgoing_value) if self.lump_wip_outgoing_value<0 else 0.0, 2),
             }
             move_lines_wip.append((0,0,vals_mrp4))
             vals_mrp_src4 = vals_mrp4.copy()
@@ -1583,8 +1583,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.inventory_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.manufacturing_cost if line.manufacturing_cost>0 else 0.0,
-                    'credit': abs(line.manufacturing_cost) if line.manufacturing_cost<0 else 0.0,
+                    'debit': round(line.manufacturing_cost if line.manufacturing_cost>0 else 0.0, 2),
+                    'credit': round(abs(line.manufacturing_cost) if line.manufacturing_cost<0 else 0.0, 2),
                 }
                 # print('................vals_dest', line.product_id.name, vals_dest['debit'], vals_dest['credit'])
                 move_lines_production.append((0,0,vals_dest))
@@ -1607,8 +1607,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.cogs_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.outgoing_value if line.outgoing_value>0 else 0.0,
-                    'credit': abs(line.outgoing_value) if line.outgoing_value<0 else 0.0,
+                    'debit': round(line.outgoing_value if line.outgoing_value>0 else 0.0),
+                    'credit': round(abs(line.outgoing_value) if line.outgoing_value<0 else 0.0, 2),
                 }
                 vals_dest = vals_src.copy()
                 vals_dest.update({
