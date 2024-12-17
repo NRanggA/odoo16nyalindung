@@ -1146,7 +1146,7 @@ class ClosingProduction(models.Model):
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
+                outgoing_qty = sum(outgoing_moves.mapped('qty_done')) if outgoing_moves else 0.0
                 # Find Scrap
                 
                 scrap_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
@@ -1155,7 +1155,7 @@ class ClosingProduction(models.Model):
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                scrap_qty = sum(scrap_moves.mapped('product_uom_qty')) if scrap_moves else 0.0
+                scrap_qty = sum(scrap_moves.mapped('qty_done')) if scrap_moves else 0.0
 
                 # Search Ripening Qty Receive from Internal Transfer
                 ripening_int_move_in = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
@@ -1164,7 +1164,7 @@ class ClosingProduction(models.Model):
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                ripening_qty = sum(ripening_int_move_in.mapped('product_uom_qty')) if ripening_int_move_in else 0.0
+                ripening_qty = sum(ripening_int_move_in.mapped('qty_done')) if ripening_int_move_in else 0.0
 
                 # Search Delivery from Ripening Location
                 ripening_out_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
@@ -1173,7 +1173,7 @@ class ClosingProduction(models.Model):
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                ripening_outgoing_qty = sum(ripening_out_moves.mapped('product_uom_qty')) if ripening_out_moves else 0.0
+                ripening_outgoing_qty = sum(ripening_out_moves.mapped('qty_done')) if ripening_out_moves else 0.0
 
                 values_to_create = {
                     'product_id': product.id,
