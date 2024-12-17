@@ -3480,23 +3480,23 @@ class lhm_contractor(models.Model):
         move = self._account_move_entry()
         self.state = 'confirmed'
 
-    def button_confirm_harian(self):
-        if not any(line.nilai for line in self.line_ids):
-            self.state = 'confirmed'
-            return
-        for contractor_nap in self.line_nap_ids:
-            if not contractor_nap.nilai:
-                raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" tidak memiliki nilai. Silahkan isi melalui Dokumen NAP'))
-        self.state = 'confirmed'
-
     # def button_confirm_harian(self):
     #     if not any(line.nilai for line in self.line_ids):
     #         self.state = 'confirmed'
     #         return
     #     for contractor_nap in self.line_nap_ids:
-    #         if not contractor_nap.nilai or contractor_nap.nilai == 0:
-    #             raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai kosong atau 0. Silahkan isi melalui Dokumen NAP'))
+    #         if not contractor_nap.nilai:
+    #             raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" tidak memiliki nilai. Silahkan isi melalui Dokumen NAP'))
     #     self.state = 'confirmed'
+
+    def button_confirm_harian(self):
+        if not any(line.nilai for line in self.line_ids):
+            self.state = 'confirmed'
+            return
+        for contractor_nap in self.line_nap_ids:
+            if not contractor_nap.nilai or contractor_nap.nilai == 0:
+                raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai kosong atau 0. Silahkan isi melalui Dokumen NAP'))
+        self.state = 'confirmed'
 
     def button_process(self):
         if not self.date:
@@ -3529,7 +3529,9 @@ class lhm_contractor(models.Model):
             self.env['lhm.contractor.nap.line'].create(contractor_nap_lines)
         for line in self.line_ids:
             line._onchange_activity_id()
-        self.line_ids.invalidate_cache(['total'])
+        # self.line_ids.invalidate_cache(['total'])
+        # self.line_ids.invalidate_cache(['uom_id'])
+        # self.line_ids.invalidate_cache(['uom2_id'])
 
     def button_draft(self):
         for contractor in self:
@@ -3550,6 +3552,8 @@ class lhm_contractor(models.Model):
         for line in self.line_ids:
             line._onchange_activity_id()
         self.line_ids.invalidate_cache(['total'])
+        # self.line_ids.invalidate_cache(['uom_id'])
+        # self.line_ids.invalidate_cache(['uom2_id'])
 
     @api.model
     def create(self, values):
@@ -3920,8 +3924,13 @@ class lhm_contractor_line(models.Model):
             
             self.unit_price   = borongan_contractor.price if borongan_contractor.price else 0.0
             self.unit_price_2 = borongan_contractor.price2 if borongan_contractor.price2 else 0.0
-            self.uom_id       = self.activity_id.uom_id and self.activity_id.uom_id.id or False
-            self.uom2_id      = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
+            if not self.uom_id:
+                self.uom_id = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            if not self.uom2_id:
+                self.uom2_id = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
+            if self.env.context.get('is_harian'):
+                self.product_id   = borongan_contractor.product_id and borongan_contractor.product_id.id or False
+                self.product_id_2 = borongan_contractor.product_id2 and borongan_contractor.product_id2.id or False
 
     @api.onchange('location_type_id')
     def _onchange_location_type_id(self):
