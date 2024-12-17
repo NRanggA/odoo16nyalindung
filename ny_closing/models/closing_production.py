@@ -40,8 +40,8 @@ class ClosingProductionPlantationCost(models.Model):
                         l.total_cost_latex = 0.0
                         l.total_cost_lump = l.total_cost
                     else:
-                        l.total_cost_latex = l.total_cost * l.closing_id.pct_cost_for_latex / 100.0
-                        l.total_cost_lump = l.total_cost * l.closing_id.pct_cost_for_lump / 100.0
+                        l.total_cost_latex = l.total_cost * l.closing_id.pct_cost_for_sheet / 100.0
+                        l.total_cost_lump = l.total_cost * l.closing_id.pct_cost_for_compound / 100.0
                 elif l.is_rm_sheet_cost:
                     l.total_cost_latex = l.total_cost
                     l.total_cost_lump = 0.0
