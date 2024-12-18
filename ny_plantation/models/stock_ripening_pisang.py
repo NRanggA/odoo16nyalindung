@@ -109,7 +109,8 @@ class StockRipeningPisangLine(models.Model):
             'product_id': self.product_id.id,
             'product_uom': self.product_uom.id,
             'product_uom_qty': self.out_product_qty,
-            'location_id': self.env.ref('stock.stock_location_stock').id,
+            # 'location_id': self.env.ref('stock.stock_location_stock').id,
+            'location_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
             'location_dest_id': self.env.ref('ny_plantation.loc_ripening_loc_1').id,
         }
 
@@ -158,7 +159,8 @@ class StockRipeningPisang(models.Model):
                 'product_id': line.product_id.id,
                 'scrap_qty': line.out_product_scrap_qty,
                 # 'location_id': picking.location_dest_id.id,
-                'location_id': self.env.ref('stock.stock_location_stock').id,
+                # 'location_id': self.env.ref('stock.stock_location_stock').id,
+                'location_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
                 'scrap_location_id': self.env['stock.location'].search([('scrap_location','=',True)], limit=1).id,
                 'picking_id': picking.id,
             })

@@ -8,7 +8,8 @@
             <field name="code">internal</field>
             <field name="sequence_code">RAP</field>
             <field name="sequence">10</field>
-            <field name="default_location_src_id" ref="stock.stock_location_stock"/>
+            <!-- <field name="default_location_src_id" ref="stock.stock_location_stock"/> -->
+            <field name="default_location_src_id" ref="c10i_lhm_v16.loc_stock_kebun_loc_1"/>
             <field name="default_location_dest_id" ref="ny_plantation.loc_ripening_loc_1"/>
         </record>
     
