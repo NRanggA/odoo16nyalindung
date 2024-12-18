@@ -331,6 +331,9 @@ class HrEmployee(models.Model):
     children            = fields.Integer(string='Number of Children')
 
     contract_type = fields.Many2one(comodel_name='hr.contract.type', string='Jenis Kontrak', ondelete="restrict")
+    contract_id = fields.Many2one(
+        'hr.contract', string='Current Contract', groups="hr.group_hr_user,c10i_lhm_v16.group_plantation_operator",
+        domain="[('company_id', '=', company_id), ('employee_id', '=', id)]", help='Current contract of the employee', copy=False)
     
     start_date_contract = fields.Date(string="Mulai Kontrak")
     end_date_contract   = fields.Date(string="Selesai Kontrak")
