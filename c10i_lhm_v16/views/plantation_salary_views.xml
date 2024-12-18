@@ -263,7 +263,7 @@
 
         <!-- <menuitem id="submenu_proses_penggajian" name="Proses Penggajian" parent="menu_lhm_transaction" groups="group_plantation_manager" sequence="40"/> -->
         <!-- <menuitem id="submenu_proses_penggajian" name="Proses Penggajian" parent="menu_lhm_transaction" sequence="40"/> -->
-        <menuitem id="submenu_daftar_upah" name="Daftar Upah" action="view_plantation_salary_action" parent="menu_plantation_report" groups="group_plantation_manager" sequence="60"/>
+        <!-- <menuitem id="submenu_daftar_upah" name="Daftar Upah" action="view_plantation_salary_action" parent="menu_plantation_report" groups="group_plantation_manager" sequence="60"/> -->
         <!-- End of Report DU -->
 
 

@@ -52,6 +52,7 @@
         'views/res_views.xml',
         'views/lhm_kontraktor_harian_views.xml',
         'views/lhm_views.xml',
+        'views/lhm_transaction_line_views.xml',
         'views/plant_varieties_view.xml',
         'views/product_views.xml',                      # Ada group yang tidak di ketahui pada modul product
         'views/res_partner_views.xml',

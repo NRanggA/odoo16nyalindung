@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree -->
+    <record id="lhm_transaction_line_view_tree" model="ir.ui.view">
+        <field name="name">lhm.transaction.line.view.tree</field>
+        <field name="model">lhm.transaction.line</field>
+        <field name="arch" type="xml">
+            <tree string="LHM Transaction Line">
+                <field name="date" />
+                <field name="lhm_id" />
+                <field name="employee_id" />
+                <field name="location_type_id" />
+                <field name="location_id" />
+                <field name="varieties_id" />
+                <field name="activity_id" />
+                <field name="product_id" />
+                <field name="hasil_1" />
+                <field name="product_id_2" />
+                <field name="hasil_2" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- Graph -->
+    <record id="view_lhm_transaction_line_graph" model="ir.ui.view">
+        <field name="name">lhm.transaction.line.graph</field>
+        <field name="model">lhm.transaction.line</field>
+        <field name="arch" type="xml">
+            <graph>
+                <field name="employee_id" type="row"/>
+                <field name="activity_id" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot -->
+    <record id="view_lhm_transaction_line_pivot" model="ir.ui.view">
+        <field name="name">lhm.transaction.line.pivot</field>
+        <field name="model">lhm.transaction.line</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="employee_id" type="row"/>
+                <field name="location_type_id" type="row"/>
+                <field name="attendance_id" type="col"/>
+                <field name="activity_id" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="lhm_transaction_line_view_search" model="ir.ui.view">
+        <field name="name">lhm.transaction.line.view.search</field>
+        <field name="model">lhm.transaction.line</field>
+        <field name="arch" type="xml">
+            <search string="LHM Transaction">
+                <field name="date" string="Date"/>
+                <field name="employee_id" string="Karyawan"/>
+                <field name="lhm_id" string="LHM"/>
+                <field name="location_id" string="Lokasi"/>
+                <field name="location_type_id" string="Tipe Lokasi"/>
+                <field name="varieties_id" string="ORG"/>
+                <field name="activity_id" string="Aktivitas"/>
+                <separator/>
+                <filter string="Date" name="date" date="date"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="in_progress" string="In Progress" domain="[('state','=','in_progress')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="cancel" string="Cancel" domain="[('state','=','cancel')]"/>
+                <filter name="done" string="Done" domain="[('state','=','done')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Karyawan" name="employee_id" context="{'group_by':'employee_id'}"/>
+                    <filter string="Lokasi" name="location_id" context="{'group_by':'location_id'}"/>
+                    <filter string="Tipe Lokasi" name="location_type_id" context="{'group_by':'location_type_id'}"/>
+                    <filter string="ORG" name="varieties_id" context="{'group_by':'varieties_id'}"/>
+                    <filter string="Aktivitas" name="activity_id" context="{'group_by':'activity_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="lhm_transaction_line_action" model="ir.actions.act_window">
+        <field name="name">Detail LHM</field>
+        <field name="res_model">lhm.transaction.line</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="search_view_id" ref="lhm_transaction_line_view_search"/>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem
+        id="lhm_transaction_line_menu"
+        name="Detail LHM"
+        action="lhm_transaction_line_action"
+        parent="menu_plantation_report"
+        sequence="10"/>
+
+
+</odoo>

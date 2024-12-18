@@ -1886,6 +1886,9 @@ class lhm_transaction_line(models.Model):
     is_hasil_2      = fields.Boolean("Is Hasil 2", default=False)
     is_borong       = fields.Boolean("Is Borong", default=False)
     is_panen        = fields.Boolean(related='activity_id.is_panen', readonly=True, store=True)
+    
+    state        = fields.Selection(related='lhm_id.state', readonly=True, store=True)
+
 
     @api.depends('varieties_id','location_type_id', 'lhm_id.state')
     def _filter_locations(self):

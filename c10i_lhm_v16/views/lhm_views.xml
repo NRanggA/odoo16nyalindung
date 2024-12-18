@@ -2109,8 +2109,9 @@
                     <field name="asisten_mandor_id" string="Mandor 1" filter_domain="['|',('asisten_mandor_id','ilike',self),('nik_mandor','ilike',self)]"/>
                     <field name="mandor_id" string="Mandor" filter_domain="['|',('mandor_id','ilike',self),('nik_mandor','ilike',self)]"/>
                     <separator/>
-                    <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
-                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <!-- <filter name="date_monthly" string="Current Month" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <filter string="Date" name="date" date="date"/>
                     <separator/>
                     <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
                     <filter name="in_progress" string="In Progress" domain="[('state','=','in_progress')]"/>
