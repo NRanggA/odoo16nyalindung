@@ -2138,7 +2138,7 @@
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_lhm_transaction_filter"/>
             <field name="domain">[]</field>
-            <field name="context">{'readonly_by_pass': True, 'search_default_date_monthly':1}</field>
+            <field name="context">{'readonly_by_pass': True, 'search_default_date':1}</field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik new untuk menambahkan Laporan Harian Mandor.

@@ -68,7 +68,7 @@
                 <filter name="in_progress" string="In Progress" domain="[('state','=','in_progress')]"/>
                 <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
                 <filter name="cancel" string="Cancel" domain="[('state','=','cancel')]"/>
-                <filter name="done" string="Done" domain="[('state','=','done')]"/>
+                <filter name="approve" string="Approve" domain="[('state','=','done')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Karyawan" name="employee_id" context="{'group_by':'employee_id'}"/>
@@ -87,7 +87,12 @@
         <field name="res_model">lhm.transaction.line</field>
         <field name="view_mode">tree,pivot,graph</field>
         <field name="search_view_id" ref="lhm_transaction_line_view_search"/>
-        <field name="context">{'create': False}</field>
+        <field name="context">
+        {
+            'create': False,
+            'search_default_approve':1
+        }
+        </field>
     </record>
 
     <!-- Menu -->
@@ -96,7 +101,7 @@
         name="Detail LHM"
         action="lhm_transaction_line_action"
         parent="menu_plantation_report"
-        sequence="10"/>
+        sequence="99"/>
 
 
 </odoo>
