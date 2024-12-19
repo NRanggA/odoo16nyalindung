@@ -1,3 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_hr_employee_expense,hr.employee.expense,model_hr_employee_expense,,1,1,1,1
 access_hr_employee_expense_line,hr.employee.expense.line,model_hr_employee_expense_line,,1,1,1,1
+
+access_wizard_action_confirm,wizard.action.confirm,model_wizard_action_confirm,,1,1,1,1
+

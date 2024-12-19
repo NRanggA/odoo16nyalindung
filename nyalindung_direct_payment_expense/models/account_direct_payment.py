@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError,UserError
 from odoo.tools.float_utils import float_is_zero, float_compare
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from datetime import datetime
@@ -120,6 +120,31 @@ class DirectPayment(models.Model):
         for payment in self:
             if payment.state!='draft':
                 raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
+            
+            # Tambahkan pengecekan konteks ketika dari wizard, dan validasi sekali lagi nilai amount tidak boleh 0
+            if self.env.context.get('from_wizard'):
+                for line in payment.line_ids:
+                    if line.amount is not None and line.amount <= 0:
+                        raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
+                payment.state = "confirm"
+                continue
+            
+            # Ketika employee_expense_id ada, maka akan memunculkan wizard
+            if self.employee_expense_id:
+                confirmation_message = "Apakah Anda yakin ingin memproses dari Rekening: %s?" % self.journal_id.name
+                return {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'wizard.action.confirm',
+                    'view_mode': 'form',
+                    'view_id': self.env.ref('nyalindung_direct_payment_expense.view_wizard_action_confirm').id,
+                    'target': 'new',
+                    'context': {
+                        'active_id': self.id, 
+                        'active_model': self._name,
+                        'confirmation_message': confirmation_message  
+                    },
+                }
+            
             for line in payment.line_ids:
                 if line.amount is not None and line.amount <= 0:
                     raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
