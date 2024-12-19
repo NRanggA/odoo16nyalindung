@@ -129,7 +129,7 @@ class ReportStockMutation(models.AbstractModel):
 
         from_date   = obj.from_date.strftime('%d-%m-%Y') if obj.from_date else ''
         to_date     = obj.to_date.strftime('%d-%m-%Y') if obj.to_date else ''
-        location    = obj.location_id.complete_name
+        location    = obj.location_id.name
 
         if obj.product_ids:
             products = obj.product_ids
@@ -149,7 +149,7 @@ class ReportStockMutation(models.AbstractModel):
         # Judul Laporan
         title_range = 'E2:J2' if obj.show_value == 'cost' else 'B2:G2'
         date_range = 'E3:J3' if obj.show_value == 'cost' else 'B3:G3'
-        sheet.merge_range(title_range, 'INVENTORY MUTATION', wbf['title_doc'])
+        sheet.merge_range(title_range, f'INVENTORY MUTATION ({location})', wbf['title_doc'])
         sheet.merge_range(date_range, f'{from_date} s/d {to_date}', wbf['title_doc'])
 
         # Header Produk
