@@ -12,7 +12,7 @@ class HrContract(models.Model):
     @api.depends('wage', 'work_day')
     def _compute_worked_hours(self):
         for wage in self:
-            if wage.wage > 0 and wage.work_day > 0:
+            if wage.wage > 0 or wage.work_day > 0:
                 wage.wage_day = wage.wage / wage.work_day
 
     def write(self, vals):
