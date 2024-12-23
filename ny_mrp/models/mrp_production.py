@@ -6,6 +6,7 @@ class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
     manual_consume_ids = fields.One2many('mrp.manual.consume', 'component_consume_production_id', string='Manual Consumed')
+    product_name = fields.Char('Product Name', related='product_id.name', readonly=True, store=True)
 
     # def action_draft(self):
     #     for production in self:
