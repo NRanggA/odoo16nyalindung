@@ -6,12 +6,13 @@
         <field name="model">hr.contract</field>
         <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
         <field name="arch" type="xml">
+
             <!-- Menambahkan field wage_id setelah field wage -->
             <xpath expr="//div[@name='wage']/.." position="inside">
                 <!-- <field name="wage_id"/> -->
                 <field name="wage_day"/>
-                <field name="wage_type_id"/>
-                <field name="is_lhm"/>
+                <field name="wage_type_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                <field name="is_lhm" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
             </xpath>
 
             <!-- Mengganti div yang memuat wage field -->
@@ -19,12 +20,18 @@
             
             <!-- Menambahkan field employee_type_id setelah field employee_id -->
             <xpath expr="//field[@name='employee_id']" position="after">
-                <field name="employee_type_id" attrs="{'invisible': [('structure_type_id', '=', 1)]}"/>
+                <field name="employee_type_id" attrs="{
+                                    'invisible': [('structure_type_id', '=', 1)], 
+                                    'readonly': [('state', '!=', 'draft')]
+                                    }"/>
             </xpath>
 
             <!-- Mengontrol visibilitas field employee_id berdasarkan structure_type_id -->
             <xpath expr="//field[@name='employee_id']" position="attributes">
-                <attribute name="attrs">{'invisible': [('structure_type_id', '=', 2)]}</attribute>
+                <attribute name="attrs">{
+                    'invisible': [('structure_type_id', '=', 2)],
+                    'readonly': [('state', '!=', 'draft')]
+                    }</attribute>
             </xpath>
 
             <!-- Menghapus field structure_type_id -->
@@ -35,16 +42,49 @@
 
             <!-- Menambahkan field structure_type_id ke atas employee_id -->
             <xpath expr="//field[@name='employee_id']" position="before">
-                <field name="structure_type_id"/>
+                <field name="structure_type_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
             </xpath>
 
             <xpath expr="//field[@name='date_end']" position="after">
-                <field name="work_day" />
+                <field name="work_day"  attrs="{'readonly': [('state', '!=', 'draft')]}"/>
             </xpath>
 
             <!-- Mengganti string wage mejadi wage monthly -->
             <field name="wage" position="attributes">
-                <attribute name="string">Wage Monthly</attribute>
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+
+            <!-- membuat read only ketika state bukan draft -->
+            <field name="date_start" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+            <field name="date_end" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+
+            <!-- Field ini tidak bisa menjadi readonly -->
+            <!-- <field name="department_id" groups="!hr_contract.group_hr_contract_manager" options="{'no_open': True, 'no_create': True}" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+            <field name="department_id" groups="hr_contract.group_hr_contract_manager" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+            <field name="job_id" groups="!hr_contract.group_hr_contract_manager" options="{'no_open': True, 'no_create': True}" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+            <field name="job_id" groups="hr_contract.group_hr_contract_manager" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+            <field name="contract_type_id" groups="!hr_contract.group_hr_contract_manager" options="{'no_open': True, 'no_create': True}" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field>
+            <field name="contract_type_id" groups="hr_contract.group_hr_contract_manager" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </field> -->
+
+
+            <field name="hr_responsible_id" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
             </field>
 
         </field>
