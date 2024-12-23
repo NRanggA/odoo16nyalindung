@@ -1889,6 +1889,38 @@ class lhm_transaction_line(models.Model):
     
     state        = fields.Selection(related='lhm_id.state', readonly=True, store=True)
 
+    # Report pada detail LHM
+    hasil_1_nap = fields.Float(
+        string="Hasil 1 NAP", 
+        related='transaction_nap_line_ids.hasil_1_nap', 
+        readonly=True
+    )
+    # satuan_1_nap = fields.Many2one(
+    #     string="Satuan 1 NAP", 
+    #     related='transaction_nap_line_ids.satuan_1_nap', 
+    #     readonly=True
+    # )
+    hasil_2_nap = fields.Float(
+        string="Hasil 2 NAP", 
+        related='transaction_nap_line_ids.hasil_2_nap', 
+        readonly=True
+    )
+    # satuan_2_nap = fields.Many2one(
+    #     string="Satuan 2 NAP", 
+    #     related='transaction_nap_line_ids.satuan_2_nap', 
+    #     readonly=True
+    # )
+    hasil_convert_latex = fields.Float(
+        string="Hasil Convert Latex", 
+        related='transaction_nap_line_ids.hasil_convert_latex', 
+        readonly=True
+    )
+    hasil_convert_lump = fields.Float(
+        string="Hasil Convert Lump", 
+        related='transaction_nap_line_ids.hasil_convert_lump', 
+        readonly=True
+    )
+
 
     @api.depends('varieties_id','location_type_id', 'lhm_id.state')
     def _filter_locations(self):

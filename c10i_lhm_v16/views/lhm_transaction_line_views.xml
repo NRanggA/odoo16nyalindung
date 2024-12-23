@@ -18,6 +18,10 @@
                 <field name="hasil_1" />
                 <field name="product_id_2" />
                 <field name="hasil_2" />
+                <field name="hasil_1_nap" />
+                <field name="hasil_2_nap" />
+                <field name="hasil_convert_latex" />
+                <field name="hasil_convert_lump" />
             </tree>
         </field>
     </record>
@@ -71,6 +75,7 @@
                 <filter name="approve" string="Approve" domain="[('state','=','done')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
+                    <filter string="LHM" name="lhm_id" context="{'group_by':'lhm_id'}"/>
                     <filter string="Karyawan" name="employee_id" context="{'group_by':'employee_id'}"/>
                     <filter string="Lokasi" name="location_id" context="{'group_by':'location_id'}"/>
                     <filter string="Tipe Lokasi" name="location_type_id" context="{'group_by':'location_type_id'}"/>
