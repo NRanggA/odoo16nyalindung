@@ -25,10 +25,14 @@ class LabOrder(models.Model):
         for order in self:
             if order.state != 'cancel':
                 raise ValidationError(_('You cannot delete an order if not in cancel state'))
+            if order.name: 
+                raise ValidationError(_('You cannot delete an order if the name is filled'))
         return super(LabOrder, self).unlink()
     
     def action_confirm(self):
         for order in self:
+            if order.product_qty == 0:
+                raise ValidationError(_('Product Quantity cannot be 0.'))
             if not order.name:
                 order.name = self.env['ir.sequence'].next_by_code(self._name)
             order.state = 'inprogress'
