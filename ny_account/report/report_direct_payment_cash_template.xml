@@ -225,12 +225,12 @@
                                         <td style="border-right: 1px solid black; height: 100%;"></td>
                                         <td style="height: 100%;"></td>
                                     </tr>
-                                    <tr>
+                                    <!-- <tr>
                                         <td style="border-right: 1px solid black; height: 100%;"></td>
                                         <td style="border-right: 1px solid black; height: 100%;"></td>
                                         <td style="border-right: 1px solid black; height: 100%;"></td>
                                         <td style="height: 100%;"></td>
-                                    </tr>
+                                    </tr> -->
                                     <tr class="signature-box-footer">
                                         <td style="border-right: 1px solid black; text-align: center; padding: 0;">Isi Nama jelas dan Tgl</td>
                                         <td style="border-right: 1px solid black; text-align: center; padding: 0;">Isi Nama jelas dan Tgl</td>
