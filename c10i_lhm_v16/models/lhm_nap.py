@@ -353,6 +353,7 @@ class lhm_nap(models.Model):
                             'hasil_1_nap': nap_line.qty_nap,
                             'satuan_1_nap': nap_line.uom_id.id,
                             'drc_latex_nap': nap_line.drc,
+                            'lhm_nap_line_id': nap_line.id,
                         })
                     elif nap_line.product_id.name == "Lump":
                         nap_line.lhm_transaction_nap_id.write({
@@ -360,12 +361,14 @@ class lhm_nap(models.Model):
                             'hasil_2_nap': nap_line.qty_nap,
                             'satuan_2_nap': nap_line.uom_id.id,
                             'drc_lump_nap': nap_line.drc,
+                            'lhm_nap_line_id': nap_line.id,
                         })
                     else:
                         nap_line.lhm_transaction_nap_id.write({
                             'product_id': nap_line.product_id.id,
                             'hasil_1_nap': nap_line.qty_nap,
                             'satuan_1_nap': nap_line.uom_id.id,
+                            'lhm_nap_line_id': nap_line.id,
                         })
                 if nap_line.supplier_id:
                     if nap_line.lhm_contractor_nap_id.contractor_id.state == 'draft':

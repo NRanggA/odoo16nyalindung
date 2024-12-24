@@ -2146,6 +2146,20 @@
             </field>
         </record>
 
+        <record id="action_lhm_transaction_button_box" model="ir.actions.act_window">
+            <field name="name">Laporan Harian Mandor</field>
+            <field name="res_model">lhm.transaction</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_transaction_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik new untuk menambahkan Laporan Harian Mandor.
+              </p>
+            </field>
+        </record>
+
         <record id="action_lhm_transaction_all" model="ir.actions.act_window">
             <field name="name">Laporan Harian Mandor</field>
             <field name="res_model">lhm.transaction</field>
@@ -3652,6 +3666,20 @@
             <field name="search_view_id" ref="view_lhm_nap_filter"/>
             <field name="domain">[]</field>
             <field name="context">{'readonly_by_pass': ['ownership','reg_number'], 'search_default_date_monthly':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Nota Angkut Panen.
+              </p>
+            </field>
+        </record>
+
+        <record id="action_lhm_nap_input_button_box" model="ir.actions.act_window">
+            <field name="name">Nota Angkut Panen</field>
+            <field name="res_model">lhm.nap</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_nap_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Nota Angkut Panen.
