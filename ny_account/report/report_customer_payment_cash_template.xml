@@ -154,7 +154,7 @@
                             <td class="header-right" style="background-color: orange; font-size: 8px; border: 1px solid black;" colspan="2">Penyelesaian bon sementara : (diisi kasir)</td>
                         </tr>
                         <tr class="header-table">
-                            <td class="header-left" style="font-size: 8px; border: 1px solid black;">
+                            <td class="header-left" style="font-size: 8px; border: 1px solid black; vertical-align: top;">
                                 <p><span t-field="o.ref"/></p>
                             </td>
                             <td class="header-right" colspan="2">
@@ -179,79 +179,79 @@
                             </td>
                         </tr>
                         <tr style="border: 1px solid black;">
-                            <td rowspan="8" style="width:50%; border: 1px solid black; vertical-align: top;">
-                                <table style="border: none; font-size: 8px; width: 100%; height: 100%;" class="signature-box">
+                            <td rowspan="8" style="width:50%; border: 1px solid black; vertical-align: top; padding: 0; margin: 0;">
+                                <table style="font-size: 8px; width: 100%; height: 100%; border-collapse: collapse;" class="signature-box">
                                     <tr class="signature-box-header">
-                                        <th>Dibuat Oleh</th>
-                                        <th>Diperiksa Oleh</th>
-                                        <th>Disetujui Oleh</th>
-                                        <th>Kasir</th>
+                                        <th style="border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">Dibuat Oleh</th>
+                                        <th style="border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">Diperiksa Oleh</th>
+                                        <th style="border-right: 1px solid black; border-bottom: 1px solid black; text-align: center;">Disetujui Oleh</th>
+                                        <th style="text-align: center; border-bottom: 1px solid black;">Kasir</th>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="border-right: 1px solid black; height: 100%;"></td>
+                                        <td style="height: 100%;"></td>
                                     </tr>
                                     <tr class="signature-box-footer">
-                                        <td>(Nama dan Tanggal)</td>
-                                        <td>(Nama dan Tanggal)</td>
-                                        <td>(Nama dan Tanggal)</td>
-                                        <td>(Nama dan Tanggal)</td>
+                                        <td style="border-right: 1px solid black; text-align: center; padding: 0;">Isi Nama jelas dan Tgl</td>
+                                        <td style="border-right: 1px solid black; text-align: center; padding: 0;">Isi Nama jelas dan Tgl</td>
+                                        <td style="border-right: 1px solid black; text-align: center; padding: 0;">Isi Nama jelas dan Tgl</td>
+                                        <td style="text-align: center; padding: 0;">Isi Nama jelas dan Tgl</td>
                                     </tr>
                                 </table>
                             </td>
@@ -283,8 +283,11 @@
                             </td>
                             <td style="width:20%; border: 1px solid black; vertical-align: top;">
                                 <table style="border: none; font-size: 8px; width: 100%; height: 100%;" class="signature-box">
-                                    <tr class="signature-box-header">
-                                        <th style="text-align:center;">Dibuat Oleh</th>
+                                    <tr>
+                                        <th style="text-align:center;">
+                                            Bandung
+                                            <span style="display:block;margin-top:5px;">Yang Menerima</span>
+                                        </th>
                                     </tr>
                                     <tr>
                                         <td></td>
@@ -307,17 +310,17 @@
                                     <tr>
                                         <td></td>
                                     </tr>
-                                    <tr>
+                                    <!-- <tr>
                                         <td></td>
-                                    </tr>
-                                    <tr>
+                                    </tr> -->
+                                    <!-- <tr>
                                         <td></td>
-                                    </tr>
-                                    <tr>
+                                    </tr> -->
+                                    <!-- <tr>
                                         <td></td>
-                                    </tr>
+                                    </tr> -->
                                     <tr class="signature-box-footer">
-                                        <td style="text-align:center;">(Nama dan Tanggal)</td>
+                                        <td style="text-align:center;">Isi Nama jelas dan Tgl</td>
                                     </tr>
                                 </table>
                             </td>
