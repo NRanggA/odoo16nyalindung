@@ -10,7 +10,7 @@
                     <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" states="draft"/>
                     <button string="Finish" name="action_done" type="object" class="oe_highlight" states="inprogress"/>
 
-                    <button string="Cancel" name="action_cancel" type="object" class="btn-danger" states="inprogress"/>
+                    <button string="Cancel" name="action_cancel" type="object" class="btn-danger" states="draft,inprogress"/>
                     <button string="Set to Draft" name="action_set_draft" type="object" class="btn-secondary" states="cancel"/>
 
                     <field name="state" widget="statusbar" statusbar_visible="draft,inprogress,done"/>
