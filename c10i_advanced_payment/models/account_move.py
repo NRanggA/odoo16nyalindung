@@ -37,13 +37,14 @@ class AccountMove(models.Model):
     
     def action_post(self):
         res = super(AccountMove,self).action_post()
-        if self.has_advanced:
-            if self.move_type in ('in_invoice','out_invoice'):
-                
-                advanced = self.invoice_line_ids.filtered(lambda x: x.advanced_move_id)
-                dp = advanced.advanced_move_line_id
-                if advanced and dp:
-                    (dp + advanced).reconcile()
+        for move in self:
+            if move.has_advanced:
+                if move.move_type in ('in_invoice','out_invoice'):
+                    
+                    advanced = move.invoice_line_ids.filtered(lambda x: x.advanced_move_id)
+                    dp = advanced.advanced_move_line_id
+                    if advanced and dp:
+                        (dp + advanced).reconcile()
 
             # elif self.move_type == 'out_invoice':
             #     customer_advanced = self.invoice_line_ids.filtered(lambda x: x.advanced_move_id)
