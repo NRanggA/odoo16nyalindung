@@ -14,9 +14,9 @@
                     <!-- <button name="action_post" string="Post" states="confirm" type="object" class="oe_highlight" groups="account.group_account_invoice"/>
                     <button string="Register Payment" name="action_register_payment" type="object" class="btn-primary" attrs="{'invisible': [('payment_state', '!=', 'not_paid')]}" groups="account.group_account_invoice"/> -->
 
-                    <button name="employee_set_draft" string="Set to Draft" type="object" attrs="{'invisible': [('employee_expense_state','!=','reject')]}"/>
+                    <button name="employee_set_draft" string="Set to Draft" type="object" attrs="{'invisible': [('employee_expense_state','not in',['reject', 'cancel'])]}"/>
                     <button name="employee_reject" string="Reject" type="object" attrs="{'invisible': [('employee_expense_state','!=','submit')]}"/>
-                    <button name="employee_cancel" string="Cancel" type="object" attrs="{'invisible': [('employee_expense_state','not in',['draft','submit','reject'])]}"/>
+                    <button name="employee_cancel" string="Cancel" type="object" attrs="{'invisible': [('employee_expense_state','not in',['draft','submit','reject','approved'])]}"/>
 
                     <field name="employee_expense_state" widget="statusbar" statusbar_visible="draft,submit,approved"/>
                 </header>
