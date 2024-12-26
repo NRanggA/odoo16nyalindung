@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <record id="seq_bank_inbound_payment" model="ir.sequence">
+            <field name="name">Bank Inbound / Receive Payment</field>
+            <field name="code">payment.bank.inbound</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_bank_outbound_payment" model="ir.sequence">
+            <field name="name">Bank Outbound / Send Payment</field>
+            <field name="code">payment.bank.outbound</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_cash_inbound_payment" model="ir.sequence">
+            <field name="name">Cash Inbound / Receive Payment</field>
+            <field name="code">payment.cash.inbound</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_cash_outbound_payment" model="ir.sequence">
+            <field name="name">Cash Outbound / Send Payment</field>
+            <field name="code">payment.cash.outbound</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

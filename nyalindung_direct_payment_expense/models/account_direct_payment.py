@@ -159,10 +159,43 @@ class DirectPayment(models.Model):
             
             if not payment.account_move_id:
                 payment.action_create_move()
-                payment.name = payment.account_move_id.name
+                # payment.name = payment.account_move_id.name
 
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
+
+            # Menambahkan penomoran dokumen untuk jurnal kas dan bank
+            if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
+                # Tentukan sequence code berdasarkan tipe jurnal dan tipe pembayaran pada direct payment
+                if payment.journal_id.type == 'bank' and payment.direct_state == 'receive':
+                    sequence_code = 'payment.bank.inbound'  # BM
+                    prefix = 'BM'
+                elif payment.journal_id.type == 'bank' and payment.direct_state == 'send':
+                    sequence_code = 'payment.bank.outbound'  # BK
+                    prefix = 'BK'
+                elif payment.journal_id.type == 'cash' and payment.direct_state == 'receive':
+                    sequence_code = 'payment.cash.inbound'  # KM
+                    prefix = 'KM'
+                elif payment.journal_id.type == 'cash' and payment.direct_state == 'send':
+                    sequence_code = 'payment.cash.outbound'  # KK
+                    prefix = 'KK'
+                else:
+                    raise ValidationError("Jenis pembayaran tidak valid untuk penomoran dokumen.")
+
+                sequence_number = self.env['ir.sequence'].next_by_code(sequence_code)
+                if not sequence_number:
+                    raise ValidationError(f"Sequence untuk {sequence_code} belum dikonfigurasi.")
+                
+                journal_code = payment.journal_id.code or ''
+                sequence_number_formatted = sequence_number.zfill(4)  
+
+                current_date = datetime.now()
+                month        = current_date.strftime('%m')  
+                year         = current_date.strftime('%Y') 
+
+                payment.name = f"{prefix} {journal_code} {sequence_number_formatted}/{month}/{year}"
+                payment.account_move_id.name = payment.name
+
             payment.state="posted"
 
 class DirectPaymentLine(models.Model):

@@ -53,6 +53,9 @@
         # E-Faktur List
         'views/efaktur_list_views.xml',
 
+        # payment sequence
+        'data/payment_sequence_data.xml',
+
 
     ],
     # only loaded in demonstration mode
