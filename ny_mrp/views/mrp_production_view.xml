@@ -21,7 +21,7 @@
                             '|',                                      
                             ('product_id', '=', False),             
                             '|',                                     
-                            ('product_name', '!=', 'Lateks'),       
+                            ('product_name', '!=', 'Sheet'),       
                             ('state', '!=', 'draft')                 
                         ]}"/>
             </xpath>

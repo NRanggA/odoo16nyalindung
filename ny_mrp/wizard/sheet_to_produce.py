@@ -15,14 +15,18 @@ class SheetToProduce(models.TransientModel):
     sheet_to_produce = fields.Float(compute='_compute_qty', readonly=False, store=True, precompute=True, string='Qty To Produce')
     mrp_product_satuan_id = fields.Many2one('uom.uom', related='mrp_id.product_id.uom_id', string='Satuan To Produce', readonly=True, store=True)
 
+    drc = fields.Float(string='DRC (%)', compute='_compute_qty', store=True)
+
     @api.depends('latex_onhand_qty', 'bom_id')
     def _compute_qty(self):
         for rec in self:
             if rec.bom_id.bom_line_ids.filtered(lambda x: x.product_id.id==rec.product_latex_id.id):
                 bom_qty = rec.bom_id.bom_line_ids.filtered(lambda x: x.product_id.id==rec.product_latex_id.id).product_qty
                 rec.sheet_to_produce = ((rec.bom_id.product_qty / bom_qty) if bom_qty else 0.0)*rec.latex_onhand_qty
+                rec.drc = ((rec.bom_id.product_qty / bom_qty) if bom_qty else 0.0) * 100
             else:
                 rec.sheet_to_produce = 0.0
+                rec.drc = 0.0
     
     def action_apply(self):
         self.mrp_id.write({'product_qty': self.sheet_to_produce})
