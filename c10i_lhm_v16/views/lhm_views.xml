@@ -2014,11 +2014,11 @@
                                         <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="product_id" attrs="{'readonly': [('uom_id','=',False)]}"/>
-                                        <field name="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
+                                        <field name="nilai" sum="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
                                         <field name="uom_id" attrs="{'readonly': [('uom_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="product_id_2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
-                                        <field name="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
+                                        <field name="nilai2" sum="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
                                         <field name="uom2_id" attrs="{'readonly': [('uom2_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="work_day" readonly="1"/>
