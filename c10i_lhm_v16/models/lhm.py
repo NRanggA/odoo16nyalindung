@@ -89,7 +89,7 @@ class lhm_location_type(models.Model):
     no_line                 = fields.Boolean("No Line", default=False, help="Centang jika tipe lokasi tidak ingin ditampilkan di Dokumen Plantation Manabun")
     station = fields.Boolean("Mills Station", default=False)
 
-    varieties_id = fields.Many2one('plant.varieties', string='ORG', required=True)
+    varieties_id = fields.Many2one('plant.varieties', string='ORG')
     # Boolean Mils
     mills                   = fields.Boolean('Mills', default=False)
 
