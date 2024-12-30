@@ -110,7 +110,7 @@
                             <field name="line_ids" required="1" attrs="{'readonly': [('state','in',('done','reject','cancel'))]}" >
                                 <tree editable="bottom">
                                     <field name="requested_by" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state','!=','draft')]}"/>
-                                    <field name="product_id" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                    <field name="product_id" required="1" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.state', '!=', 'draft')]}" domain="[('type', '=', 'product')]"/>
                                     <field name="product_asset" readonly="1" string="Equipment" />
                                     <field name="name" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                     <field name="location_type_id" 
