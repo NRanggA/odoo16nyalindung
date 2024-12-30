@@ -319,6 +319,8 @@ class lhm_activity(models.Model):
     is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
     is_nap                                      = fields.Boolean('NAP', default=False)
 
+    project_id      = fields.Many2one("lhm.project", string="Project")
+
     product_id                                  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
     product2_id                                = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
 
@@ -839,18 +841,18 @@ class lhm_project(models.Model):
         currency_id = self.env['res.users'].browse(self._uid).company_id.currency_id
         return currency_id or self.company_id.currency_id
 
-    @api.depends('line_ids.value', 'line_ids.vat')
-    def _compute_project_value(self):
-        total_vat   = 0
-        total_value = 0
-        for line in self.line_ids:
-            if line.vat >= 1 and line.value >=1:
-                total_vat += (line.vat * line.value)/100
-            if line.value:
-                total_value += line.value
-        self.project_value  = total_value
-        self.project_ppn    = total_vat
-        self.project_nett   = total_vat + total_value
+    # @api.depends('line_ids.value', 'line_ids.vat')
+    # def _compute_project_value(self):
+    #     total_vat   = 0
+    #     total_value = 0
+    #     for line in self.line_ids:
+    #         if line.vat >= 1 and line.value >=1:
+    #             total_vat += (line.vat * line.value)/100
+    #         if line.value:
+    #             total_value += line.value
+    #     self.project_value  = total_value
+    #     self.project_ppn    = total_vat
+    #     self.project_nett   = total_vat + total_value
 
     name                    = fields.Char("Deskripsi")
     code                    = fields.Char("Nomor Project")
@@ -871,7 +873,7 @@ class lhm_project(models.Model):
     date_issue              = fields.Date("Tanggal Terbit")
     active                  = fields.Boolean("Active", default=True)
     note                    = fields.Text("Catatan")
-    line_ids                = fields.One2many('lhm.project.line', 'project_id', string="Detail Project", )
+    line_ids                = fields.One2many('lhm.project.line', 'project_id', string="Detail Project")
     group_progress_id       = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
     currency_id             = fields.Many2one('res.currency', string='Currency', required=True, default=lambda self: self._get_user_currency())
     company_id              = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
@@ -884,6 +886,22 @@ class lhm_project(models.Model):
     categ_id                = fields.Many2one('lhm.project.type', 'Kategory')
 
     varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
+    activity_ids            = fields.One2many('lhm.activity', 'project_id', string="Detail Aktivitas", )
+
+    @api.onchange('activity_ids')
+    def _onchange_activity_ids(self):
+        if not self.activity_ids:
+            self.line_ids = [(5, 0, 0)]
+            return
+
+        self.line_ids = [(5, 0, 0)]
+
+        line_data = [(0, 0, {
+            'project_id': self.id,
+            'activity_id': activity.id,
+        }) for activity in self.activity_ids]
+
+        self.line_ids = line_data
 
     def button_progress(self):
         for project in self:

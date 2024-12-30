@@ -1676,26 +1676,35 @@
                         </group>
                         <notebook>
                             <page string="Daftar Aktivitas">
-                                <field name="line_ids" nolabel="1">
-                                    <tree editable="bottom">
-                                        <field name="activity_id" required="1" domain="[('type_id','=',parent.location_type_id)]"/>
-                                        <field name="name" readonly="1"/>
-                                        <field name="vat"/>
-                                        <field name="value"/>
+                                <field name="activity_ids" nolabel="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_activity_form'}" widget="many2many">
+                                    <tree>
+                                        <field name="code"/>
+                                        <field name="name"/>
+                                        <!-- <field name="name" readonly="1"/> -->
                                     </tree>
                                 </field>
-                                <group class="oe_subtotal_footer oe_right" colspan="2" name="project_total">
-                                <field name="project_value" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <field name="project_ppn" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                                    <label for="project_nett" />
-                                    <!--<button name="button_dummy"-->
-                                        <!--states="draft,sent" string="(update)" type="object" class="oe_edit_only oe_link"/>-->
-                                </div>
-                                <field name="project_nett" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                            </group>
-                            <field name="note" class="oe_inline" placeholder="Setup default terms and conditions in your company settings."/>
-                            <div class="oe_clear"/>
+                            </page>
+                            <page string="Detail Project">
+                                <field name="line_ids" nolabel="1">
+                                    <tree create="false">
+                                        <field name="activity_id" required="1" domain="[('type_id','=',parent.location_type_id)]"/>
+                                        <field name="name" readonly="1"/>
+                                        <!-- <field name="vat"/>
+                                        <field name="value"/> -->
+                                    </tree>
+                                </field>
+                                <!-- <group class="oe_subtotal_footer oe_right" colspan="2" name="project_total">
+                                    <field name="project_value" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                    <field name="project_ppn" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                        <label for="project_nett" />
+                                        <button name="button_dummy"
+                                            states="draft,sent" string="(update)" type="object" class="oe_edit_only oe_link"/>
+                                    </div>
+                                    <field name="project_nett" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <field name="note" class="oe_inline" placeholder="Setup default terms and conditions in your company settings."/>
+                                <div class="oe_clear"/> -->
                             </page>
                             <page string="Configuration" invisible="1">
                                 <group>
