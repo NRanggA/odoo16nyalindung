@@ -6,12 +6,12 @@
         <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_contractor_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="is_import"/>
+                <field name="is_import" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
                 <field name="file" widget="binary" string="File Import"
-                    attrs="{'invisible': [('is_import', '!=', True)]}"/>
+                    attrs="{'invisible': ['|',('state', '!=', 'draft'), ('is_import', '!=', True)]}"/>
                 <button name="import_data" string="Import"
                         type="object" class="oe_highlight"
-                        attrs="{'invisible': [('is_import', '!=', True)]}"/>
+                        attrs="{'invisible': ['|',('state', '!=', 'draft'), ('is_import', '!=', True)]}"/>
             </xpath>
         </field>
     </record>
@@ -21,12 +21,13 @@
         <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_contractor_form_harian"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="is_import_harian"/>
+                <field name="is_import_harian" 
+                    attrs="{'invisible': [('state', '!=', 'draft')]}"/>
                 <field name="file" widget="binary" string="File Import"
-                    attrs="{'invisible': [('is_import_harian', '!=', True)]}"/>
+                    attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_import_harian', '=', False)]}"/>
                 <button name="import_data_harian" string="Import"
                         type="object" class="oe_highlight"
-                        attrs="{'invisible': [('is_import_harian', '!=', True)]}"/>
+                        attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_import_harian', '=', False)]}"/>
             </xpath>
         </field>
     </record>
