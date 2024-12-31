@@ -11,6 +11,12 @@
             <xpath expr="//field[@name='name']" position="after">
                 <field name="image" widget="image" class="oe_avatar" options="{'preview_image': 'image'}"/>
             </xpath>
+            <xpath expr="//page[@name='product_information']/group/group" position="inside">
+                <field name="no_polisi"/>
+                <field name="no_bpkb"/>
+                <field name="no_mesin"/>
+                <field name="no_rangka"/>
+            </xpath>
         </field>
     </record>
 </odoo>

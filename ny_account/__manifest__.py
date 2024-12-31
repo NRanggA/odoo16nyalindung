@@ -33,6 +33,7 @@
         'report/report_payment_cash_template.xml',
         'views/account_payment_views.xml',
         'views/account_asset_views.xml',
+        'views/account_journal_views.xml',
 
         # Customer Payment
         'report/report_customer_payment_bank_template.xml',
@@ -52,6 +53,9 @@
 
         # E-Faktur List
         'views/efaktur_list_views.xml',
+
+        # payment sequence
+        'data/payment_sequence_data.xml',
 
 
     ],

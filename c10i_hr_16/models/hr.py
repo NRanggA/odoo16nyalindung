@@ -56,6 +56,13 @@ class hr_employee(models.Model):
     pensiun                 = fields.Boolean(string='Pensiun', default=False)
     place_of_birth          = fields.Char('Tempat Lahir')
 
+    def name_get(self):
+        result = []        
+        for rec in self:
+            if rec.no_induk:
+                result.append((rec.id, '%s - %s' % (rec.name,rec.no_induk)))
+        return result
+
     @api.constrains('no_induk')
     def _check_unique_no_induk(self):
         for record in self:

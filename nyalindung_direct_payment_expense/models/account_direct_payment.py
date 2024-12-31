@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError,UserError
 from odoo.tools.float_utils import float_is_zero, float_compare
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from datetime import datetime
@@ -120,6 +120,31 @@ class DirectPayment(models.Model):
         for payment in self:
             if payment.state!='draft':
                 raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
+            
+            # Tambahkan pengecekan konteks ketika dari wizard, dan validasi sekali lagi nilai amount tidak boleh 0
+            if self.env.context.get('from_wizard'):
+                for line in payment.line_ids:
+                    if line.amount is not None and line.amount <= 0:
+                        raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
+                payment.state = "confirm"
+                continue
+            
+            # Ketika employee_expense_id ada, maka akan memunculkan wizard
+            if self.employee_expense_id:
+                confirmation_message = "Apakah Anda yakin ingin memproses dari Rekening: %s?" % self.journal_id.name
+                return {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'wizard.action.confirm',
+                    'view_mode': 'form',
+                    'view_id': self.env.ref('nyalindung_direct_payment_expense.view_wizard_action_confirm').id,
+                    'target': 'new',
+                    'context': {
+                        'active_id': self.id, 
+                        'active_model': self._name,
+                        'confirmation_message': confirmation_message  
+                    },
+                }
+            
             for line in payment.line_ids:
                 if line.amount is not None and line.amount <= 0:
                     raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
@@ -134,10 +159,29 @@ class DirectPayment(models.Model):
             
             if not payment.account_move_id:
                 payment.action_create_move()
-                payment.name = payment.account_move_id.name
 
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
+
+            if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
+                sequence = None
+                if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
+                    sequence = payment.journal_id.sequence_id
+                elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
+                    sequence = payment.journal_id.sequence_out_id
+
+                if not sequence:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+
+                payment_date = payment.date or datetime.now().date()
+                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+
+                if not sequence_number:
+                    raise ValidationError("Gagal mendapatkan nomor sequence.")
+
+                payment.name = sequence_number
+                payment.account_move_id.name = payment.name
+
             payment.state="posted"
 
 class DirectPaymentLine(models.Model):

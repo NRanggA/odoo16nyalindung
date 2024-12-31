@@ -103,7 +103,7 @@ class HrLeave(models.Model):
 
         # Logika tambahan untuk mengupdate attendance sheet
         for holiday in self:
-            print(f"=== Processing holiday for employees {holiday.employee_ids.mapped('name')}")
+            # print(f"=== Processing holiday for employees {holiday.employee_ids.mapped('name')}")
             if holiday.holiday_status_id.attendance_type_id:
                 for employee in holiday.employee_ids:
                     print(f"Checking attendance sheets for employee {employee.name}")
@@ -115,12 +115,12 @@ class HrLeave(models.Model):
                         ('date', '<=', holiday.date_to.date())
                     ])
                     
-                    print(f"=== Found {len(attendance_sheets_in_range)} attendance sheets for employee {employee.name} for dates {holiday.date_from.date()} to {holiday.date_to.date()}")
+                    # print(f"=== Found {len(attendance_sheets_in_range)} attendance sheets for employee {employee.name} for dates {holiday.date_from.date()} to {holiday.date_to.date()}")
 
                     # Update field type_id pada hr.attendance.sheet dalam range tanggal cuti yang baru
                     if attendance_sheets_in_range:
                         attendance_sheets_in_range.write({'type_id': holiday.holiday_status_id.attendance_type_id.id})
-                        print(f"==== Updated type_id for attendance sheets for employee {employee.name}")
+                        # print(f"==== Updated type_id for attendance sheets for employee {employee.name}")
 
                     # Cari absensi pada tanggal hari ini jika berada di luar rentang tanggal cuti yang baru
                     if today < holiday.date_from.date() or today > holiday.date_to.date():
@@ -129,12 +129,12 @@ class HrLeave(models.Model):
                             ('date', '=', today)
                         ])
 
-                        print(f"=== Found {len(attendance_sheet_today)} attendance sheets for employee {employee.name} for today {today}")
+                        # print(f"=== Found {len(attendance_sheet_today)} attendance sheets for employee {employee.name} for today {today}")
 
                         # Update field type_id pada hr.attendance.sheet pada tanggal hari ini ke default
                         if default_attendance_type and attendance_sheet_today:
                             attendance_sheet_today.write({'type_id': default_attendance_type.id})
-                            print(f"==== Updated type_id for attendance sheets for today for employee {employee.name} to default type")
+                            # print(f"==== Updated type_id for attendance sheets for today for employee {employee.name} to default type")
 
         return res
     

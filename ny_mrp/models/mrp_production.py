@@ -6,6 +6,7 @@ class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
     manual_consume_ids = fields.One2many('mrp.manual.consume', 'component_consume_production_id', string='Manual Consumed')
+    product_name = fields.Char('Product Name', related='product_id.name', readonly=True, store=True)
 
     # def action_draft(self):
     #     for production in self:
@@ -13,18 +14,32 @@ class MrpProduction(models.Model):
     #         # production.reservation_state = False
     #         # production.consumption = 'flexible'
 
+    # @api.model
+    # def create(self, vals):
+    #     current_date = datetime.today().strftime("%Y-%m-%d")
+
+    #     sequence_count = self.env['mrp.production'].search_count([
+    #         ('create_date', '>=', f"{current_date} 00:00:00"),
+    #         ('create_date', '<=', f"{current_date} 23:59:59")
+    #     ]) + 1
+
+    #     sequence_str = f"{sequence_count:02d}"
+
+    #     vals['name'] = f"MO/{current_date}/{sequence_str}"
+
+    #     return super(MrpProduction, self).create(vals)
+
     @api.model
     def create(self, vals):
-        current_date = datetime.today().strftime("%Y-%m-%d")
-
-        sequence_count = self.env['mrp.production'].search_count([
-            ('create_date', '>=', f"{current_date} 00:00:00"),
-            ('create_date', '<=', f"{current_date} 23:59:59")
-        ]) + 1
-
-        sequence_str = f"{sequence_count:02d}"
-
-        vals['name'] = f"MO/{current_date}/{sequence_str}"
+        bom_id = vals.get('bom_id')
+        if bom_id:
+            bom = self.env['mrp.bom'].browse(bom_id)
+            if bom.sequence_id:
+                vals['name'] = bom.sequence_id.next_by_id()
+            else:
+                raise UserError("Product pada Bills of Material tidak memiliki sequence number.")
+        else:
+            raise UserError("Field 'Bills of Material' wajib diisi untuk membuat nomor MO.")
 
         return super(MrpProduction, self).create(vals)
 

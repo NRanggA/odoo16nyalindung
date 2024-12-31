@@ -314,8 +314,8 @@ class HrEmployeeExpense(models.Model):
 
     def action_confirm(self):
         for payment in self:
-            if payment.state!='draft':
-                raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
+            # if payment.state!='draft':
+            #     raise ValidationError(_('You cannot Confirm payment that is not in a Draft state'))
             for line in payment.line_ids:
                 if line.amount is not None and line.amount <= 0:
                     raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
@@ -329,8 +329,22 @@ class HrEmployeeExpense(models.Model):
     def action_cancel(self):
         precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
         for payment in self:
+            # Hapus jurnal yang sudah dibuat
             if payment.account_move_id:
-                raise ValidationError(_('You cannot set Cancel payment that is already create a journal entry'))
+                move_id = payment.account_move_id.id
+                if move_id:
+                    payment.account_move_id.button_draft()
+                    payment.account_move_id = False
+                    self.env['account.move'].browse(move_id).unlink()
+                # raise ValidationError(_('You cannot set Cancel payment that is already create a journal entry'))
+            # Hapus direct payment yang sudah dibuat
+            if payment.account_direct_payment_id:
+                direct_payment_id = payment.account_direct_payment_id.id
+                if direct_payment_id:
+                    payment.account_direct_payment_id.action_cancel()
+                    payment.account_direct_payment_id = False
+                    self.env['account.direct.payment'].browse(direct_payment_id).unlink()
+
             payment.state="cancel"
 
     def action_draft(self):
@@ -461,8 +475,8 @@ class HrEmployeeExpense(models.Model):
 
     def employee_cancel(self):
         for payment in self:
-            if payment.employee_expense_state!='reject':
-                raise ValidationError(_('You cannot Cancel Expense that is not in a Rejected state'))
+            # if payment.employee_expense_state!='reject':
+            #     raise ValidationError(_('You cannot Cancel Expense that is not in a Rejected state'))
             payment.write({
                 'employee_expense_state': "cancel",
                 })
@@ -470,9 +484,13 @@ class HrEmployeeExpense(models.Model):
 
     def employee_set_draft(self):
         for payment in self:
-            if payment.employee_expense_state!='reject':
-                raise ValidationError(_('You cannot Set Draft Expense that is not in a Rejected state'))
-            payment.action_draft()
+            # if payment.employee_expense_state != 'reject':
+            # # if payment.employee_expense_state in ['reject', 'cancel']:
+            #     raise ValidationError(_('You cannot Set Draft Expense that is not in a Rejected state'))
+            payment.write({
+                'employee_expense_state': "draft",
+                })
+            # payment.action_draft()
 
     def _get_count_employee_expense(self):
         for record in self:

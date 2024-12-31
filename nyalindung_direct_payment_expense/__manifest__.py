@@ -30,6 +30,8 @@
         'views/account_direct_payment.xml',
         'views/res_config_settings_view.xml',
         'views/res_partner_views.xml',
+
+        'wizard/wizard_action_confirm.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

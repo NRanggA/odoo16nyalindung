@@ -15,6 +15,7 @@
         'views/purchase_request_views.xml',
         'wizard/purchase_order_popup_confirm.xml',
         'wizard/purchase_request_wizard_rfq.xml',
+        'wizard/purchase_revision_wizard_view.xml'
     ],
     'installable': True,
     'application': False,

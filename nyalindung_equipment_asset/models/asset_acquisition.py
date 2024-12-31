@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.float_utils import float_compare, float_is_zero, float_round
 
 class AssetAcquisition(models.Model):
 	_inherit = 'account.asset.acquisition'
@@ -54,6 +55,22 @@ class AssetAcquisition(models.Model):
 			list_assets = self.env['account.asset.asset']
 			dict_asset_grouped = {}
 			for line in acquisition.line_ids:
+				# Hitung ulang price_unit jika non_credit aktif
+				price_unit = line.price_unit
+				if line.purchase_line_id.order_id.non_credit:
+					if line.purchase_line_id.taxes_id:
+						qty = line.purchase_line_id.product_qty or 1
+						price_unit_prec = self.env['decimal.precision'].precision_get('Product Price')
+						tax_result = line.purchase_line_id.taxes_id.with_context(round=False).compute_all(
+							price_unit,
+							currency=line.purchase_line_id.order_id.currency_id,
+							quantity=qty,
+						)
+						price_unit_including_tax = tax_result['total_included'] / qty
+						price_unit = float_round(price_unit_including_tax, precision_digits=price_unit_prec)
+					if line.purchase_line_id.product_uom.id != line.purchase_line_id.product_id.uom_id.id:
+						price_unit *= line.purchase_line_id.product_uom.factor / line.purchase_line_id.product_id.uom_id.factor
+
 				key_asset_model_id = line.asset_category_id.id
 				key_line_group = f"line_{line.id}" if line.creation_mode == 'line_group' else False
 				key_code_group = line.group_mark if line.creation_mode == 'code_group' else False
@@ -67,7 +84,7 @@ class AssetAcquisition(models.Model):
 									'purchase_account_values': {},
 									'asset_values': {
 										'name': f"{line.name}",
-										'value': line.price_unit,
+										'value': price_unit,
 										'acquisition_date': acquisition.date,
 										'salvage_value': 0.0,
 										'method': line.asset_category_id.method,
@@ -82,7 +99,7 @@ class AssetAcquisition(models.Model):
 							key_account = line._get_computed_account()
 							if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
 								dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
-							dict_asset_grouped[key]['purchase_account_values'][key_account] += line.price_unit
+							dict_asset_grouped[key]['purchase_account_values'][key_account] += price_unit
 				else:
 					for qty in range(int(line.product_qty)):
 						key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:False:{qty}"
@@ -92,7 +109,7 @@ class AssetAcquisition(models.Model):
 								'purchase_account_values': {},
 								'asset_values': {
 									'name': f"{line.name}",
-									'value': line.price_unit,
+									'value': price_unit,
 									'acquisition_date': acquisition.date,
 									'salvage_value': 0.0,
 									'method': line.asset_category_id.method,
@@ -107,7 +124,7 @@ class AssetAcquisition(models.Model):
 						key_account = line._get_computed_account()
 						if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
 							dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
-						dict_asset_grouped[key]['purchase_account_values'][key_account] += line.price_unit
+						dict_asset_grouped[key]['purchase_account_values'][key_account] += price_unit
 
 			for key, values in dict_asset_grouped.items():
 				asset_vals = values['asset_values']

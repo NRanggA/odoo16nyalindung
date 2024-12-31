@@ -1676,26 +1676,35 @@
                         </group>
                         <notebook>
                             <page string="Daftar Aktivitas">
-                                <field name="line_ids" nolabel="1">
-                                    <tree editable="bottom">
-                                        <field name="activity_id" required="1" domain="[('type_id','=',parent.location_type_id)]"/>
-                                        <field name="name" readonly="1"/>
-                                        <field name="vat"/>
-                                        <field name="value"/>
+                                <field name="activity_ids" nolabel="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_activity_form'}" widget="many2many">
+                                    <tree>
+                                        <field name="code"/>
+                                        <field name="name"/>
+                                        <!-- <field name="name" readonly="1"/> -->
                                     </tree>
                                 </field>
-                                <group class="oe_subtotal_footer oe_right" colspan="2" name="project_total">
-                                <field name="project_value" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <field name="project_ppn" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                                    <label for="project_nett" />
-                                    <!--<button name="button_dummy"-->
-                                        <!--states="draft,sent" string="(update)" type="object" class="oe_edit_only oe_link"/>-->
-                                </div>
-                                <field name="project_nett" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                            </group>
-                            <field name="note" class="oe_inline" placeholder="Setup default terms and conditions in your company settings."/>
-                            <div class="oe_clear"/>
+                            </page>
+                            <page string="Detail Project">
+                                <field name="line_ids" nolabel="1">
+                                    <tree create="false">
+                                        <field name="activity_id" required="1" domain="[('type_id','=',parent.location_type_id)]"/>
+                                        <field name="name" readonly="1"/>
+                                        <!-- <field name="vat"/>
+                                        <field name="value"/> -->
+                                    </tree>
+                                </field>
+                                <!-- <group class="oe_subtotal_footer oe_right" colspan="2" name="project_total">
+                                    <field name="project_value" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                    <field name="project_ppn" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                        <label for="project_nett" />
+                                        <button name="button_dummy"
+                                            states="draft,sent" string="(update)" type="object" class="oe_edit_only oe_link"/>
+                                    </div>
+                                    <field name="project_nett" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <field name="note" class="oe_inline" placeholder="Setup default terms and conditions in your company settings."/>
+                                <div class="oe_clear"/> -->
                             </page>
                             <page string="Configuration" invisible="1">
                                 <group>
@@ -2014,11 +2023,11 @@
                                         <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="product_id" attrs="{'readonly': [('uom_id','=',False)]}"/>
-                                        <field name="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
+                                        <field name="nilai" sum="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
                                         <field name="uom_id" attrs="{'readonly': [('uom_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="product_id_2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
-                                        <field name="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
+                                        <field name="nilai2" sum="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
                                         <field name="uom2_id" attrs="{'readonly': [('uom2_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         
                                         <field name="work_day" readonly="1"/>
@@ -2138,7 +2147,21 @@
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_lhm_transaction_filter"/>
             <field name="domain">[]</field>
-            <field name="context">{'readonly_by_pass': True, 'search_default_date_monthly':1}</field>
+            <field name="context">{'readonly_by_pass': True, 'search_default_date':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik new untuk menambahkan Laporan Harian Mandor.
+              </p>
+            </field>
+        </record>
+
+        <record id="action_lhm_transaction_button_box" model="ir.actions.act_window">
+            <field name="name">Laporan Harian Mandor</field>
+            <field name="res_model">lhm.transaction</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_transaction_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik new untuk menambahkan Laporan Harian Mandor.
@@ -3437,13 +3460,13 @@
             <field name="arch" type="xml">
                 <form string="Nota Angkut Panen">
                     <header>
-                        <button name="button_draft" states="cancel,process,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_draft" states="cancel" string="Set Draft" type="object" class="btn-default"/>
                         <button name="button_save_to_nap_line" states="draft" string="Process" type="object" class="btn-primary" />
                         <button name="button_confirm" states="confirmed" string="Confirm" type="object" class="btn-default btn-primary"/>
                         <button name="create_material_receipt" states="process" string="Create Material Receipt" type="object" class="oe_highlight"/>
-                        <button name="button_cancel" states="done" string="Cancel" type="object" class="btn-default"/>
-                        <button name="button_get_data_karet" states="draft" string="Get Data Karet" type="object" class="btn-default"/>
-                        <button name="button_get_data_non_karet" states="draft" string="Get Data Non Karet" type="object" class="btn-default"/>
+                        <button name="button_cancel" states="process,confirmed,done" string="Cancel" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
+                        <!-- <button name="button_get_data_karet" states="draft" string="Get Data Karet" type="object" class="btn-default"/> -->
+                        <!-- <button name="button_get_data_non_karet" states="draft" string="Get Data Non Karet" type="object" class="btn-default"/> -->
                         <!-- <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/> -->
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,process,confirmed,done"/>
@@ -3652,6 +3675,20 @@
             <field name="search_view_id" ref="view_lhm_nap_filter"/>
             <field name="domain">[]</field>
             <field name="context">{'readonly_by_pass': ['ownership','reg_number'], 'search_default_date_monthly':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Nota Angkut Panen.
+              </p>
+            </field>
+        </record>
+
+        <record id="action_lhm_nap_input_button_box" model="ir.actions.act_window">
+            <field name="name">Nota Angkut Panen</field>
+            <field name="res_model">lhm.nap</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_nap_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Nota Angkut Panen.

@@ -5,6 +5,7 @@ class PlantVarieties(models.Model):
     _name = 'plant.varieties'
     _description = 'Varietas'
 
+    active = fields.Boolean('active', default=True)
     name = fields.Char('ORG', required=True)
     code = fields.Char('Code')
     product_id = fields.Many2one('product.product', string='Output Product')

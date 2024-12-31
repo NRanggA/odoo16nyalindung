@@ -13,7 +13,7 @@ import time
 # import datetime
 import calendar
 from odoo.tools.translate import _
-from datetime import timedelta
+# from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from odoo.addons import decimal_precision as dp
 from odoo import models, fields, tools, exceptions, api, _
@@ -21,7 +21,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 import base64
 import xlrd
-from datetime import datetime
+from datetime import datetime, timedelta, time
 import pandas as pd
 import numpy as np
 import io
@@ -89,7 +89,7 @@ class lhm_location_type(models.Model):
     no_line                 = fields.Boolean("No Line", default=False, help="Centang jika tipe lokasi tidak ingin ditampilkan di Dokumen Plantation Manabun")
     station = fields.Boolean("Mills Station", default=False)
 
-    varieties_id = fields.Many2one('plant.varieties', string='ORG', required=True)
+    varieties_id = fields.Many2one('plant.varieties', string='ORG')
     # Boolean Mils
     mills                   = fields.Boolean('Mills', default=False)
 
@@ -318,6 +318,8 @@ class lhm_activity(models.Model):
     # Menambahkan field is hasil 2 untuk menandakan bahwa aktivitas ini hasilnya terdapat 2 hasil
     is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
     is_nap                                      = fields.Boolean('NAP', default=False)
+
+    project_id      = fields.Many2one("lhm.project", string="Project")
 
     product_id                                  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
     product2_id                                = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
@@ -839,18 +841,18 @@ class lhm_project(models.Model):
         currency_id = self.env['res.users'].browse(self._uid).company_id.currency_id
         return currency_id or self.company_id.currency_id
 
-    @api.depends('line_ids.value', 'line_ids.vat')
-    def _compute_project_value(self):
-        total_vat   = 0
-        total_value = 0
-        for line in self.line_ids:
-            if line.vat >= 1 and line.value >=1:
-                total_vat += (line.vat * line.value)/100
-            if line.value:
-                total_value += line.value
-        self.project_value  = total_value
-        self.project_ppn    = total_vat
-        self.project_nett   = total_vat + total_value
+    # @api.depends('line_ids.value', 'line_ids.vat')
+    # def _compute_project_value(self):
+    #     total_vat   = 0
+    #     total_value = 0
+    #     for line in self.line_ids:
+    #         if line.vat >= 1 and line.value >=1:
+    #             total_vat += (line.vat * line.value)/100
+    #         if line.value:
+    #             total_value += line.value
+    #     self.project_value  = total_value
+    #     self.project_ppn    = total_vat
+    #     self.project_nett   = total_vat + total_value
 
     name                    = fields.Char("Deskripsi")
     code                    = fields.Char("Nomor Project")
@@ -871,7 +873,7 @@ class lhm_project(models.Model):
     date_issue              = fields.Date("Tanggal Terbit")
     active                  = fields.Boolean("Active", default=True)
     note                    = fields.Text("Catatan")
-    line_ids                = fields.One2many('lhm.project.line', 'project_id', string="Detail Project", )
+    line_ids                = fields.One2many('lhm.project.line', 'project_id', string="Detail Project")
     group_progress_id       = fields.Many2one("plantation.location.reference", string="Grouping LPPH")
     currency_id             = fields.Many2one('res.currency', string='Currency', required=True, default=lambda self: self._get_user_currency())
     company_id              = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
@@ -884,6 +886,22 @@ class lhm_project(models.Model):
     categ_id                = fields.Many2one('lhm.project.type', 'Kategory')
 
     varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
+    activity_ids            = fields.One2many('lhm.activity', 'project_id', string="Detail Aktivitas", )
+
+    @api.onchange('activity_ids')
+    def _onchange_activity_ids(self):
+        if not self.activity_ids:
+            self.line_ids = [(5, 0, 0)]
+            return
+
+        self.line_ids = [(5, 0, 0)]
+
+        line_data = [(0, 0, {
+            'project_id': self.id,
+            'activity_id': activity.id,
+        }) for activity in self.activity_ids]
+
+        self.line_ids = line_data
 
     def button_progress(self):
         for project in self:
@@ -1332,12 +1350,12 @@ class lhm_transaction(models.Model):
         self.lhm_line_ids.get_wage_value_employee()
         # Fungsi mengambil gaji karyawan borongan rawat
         self.lhm_line_ids.get_wage_borong_rawat()
-        # Panggil fungsi untuk mengambil material yang digunakan
-        self.get_material()
         # Fungsi mengambil gaji karyawan borongan panen
         self.lhm_line_ids.get_wage_borong_panen()
         # jelankan fungsi progress
         self._progress()
+        # Panggil fungsi untuk mengambil material yang digunakan
+        self.get_material()
 
     # Fungsi untuk mengecek employee sesuai kemandoran
     def check_employee_in_kemandoran(self):
@@ -1615,9 +1633,11 @@ class lhm_transaction(models.Model):
                 material.unlink()
         for progress in self.process_line_ids:
             if progress.activity_id and progress.location_id and progress.location_id.type_id.skb_declare == True:
+                date_start  = datetime.combine(self.date.replace(day=1), time(0, 0, 0))
+                lhm_date    = datetime.combine(self.date, time(23, 59, 59))
                 domain = [
-                    ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
-                    ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
+                    ('date', '>=', date_start), 
+                    ('date', '<=', lhm_date), 
                     # ('skb', '=', True),
                     ('picking_type_id.code', '=', 'issue'), 
                     ('state', '=', 'done'), 
@@ -1888,6 +1908,38 @@ class lhm_transaction_line(models.Model):
     is_panen        = fields.Boolean(related='activity_id.is_panen', readonly=True, store=True)
     
     state        = fields.Selection(related='lhm_id.state', readonly=True, store=True)
+
+    # Report pada detail LHM
+    hasil_1_nap = fields.Float(
+        string="Hasil 1 NAP", 
+        related='transaction_nap_line_ids.hasil_1_nap', 
+        readonly=True
+    )
+    # satuan_1_nap = fields.Many2one(
+    #     string="Satuan 1 NAP", 
+    #     related='transaction_nap_line_ids.satuan_1_nap', 
+    #     readonly=True
+    # )
+    hasil_2_nap = fields.Float(
+        string="Hasil 2 NAP", 
+        related='transaction_nap_line_ids.hasil_2_nap', 
+        readonly=True
+    )
+    # satuan_2_nap = fields.Many2one(
+    #     string="Satuan 2 NAP", 
+    #     related='transaction_nap_line_ids.satuan_2_nap', 
+    #     readonly=True
+    # )
+    hasil_convert_latex = fields.Float(
+        string="Hasil Convert Latex", 
+        related='transaction_nap_line_ids.hasil_convert_latex', 
+        readonly=True
+    )
+    hasil_convert_lump = fields.Float(
+        string="Hasil Convert Lump", 
+        related='transaction_nap_line_ids.hasil_convert_lump', 
+        readonly=True
+    )
 
 
     @api.depends('varieties_id','location_type_id', 'lhm_id.state')

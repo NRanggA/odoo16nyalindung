@@ -1,5 +1,6 @@
 from odoo import fields, models, api, _, Command
 from odoo.exceptions import ValidationError, UserError
+from datetime import datetime
 from num2words import num2words
 
 class AccountPayment(models.Model):
@@ -88,28 +89,54 @@ class AccountPayment(models.Model):
                 return self.env.ref('ny_account.action_report_payment_amount_charge').report_action(self)
 
     def action_post(self):
-        super().action_post()
-        
+        res = super().action_post()
+
+        if self.journal_id.type in ['bank', 'cash'] and self.payment_type in ['inbound', 'outbound']:
+                sequence = None
+                if self.payment_type == 'inbound' and self.journal_id.sequence_id:
+                    sequence = self.journal_id.sequence_id
+                elif self.payment_type == 'outbound' and self.journal_id.sequence_out_id:
+                    sequence = self.journal_id.sequence_out_id
+
+                if not sequence:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+
+                payment_date    = self.date or datetime.now().date()
+                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+
+                if not sequence_number:
+                    raise ValidationError("Gagal mendapatkan nomor sequence.")
+
+                self.name = sequence_number
+                
+                # Paired Journal
+                sequence_paired = None
+                if self.paired_internal_transfer_payment_id.payment_type == 'inbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_id:
+                    sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_id
+                elif self.paired_internal_transfer_payment_id.payment_type == 'outbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_out_id:
+                    sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_out_id
+
+                if not sequence_paired:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+
+                payment_date_paired     = self.date or datetime.now().date()
+                sequence_number_paired  = sequence_paired.with_context(ir_sequence_date=payment_date_paired).next_by_id()
+
+                self.paired_internal_transfer_payment_id.name = sequence_number_paired
+
         # Mengecek apakah ada (amount_charge)
         for payment in self.filtered(lambda p: p.payment_type == 'outbound'):
             if payment.amount_charge > 0:
                     if not payment.charge_account_id:
                         raise ValidationError("Charge Acount Harus di isi")
-                    # # nomor dokumen baru untuk amount_charge pada account.move
-                    # existing_name = payment.name
-                    # name_parts = existing_name.split('/')
-                    # if len(name_parts) == 3 and name_parts[2].isdigit():
-                        
-                    #     # Menambahkan satu angka pada nomor dokument amount_charge
-                    #     next_sequence = int(name_parts[2]) + 1
-                    #     charge_move_name = f"{name_parts[0]}/{name_parts[1]}/{str(next_sequence).zfill(len(name_parts[2]))}"
-                    # else:
-                    #     # Jika nomor tikda valid seperti contoh : PBBS/2024/0001 maka ada pesan error.
-                    #     raise ValidationError("Format nomor dokumen tidak valid.")
                     
+                    sequence_adm        = self.journal_id.sequence_out_id
+                    sequence_number_adm = sequence_adm.with_context(ir_sequence_date=payment_date).next_by_id()
+                    charge_move_name    = sequence_number_adm
+
                     # Membuat entri jurnal untuk biaya administrasi
                     move_vals = {
-                        # 'name': charge_move_name,
+                        'name': charge_move_name,
                         'journal_id': payment.journal_id.id,
                         'move_type': 'entry',
                         'is_payment': True,
@@ -141,6 +168,9 @@ class AccountPayment(models.Model):
 
                     # Simpan jurnal kedua di charge_move_id
                     payment.charge_move_id = charge_move
+
+        return res
+
 
     def button_open_journal_entry(self):
         ''' Override button agar bisa menampilkan 2 jurnal yang dibuar.
