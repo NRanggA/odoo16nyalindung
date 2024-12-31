@@ -1350,12 +1350,12 @@ class lhm_transaction(models.Model):
         self.lhm_line_ids.get_wage_value_employee()
         # Fungsi mengambil gaji karyawan borongan rawat
         self.lhm_line_ids.get_wage_borong_rawat()
-        # Panggil fungsi untuk mengambil material yang digunakan
-        self.get_material()
         # Fungsi mengambil gaji karyawan borongan panen
         self.lhm_line_ids.get_wage_borong_panen()
         # jelankan fungsi progress
         self._progress()
+        # Panggil fungsi untuk mengambil material yang digunakan
+        self.get_material()
 
     # Fungsi untuk mengecek employee sesuai kemandoran
     def check_employee_in_kemandoran(self):
