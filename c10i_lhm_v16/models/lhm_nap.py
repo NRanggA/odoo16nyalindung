@@ -416,10 +416,15 @@ class lhm_nap(models.Model):
     def button_cancel(self):
         for record in self:
             for nap_line in record.line_ids:
+                # if nap_line.employee_id:
+                #     if nap_line.lhm_transaction_nap_id.lhm_id.state != 'draft':
+                #         raise ValidationError(
+                #             _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status tidak 'Draft/New'. Periksa dan kembalikan dokumen tersebut ke status 'Draft/New' terlebih dahulu.")
+                #         )
                 if nap_line.employee_id:
-                    if nap_line.lhm_transaction_nap_id.lhm_id.state != 'draft':
+                    if nap_line.lhm_transaction_nap_id.lhm_id.state == 'done':
                         raise ValidationError(
-                            _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status tidak 'draft'. Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu.")
+                            _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'Approved'. Periksa dan kembalikan dokumen tersebut ke status 'Draft/New' terlebih dahulu.")
                         )
                 if nap_line.supplier_id:
                     nap_date = nap_line.tgl_panen
