@@ -166,7 +166,9 @@ class NyAttendance(ApiBase):
                 return Response(json.dumps({'message': f"Nomor Induk Pegawai {datas['nip']} tidak ditemukan"}), headers=HEADERS, status=422)
             
             # GET ATTENDANCE
-            today_att = request.env['hr.attendance.sheet'].sudo().search([('date','=',fields.Date.today()),
+            jakarta = timezone('Asia/Jakarta')
+            today = utc.localize(fields.Datetime.now()).astimezone(jakarta)
+            today_att = request.env['hr.attendance.sheet'].sudo().search([('date','=',today),
                                             ('employee_id','=',employee_found.id)])
             masuk = pulang = ""
             if today_att.check_in:
