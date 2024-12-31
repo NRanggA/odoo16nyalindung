@@ -159,41 +159,27 @@ class DirectPayment(models.Model):
             
             if not payment.account_move_id:
                 payment.action_create_move()
-                # payment.name = payment.account_move_id.name
 
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
 
-            # Menambahkan penomoran dokumen untuk jurnal kas dan bank
             if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
-                # Tentukan sequence code berdasarkan tipe jurnal dan tipe pembayaran pada direct payment
-                if payment.journal_id.type == 'bank' and payment.direct_state == 'receive':
-                    sequence_code = 'payment.bank.inbound'  # BM
-                    prefix = 'BM'
-                elif payment.journal_id.type == 'bank' and payment.direct_state == 'send':
-                    sequence_code = 'payment.bank.outbound'  # BK
-                    prefix = 'BK'
-                elif payment.journal_id.type == 'cash' and payment.direct_state == 'receive':
-                    sequence_code = 'payment.cash.inbound'  # KM
-                    prefix = 'KM'
-                elif payment.journal_id.type == 'cash' and payment.direct_state == 'send':
-                    sequence_code = 'payment.cash.outbound'  # KK
-                    prefix = 'KK'
-                else:
-                    raise ValidationError("Jenis pembayaran tidak valid untuk penomoran dokumen.")
+                sequence = None
+                if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
+                    sequence = payment.journal_id.sequence_id
+                elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
+                    sequence = payment.journal_id.sequence_out_id
 
-                sequence_number = self.env['ir.sequence'].next_by_code(sequence_code)
+                if not sequence:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+
+                payment_date = payment.date or datetime.now().date()
+                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+
                 if not sequence_number:
-                    raise ValidationError(f"Sequence untuk {sequence_code} belum dikonfigurasi.")
-                
-                journal_code = payment.journal_id.code or ''
-                sequence_number_formatted = sequence_number.zfill(4)  
+                    raise ValidationError("Gagal mendapatkan nomor sequence.")
 
-                current_date = datetime.now()
-                month        = current_date.strftime('%m')  
-                year         = current_date.strftime('%Y') 
-
-                payment.name = f"{prefix} {journal_code} {sequence_number_formatted}/{month}/{year}"
+                payment.name = sequence_number
                 payment.account_move_id.name = payment.name
 
             payment.state="posted"

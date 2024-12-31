@@ -92,34 +92,37 @@ class AccountPayment(models.Model):
         res = super().action_post()
 
         if self.journal_id.type in ['bank', 'cash'] and self.payment_type in ['inbound', 'outbound']:
-            # Tentukan sequence code berdasarkan tipe jurnal dan tipe pembayaran
-            if self.journal_id.type == 'bank' and self.payment_type == 'inbound':
-                sequence_code = 'payment.bank.inbound'  # BM
-                prefix = 'BM'
-            elif self.journal_id.type == 'bank' and self.payment_type == 'outbound':
-                sequence_code = 'payment.bank.outbound'  # BK
-                prefix = 'BK'
-            elif self.journal_id.type == 'cash' and self.payment_type == 'inbound':
-                sequence_code = 'payment.cash.inbound'  # KM
-                prefix = 'KM'
-            elif self.journal_id.type == 'cash' and self.payment_type == 'outbound':
-                sequence_code = 'payment.cash.outbound'  # KK
-                prefix = 'KK'
-            else:
-                raise ValidationError("Jenis pembayaran tidak valid untuk penomoran dokumen.")
+                sequence = None
+                if self.payment_type == 'inbound' and self.journal_id.sequence_id:
+                    sequence = self.journal_id.sequence_id
+                elif self.payment_type == 'outbound' and self.journal_id.sequence_out_id:
+                    sequence = self.journal_id.sequence_out_id
 
-            sequence_number = self.env['ir.sequence'].next_by_code(sequence_code)
-            if not sequence_number:
-                raise ValidationError(f"Sequence untuk {sequence_code} belum dikonfigurasi.")
-            
-            journal_code = self.journal_id.code or ''
-            sequence_number_formatted = sequence_number.zfill(4)  
+                if not sequence:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-            current_date = datetime.now()
-            month = current_date.strftime('%m')  
-            year = current_date.strftime('%Y') 
+                payment_date    = self.date or datetime.now().date()
+                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
 
-            self.name = f"{prefix} {journal_code} {sequence_number_formatted}/{month}/{year}"
+                if not sequence_number:
+                    raise ValidationError("Gagal mendapatkan nomor sequence.")
+
+                self.name = sequence_number
+                
+                # Paired Journal
+                sequence_paired = None
+                if self.paired_internal_transfer_payment_id.payment_type == 'inbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_id:
+                    sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_id
+                elif self.paired_internal_transfer_payment_id.payment_type == 'outbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_out_id:
+                    sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_out_id
+
+                if not sequence_paired:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+
+                payment_date_paired     = self.date or datetime.now().date()
+                sequence_number_paired  = sequence_paired.with_context(ir_sequence_date=payment_date_paired).next_by_id()
+
+                self.paired_internal_transfer_payment_id.name = sequence_number_paired
 
         # Mengecek apakah ada (amount_charge)
         for payment in self.filtered(lambda p: p.payment_type == 'outbound'):
@@ -127,13 +130,9 @@ class AccountPayment(models.Model):
                     if not payment.charge_account_id:
                         raise ValidationError("Charge Acount Harus di isi")
                     
-                    sequence_code_charge = 'payment.bank.outbound'
-                    sequence_number_charge = self.env['ir.sequence'].next_by_code(sequence_code_charge)
-                    if not sequence_number:
-                        raise ValidationError(f"Sequence untuk {sequence_code_charge} belum dikonfigurasi.")
-                    
-                    sequence_number_formatted_charge = sequence_number_charge.zfill(4)  
-                    charge_move_name = f"{prefix} {journal_code} {sequence_number_formatted_charge}/{month}/{year}"
+                    sequence_adm        = self.journal_id.sequence_out_id
+                    sequence_number_adm = sequence_adm.with_context(ir_sequence_date=payment_date).next_by_id()
+                    charge_move_name    = sequence_number_adm
 
                     # Membuat entri jurnal untuk biaya administrasi
                     move_vals = {
