@@ -13,7 +13,7 @@ import time
 # import datetime
 import calendar
 from odoo.tools.translate import _
-from datetime import timedelta
+# from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from odoo.addons import decimal_precision as dp
 from odoo import models, fields, tools, exceptions, api, _
@@ -21,7 +21,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 import base64
 import xlrd
-from datetime import datetime
+from datetime import datetime, timedelta, time
 import pandas as pd
 import numpy as np
 import io
@@ -1633,9 +1633,11 @@ class lhm_transaction(models.Model):
                 material.unlink()
         for progress in self.process_line_ids:
             if progress.activity_id and progress.location_id and progress.location_id.type_id.skb_declare == True:
+                date_start  = datetime.combine(self.date.replace(day=1), time(0, 0, 0))
+                lhm_date    = datetime.combine(self.date, time(23, 59, 59))
                 domain = [
-                    ('date', '>=', str(self.account_period_id.date_start) + ' 00:00:01'), 
-                    ('date', '<=', str(self.account_period_id.date_stop) + ' 23:59:59'), 
+                    ('date', '>=', date_start), 
+                    ('date', '<=', lhm_date), 
                     # ('skb', '=', True),
                     ('picking_type_id.code', '=', 'issue'), 
                     ('state', '=', 'done'), 
