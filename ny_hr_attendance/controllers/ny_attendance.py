@@ -20,14 +20,14 @@ class NyAttendance(ApiBase):
         '''
         # # Create or Update API Client List
         client_req_addrs = request.httprequest.environ['REMOTE_ADDR']
-        added_addrs = request.env['c10i_base_api.client.list'].sudo().search([('name','=',client_req_addrs)])
-        if not added_addrs:
-            added_addrs = request.env['c10i_base_api.client.list'].sudo().create({'name': client_req_addrs})
+        # added_addrs = request.env['c10i_base_api.client.list'].sudo().search([('name','=',client_req_addrs)])
+        # if not added_addrs:
+            # added_addrs = request.env['c10i_base_api.client.list'].sudo().create({'name': client_req_addrs})
         # Blacklisted Address
-        if added_addrs.blacklist:
-            return False, 'Unauthorized, You have failed authorization proceess several times. Please contact the admin for further details.'
-        elif added_addrs.number_of_error_half_hour_allowed<=0:
-            return False, 'Temporary Blocked, You have failed authorization proceess several times. Please wait for 30 minutes or contact the admin for further details.'
+        # if added_addrs.blacklist:
+            # return False, 'Unauthorized, You have failed authorization proceess several times. Please contact the admin for further details.'
+        # elif added_addrs.number_of_error_half_hour_allowed<=0:
+            # return False, 'Temporary Blocked, You have failed authorization proceess several times. Please wait for 30 minutes or contact the admin for further details.'
         
         datas = self._get_payload() or {}
         token = str(datas.get('token'))
