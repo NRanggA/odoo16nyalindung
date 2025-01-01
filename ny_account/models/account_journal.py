@@ -7,7 +7,7 @@ class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
 
-    sequence_id = fields.Many2one('ir.sequence', string='Reference Sequence IN')   
+    sequence_id = fields.Many2one('ir.sequence', string='Reference Sequence')   
     sequence_out_id = fields.Many2one('ir.sequence', string='Reference Sequence OUT')
 
     def create_sequence(self):

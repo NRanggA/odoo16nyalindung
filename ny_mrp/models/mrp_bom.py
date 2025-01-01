@@ -8,14 +8,11 @@ class MrpBom(models.Model):
 
     def create_sequence(self):
         for bom in self:
-            # current_date = datetime.now()
-            # month = current_date.strftime('%m')  
-            # year = current_date.strftime('%Y') 
             if bom.code and not bom.sequence_id:
                 sequence = self.env['ir.sequence'].create({
                     'name': f"Sequence {bom.code}",
                     'code': f"mrp.bom.{bom.code}",
-                    'prefix': f"MO/{bom.code}/",
+                    'prefix': f"MO/{bom.code}/%(year)s/%(month)s/",
                     'padding': 3,
                     'company_id': bom.company_id.id
                 })
