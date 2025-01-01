@@ -35,7 +35,7 @@ class lhm_transaction(models.Model):
 
         data = base64.b64decode(self.file)
         excel_file = io.BytesIO(data)
-        df = pd.read_excel(excel_file, header=0)
+        df = pd.read_excel(excel_file, dtype={'NIK':str}, header=0)
 
         to_update = []
         error_message_list = []
