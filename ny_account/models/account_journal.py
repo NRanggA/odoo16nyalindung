@@ -12,6 +12,9 @@ class AccountJournal(models.Model):
 
     def create_sequence(self):
         for journal in self:
+            sequence_in = None
+            sequence_out = None
+            
             if journal.type == 'bank':
                 if journal.code and not journal.sequence_id:
                     sequence_in = self.env['ir.sequence'].create({
@@ -50,10 +53,11 @@ class AccountJournal(models.Model):
                         'padding': 4,
                         'company_id': journal.company_id.id
                     })
-
-
-            journal.sequence_id = sequence_in.id
-            journal.sequence_out_id = sequence_out.id
+        
+            if sequence_in:
+                journal.sequence_id = sequence_in.id
+            if sequence_out:
+                journal.sequence_out_id = sequence_out.id
 
     @api.model
     def create(self, vals_list):
