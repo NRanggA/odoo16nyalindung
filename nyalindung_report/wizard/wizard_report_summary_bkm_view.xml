@@ -5,7 +5,7 @@
         <field name="name">wizard.report.summary.bkm.view.form</field>
         <field name="model">wizard.report.summary.bkm</field>
         <field name="arch" type="xml">
-            <form string="Report Summary Attendance">
+            <form string="Report Summary LHM">
                 <sheet>
                     <group>
                         <group>
@@ -28,7 +28,7 @@
     </record>
 
     <record id="wizard_report_summary_bkm_action" model="ir.actions.act_window">
-        <field name="name">Report Summary Attendance</field>
+        <field name="name">Report Summary LHM</field>
         <field name="res_model">wizard.report.summary.bkm</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
@@ -36,7 +36,7 @@
 
     <menuitem
         id="wizard_report_summary_bkm_menu"
-        name="Summary Attendance"
+        name="Summary LHM"
         action="wizard_report_summary_bkm_action"
         parent="c10i_lhm_v16.menu_plantation_report"
         sequence="99"/>
