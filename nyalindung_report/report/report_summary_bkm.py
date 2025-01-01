@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 class ReportSummaryBkm(models.AbstractModel):
     _name = 'report.nyalindung_report.summary_bkm_xlsx'
     _inherit = 'report.report_xlsx.abstract'
-    _description = "Report Summary Attendance Excel"
+    _description = "Report Summary LHM Excel"
 
     wbf = {}
 

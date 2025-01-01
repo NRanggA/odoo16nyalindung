@@ -4,7 +4,7 @@ from odoo.exceptions import UserError
 
 class WizardReportSummaryBkm(models.TransientModel):
     _name           = 'wizard.report.summary.bkm'
-    _description    = 'Wizard Report Summary Attendance'
+    _description    = 'Wizard Report Summary LHM'
     
     from_date           = fields.Date('From Date')
     to_date             = fields.Date('To Date')
@@ -13,6 +13,6 @@ class WizardReportSummaryBkm(models.TransientModel):
 
     def create_report(self):
         if not self.from_date or not self.to_date:
-            raise UserError(_("Masukkan Tanggal untuk memfilter Laporan Summary Attendance !"))
+            raise UserError(_("Masukkan Tanggal untuk memfilter Laporan Summary LHM !"))
 
         return self.env.ref('nyalindung_report.action_summary_bkm_report_xlsx').report_action(self)
