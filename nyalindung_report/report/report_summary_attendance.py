@@ -283,10 +283,10 @@ class ReportSummaryAttendance(models.AbstractModel):
             hko_start = end_col + 1
             sheet.merge_range(3, hko_start, 4, hko_start + 5, 'JUMLAH HKO', wbf['header'])
 
-            tunjangan_start = hko_start + 6
-            sheet.merge_range(3, tunjangan_start, 4, tunjangan_start + 3, 'TUNJANGAN', wbf['header'])
+            # tunjangan_start = hko_start + 6
+            # sheet.merge_range(3, tunjangan_start, 4, tunjangan_start + 3, 'TUNJANGAN', wbf['header'])
 
-            total_hk_start = tunjangan_start + 4
+            total_hk_start = hko_start + 6
             sheet.merge_range(3, total_hk_start, 5, total_hk_start + 1, 'TOTAL HK', wbf['header'])
 
             # Header 2
@@ -297,14 +297,14 @@ class ReportSummaryAttendance(models.AbstractModel):
 
             hko_headers = ['HKO', 'L', 'S', 'P', 'CT', 'M']
             hko_formats = [self.wbf['biru_muda'], self.wbf['hijau_tua'], self.wbf['kuning'], self.wbf['biru_tua'], self.wbf['biru_muda'], self.wbf['merah']]
-            tunjangan_headers = ['MG', 'RY', 'S', 'CT']
-            tunjangan_formats = [self.wbf['merah'], self.wbf['kuning'], self.wbf['kuning'], self.wbf['kuning']]
+            # tunjangan_headers = ['MG', 'RY', 'S', 'CT']
+            # tunjangan_formats = [self.wbf['merah'], self.wbf['kuning'], self.wbf['kuning'], self.wbf['kuning']]
 
             for i, header in enumerate(hko_headers):
                 sheet.write(5, hko_start + i, header, hko_formats[i])
 
-            for i, header in enumerate(tunjangan_headers):
-                sheet.write(5, tunjangan_start + i, header, tunjangan_formats[i])
+            # for i, header in enumerate(tunjangan_headers):
+            #     sheet.write(5, tunjangan_start + i, header, tunjangan_formats[i])
 
             # Bagian Isi Data
             query = """
@@ -433,10 +433,10 @@ class ReportSummaryAttendance(models.AbstractModel):
                 sheet.write(row, hko_start + 4, ct_count, wbf['data_center'])
                 sheet.write(row, hko_start + 5, m_count, wbf['data_center'])
 
-                sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-                sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-                sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-                sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
+                # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
+                # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
+                # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
+                # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
                 sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
 
                 row += 1
@@ -493,10 +493,10 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 4, mandor_ct_count, wbf['data_center'])
             sheet.write(row, hko_start + 5, mandor_m_count, wbf['data_center'])
 
-            sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
             sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
 
             # Logika untuk Asisten Mandor
@@ -550,10 +550,10 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 4, asisten_ct_count, wbf['data_center'])
             sheet.write(row, hko_start + 5, asisten_m_count, wbf['data_center'])
 
-            sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
             sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
 
             # Logika untuk Kerani
@@ -607,10 +607,10 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 4, kerani_ct_count, wbf['data_center'])
             sheet.write(row, hko_start + 5, kerani_m_count, wbf['data_center'])
 
-            sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
+            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
             sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
 
             row += 1
@@ -666,7 +666,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 sheet.write(row, 5 + i, total_hko_per_tanggal[i], wbf['data_center'])
 
             start_col = 5 + len(date_columns)
-            for i in range(10):
+            for i in range(6):
                 sheet.write(row, start_col + i, '-', wbf['data_center'])
 
             sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
@@ -776,9 +776,9 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 4, sum(total_ct_per_tanggal), wbf['hijau_tua'])
             sheet.write(row, hko_start + 5, sum(total_m_per_tanggal), wbf['hijau_tua'])
 
-            start_col = 11 + len(date_columns)
-            for i in range(4):
-                sheet.write(row, start_col + i, '', wbf['hijau_tua'])
+            # start_col = 11 + len(date_columns)
+            # for i in range(4):
+            #     sheet.write(row, start_col + i, '', wbf['hijau_tua'])
 
             sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '', wbf['hijau_tua'])
 
@@ -792,31 +792,31 @@ class ReportSummaryAttendance(models.AbstractModel):
                 sheet.write(row, 5 + i, '', wbf['content_center'])
 
             current_date = datetime.now().strftime("%d-%m-%Y")
-            start_col = 11 + len(date_columns)
+            start_col = 9 + len(date_columns)
             sheet.merge_range(row, start_col, row, start_col + 3, f'Nyalindung, {current_date}', wbf['content_center'])
 
             # TTD 2
             row += 1
             sheet.merge_range(row, 0, row, 4, 'Mengetahui,', wbf['content_center'])
-            sheet.merge_range(row, 8, row, 8 + len(date_columns) - 1, 'Menyetujui,', wbf['content_center'])
+            sheet.merge_range(row, 8, row, 8 + len(date_columns), 'Menyetujui,', wbf['content_center'])
 
 
             current_date = datetime.now().strftime("%d-%m-%Y")
-            start_col = 11 + len(date_columns)
+            start_col = 9 + len(date_columns)
             sheet.merge_range(row, start_col, row, start_col + 3, 'Dibuat Oleh', wbf['content_center'])
 
             # TTD 3
             row += 6
             sheet.merge_range(row, 0, row, 1, 'Hendra', wbf['center_bold'])
             sheet.merge_range(row, 3, row, 4, 'Ilmiano Swara', wbf['center_bold'])
-            sheet.merge_range(row, 8, row, 8 + len(date_columns) - 1, 'Wahyu Widiyanto', wbf['center_bold'])
+            sheet.merge_range(row, 8, row, 8 + len(date_columns), 'Wahyu Widiyanto', wbf['center_bold'])
 
             current_date = datetime.now().strftime("%d-%m-%Y")
-            start_col = 11 + len(date_columns)
+            start_col = 9 + len(date_columns)
             sheet.merge_range(row, start_col, row, start_col + 3, 'Hani Andriani', wbf['center_bold'])
 
             # TTD 4
             row += 1
             sheet.merge_range(row, 0, row, 1, 'Mandor Besar Karet', wbf['content_center'])
             sheet.merge_range(row, 3, row, 4, 'Asisten Kebun', wbf['content_center'])
-            sheet.merge_range(row, 8, row, 8 + len(date_columns) - 1, 'Manager Kebun', wbf['content_center'])
+            sheet.merge_range(row, 8, row, 8 + len(date_columns), 'Manager Kebun', wbf['content_center'])

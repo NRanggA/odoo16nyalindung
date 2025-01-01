@@ -811,7 +811,7 @@ class ReportSummaryBkm(models.AbstractModel):
             # TTD 2 ganteng
             row += 1
             sheet.merge_range(row, 0, row, 4, 'Mengetahui,', wbf['content_center'])
-            sheet.merge_range(row, 7, row, 7 + len(date_columns) - 1, 'Menyetujui,', wbf['content_center'])
+            sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Menyetujui,', wbf['content_center'])
 
 
             current_date = datetime.now().strftime("%d-%m-%Y")
@@ -822,7 +822,7 @@ class ReportSummaryBkm(models.AbstractModel):
             row += 6
             sheet.merge_range(row, 0, row, 1, 'Hendra', wbf['center_bold'])
             sheet.merge_range(row, 3, row, 5, 'Ilmiano Swara', wbf['center_bold'])
-            sheet.merge_range(row, 7, row, 7 + len(date_columns) - 1, 'Wahyu Widiyanto', wbf['center_bold'])
+            sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Wahyu Widiyanto', wbf['center_bold'])
 
             current_date = datetime.now().strftime("%d-%m-%Y")
             start_col = 7 + len(date_columns)
@@ -832,4 +832,4 @@ class ReportSummaryBkm(models.AbstractModel):
             row += 1
             sheet.merge_range(row, 0, row, 1, 'Mandor Besar Karet', wbf['content_center'])
             sheet.merge_range(row, 3, row, 5, 'Asisten Kebun', wbf['content_center'])
-            sheet.merge_range(row, 7, row, 7 + len(date_columns) - 1, 'Manager Kebun', wbf['content_center'])
+            sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Manager Kebun', wbf['content_center'])

@@ -7,7 +7,7 @@
         <field name="report_type">xlsx</field>
         <field name="report_name">nyalindung_report.summary_attendance_xlsx</field>
         <field name="report_file">nyalindung_report.summary_attendance_xlsx</field>
-        <field name="print_report_name">'(LAPORAN SUMMARY attendance)'</field>
+        <field name="print_report_name">'(LAPORAN SUMMARY ATTENDANCE)'</field>
         <field name="binding_model_id" ref="nyalindung_report.model_wizard_report_summary_attendance"/>
         <field name="binding_type">report</field>
     </record>
