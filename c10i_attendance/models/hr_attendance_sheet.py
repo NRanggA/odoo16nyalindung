@@ -3,7 +3,7 @@ import logging
 
 from datetime import datetime, time
 import pytz
-from pytz import timezone
+from pytz import timezone, utc
 
 _logger = logging.getLogger(__name__)
 
@@ -31,20 +31,20 @@ class HrAttendanceSheet(models.Model):
             _logger.error("Tipe absensi dengan kode 'M' tidak ditemukan.")
             return False
 
-        employees = self.env['hr.employee'].search([])
-        today_date = fields.Date.context_today(self)
+        employees   = self.env['hr.employee'].search([])
+        jakarta     = timezone('Asia/Jakarta')
+        today_date  = utc.localize(fields.Datetime.now()).astimezone(jakarta)
+        # today_date = fields.Date.context_today(self)
 
         if kwargs.get("force_date"):
             today_date = fields.Date.from_string(kwargs['force_date'])
         
-        # print("====== DATA hr attendance sheet : {today_date} ", today_date)
-
         attendance_sheets_to_create = []
 
         for employee in employees:
-            calendar = employee.resource_calendar_id
-            start_dt = timezone(calendar.tz).localize(datetime.combine(today_date, time.min))
-            end_dt = timezone(calendar.tz).localize(datetime.combine(today_date, time.max))
+            calendar        = employee.resource_calendar_id
+            start_dt        = timezone(calendar.tz).localize(datetime.combine(today_date, time.min))
+            end_dt          = timezone(calendar.tz).localize(datetime.combine(today_date, time.max))
             real_attendance = calendar._attendance_intervals_batch(start_dt, end_dt, employee.resource_id)[employee.resource_id.id] \
                      - calendar._leave_intervals_batch(start_dt, end_dt, None)[False]
             
@@ -76,7 +76,5 @@ class HrAttendanceSheet(models.Model):
 
         if attendance_sheets_to_create:
             self.env['hr.attendance.sheet'].create(attendance_sheets_to_create)
-            _logger.info(f"=== Created {len(attendance_sheets_to_create)} new attendance sheets for today ({today_date}).")
-
         return True
     
