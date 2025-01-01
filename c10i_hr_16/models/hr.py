@@ -61,6 +61,8 @@ class hr_employee(models.Model):
         for rec in self:
             if rec.no_induk:
                 result.append((rec.id, '%s - %s' % (rec.name,rec.no_induk)))
+            else:
+                result.append((rec.id, rec.name))
         return result
 
     @api.constrains('no_induk')
