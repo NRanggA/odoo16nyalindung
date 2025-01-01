@@ -3,7 +3,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-
+from collections import defaultdict
 
 class lhm_nap(models.Model):
     _name           = 'lhm.nap'
@@ -84,6 +84,9 @@ class lhm_nap(models.Model):
     pabrik_line_ids     = fields.One2many('timbangan.pabrik', inverse_name='lhm_nap_id', string="Penamaan")
     partner_id          = fields.Many2one('res.partner', string="Partner")
     drc                 = fields.Float(string='DRC')
+    kebun_totals        = fields.Text(string="Total Kebun", compute="_compute_kebun_totals", store=False)
+    pabrik_totals       = fields.Text(string="Total Pabrik", compute="_compute_pabrik_totals", store=False)
+    product_totals      = fields.Text(string="Total Produk", compute="_compute_product_totals", store=False)
     # drc_id             = fields.One2many('lhm.drc', 'nap_id', string="DRC Lines")
     _order = "date_nap desc"
 
@@ -153,6 +156,45 @@ class lhm_nap(models.Model):
     #         GROUP BY lnal.tgl_panen, lpb.afdeling_id, lnal.block_id, lna.date_naf
     #         )
     #     """)
+
+    @api.depends('kebun_line_ids')
+    def _compute_kebun_totals(self):
+        for record in self:
+            totals = defaultdict(lambda: {'qty': 0.0, 'uom': False})
+            for line in record.kebun_line_ids:
+                if line.product_id:
+                    totals[line.product_id.id]['qty'] += line.product_qty
+                    totals[line.product_id.id]['uom'] = line.uom_id.name
+            record.kebun_totals = '\n'.join(
+                f"{self.env['product.product'].browse(pid).name}: {data['qty']} {data['uom']}" 
+                for pid, data in totals.items()
+            )
+
+    @api.depends('pabrik_line_ids')
+    def _compute_pabrik_totals(self):
+        for record in self:
+            totals = defaultdict(lambda: {'qty': 0.0, 'uom': False})
+            for line in record.pabrik_line_ids:
+                if line.product_id:
+                    totals[line.product_id.id]['qty'] += line.product_qty
+                    totals[line.product_id.id]['uom'] = line.uom_id.name
+            record.pabrik_totals = '\n'.join(
+                f"{self.env['product.product'].browse(pid).name}: {data['qty']} {data['uom']}" 
+                for pid, data in totals.items()
+            )
+
+    @api.depends('line_ids')
+    def _compute_product_totals(self):
+        for record in self:
+            totals = defaultdict(lambda: {'qty': 0.0, 'uom': False})
+            for line in record.line_ids:
+                if line.product_id:
+                    totals[line.product_id.id]['qty'] += line.qty_nap
+                    totals[line.product_id.id]['uom'] = line.uom_id.name
+            record.product_totals = '\n'.join(
+                f"{self.env['product.product'].browse(pid).name}: {round(data['qty'], 2)} {data['uom']}" 
+                for pid, data in totals.items()
+            )
 
     @api.onchange('vehicle_id' ,'vehicle_subtitute_id')
     def onchange_vehicle(self):
@@ -940,7 +982,6 @@ class TimbanganPabrik(models.Model):
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
     timbangan_kebun_id = fields.Many2one('timbangan.kebun', string="Data Timbangan Kebun", ondelete='cascade')
     # drc_line_ids       = fields.One2many('lhm.drc.line', 'timbangan_pabrik_id', string="DRC Lines", ondelete="cascade")
-
 
     @api.model
     def create(self, vals):
