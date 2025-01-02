@@ -2094,7 +2094,7 @@ class lhm_transaction_line(models.Model):
                 lhm_transaction_date = record.lhm_id.date if record.lhm_id else False
                 
                 if record.employee_id and record.employee_id.basic_salary_type == 'employee':
-                    contract = self.env['hr.contract'].search([
+                    contract = self.env['hr.contract'].sudo().search([
                         ('employee_id', '=', record.employee_id.id),
                         ('date_start', '<=', lhm_transaction_date),
                         '|',('date_end', '=', False),('date_end', '>=', lhm_transaction_date),
@@ -2102,7 +2102,7 @@ class lhm_transaction_line(models.Model):
                         ('is_lhm', '=', True ),
                     ], limit=1)
                 elif record.employee_id and record.employee_id.basic_salary_type == 'employee_type':
-                    contract = self.env['hr.contract'].search([
+                    contract = self.env['hr.contract'].sudo().search([
                         ('employee_type_id', '=', record.employee_id.type_id.id),
                         ('date_start', '<=', lhm_transaction_date),
                         '|',('date_end', '=', False),('date_end', '>=', lhm_transaction_date),

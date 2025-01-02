@@ -78,7 +78,7 @@ class hr_employee(models.Model):
     def create(self, values):
         res =super(hr_employee, self).create(values)
         if res.ptkp_id:
-            self.env['hr.ptkp.history'].create({
+            self.env['hr.ptkp.history'].sudo().create({
                 'name'          : res.name,
                 'employee_id'   : res.id,
                 'ptkp_id'       : res.ptkp_id and res.ptkp_id.id,
@@ -88,7 +88,7 @@ class hr_employee(models.Model):
 
     def write(self, values):
         if values.get('ptkp_id'):
-            self.env['hr.ptkp.history'].create({
+            self.env['hr.ptkp.history'].sudo().create({
                 'name'          : self.name,
                 'employee_id'   : self.id,
                 'ptkp_id'       : self.ptkp_id and self.ptkp_id.id,
