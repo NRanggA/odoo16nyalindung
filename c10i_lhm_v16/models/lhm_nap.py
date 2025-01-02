@@ -1035,7 +1035,7 @@ class TimbanganPabrik(models.Model):
             picking = self.env['stock.picking'].sudo().create(picking_vals)
             self.stock_picking_id = picking.id
         else:
-            self.stock_picking_id.move_ids_without_package[0].write({
+            self.stock_picking_id.move_ids_without_package[0].sudo().write({
                 'product_uom_qty': self.product_qty,
                 'product_uom': self.uom_id.id,
             })
