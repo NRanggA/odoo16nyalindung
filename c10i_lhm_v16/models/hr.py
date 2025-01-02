@@ -403,7 +403,7 @@ class HrEmployee(models.Model):
             return False
 
         # Cari kontrak yang sedang berjalan untuk type_id tertentu
-        running_contract = self.env['hr.contract'].search([
+        running_contract = self.env['hr.contract'].sudo().search([
             ('employee_type_id', '=', type_id),
             ('state', '=', 'open')
         ], limit=1)
