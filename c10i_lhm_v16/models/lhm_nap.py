@@ -1032,7 +1032,7 @@ class TimbanganPabrik(models.Model):
                 # 'picking_type_id': self.env.ref('stock.picking_type_in').id,
                 'picking_type_id': self.env.ref('c10i_lhm_v16.picking_type_nap_1').id,
             }
-            picking = self.env['stock.picking'].create(picking_vals)
+            picking = self.env['stock.picking'].sudo().create(picking_vals)
             self.stock_picking_id = picking.id
         else:
             self.stock_picking_id.move_ids_without_package[0].write({
