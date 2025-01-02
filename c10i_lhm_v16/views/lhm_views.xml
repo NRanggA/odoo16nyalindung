@@ -3519,7 +3519,7 @@
                             </page>                         
                             <page string="TIMBANGAN PABRIK">
                                 <field name="pabrik_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}">
-                                    <tree editable="bottom">
+                                    <tree editable="bottom" create="false" delete="false">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="product_qty"/>
@@ -3537,7 +3537,7 @@
                             </page>                                               
                             <page string="DETAIL NOTA ANGKUT PANEN">
                                 <field name="line_ids" nolabel="1">
-                                    <tree editable="bottom">
+                                    <tree editable="bottom" create="false" delete="false">
                                         <field name="block_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                         <field name="tgl_panen"/>
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="0" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
