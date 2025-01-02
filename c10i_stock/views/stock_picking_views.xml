@@ -10,8 +10,12 @@
                 <field name="no_kendaraan"/>
                 <field name="no_expedisi"/>
             </xpath>
-            <xpath expr="//button[@name='354']" position="attributes">
+            <!-- <xpath expr="//button[@name='354']" position="attributes">
                 <attribute name="attrs">{'invisible': [('state', '==', 'done')]}</attribute>
+            </xpath> -->
+            <xpath expr="//button[@name='354']" position="attributes">
+                <attribute name="name">check_vendor_bill_and_return</attribute>
+                <attribute name="type">object</attribute>
             </xpath>
         </field>
     </record>
