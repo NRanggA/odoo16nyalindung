@@ -28,6 +28,7 @@
 
             <!-- Mengontrol visibilitas field employee_id berdasarkan structure_type_id -->
             <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="widget"></attribute>
                 <attribute name="attrs">{
                     'invisible': [('structure_type_id', '=', 2)],
                     'readonly': [('state', '!=', 'draft')]
