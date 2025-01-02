@@ -110,19 +110,21 @@ class AccountPayment(models.Model):
                 self.name = sequence_number
                 
                 # Paired Journal
-                sequence_paired = None
-                if self.paired_internal_transfer_payment_id.payment_type == 'inbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_id:
-                    sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_id
-                elif self.paired_internal_transfer_payment_id.payment_type == 'outbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_out_id:
-                    sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_out_id
+                if self.paired_internal_transfer_payment_id:
+                    sequence_paired = None
+                    if self.paired_internal_transfer_payment_id.payment_type == 'inbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_id:
+                        sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_id
+                    elif self.paired_internal_transfer_payment_id.payment_type == 'outbound' and self.paired_internal_transfer_payment_id.journal_id.sequence_out_id:
+                        sequence_paired = self.paired_internal_transfer_payment_id.journal_id.sequence_out_id
 
-                if not sequence_paired:
-                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-                payment_date_paired     = self.date or datetime.now().date()
-                sequence_number_paired  = sequence_paired.with_context(ir_sequence_date=payment_date_paired).next_by_id()
+                    if not sequence_paired:
+                        raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-                self.paired_internal_transfer_payment_id.name = sequence_number_paired
+                    payment_date_paired     = self.date or datetime.now().date()
+                    sequence_number_paired  = sequence_paired.with_context(ir_sequence_date=payment_date_paired).next_by_id()
+
+                    self.paired_internal_transfer_payment_id.name = sequence_number_paired
 
         # Mengecek apakah ada (amount_charge)
         for payment in self.filtered(lambda p: p.payment_type == 'outbound'):
