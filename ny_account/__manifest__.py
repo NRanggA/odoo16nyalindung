@@ -55,7 +55,7 @@
         'views/efaktur_list_views.xml',
 
         # payment sequence
-        'data/payment_sequence_data.xml',
+        # 'data/payment_sequence_data.xml',
 
 
     ],
