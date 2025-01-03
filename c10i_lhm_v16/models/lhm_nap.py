@@ -499,6 +499,68 @@ class lhm_nap(models.Model):
         self.line_ids.allocate_nap_line_to_lhm_line()
                         
     def button_save_to_nap_line(self):
+        for record in self:
+            # Mendapatkan data dari timbangan.kebun berdasarkan tanggal panen
+            kebun_lines = self.env['timbangan.kebun'].search([
+                ('tgl_panen', '=', record.date_nap),
+                ('lhm_nap_id', '=', record.id)
+            ])
+            location_ids = [line.block_id.location_id.id for line in record.kebun_line_ids]
+            # Mendapatkan data dari lhm.transaction.line berdasarkan tanggal LHM
+            transaction_lines = self.env['lhm.transaction.line'].search([
+                ('date', '=', record.date_nap),
+                ('location_id','in', location_ids)
+            ])
+
+            # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
+            kebun_data = {}
+            for line in kebun_lines:
+                location_id = line.block_id.location_id.id
+                kebun_key = (location_id, line.tgl_panen)
+                if kebun_key not in kebun_data:
+                    kebun_data[kebun_key] = 0
+                kebun_data[kebun_key] += line.product_qty
+
+            # Mengelompokkan data transaksi berdasarkan location_id dan tanggal
+            transaction_data = {}
+            for line in transaction_lines:
+                location_id = line.location_id.id
+                transaction_key = (location_id, line.date)
+                if transaction_key not in transaction_data:
+                    transaction_data[transaction_key] = 0
+                transaction_data[transaction_key] += line.hasil_1 + line.hasil_2
+
+            # Validasi kesesuaian total hasil
+            for key, transaction_total in transaction_data.items():
+                # Cari apakah lokasi pada transaksi ada di data kebun
+                corresponding_kebun_keys = [k for k in kebun_data if k[0] == key[0] and k[1] == key[1]]
+                location_name = self.env['lhm.location'].browse(key[0]).name
+                if not corresponding_kebun_keys:
+                    raise UserError(f"Data tidak ditemukan di Timbangan Kebun untuk lokasi {location_name} dan tanggal {key[1]}.")
+                
+                # Jumlahkan total data kebun untuk lokasi dan tanggal yang sesuai
+                kebun_total = sum(kebun_data[k] for k in corresponding_kebun_keys)
+                if transaction_total != kebun_total:
+                    raise UserError(
+                        f"Jumlah hasil tidak sesuai untuk lokasi {location_name} dan tanggal {key[1]}. "
+                        f"Total hasil pada LHM - Daftar Karyawan: {transaction_total}, "
+                        f"Total Product Qty pada NAP - Timbangan Kebun: {kebun_total}."
+                    )
+
+            # Validasi jika data kebun tidak ditemukan di transaksi
+            for key, kebun_total in kebun_data.items():
+                if key not in transaction_data:
+                    location_name = self.env['lhm.location'].browse(key[0]).name
+                    raise UserError(f"Data tidak ditemukan di LHM untuk lokasi {location_name} dan tanggal {key[1]}.")
+
+            # Validasi total akhir
+            total_transaction = sum(transaction_data.values())
+            total_kebun = sum(kebun_data.values())
+            if total_transaction != total_kebun:
+                raise UserError(f"Total keseluruhan tidak sesuai. "
+                                f"LHM - Daftar Karyawan: {total_transaction}, "
+                                f"NAP - Timbangan Kebun: {total_kebun}.")
+
         self.state = 'process'
         self.process = True
         for record in self:
