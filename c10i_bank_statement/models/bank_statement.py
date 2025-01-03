@@ -1,5 +1,5 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from datetime import datetime
 
 class AccountBankStatement(models.Model):
@@ -34,9 +34,14 @@ class AccountBankStatement(models.Model):
 
     def button_validate(self):
         self.write({'state': 'validated'})
+        if self.type=='cash':
+            if self.balance_end_real and not any([x.total>0 for x in self.cash_count_line_ids]):
+                raise ValidationError("Please input Cash Count for a Cash Register")
+            if round(self.balance_end_real,2)!=round(sum(self.cash_count_line_ids.mapped('total')),2):
+                raise ValidationError("Amount in Cash Count are not same with the Amount in Ending Balance")
         for line in self.line_ids.filtered(lambda x: x.is_reconciled == False):
             line.reconcile_bank_line()
-    
+
     def button_draft(self):
         self.write({'state': 'draft'})
     
@@ -62,9 +67,15 @@ class AccountBankStatement(models.Model):
     
     @api.onchange('cash_count_line_ids')
     def onchange_ending_balance(self):
-        total = sum(rec.cash_type_id.amount * rec.amount for rec in self.cash_count_line_ids)
-        self.write({'balance_end_real': total})
-        
+        ending_cash_count = sum(rec.cash_type_id.amount * rec.amount for rec in self.cash_count_line_ids)
+        self.write({'balance_end_real': ending_cash_count})
+        if self.type=='cash' and round(ending_cash_count,2)!=round(self.balance_start,2):
+            if not self.line_ids:
+                self.line_ids = [(0,0,{'payment_ref': 'Cash Difference', 'amount': ending_cash_count - self.balance_start})]
+            else:
+                self.line_ids = False
+                self.line_ids = [(0,0,{'payment_ref': 'Cash Difference', 'amount': ending_cash_count - self.balance_start})]
+    
     # Overide Function
     # Note: removed the code that changes the field date
     @api.depends('line_ids.internal_index', 'line_ids.state')
@@ -77,6 +88,10 @@ class AccountBankStatement(models.Model):
                 stmt.first_line_index = False
             # stmt.date = sorted_lines.filtered(lambda l: l.state == 'posted')[-1:].date
         
+    def button_get_balance_start(self):
+        for statement in self:
+            statement.balance_start = self.env['account.move.line'].read_group(domain=[('account_id','=',statement.journal_id.default_account_id.id),('date','<',statement.date),('parent_state','=','posted')], fields=['balance:sum'], groupby='account_id')[0]['balance']
+
     def button_get_payments(self):
         self = self.sudo()
         journal_domain = [("date","=",self.date), ('journal_id','=',self.journal_id.id), ("state", "=", "posted")]

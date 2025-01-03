@@ -11,7 +11,7 @@ class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
     equipment_category_id = fields.Many2one('maintenance.equipment.category', string='Equipment Category')
-    asset_type = fields.Selection(selection=[('lva','LVA'),('fa','FA')],compute='_compute_asset_type', string='Asset Type',precompute=True)
+    asset_type = fields.Selection(selection=[('lva','LVA'),('fa','FA')],compute='_compute_asset_type', string='Asset Type')
 	
     @api.depends('price_unit')
     def _compute_asset_type(self):

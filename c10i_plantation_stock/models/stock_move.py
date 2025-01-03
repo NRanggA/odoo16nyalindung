@@ -86,3 +86,19 @@ class StockMove(models.Model):
     #     if self.company_id.anglo_saxon_accounting:
     #         # Eventually reconcile together the invoice and valuation accounting entries on the stock interim accounts
     #         self._get_related_invoices()._stock_account_anglo_saxon_reconcile_valuation(product=self.product_id)
+
+    @api.model
+    def _prepare_merge_moves_distinct_fields(self):
+        fields = super(StockMove, self)._prepare_merge_moves_distinct_fields()
+        fields = [
+            'product_id', 'price_unit', 'procure_method', 'location_id', 'location_dest_id',
+            'product_uom', 'restrict_partner_id', 'scrapped', 'origin_returned_move_id',
+            'package_level_id', 'propagate_cancel', 'description_picking',
+            'product_packaging_id',
+        ]
+        if self.mr_line_id:
+            fields.extend(['plantation_varieties_id',
+                'plantation_location_type_id',
+                'plantation_location_id',
+                'plantation_activity_id'])
+        return fields

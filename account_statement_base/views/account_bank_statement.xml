@@ -11,12 +11,12 @@
             <field name="priority">1</field>
             <field name="arch" type="xml">
                 <form string="Bank Statement">
-                    <header></header>
+                    <header>
+                    </header>
+                    
                     <div
-                    class="alert alert-warning"
-                    role="alert"
-                    attrs="{'invisible': [('problem_description', '=', False)]}"
-                >
+                        class="alert alert-warning"
+                        role="alert" attrs="{'invisible': [('problem_description', '=', False)]}">
                         <field name="problem_description" />
                     </div>
                     <sheet>
@@ -60,19 +60,20 @@
                             </group>
                         </group>
                         <field
-                        name="line_ids"
-                        context="{'default_journal_id': journal_id}"
-                    />
+                            name="line_ids"
+                            context="{'default_journal_id': journal_id}"
+                        />
                         <group
-                        class="oe_subtotal_footer oe_right"
-                        name="sale_total"
-                        col="1"
-                    >
+                            class="oe_subtotal_footer oe_right"
+                            name="sale_total"
+                            col="1"
+                        >
                             <field
                             name="balance_end"
                             class="oe_subtotal_footer_separator"
                         />
                         </group>
+                        
                         <field name="attachment_ids" widget="many2many_binary" />
                         <div class="oe_clear" />
                     </sheet>

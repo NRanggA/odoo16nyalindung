@@ -109,6 +109,7 @@ class HrPayslipRun(models.Model):
                         # sum(map.debit_amount) as debit,
                         # sum(map.credit_amount) as credit,
                 query = """SELECT 
+                        plantation_varieties_id,
                         plantation_location_type_id,
                         plantation_location_id,
                         plantation_activity_id,
@@ -117,8 +118,9 @@ class HrPayslipRun(models.Model):
                         partner_id
                     FROM hr_payslip_cost_map
                     WHERE payslip_run_id=%s and partner_id=%s and gc_distribution='false'
-                    GROUP BY partner_id, account_id, plantation_location_type_id,
-                        plantation_location_id, plantation_activity_id 
+                    GROUP BY partner_id, account_id, plantation_varieties_id, 
+                        plantation_location_type_id, plantation_location_id, 
+                        plantation_activity_id 
                 """
                 self.env.cr.execute(query%(self.id, partner.id))
                 accrual_move_lines = []

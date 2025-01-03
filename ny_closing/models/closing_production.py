@@ -67,6 +67,7 @@ class ClosingProductionFinishGood(models.Model):
     inventory_account_id = fields.Many2one('account.account', 'Account Inventory')
     cogs_account_id = fields.Many2one('account.account', 'Account COGS')
     scrap_account_id = fields.Many2one('account.account', 'Scrap Account')
+    adjustment_account_id = fields.Many2one('account.account', 'Adjustment Account')
 
     opening_qty = fields.Float(compute='_compute_opening', inverse='_invrs_opening', readonly=False, store=True, string='Opening Qty')
     opening_qty_manual = fields.Float(string='Opening Qty')
@@ -91,7 +92,10 @@ class ClosingProductionFinishGood(models.Model):
 
     scrap_qty = fields.Float(string='Scrap Qty')
     scrap_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Scrap Value')
-    
+
+    adjustment_qty = fields.Float(string='Adjustment Qty')
+    adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value')
+
     closing_qty = fields.Float(compute='_compute_closing', store=True, string='Closing Qty')
     closing_value = fields.Float(compute='_compute_closing', store=True, string='Closing Value')
 
@@ -158,12 +162,13 @@ class ClosingProductionFinishGood(models.Model):
             line.onhand_value = line.opening_value + line.plantation_cost + line.manufacturing_cost
             line.new_cost_price = line.onhand_value/line.onhand_qty if line.onhand_qty else 0.0
 
-    @api.depends('new_cost_price', 'outgoing_qty', 'ripening_qty', 'scrap_qty')
+    @api.depends('new_cost_price', 'outgoing_qty', 'ripening_qty', 'scrap_qty', 'adjustment_qty')
     def _compute_outgoing_value(self):
         for line in self:
             line.outgoing_value = line.outgoing_qty * line.new_cost_price
             line.ripening_value = line.ripening_qty * line.new_cost_price
             line.scrap_value = line.scrap_qty * line.new_cost_price
+            line.adjustment_value = line.adjustment_qty * line.new_cost_price
             line.ripening_incoming_qty = line.ripening_qty
             line.ripening_incoming_value = line.ripening_value
 
@@ -1190,6 +1195,9 @@ class ClosingProduction(models.Model):
                     values_to_create.update({
                         'inventory_account_id': prev_closing_fg.inventory_account_id.id if prev_closing_fg.inventory_account_id else False,
                         'cogs_account_id': prev_closing_fg.cogs_account_id.id if prev_closing_fg.cogs_account_id else False,
+                        'scrap_account_id': prev_closing_fg.scrap_account_id.id if prev_closing_fg.scrap_account_id else False,
+                        'adjustment_account_id': prev_closing_fg.adjustment_account_id.id if prev_closing_fg.adjustment_account_id else False,
+                        'inventory_ripening_account_id': prev_closing_fg.inventory_ripening_account_id.id if prev_closing_fg.inventory_ripening_account_id else False,
                     })
                 to_create.append(values_to_create)
             for exvals in to_create:
@@ -1655,6 +1663,8 @@ class ClosingProduction(models.Model):
                 raise ValidationError(f"Silahkan isi akun COGS untuk Product {line.product_id.name}")
             if not line.scrap_account_id:
                 raise ValidationError(f"Silahkan isi akun Scrap untuk Product {line.product_id.name}")
+            if not line.adjustment_account_id:
+                raise ValidationError(f"Silahkan isi akun Susut untuk Product {line.product_id.name}")
             # 1. Journal Receiving (Plantation/Manufacturing Cost > Inventory) 
             vals_dest = {
                 'name': f"{line.product_id.name} Received",
@@ -1773,6 +1783,30 @@ class ClosingProduction(models.Model):
                     'account_id': line.inventory_ripening_account_id.id,
                     'debit': vals_cogs2['credit'],
                     'credit': vals_cogs2['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src5))
+            
+            
+            # 7. Journal Susut
+            if line.adjustment_qty:
+                vals_adj = {
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'plantation_location_type_id': False,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.adjustment_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': line.adjustment_value if line.adjustment_value>0 else 0.0,
+                    'credit': abs(line.adjustment_value) if line.adjustment_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_adj))
+                vals_src5 = vals_adj.copy()
+                vals_src5.update({
+                    'name': f"Inventory Scrap",
+                    'account_id': line.inventory_account_id.id,
+                    'debit': vals_adj['credit'],
+                    'credit': vals_adj['debit'],
                 })
                 move_lines_cogs.append((0, 0, vals_src5))
 

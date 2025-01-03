@@ -76,10 +76,10 @@ class LabOrder(models.Model):
         picking = self.env['stock.picking'].create(int_picking_vals)
         picking.action_confirm()
         picking.action_assign()
-        if picking.state=='assigned':
-            # picking.move_ids.action_done()
-            picking.action_set_quantities_to_reservation()
-            picking.button_validate()
+        # if picking.state=='assigned':
+        #     # picking.move_ids.action_done()
+        #     picking.action_set_quantities_to_reservation()
+        #     picking.button_validate()
         self.picking_ids = [(6,0,picking.ids)]
 
     def action_view_moves(self):

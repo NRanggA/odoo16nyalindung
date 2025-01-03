@@ -425,6 +425,9 @@ class ClosingProcess(models.Model):
                     values_to_create.update({
                         'inventory_account_id': prev_closing_fg_plant.inventory_account_id.id if prev_closing_fg_plant.inventory_account_id else False,
                         'cogs_account_id': prev_closing_fg_plant.cogs_account_id.id if prev_closing_fg_plant.cogs_account_id else False,
+                        'scrap_account_id': prev_closing_fg_plant.scrap_account_id.id if prev_closing_fg_plant.scrap_account_id else False,
+                        'adjustment_account_id': prev_closing_fg_plant.adjustment_account_id.id if prev_closing_fg_plant.adjustment_account_id else False,
+                        'inventory_ripening_account_id': prev_closing_fg_plant.inventory_ripening_account_id.id if prev_closing_fg_plant.inventory_ripening_account_id else False,
                     })
                 print(">>>>>>>>>>>>>>other variant", values_to_create)
                 to_create.append((0,0,values_to_create))
