@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="inherit_view_hr_attendance_sheet_tree" model="ir.ui.view">
+        <field name="name">hr.attendance.sheet.tree.inherit.view</field>
+        <field name="model">hr.attendance.sheet</field>
+        <field name="inherit_id" ref="c10i_attendance.attendance_sheet_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="kemandoran_id" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="inherit_view_hr_attendance_sheet_form" model="ir.ui.view">
+        <field name="name">hr.attendance.sheet.form.inherit.view</field>
+        <field name="model">hr.attendance.sheet</field>
+        <field name="inherit_id" ref="c10i_attendance.attendance_sheet_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="kemandoran_id" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

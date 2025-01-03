@@ -17,6 +17,7 @@ from . import plantation_salary
 from . import report_costing
 from . import running_account
 from . import hr_attendance_correction
+from . import hr_attendance_sheet
 from . import lhm_tm_category
 from . import target_production
 from . import tarif_premi_production

@@ -101,6 +101,7 @@
         'wizard/lhm_state_views.xml',
         'wizard/wizard_hasil_lhm_views.xml',
         'views/hr_attendance_correction_views.xml',
+        'views/hr_attendance_sheet.xml',
         'views/lhm_tm_category_views.xml',
         'views/target_production_views.xml',
         'views/tarif_premi_production_views.xml',
