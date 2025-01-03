@@ -277,6 +277,10 @@ class DirectPaymentLine(models.Model):
             'product_id': self.product_id.id,
             'debit': (abs(amount) if amount < 0 else 0.0) if self.payment_id.expense_report or self.payment_id.direct_state == 'receive' else (amount if amount > 0 else 0.0),
             'credit': (amount if amount > 0 else 0.0) if self.payment_id.expense_report or self.payment_id.direct_state == 'receive' else (abs(amount) if amount < 0 else 0.0),
+            'plantation_location_type_id': self.plantation_location_type_id.id,
+            'plantation_varieties_id': self.plantation_varieties_id.id,
+            'plantation_location_id': self.plantation_location_id.id,
+            'plantation_activity_id': self.plantation_activity_id.id,
         }
 
     @api.onchange('plantation_location_type_id')
