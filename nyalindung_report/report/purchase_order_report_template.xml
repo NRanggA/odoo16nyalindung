@@ -74,7 +74,15 @@
                                     <td style="text-align: center"></td>
                                     <td style="text-align: center"></td>
                                     <td style="text-align: center"></td>
-                                    <td style="text-align: center"><t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0}'/></td>
+                                    <td style="text-align: center">
+                                        <!-- <t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0, "default": 0}'/> -->
+                                        <t t-if="tax['amount'] &lt; 0">
+                                            -<t t-esc="abs(tax['amount'])" t-options='{"widget": "float", "precision": 0}'/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0}'/>
+                                        </t>
+                                    </td>
                                 </t>
                                 <tr height="34px" style="font-weight : bold">
                                     <td style=""></td>

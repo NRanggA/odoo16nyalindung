@@ -72,12 +72,31 @@ class PurchaseOrder(models.Model):
             else:
                 return record.jabatan_penyetuju
 
+    # def get_grouped_taxes(self):
+    #     grouped_taxes = {}
+    #     for line in self.order_line:
+    #         for tax in line.taxes_id:
+    #             tax_id = tax.id
+    #             tax_amount = line.price_subtotal * (tax.amount / 100)
+    #             if tax_id in grouped_taxes:
+    #                 grouped_taxes[tax_id]['amount'] += tax_amount
+    #             else:
+    #                 grouped_taxes[tax_id] = {
+    #                     'name': tax.name,
+    #                     'amount': tax_amount,
+    #                 }
+    #     return grouped_taxes
+
     def get_grouped_taxes(self):
         grouped_taxes = {}
         for line in self.order_line:
             for tax in line.taxes_id:
                 tax_id = tax.id
                 tax_amount = line.price_subtotal * (tax.amount / 100)
+                
+                # diubah ke float dan Pembulatan 2 desimal
+                tax_amount = round(tax_amount, 2)
+
                 if tax_id in grouped_taxes:
                     grouped_taxes[tax_id]['amount'] += tax_amount
                 else:
@@ -85,4 +104,9 @@ class PurchaseOrder(models.Model):
                         'name': tax.name,
                         'amount': tax_amount,
                     }
+
+        # Bersihkan nilai pajak dari karakter encoding yang tidak diinginkan
+        for tax in grouped_taxes.values():
+            tax['amount'] = float(tax['amount'])
+
         return grouped_taxes
