@@ -95,7 +95,8 @@ class lhm_drc(models.Model):
                 nap_line_records = napline.search([
                     ('block_id', '=', line.block_id.id),
                     ('tgl_panen', '=', line.date),
-                    ('product_id', '=', line.product.id)
+                    ('product_id', '=', line.product.id),
+                    ('lhm_nap_id.state', '=', 'confirmed'),
                 ])
                 if not nap_line_records:
                     raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}', dan Produk '{line.product.name}'.")
