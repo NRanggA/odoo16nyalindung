@@ -31,10 +31,10 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
 
-    dibuat_oleh = fields.Char('Dibuat Oleh')
-    jabatan_pembuat = fields.Char('Jabatan Pembuat')
-    disetujui = fields.Char('Disetujui Oleh')
-    jabatan_penyetuju = fields.Char('Jabatan Penyetuju')
+    dibuat_oleh = fields.Char('Dibuat Oleh', default="Wahyu Widianto")
+    jabatan_pembuat = fields.Char('Jabatan Pembuat', default="Manager Plantation")
+    disetujui = fields.Char('Disetujui Oleh', default="Irwan G Subrata")
+    jabatan_penyetuju = fields.Char('Jabatan Penyetuju', default="Direktur")
 
     @api.depends('dibuat_oleh')
     def get_dibuat_oleh(self):
