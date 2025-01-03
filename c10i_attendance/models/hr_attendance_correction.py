@@ -126,29 +126,57 @@ class HrAttendanceCorrectionLine(models.Model):
                 if line.check_out and line.check_out.date() < date_attendance:
                     raise ValidationError(f"Tanggal Checkout tidak boleh sebelum tanggal absensi : {date_attendance}")
 
-    @api.model
-    def _convert_to_utc(self, dt):
-        """Konversi waktu dari Asia/Jakarta ke UTC sebelum disimpan"""
-        if dt:
-            local_tz = timezone('Asia/Jakarta')
-            local_dt = local_tz.localize(dt, is_dst=None)
-            return local_dt.astimezone(utc).replace(tzinfo=None)
-        return dt
+    # @api.onchange('check_in', 'check_out')
+    # def _onchange_check_in_check_out(self):
+    #     for line in self:
+    #         if line.correction_id and line.correction_id.date_attendance:
+    #             date_attendance = line.correction_id.date_attendance
 
-    @api.model
-    def create(self, vals):
-        if 'check_in' in vals:
-            vals['check_in'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_in']))
-        if 'check_out' in vals:
-            vals['check_out'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_out']))
-        return super(HrAttendanceCorrectionLine, self).create(vals)
+    #             # Mengonversi check_in ke waktu lokal Asia/Jakarta
+    #             if line.check_in:
+    #                 check_in_local = fields.Datetime.context_timestamp(line, line.check_in)
+                    
+    #                 if check_in_local.date() < date_attendance:
+    #                     raise ValidationError(f"Tanggal Checkin tidak boleh sebelum tanggal absensi: {date_attendance}")
 
-    def write(self, vals):
-        if 'check_in' in vals:
-            vals['check_in'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_in']))
-        if 'check_out' in vals:
-            vals['check_out'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_out']))
-        return super(HrAttendanceCorrectionLine, self).write(vals)
+    #             if line.check_out:
+    #                 # Mengonversi check_out ke waktu lokal Asia/Jakarta
+    #                 check_out_local = fields.Datetime.context_timestamp(line, line.check_out)
+
+    #                 if check_out_local.date() < date_attendance:
+    #                     raise ValidationError(f"Tanggal Checkout tidak boleh sebelum tanggal absensi: {date_attendance}")
+
+    # @api.model
+    # def _convert_to_local(self, dt):
+    #     """Konversi waktu dari UTC ke Asia/Jakarta sebelum disimpan"""
+    #     if dt:
+    #         utc_tz = timezone('UTC')
+    #         jakarta_tz = timezone('Asia/Jakarta')
+
+    #         # Localize datetime to UTC timezone first if it is naive
+    #         utc_dt = utc_tz.localize(dt) if dt.tzinfo is None else dt
+
+    #         # Convert from UTC to Asia/Jakarta timezone
+    #         local_dt = utc_dt.astimezone(jakarta_tz)
+
+    #         # Return the time in local timezone without tzinfo
+    #         return local_dt.replace(tzinfo=None)
+    #     return dt
+
+    # @api.model
+    # def create(self, vals):
+    #     if 'check_in' in vals:
+    #         vals['check_in'] = self._convert_to_local(fields.Datetime.from_string(vals['check_in']))
+    #     if 'check_out' in vals:
+    #         vals['check_out'] = self._convert_to_local(fields.Datetime.from_string(vals['check_out']))
+    #     return super(HrAttendanceCorrectionLine, self).create(vals)
+
+    # def write(self, vals):
+    #     if 'check_in' in vals:
+    #         vals['check_in'] = self._convert_to_local(fields.Datetime.from_string(vals['check_in']))
+    #     if 'check_out' in vals:
+    #         vals['check_out'] = self._convert_to_local(fields.Datetime.from_string(vals['check_out']))
+    #     return super(HrAttendanceCorrectionLine, self).write(vals)
 
 
     # @api.model
