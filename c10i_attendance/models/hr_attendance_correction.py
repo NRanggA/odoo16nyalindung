@@ -1,6 +1,7 @@
 from odoo import models, fields, api, _
 from datetime import datetime
 from odoo.exceptions import ValidationError, UserError
+from pytz import timezone, utc
 
 
 class HrAttendanceCorrection(models.Model):
@@ -124,6 +125,31 @@ class HrAttendanceCorrectionLine(models.Model):
                     raise ValidationError(f"Tanggal Checkin tidak boleh sebelum tanggal absensi : {date_attendance}")
                 if line.check_out and line.check_out.date() < date_attendance:
                     raise ValidationError(f"Tanggal Checkout tidak boleh sebelum tanggal absensi : {date_attendance}")
+
+    @api.model
+    def _convert_to_utc(self, dt):
+        """Konversi waktu dari Asia/Jakarta ke UTC sebelum disimpan"""
+        if dt:
+            local_tz = timezone('Asia/Jakarta')
+            local_dt = local_tz.localize(dt, is_dst=None)
+            return local_dt.astimezone(utc).replace(tzinfo=None)
+        return dt
+
+    @api.model
+    def create(self, vals):
+        if 'check_in' in vals:
+            vals['check_in'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_in']))
+        if 'check_out' in vals:
+            vals['check_out'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_out']))
+        return super(HrAttendanceCorrectionLine, self).create(vals)
+
+    def write(self, vals):
+        if 'check_in' in vals:
+            vals['check_in'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_in']))
+        if 'check_out' in vals:
+            vals['check_out'] = self._convert_to_utc(fields.Datetime.from_string(vals['check_out']))
+        return super(HrAttendanceCorrectionLine, self).write(vals)
+
 
     # @api.model
     # def create(self, vals):
