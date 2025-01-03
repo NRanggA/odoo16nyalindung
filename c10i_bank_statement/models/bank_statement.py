@@ -71,10 +71,12 @@ class AccountBankStatement(models.Model):
         self.write({'balance_end_real': ending_cash_count})
         if self.type=='cash' and round(ending_cash_count,2)!=round(self.balance_start,2):
             if not self.line_ids:
-                self.line_ids = [(0,0,{'payment_ref': 'Cash Difference', 'amount': ending_cash_count - self.balance_start})]
+                self.line_ids = [(0,0,{'payment_ref': 'Cash Difference', 'amount': ending_cash_count - self.balance_start,
+                                       'journal_id': self.journal_id.id})]
             else:
                 self.line_ids = False
-                self.line_ids = [(0,0,{'payment_ref': 'Cash Difference', 'amount': ending_cash_count - self.balance_start})]
+                self.line_ids = [(0,0,{'payment_ref': 'Cash Difference', 'amount': ending_cash_count - self.balance_start,
+                                       'journal_id': self.journal_id.id})]
     
     # Overide Function
     # Note: removed the code that changes the field date
