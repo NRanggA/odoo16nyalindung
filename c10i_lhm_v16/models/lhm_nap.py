@@ -512,8 +512,6 @@ class lhm_nap(models.Model):
                 ('location_id','in', location_ids),
                 ('lhm_id.state', '=', 'in_progress')
             ])
-            print(">>>>>>>>>>>>>>>>>>>>", kebun_lines)
-            print(">>>>>>>>>>>>>>>>>>>>", transaction_lines)
 
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
             kebun_data = {}
@@ -602,7 +600,7 @@ class lhm_nap(models.Model):
                         ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
                         ('lhm_transaction_line_id.state', '=', 'in_progress'),
                     ])
-                    if not nap_lines:
+                    if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
                         raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
 
                     contractor_lines = self.env['lhm.contractor.nap.line'].search([
