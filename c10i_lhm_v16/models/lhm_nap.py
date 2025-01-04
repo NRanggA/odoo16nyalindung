@@ -515,6 +515,8 @@ class lhm_nap(models.Model):
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
             kebun_data = {}
             for line in kebun_lines:
+                if line.product_id.name in ["Lateks", "Lump"]:
+                    continue
                 location_id = line.block_id.location_id.id
                 kebun_key = (location_id, line.tgl_panen)
                 if kebun_key not in kebun_data:
