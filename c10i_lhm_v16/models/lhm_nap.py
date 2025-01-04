@@ -526,6 +526,8 @@ class lhm_nap(models.Model):
             # Mengelompokkan data transaksi berdasarkan location_id dan tanggal
             transaction_data = {}
             for line in transaction_lines:
+                if line.product_id.name == "Lateks" and line.product_id_2.name == "Lump":
+                    continue
                 location_id = line.location_id.id
                 transaction_key = (location_id, line.date)
                 if transaction_key not in transaction_data:
