@@ -509,7 +509,8 @@ class lhm_nap(models.Model):
             # Mendapatkan data dari lhm.transaction.line berdasarkan tanggal LHM
             transaction_lines = self.env['lhm.transaction.line'].search([
                 ('date', '=', record.date_nap),
-                ('location_id','in', location_ids)
+                ('location_id','in', location_ids),
+                ('lhm_id', '=', 'in_progress')
             ])
 
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
@@ -597,12 +598,18 @@ class lhm_nap(models.Model):
                         ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('lhm_transaction_line_id.date', '=', pabrik_line.tgl_panen),
                         ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
+                        ('lhm_transaction_line_id.state', '=', 'in_progress'),
                     ])
+                    if not nap_lines:
+                        raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
 
                     contractor_lines = self.env['lhm.contractor.nap.line'].search([
                         ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('contractor_id.date', '=', pabrik_line.tgl_panen),
+                        # ('contractor_id.state', '=', ''),
                     ])
+                    # if not contractor_lines:
+                    #     raise UserError(f"Buku Kontraktor Harian tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen terkait.")
 
                     for nap_line in nap_lines:
                         employee_id = nap_line.employee_id.id
