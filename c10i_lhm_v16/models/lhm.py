@@ -3387,7 +3387,8 @@ class lhm_contractor(models.Model):
     _description    = 'Buku Kontraktor'
 
     def _default_account_period_id(self):
-        date = time.strftime('%Y-%m-%d')
+        # date = time.strftime('%Y-%m-%d')
+        date = datetime.now().strftime('%Y-%m-%d')
         period_id = self.env['account.period'].search([('date_start', '<=', date),
                                                        ('date_stop', '>=', date),
                                                        ('special', '=', False)])
