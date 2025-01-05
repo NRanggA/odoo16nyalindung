@@ -247,12 +247,6 @@ class lhm_nap(models.Model):
         return super(lhm_nap, self).unlink()
 
     def button_get_data_karet(self):
-        """
-        Fungsi ini akan membuka wizard untuk mengisi tanggal dan kemandoran.
-        Setelah itu, data dari wizard akan digunakan untuk mengambil dan memproses data LHM.
-        """
-        if not self.date_nap:
-            raise UserError("Tanggal pada NAP harus diisi sebelum menjalankan proses ini.")
         return {
             'type': 'ir.actions.act_window',
             'name': 'Dapatkan Data Karet',
