@@ -5,7 +5,7 @@
             <field name="model">lhm.drc</field>
             <field name="arch" type="xml">
                 <tree string="Dry Rubber Content">
-                    <field name="name"/>
+                    <field name="name" readonly="1" force_save="1"/>
                     <field name="date"/>
                     <field name="state"/>
                 </tree>
