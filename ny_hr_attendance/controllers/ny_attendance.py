@@ -268,6 +268,65 @@ class NyAttendance(ApiBase):
     #         "statusmasuk": "WFO"
     #     }
     # ]
+
+    _week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
+                3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
+    _base_url = ""
+    def _get_detail_attendance(self, attendance):
+        namafile = statusmasuk = ketmasuk = ketkeluar = ""
+        masuk = pulang = ""
+
+        if attendance.is_correction:
+            if attendance.att_log_ids:
+                if len(attendance.att_log_ids.ids)>1:
+                    first_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                    last_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+                    statusmasuk = first_att.statusmasuk
+                    ketmasuk = first_att.keterangan
+                    ketkeluar = last_att.keterangan
+                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                        and res_field='foto' and res_id={first_att.id}"""
+                    request.env.cr.execute(query_attachment)
+                    attc_ids = request.env.cr.fetchone()
+                    if attc_ids:
+                        namafile = f"{self._base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+                else:
+                    statusmasuk = attendance.att_log_ids.statusmasuk
+                    ketmasuk = attendance.att_log_ids.keterangan
+                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                        and res_field='foto' and res_id={attendance.att_log_ids.id}"""
+                    request.env.cr.execute(query_attachment)
+                    attc_ids = request.env.cr.fetchone()
+                    if attc_ids:
+                        namafile = f"{self._base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+        else:
+            first_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+            last_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+            statusmasuk = first_att.statusmasuk
+            ketmasuk = first_att.keterangan
+            ketkeluar = last_att.keterangan
+            query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                and res_field='foto' and res_id={first_att.id}"""
+            request.env.cr.execute(query_attachment)
+            attc_ids = request.env.cr.fetchone()
+            if attc_ids:
+                namafile = f"{self._base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+        
+        if attendance.check_in:
+            masuk = attendance.check_in.astimezone(timezone('Asia/Jakarta'))
+        if attendance.check_out:
+            pulang = attendance.check_out.astimezone(timezone('Asia/Jakarta'))
+        
+        return {
+            "nip": attendance.employee_id.no_induk,
+            "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(attendance.distance_in,2))+' km' if attendance.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
+            "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(attendance.distance_out,2))+' km' if attendance.distance_out else ''}{', '+ketkeluar}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
+            "namafile": namafile,
+            "namahari": self._week_day_names.get(attendance.date.weekday(),"") if attendance.date else "",
+            "tanggal": attendance.date.strftime("%d %b %Y") if attendance.date else "",
+            "statusmasuk": statusmasuk
+        }
+
     @http.route(f"{ROUTES}/historyPresensi", auth='public', website=False, csrf=False, type='http', methods=['POST'])
     def get_attendance_log(self):
         check_token, message = self._verify_auth()
@@ -291,67 +350,12 @@ class NyAttendance(ApiBase):
             domain = [('employee_id','=',employee_found.id), ('date','>=', start_date), 
                         ('date','<=', end_date)]
             attendances = request.env['hr.attendance.sheet'].sudo().search(domain, order='date desc')
-            week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
-                3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
             res_att = []
-            base_url = request.env['ir.config_parameter'].sudo().search([('key', '=', 'web.base.url')], limit=1).value
+            self._base_url = request.env['ir.config_parameter'].sudo().search([('key', '=', 'web.base.url')], limit=1).value
             for att in attendances:
                 if att.type_id.code!='KJ' and not att.att_log_ids:
                     continue
-                namafile = statusmasuk = ketmasuk = ketkeluar = ""
-                masuk = pulang = ""
-
-                if att.is_correction:
-                    if att.att_log_ids:
-                        if len(att.att_log_ids.ids)>1:
-                            first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
-                            last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                            statusmasuk = first_att.statusmasuk
-                            ketmasuk = first_att.keterangan
-                            ketkeluar = last_att.keterangan
-                            query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                                and res_field='foto' and res_id={first_att.id}"""
-                            request.env.cr.execute(query_attachment)
-                            attc_ids = request.env.cr.fetchone()
-                            if attc_ids:
-                                namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
-                        else:
-                            statusmasuk = att.att_log_ids.statusmasuk
-                            ketmasuk = att.att_log_ids.keterangan
-                            query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                                and res_field='foto' and res_id={att.att_log_ids.id}"""
-                            request.env.cr.execute(query_attachment)
-                            attc_ids = request.env.cr.fetchone()
-                            if attc_ids:
-                                namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
-                else:
-                    first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
-                    last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                    statusmasuk = first_att.statusmasuk
-                    ketmasuk = first_att.keterangan
-                    ketkeluar = last_att.keterangan
-                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                        and res_field='foto' and res_id={first_att.id}"""
-                    request.env.cr.execute(query_attachment)
-                    attc_ids = request.env.cr.fetchone()
-                    if attc_ids:
-                        namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
-                
-                if att.check_in:
-                    masuk = att.check_in.astimezone(timezone('Asia/Jakarta'))
-                if att.check_out:
-                    pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
-                
-                att_vals = {
-                    "nip": employee_found.no_induk,
-                    "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
-                    "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketkeluar}" if pulang else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
-                    "namafile": namafile,
-                    "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
-                    "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
-                    "statusmasuk": statusmasuk
-                }
-                res_att.append(att_vals)
+                res_att.append(self._get_detail_attendance(att))
             return Response(json.dumps(res_att), headers=HEADERS, status=201)
         except Exception as error:
             return self._handle_exception(error)
@@ -395,41 +399,12 @@ class NyAttendance(ApiBase):
             domain = [('employee_id','=',employee_found.id), ('date','>=', start_date), 
                         ('date','<=', end_date)]
             attendances = request.env['hr.attendance.sheet'].sudo().search(domain, order='date desc')
-            week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
-                3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
             res_att = []
-            base_url = request.env['ir.config_parameter'].sudo().search([('key', '=', 'web.base.url')], limit=1).value
+            self._base_url = request.env['ir.config_parameter'].sudo().search([('key', '=', 'web.base.url')], limit=1).value
             for att in attendances:
                 if att.type_id.code!='KJ' and not att.att_log_ids:
                     continue
-                namafile = statusmasuk = ketmasuk = ketpulang = ""
-                if att.att_log_ids:
-                    first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
-                    last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                    statusmasuk = first_att.statusmasuk
-                    ketmasuk = first_att.keterangan
-                    ketpulang = last_att.keterangan
-                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                        and res_field='foto' and res_id={first_att.id}"""
-                    request.env.cr.execute(query_attachment)
-                    attc_ids = request.env.cr.fetchone()
-                    if attc_ids:
-                        namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
-                masuk = pulang = ""
-                if att.check_in:
-                    masuk = att.check_in.astimezone(timezone('Asia/Jakarta'))
-                if att.check_out:
-                    pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
-                att_vals = {
-                        "nip": employee_found.no_induk,
-                        "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '',
-                        "pulang": f"{pulang.strftime('%H:%M')}{', '+str(round(att.distance_out,2))+' km' if att.distance_out else ''}{', '+ketpulang}" if pulang else '',
-                        "namafile": namafile,
-                        "namahari": week_day_names.get(att.date.weekday(),"") if att.date else "",
-                        "tanggal": att.date.strftime("%d %b %Y") if att.date else "",
-                        "statusmasuk": statusmasuk
-                }
-                res_att.append(att_vals)
+                res_att.append(self._get_detail_attendance(att))
             return Response(json.dumps(res_att), headers=HEADERS, status=201)
         except Exception as error:
             return self._handle_exception(error)
