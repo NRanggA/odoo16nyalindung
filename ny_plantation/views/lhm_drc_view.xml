@@ -5,7 +5,7 @@
             <field name="model">lhm.drc</field>
             <field name="arch" type="xml">
                 <tree string="Dry Rubber Content">
-                    <field name="name" readonly="1" force_save="1"/>
+                    <field name="name"/>
                     <field name="date"/>
                     <field name="state"/>
                 </tree>
@@ -62,13 +62,13 @@
                     </header>
                     <sheet>
                         <group>
-                            <field name="name"/>
+                            <field name="name" readonly="1" force_save="1"/>
                             <field name="date"/>
                             <field name="tgl_panen"/>
                         </group>
                         <notebook>
                             <page string="Detail DRC">
-                                <field name="drc_line_ids" widget="one2many_list">
+                                <field name="drc_line_ids" widget="one2many_list" attrs="{'readonly': [('state','!=','draft')]}">
                                     <tree editable="bottom">
                                         <field name="block_id" readonly="1" force_save="1"/>
                                         <field name="date" readonly="1" force_save="1"/>
