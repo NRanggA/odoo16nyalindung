@@ -25,8 +25,11 @@ class lhm_drc(models.Model):
     def create(self, values):
         date = values.get('date', fields.Date.context_today(self))
         date_obj = fields.Date.from_string(date)
-        values['name'] = f"DRC/{date_obj.strftime('%Y-%m-%d')}"
+        sequence = self.env['ir.sequence'].next_by_code('lhm.drc.sequence') or '01'
+        sequence = sequence.zfill(2)
+        values['name'] = f"DRC/{date_obj.strftime('%Y-%m-%d')}/{sequence}"
         return super(lhm_drc, self).create(values)
+    
     def unlink(self):
         for record in self:
             if record.state == 'confirmed':
