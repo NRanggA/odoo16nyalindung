@@ -2241,8 +2241,8 @@ class lhm_transaction_line(models.Model):
     @api.onchange('activity_id')
     def _onchange_activity_id(self):
         if self.activity_id:
-            # (TODO) Pengecekkan untuk mengambil satuan dari aktivitas atau memilih sendiri
-            # self.satuan_id      = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            self.satuan_1      = self.activity_id.uom_id and self.activity_id.uom_id.id or False
+            self.satuan_2      = self.activity_id.uom2_id and self.activity_id.uom2_id.id or False
             if self.activity_id.is_panen:
                 lokasi = self.env['lhm.plant.block'].search([('location_id','=',self.location_id.id)], limit=1)
                 # self.target_panen = lokasi.target_panen_perhari if lokasi else 0.0

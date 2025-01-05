@@ -143,8 +143,10 @@ class lhm_transaction(models.Model):
                         'work_day'          : work_day,
                         'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
                         'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
+                        'satuan_1'          : activity.uom_id.id if activity and activity.uom_id else False,
                         'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
+                        'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                     }))
                     processed_employees[employee_nik] = True
                 else:
@@ -180,8 +182,10 @@ class lhm_transaction(models.Model):
                         'work_day'          : work_day,
                         'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
                         'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
+                        'satuan_1'          : activity.uom_id.id if activity and activity.uom_id else False,
                         'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
+                        'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                     }))
             else:
                 # Log untuk melihat isi to_update sebelum melakukan pengecekan
@@ -225,8 +229,10 @@ class lhm_transaction(models.Model):
                     'work_day'          : work_day,
                     'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
                     'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
+                    'satuan_1'          : activity.uom_id.id if activity and activity.uom_id else False,
                     'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
                     'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
+                    'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                 }))
 
         if error_message_list:
