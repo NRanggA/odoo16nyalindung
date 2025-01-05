@@ -1,0 +1,27 @@
+<odoo>
+    <record id="view_lhm_nap_wizard_form" model="ir.ui.view">
+        <field name="name">lhm.nap.wizard.form</field>
+        <field name="model">lhm.nap.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Dapatkan Data Karet">
+                <group>
+                    <field name="lhm_ids" widget="many2many_tags"/>
+                    <!-- <field name="valid_lhm_ids" invisible="0" /> -->
+                    <!-- <field name="date"/>
+                    <field name="kemandoran_id"/> -->
+                </group>
+                <footer>
+                    <button string="Dapatkan Data" type="object" name="action_get_data" class="btn-primary"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lhm_nap_wizard" model="ir.actions.act_window">
+        <field name="name">Dapatkan Data Karet</field>
+        <field name="res_model">lhm.nap.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

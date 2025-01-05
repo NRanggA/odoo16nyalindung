@@ -38,7 +38,12 @@ class lhm_drc(models.Model):
         if not self.tgl_panen:
             self.drc_line_ids = [(5, 0, 0)]
             return
-        nap_lines = self.env['lhm.nap.line'].search([('tgl_panen', '=', self.tgl_panen)])
+        nap_lines = self.env['lhm.nap.line'].search([
+            ('tgl_panen', '=', self.tgl_panen),
+            ('lhm_nap_id.state', '=', 'confirmed')
+        ])
+        if not nap_lines:
+            raise ValidationError("Tidak ditemukan Dokumen NAP yang status 'Confirmed'. Silahkan cek Dokumen NAP yang terkait.")
         grouped_data = {}
         for nap_line in nap_lines:
             key = (nap_line.block_id.id, nap_line.product_id.id)
@@ -99,7 +104,7 @@ class lhm_drc(models.Model):
                     ('lhm_nap_id.state', '=', 'confirmed'),
                 ])
                 if not nap_line_records:
-                    raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}', dan Produk '{line.product.name}'.")
+                    raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}'.")
                 for nap_line in nap_line_records:
                     nap_line.write({'drc': line.drc})
                     

@@ -245,67 +245,88 @@ class lhm_nap(models.Model):
             if record.state == 'done':
                 raise exceptions.UserError(_("Dokumen dengan status 'Done' tidak dapat dihapus!"))
         return super(lhm_nap, self).unlink()
-    
+
     def button_get_data_karet(self):
+        """
+        Fungsi ini akan membuka wizard untuk mengisi tanggal dan kemandoran.
+        Setelah itu, data dari wizard akan digunakan untuk mengambil dan memproses data LHM.
+        """
+        if not self.date_nap:
+            raise UserError("Tanggal pada NAP harus diisi sebelum menjalankan proses ini.")
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Dapatkan Data Karet',
+            'res_model': 'lhm.nap.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_lhm_ids': []},
+        }
+
+    # def button_get_data_karet(self):
+    #     """
+    #     Fungsi ini akan membuka wizard untuk mengisi tanggal dan kemandoran.
+    #     Setelah itu, data dari wizard akan digunakan untuk mengambil dan memproses data LHM.
+    #     """
+    #     if not self.date_nap:
+    #         raise UserError("Tanggal pada NAP harus diisi sebelum menjalankan proses ini.")
+    #     return {
+    #         'type': 'ir.actions.act_window',
+    #         'name': 'Dapatkan Data Karet',
+    #         'res_model': 'lhm.nap.wizard',
+    #         'view_mode': 'form',
+    #         'target': 'new',
+    #         'context': {
+    #             'default_date': self.date_nap,
+    #         },
+    #     }
+    
+    def process_data_karet(self, selected_lhm_lines):
         self.kebun_line_ids.unlink()
         self.pabrik_line_ids.unlink()
-        lhm_transactions = self.env['lhm.transaction.nap.line'].search([
-            ('lhm_transaction_line_id.date', '=', self.date_nap),
-            ('lhm_transaction_line_id.state', '!=', 'draft')
-        ])
-        # print(">>>>>>>>", lhm_transactions)
         grouped = {}
-        for kebun_data in lhm_transactions:
-            lokasi = kebun_data.lhm_transaction_line_id.location_id # lhm.location(xx,)
-            blok_tanam = self.env['lhm.plant.block'].search([('location_id','=',lokasi.id)])
+        for kebun_data in selected_lhm_lines:
+            lokasi = kebun_data.lhm_transaction_line_id.location_id 
+            blok_tanam = self.env['lhm.plant.block'].search([('location_id', '=', lokasi.id)])
             if not blok_tanam:
                 continue
             product = False
-            if kebun_data.product_id:# Latex
+            if kebun_data.product_id:
                 product = kebun_data.product_id
-            else:# Pisang, Melon, Durian, selain Latex
-                product = kebun_data.lhm_transaction_line_id.varieties_id.product_id # Tidak berlaku untuk pisang
+            else:
+                product = kebun_data.lhm_transaction_line_id.varieties_id.product_id 
             if not product or product.name not in ["Lateks", "Lump"]:
                 continue
-            key = (blok_tanam, product) # (JATIROKE1, LATEX)
+            key = (blok_tanam, product) 
             if key not in grouped.keys():
-                grouped.update({key : 0.0})
-            grouped[key] += kebun_data.lhm_transaction_line_id.hasil_1
-        
-        for kebun_data in lhm_transactions.filtered(lambda n: n.lhm_transaction_line_id.hasil_2>0):
-            lokasi = kebun_data.lhm_transaction_line_id.location_id # lhm.location(xx,)
-            blok_tanam = self.env['lhm.plant.block'].search([('location_id','=',lokasi.id)])
+                grouped.update({key: {'quantity': 0.0, 'date': kebun_data.lhm_transaction_line_id.date}})
+            grouped[key]['quantity'] += kebun_data.lhm_transaction_line_id.hasil_1
+
+        for kebun_data in selected_lhm_lines.filtered(lambda n: n.lhm_transaction_line_id.hasil_2 > 0):
+            lokasi = kebun_data.lhm_transaction_line_id.location_id 
+            blok_tanam = self.env['lhm.plant.block'].search([('location_id', '=', lokasi.id)])
             if not blok_tanam:
                 continue
             product = False
-            if kebun_data.product_id_2:# Lump
+            if kebun_data.product_id_2:
                 product = kebun_data.product_id_2
-            else:# Pisang, Melon, Durian, selain Lump
-                product = kebun_data.lhm_transaction_line_id.varieties_id.secondary_product_id # Tidak berlaku untuk pisang
+            else:
+                product = kebun_data.lhm_transaction_line_id.varieties_id.secondary_product_id
             if not product or product.name not in ["Lateks", "Lump"]:
                 continue
-            key = (blok_tanam, product) # (JATIROKE1, LUMP)
+            key = (blok_tanam, product)
             if key not in grouped.keys():
-                grouped.update({key : 0.0})
-            grouped[key] += kebun_data.lhm_transaction_line_id.hasil_2
-            # print(">>>>>>>>", kebun_data.lhm_transaction_line_id.varieties_id.product_id)
-            # print(">>>>>>>>", kebun_data.lhm_transaction_line_id.varieties_id.secondary_product_id)
-            # print(">>>>>>>>", kebun_data.lhm_transaction_line_id.hasil_1)
-            # print(">>>>>>>>", kebun_data.lhm_transaction_line_id.hasil_2)
+                grouped.update({key: {'quantity': 0.0, 'date': kebun_data.lhm_transaction_line_id.date}})
+            grouped[key]['quantity'] += kebun_data.lhm_transaction_line_id.hasil_2
 
-        # grouped = {(JATUROKE1, LATEX): 100, (JATIROKE1, LUMP): 10, (JATIROKE2, LATEX): 90, (CAVENDIS1, PISANG): 10}
-        # grouped.valus = [((JATUROKE1, LATEX), 100)),((JATUROKE1, LATEX), 100)),(JATUROKE1, LATEX), 100)]
-        for keyx, quantity in grouped.items():
-            # keys = (JATUROKE1, LATEX)
-            # quantity = 100
+        for keyx, data in grouped.items():
             self.env['timbangan.kebun'].create({
-                    'block_id': keyx[0].id,
-                    'product_id': keyx[1].id,
-                    'product_qty': quantity,
-                    'tgl_panen': self.date_nap,
-                    'lhm_nap_id': self.id
-                })
-            # print(">>>>>>>>>>>", x)
+                'block_id': keyx[0].id,
+                'product_id': keyx[1].id,
+                'product_qty': data['quantity'],
+                'tgl_panen': data['date'],
+                'uom_id': keyx[1].uom_id.id,
+                'lhm_nap_id': self.id
+            })
 
     def button_get_data_non_karet(self):
         self.kebun_line_ids.unlink()

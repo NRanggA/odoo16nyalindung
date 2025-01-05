@@ -18,6 +18,7 @@ from . import wizard_create_contractor_book
 from . import lhm_state
 from . import wizard_hasil_lhm
 from . import wizard_seed_mutation
+from . import lhm_nap_wizard
 
 from . import lhm_transaction_warning
 
