@@ -243,20 +243,17 @@ class lhm_nap(models.Model):
 
     def write(self, values):
         for record in self:
-            afdeling = self.env['res.afdeling'].browse(values.get('afdeling_id', record.afdeling_id.id))
-            date_nap = values.get('date_nap', record.date_nap)
-            if date_nap:
-                date_nap = fields.Date.from_string(date_nap)
-
-            if afdeling and date_nap and (
-                values.get('afdeling_id') or values.get('date_nap')
-            ):
-                self.env.cr.execute("""
-                    SELECT COUNT(*) FROM lhm_nap
-                    WHERE afdeling_id = %s AND date_nap = %s AND id != %s
-                """, (afdeling.id, date_nap, record.id))
-                count = self.env.cr.fetchone()[0] + 1
-                values['name'] = f"{afdeling.code}/{date_nap.strftime('%Y-%m-%d')}/{count}"
+            if record.name == 'New':
+                afdeling = self.env['res.afdeling'].browse(values.get('afdeling_id', record.afdeling_id.id))
+                date_nap = values.get('date_nap', record.date_nap)
+                if date_nap:
+                    date_nap = fields.Date.from_string(date_nap)
+                
+                if afdeling and date_nap:
+                    self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id = %s AND date_nap = %s AND id != %s", 
+                                        (afdeling.id, date_nap, record.id))
+                    count = self.env.cr.fetchone()[0] + 1
+                    values['name'] = f"{afdeling.code}/{date_nap.strftime('%Y-%m-%d')}/{count}"
         
         return super(lhm_nap, self).write(values)
 
