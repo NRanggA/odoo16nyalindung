@@ -1,14 +1,18 @@
 from odoo import http, exceptions, models, fields
 from odoo.http import request, Response
-import json
-from io import BytesIO
-from datetime import datetime, time
-import pytz
-from pytz import timezone, utc
-from dateutil.relativedelta import relativedelta
-import base64
 
 from odoo.addons.c10i_base_api.controllers.main import ApiBase, HEADERS, DateEncoder, BASE_ROUTE
+import json
+# from io import BytesIO
+from datetime import datetime
+# import pytz
+from pytz import timezone, utc
+from dateutil.relativedelta import relativedelta
+# import base64
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 ROUTES = f"{BASE_ROUTE}/attendance"
 
@@ -294,24 +298,50 @@ class NyAttendance(ApiBase):
             for att in attendances:
                 if att.type_id.code!='KJ' and not att.att_log_ids:
                     continue
-                namafile = statusmasuk = ketmasuk = ""
-
-                first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
-                last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                statusmasuk = first_att.statusmasuk
-                ketmasuk = first_att.keterangan
-                ketkeluar = last_att.keterangan
-                query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                    and res_field='foto' and res_id={first_att.id}"""
-                request.env.cr.execute(query_attachment)
-                attc_ids = request.env.cr.fetchone()
-                if attc_ids:
-                    namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+                namafile = statusmasuk = ketmasuk = ketkeluar = ""
                 masuk = pulang = ""
+
+                if att.is_correction:
+                    if att.att_log_ids:
+                        if len(att.att_log_ids.ids)>1:
+                            first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                            last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+                            statusmasuk = first_att.statusmasuk
+                            ketmasuk = first_att.keterangan
+                            ketkeluar = last_att.keterangan
+                            query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                                and res_field='foto' and res_id={first_att.id}"""
+                            request.env.cr.execute(query_attachment)
+                            attc_ids = request.env.cr.fetchone()
+                            if attc_ids:
+                                namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+                        else:
+                            statusmasuk = att.att_log_ids.statusmasuk
+                            ketmasuk = att.att_log_ids.keterangan
+                            query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                                and res_field='foto' and res_id={att.att_log_ids.id}"""
+                            request.env.cr.execute(query_attachment)
+                            attc_ids = request.env.cr.fetchone()
+                            if attc_ids:
+                                namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+                else:
+                    first_att = att.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                    last_att = att.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+                    statusmasuk = first_att.statusmasuk
+                    ketmasuk = first_att.keterangan
+                    ketkeluar = last_att.keterangan
+                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
+                        and res_field='foto' and res_id={first_att.id}"""
+                    request.env.cr.execute(query_attachment)
+                    attc_ids = request.env.cr.fetchone()
+                    if attc_ids:
+                        namafile = f"{base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
+                
                 if att.check_in:
                     masuk = att.check_in.astimezone(timezone('Asia/Jakarta'))
                 if att.check_out:
                     pulang = att.check_out.astimezone(timezone('Asia/Jakarta'))
+                
                 att_vals = {
                     "nip": employee_found.no_induk,
                     "masuk": f"{masuk.strftime('%H:%M')}{', '+str(round(att.distance_in,2))+' km' if att.distance_in else ''}{', '+ketmasuk}" if masuk else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
