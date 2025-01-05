@@ -24,22 +24,34 @@ class AccountPayment(models.Model):
                             ('biaya', 'Biaya'),
                             ('persediaan', 'Persediaan'),
                         ], string='Alokasi')
-    
     jenis_pembayaran    = fields.Selection([
                             ('tunai', 'Tunai'),
                             ('transfer', 'Transfer'),
                             ('auto_debit', 'Auto Debit')
                         ], string='Jenis Pembayaran')
-    
     atas_nama           = fields.Char('Atas Nama')
+
+    partner_id = fields.Many2one(
+        comodel_name='res.partner',
+        string="Customer/Vendor",
+        store=True, readonly=False, ondelete='restrict',
+        compute='_compute_partner_id',
+        # domain="[('customer_category', '!=', False)]",
+        tracking=True,
+        check_company=True)
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
-        if self.partner_id:
-            self.atas_nama = self.partner_id.name
-        else:
-            self.atas_nama = ''
-
+        for rec in self:
+            if rec.partner_id:
+                rec.atas_nama = self.partner_id.name
+            else:
+                rec.atas_nama = ''
+            
+            if rec.payment_type == 'inbound':
+                return {'domain': {'partner_id': [('customer_category', '!=', False)]}}
+            if rec.payment_type == 'outbound':
+                return {'domain': {'partner_id': [('vendor_category', '!=', False)]}}
 
     # Fungsi untuk memformat jumlah
     def format_amount(self, amount):
