@@ -1533,44 +1533,55 @@ class lhm_transaction(models.Model):
 
     # Mengunakan contract_id
     def button_draft(self):
-        if self.state in ['close']:
-            raise ValidationError(_("Anda tidak dapat membatalkan dokumen dalam status Close!"))
-        else:
-            self.state      = 'draft'
-            employee_ids    = []
-            for material in self.material_line_ids:
-                material.unlink()
-            for line in self.lhm_line_ids:
-                if line.attendance_id and line.employee_id and \
-                        line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
-                        and line.valid and (line.work_day > 0 or line.non_work_day > 0):
-                    employee_ids.append(line.employee_id.id)
-            if employee_ids != []:
-                self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
+        for rec in self:
+            # Validasi jika state NAP done tidak bisa di hapus
+            for line in rec.lhm_nap_line_ids:
+                if line.lhm_nap_line_id.lhm_nap_id.state == 'done':
+                    raise ValidationError(_("Anda tidak dapat membatalkan dokumen ini karena status NAP sudah Done, silahkan cancel terlebih dahulu dokumen NAP yang bersangkutan!"))
 
-            for line in self.lhm_line_ids:
-                if line.attendance_id and line.employee_id and \
-                    line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id and \
-                    line.valid and (line.work_day > 0 or line.non_work_day > 0):
-                    values = {
-                        'total_hke'             : 0.0,
-                        'total_hkne'            : 0.0,
-                        'contract_wage_value'   : 0.0,
-                        'contract_value_date'   : 0.0,
-                        'contract_id'           : 0,
-                    }
-                    line.write(values)
-                else:
-                    values = {
-                        'total_hke'             : 0.0,
-                        'total_hkne'            : 0.0,
-                        'contract_wage_value'   : 0.0,
-                        'contract_value_date'   : 0.0,
-                        'contract_id'           : 0,
-                    }
-                    line.write(values)
+            # Menghapus semua data pada NAP
+            if rec.lhm_nap_line_ids:
+                for line in rec.lhm_nap_line_ids:
+                    line.unlink()
+        
+            if rec.state in ['close']:
+                raise ValidationError(_("Anda tidak dapat membatalkan dokumen dalam status Close!"))
+            else:
+                rec.state      = 'draft'
+                employee_ids    = []
+                for material in rec.material_line_ids:
+                    material.unlink()
+                for line in rec.lhm_line_ids:
+                    if line.attendance_id and line.employee_id and \
+                            line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
+                            and line.valid and (line.work_day > 0 or line.non_work_day > 0):
+                        employee_ids.append(line.employee_id.id)
+                if employee_ids != []:
+                    rec.check_all(rec.account_period_id.date_start, rec.account_period_id.date_stop, employee_ids)
+
+                for line in rec.lhm_line_ids:
+                    if line.attendance_id and line.employee_id and \
+                        line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id and \
+                        line.valid and (line.work_day > 0 or line.non_work_day > 0):
+                        values = {
+                            'total_hke'             : 0.0,
+                            'total_hkne'            : 0.0,
+                            'contract_wage_value'   : 0.0,
+                            'contract_value_date'   : 0.0,
+                            'contract_id'           : 0,
+                        }
+                        line.write(values)
+                    else:
+                        values = {
+                            'total_hke'             : 0.0,
+                            'total_hkne'            : 0.0,
+                            'contract_wage_value'   : 0.0,
+                            'contract_value_date'   : 0.0,
+                            'contract_id'           : 0,
+                        }
+                        line.write(values)
+                return True
             return True
-        return True
 
     # Menggunakan Contract ID
     def recalculate_plantation(self):

@@ -82,17 +82,18 @@ class lhm_drc(models.Model):
             record.state = 'draft'
 
     def action_cancel(self):
-        for record in self:
-            for line in record.drc_line_ids:
-                nap_lines = self.env['lhm.nap.line'].search([
-                    ('block_id', '=', line.block_id.id),
-                    ('tgl_panen', '=', line.date),
-                    ('product_id', '=', line.product.id)
-                ])
-                for nap_line in nap_lines:
-                    if nap_line.lhm_nap_id.state != 'draft':
-                        raise ValidationError("Anda tidak bisa membatalkan dokumen ini karena terdapat NAP yang lokasi dan tanggalnya sama tetapi Status nya belum 'draft'.")
-            record.state = 'cancel'
+        # for record in self:
+            # for line in record.drc_line_ids:
+            #     nap_lines = self.env['lhm.nap.line'].search([
+            #         ('block_id', '=', line.block_id.id),
+            #         ('tgl_panen', '=', line.date),
+            #         ('product_id', '=', line.product.id)
+            #     ])
+
+                # for nap_line in nap_lines:
+                #     if nap_line.lhm_nap_id.state != 'draft':
+                #         raise ValidationError("Anda tidak bisa membatalkan dokumen ini karena terdapat NAP yang lokasi dan tanggalnya sama tetapi Status nya belum 'draft'.")
+        self.state = 'cancel'
 
     def action_confirm(self):
         napline = self.env['lhm.nap.line']

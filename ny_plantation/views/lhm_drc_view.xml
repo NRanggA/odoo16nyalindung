@@ -57,7 +57,7 @@
                     <header>
                         <button name="action_confirm" type="object" string="Confirm" class="btn-primary" states="draft"/>
                         <button name="action_draft" type="object" string="Draft" class="btn-default" states="cancel"/>
-                        <button name="action_cancel" type="object" string="Cancel" class="btn-default" states="confirmed"/>
+                        <button name="action_cancel" type="object" string="Cancel" class="btn-default" states="confirmed" confirm="Apakah anda yakin akan dicancel?"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed"/>
                     </header>
                     <sheet>

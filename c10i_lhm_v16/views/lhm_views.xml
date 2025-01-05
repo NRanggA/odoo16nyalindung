@@ -1935,11 +1935,11 @@
                                         <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
                                         
                                         <field name="product_id" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="hasil_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="hasil_1" sum="hasil_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
                                         <field name="satuan_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
 
                                         <field name="product_id_2" attrs="{'readonly': [('is_hasil_2', '!=', True)]}"/>
-                                        <field name="hasil_2" optional="show"/>
+                                        <field name="hasil_2" sum="hasil_2" optional="show"/>
                                         <field name="satuan_2" optional="show"/>
 
                                         <field name="drc_latex" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
@@ -1997,11 +1997,11 @@
                                         <field name="name" readonly="1" force_save="1" optional="show"/>
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <field name="product_id" optional="show"  readonly="1"/>
-                                        <field name="hasil_1_nap" optional="show"  readonly="1"/>
+                                        <field name="hasil_1_nap" sum="hasil_1_nap" optional="show"  readonly="1"/>
                                         <field name="satuan_1_nap" optional="show"  readonly="1"/>
 
                                         <field name="product_id_2" optional="show"  readonly="1"/>
-                                        <field name="hasil_2_nap" optional="show"  readonly="1"/>
+                                        <field name="hasil_2_nap" sum="hasil_2_nap" optional="show"  readonly="1"/>
                                         <field name="satuan_2_nap" optional="show"  readonly="1"/>
 
                                         <field name="drc_latex_nap" optional="show"  readonly="1"/>
