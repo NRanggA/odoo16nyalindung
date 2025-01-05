@@ -38,6 +38,7 @@ class DirectPayment(models.Model):
     partner_bank_name   = fields.Char('Partner Bank Name')
     partner_bank_number = fields.Char('Partner Bank Number') 
 
+
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
         if self.partner_id:  # Pastikan partner_id tidak kosong
@@ -54,6 +55,12 @@ class DirectPayment(models.Model):
         else:
             # Kosongkan partner_bank_id jika partner_id dihapus
             self.partner_bank_id = False
+        
+        if self.direct_state == 'receive':
+            return {'domain': {'partner_id': [('customer_category', '!=', False)]}}
+        if self.direct_state == 'send':
+            return {'domain': {'partner_id': [('vendor_category', '!=', False)]}}
+
 
     def _prepare_payable_move_line(self, amount):
         partner =  self.partner_id or self.requested_by.partner_id or False
