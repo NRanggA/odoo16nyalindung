@@ -92,7 +92,7 @@ class AccountBankStatement(models.Model):
         
     def button_get_balance_start(self):
         for statement in self:
-            statement.balance_start = self.env['account.move.line'].read_group(domain=[('account_id','=',statement.journal_id.default_account_id.id),('date','<',statement.date),('parent_state','=','posted')], fields=['balance:sum'], groupby='account_id')[0]['balance']
+            statement.balance_start = self.env['account.move.line'].read_group(domain=[('account_id','=',statement.journal_id.default_account_id.id),('date','<=',statement.date),('parent_state','=','posted')], fields=['balance:sum'], groupby='account_id')[0]['balance']
 
     def button_get_payments(self):
         self = self.sudo()
