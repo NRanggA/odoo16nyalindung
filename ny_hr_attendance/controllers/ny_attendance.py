@@ -270,7 +270,7 @@ class NyAttendance(ApiBase):
     # ]
 
     _week_day_names = {0: 'Senin', 1: 'Selasa', 2: 'Rabu',
-                3: 'Kamis', 4: "Jum'at", 6: 'Sabtu', 7: 'Minggu'}
+                3: 'Kamis', 4: "Jum'at", 5: 'Sabtu', 6: 'Minggu'}
     _base_url = ""
     def _get_detail_attendance(self, attendance):
         namafile = statusmasuk = ketmasuk = ketkeluar = ""
