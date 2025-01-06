@@ -3485,6 +3485,12 @@ class lhm_contractor(models.Model):
                                 related='company_id.account_payable_contractor_id', readonly=False,
                                 string="Account Payable Perantara Buku Kontraktor")
 
+    @api.onchange('line_ids')
+    def _onchange_line_ids(self):
+        for line in self.line_ids:
+            if not line.date:
+                line.date = self.date
+
     @api.depends('line_ids.unit_price', 'line_ids.nilai', 'line_vehicle_ids.unit_price', 'line_vehicle_ids.nilai')
     def _compute_total(self):
         for rec in self:
