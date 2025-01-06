@@ -27,38 +27,42 @@ class HrAttendanceCorrection(models.Model):
     def button_approve(self):
         for record in self:
             for line in record.line_ids:
-                jakarta = timezone('Asia/Jakarta')
+                # jakarta = timezone('Asia/Jakarta')
 
-                # Konversi check_in ke waktu lokal Asia/Jakarta
-                if line.check_in:
-                    check_in_utc = fields.Datetime.from_string(line.check_in)  
-                    check_in_local = utc.localize(check_in_utc).astimezone(jakarta)
+                # # Konversi check_in ke waktu lokal Asia/Jakarta
+                # # if line.check_in:
+                # check_in_utc = fields.Datetime.from_string(line.check_in)  
+                # check_in_local = utc.localize(check_in_utc).astimezone(jakarta)
 
-                    # Menghapus informasi timezone (mengubah menjadi naive datetime)
-                    check_in_naive = check_in_local.replace(tzinfo=None)
+                # # Menghapus informasi timezone (mengubah menjadi naive datetime)
+                # check_in_naive = check_in_local.replace(tzinfo=None)
 
-                # Konversi check_out ke waktu lokal Asia/Jakarta
-                if line.check_out:
-                    check_out_utc = fields.Datetime.from_string(line.check_out) 
-                    check_out_local = utc.localize(check_out_utc).astimezone(jakarta)
+                # # Konversi check_out ke waktu lokal Asia/Jakarta
+                # # if line.check_out:
+                # check_out_utc = fields.Datetime.from_string(line.check_out) 
+                # check_out_local = utc.localize(check_out_utc).astimezone(jakarta)
 
-                    # Menghapus informasi timezone (mengubah menjadi naive datetime)
-                    check_out_naive = check_out_local.replace(tzinfo=None)
+                # # Menghapus informasi timezone (mengubah menjadi naive datetime)
+                # check_out_naive = check_out_local.replace(tzinfo=None)
 
                 if line.attendance_sheet_id:
                     # Perbarui hanya jika check_in dan check_out ada
                     if line.check_in and line.check_out:
                         attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
                         line.attendance_sheet_id.write({
-                            'check_in': check_in_naive,
-                            'check_out': check_out_naive,
+                            # 'check_in': check_in_naive,
+                            # 'check_out': check_out_naive,
+                            'check_in': line.check_in,
+                            'check_out': line.check_out,
                             'type_id': attendance_type.id,
                             'is_correction': True
                         })
                     else:
                         line.attendance_sheet_id.write({
-                            'check_in': check_in_naive,
-                            'check_out': check_out_naive
+                            # 'check_in': check_in_naive,
+                            # 'check_out': check_out_naive
+                            'check_in': line.check_in,
+                            'check_out': line.check_out
                         })
             record.state = 'approve'
 
