@@ -489,12 +489,14 @@ class lhm_nap(models.Model):
 
     def button_cancel(self):
         for record in self:
+            for record in self:
+                pabrik_picking = record.pabrik_line_ids.filtered(lambda line: line.stock_picking_id and line.stock_picking_id.state != "draft")
+                if pabrik_picking:
+                    raise ValidationError(
+                        _("Anda tidak bisa membatalkan dokumen ini karena terdapat Material Receipt yang sudah di proses / status dokumen tidak Draft.")
+                    )
+
             for nap_line in record.line_ids:
-                # if nap_line.employee_id:
-                #     if nap_line.lhm_transaction_nap_id.lhm_id.state != 'draft':
-                #         raise ValidationError(
-                #             _("Tidak dapat membatalkan dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status tidak 'Draft/New'. Periksa dan kembalikan dokumen tersebut ke status 'Draft/New' terlebih dahulu.")
-                #         )
                 if nap_line.employee_id:
                     if nap_line.lhm_transaction_nap_id.lhm_id.state == 'done':
                         raise ValidationError(
@@ -511,6 +513,11 @@ class lhm_nap(models.Model):
                                 "Periksa dan kembalikan dokumen tersebut ke status 'draft' terlebih dahulu."
                             )
                         )
+                if nap_line.drc and nap_line.drc > 0:
+                    raise ValidationError(
+                        _("Mohon ubah Dokumen DRC yang terkait menjadi Draft.")
+                    )
+            record.line_ids.unlink()
         self.state = 'cancel'
         self.confirmed = False
         self.cancelled = True
@@ -1094,52 +1101,35 @@ class TimbanganPabrik(models.Model):
 
     def write(self, vals):
         return super(TimbanganPabrik, self).write(vals)
-    
-    # @api.onchange('product_id')
-    # def _onchange_product_id(self):
-    #     if self.product_id:
-    #         self.uom_id = self.product_id.uom_id
-    #     else:
-    #         self.uom_id = False
 
     def _create_or_update_stock_picking(self):
         if not self.uom_id:
             raise UserError("Unit of Measure (UoM) harus diisi sebelum menyimpan data.")
 
-        # virtual_location = self.env['stock.location'].search([('name', '=', 'Virtual Locations')], limit=1)
-        # if not virtual_location:
-            # raise UserError("Lokasi virtual yang diinginkan tidak ditemukan. Harap konfigurasi lokasi virtual.")
+        # Jika dokumen terkait memiliki status bukan draft, buat dokumen baru
+        if self.stock_picking_id and self.stock_picking_id.state != 'draft':
+            self.stock_picking_id = False
 
-        # Logika untuk membuat nomor dokumen khusus
-        # sequence_prefix = "NAP/IN/"
-        # existing_docs = self.env['stock.picking'].search([('name', 'ilike', sequence_prefix)])
-        # next_number = len(existing_docs) + 1
-        # custom_name = f"{sequence_prefix}{str(next_number).zfill(3)}"  # Format nomor dengan 3 digit
-
+        # Jika tidak ada dokumen stock picking terkait, buat yang baru
         if not self.stock_picking_id:
             picking_vals = {
-                # 'name': custom_name,  # Set nama dokumen custom
-                'origin': self.lhm_nap_id.name if self.lhm_nap_id else '',  # Isi origin dengan name dari lhm.nap
-                # 'location_id': virtual_location.id,
+                'origin': self.lhm_nap_id.name if self.lhm_nap_id else '',
                 'location_id': self.env.ref('c10i_lhm_v16.loc_virtual_kebun_loc_1').id,
-                # 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                 'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
                 'move_ids_without_package': [(0, 0, {
                     'product_id': self.product_id.id,
                     'name': self.product_id.name,
                     'product_uom_qty': self.product_qty,
                     'product_uom': self.uom_id.id,
-                    # 'location_id': virtual_location.id,
                     'location_id': self.env.ref('c10i_lhm_v16.loc_virtual_kebun_loc_1').id,
-                    # 'location_dest_id': self.env.ref('stock.stock_location_stock').id,
                     'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
                 })],
-                # 'picking_type_id': self.env.ref('stock.picking_type_in').id,
                 'picking_type_id': self.env.ref('c10i_lhm_v16.picking_type_nap_1').id,
             }
             picking = self.env['stock.picking'].sudo().create(picking_vals)
             self.stock_picking_id = picking.id
         else:
+            # Jika dokumen terkait ada dan dalam status 'draft', perbarui data
             self.stock_picking_id.move_ids_without_package[0].sudo().write({
                 'product_uom_qty': self.product_qty,
                 'product_uom': self.uom_id.id,
