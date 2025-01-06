@@ -7,7 +7,16 @@ class LhmNapWizard(models.TransientModel):
 
     # date = fields.Date(string="Tanggal", required=True)
     # kemandoran_id = fields.Many2one('hr.foreman', string="Kemandoran", required=True)
-    lhm_ids = fields.Many2many('lhm.transaction', string="Pilih LHM")
+
+    # lhm_ids = fields.Many2many('lhm.transaction', domain="[('is_nap', '=', True)]", string="Pilih LHM")
+    lhm_ids = fields.Many2many('lhm.transaction', domain="[('is_hasil_2', '=', True)]", string="Pilih LHM")
+
+    # @api.onchange('lhm_ids')
+    # def _onchange_lhm_ids(self):
+    #     for rec in self:
+    #         for line in rec.lhm_ids :
+    #             if line.activity_id.is_hasil_2:
+    #                 return {'domain': {'lhm_ids': [('line.is_hasil_2', '!=', False)]}}
 
     def action_get_data(self):
         """
@@ -20,6 +29,7 @@ class LhmNapWizard(models.TransientModel):
             selected_lhm_lines = self.env['lhm.transaction.nap.line'].search([
                 ('lhm_id', 'in', self.lhm_ids.ids),
                 ('lhm_transaction_line_id.state', '=', 'in_progress'),
+                # ('lhm_transaction_line_id.activity_id.is_hasil_2', '=', True),
             ])
             lhm_nap.process_data_karet(selected_lhm_lines)
 

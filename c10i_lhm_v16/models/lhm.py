@@ -1075,6 +1075,7 @@ class lhm_transaction(models.Model):
     lhm_nap_line_ids        = fields.One2many('lhm.transaction.nap.line', 'lhm_id', string="Detail LHM NAP")
     # lhm_contractor_line_ids = fields.One2many('lhm.contractor.line', 'lhm_id', string="Detail Buku Kontraktor")
     is_nap                  = fields.Boolean(string='Is NAP', compute='_compute_is_nap', store=True)
+    is_hasil_2              = fields.Boolean(string='Is Hasil 2', compute='_compute_is_hasil_2', store=True)
     skb                     = fields.Boolean('Is SKB', compute="_compute_is_skb", store=True)
     process_line_ids        = fields.One2many('lhm.transaction.process.line', 'lhm_id', string="Detail Progress LHM")
     material_line_ids       = fields.One2many('lhm.transaction.material.line', 'lhm_id', string="Detail Material LHM")
@@ -1104,6 +1105,11 @@ class lhm_transaction(models.Model):
     def _compute_is_nap(self):
         for record in self:
             record.is_nap = any(line.activity_id.is_nap for line in record.lhm_line_ids)
+
+    @api.depends('lhm_line_ids.activity_id.is_panen')
+    def _compute_is_hasil_2(self):
+        for record in self:
+            record.is_hasil_2 = any(line.activity_id.is_hasil_2 for line in record.lhm_line_ids)
 
     @api.depends('lhm_line_ids.activity_id.skb')
     def _compute_is_skb(self):
