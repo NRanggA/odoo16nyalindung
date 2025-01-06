@@ -639,16 +639,17 @@ class lhm_nap(models.Model):
                         ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
                         ('lhm_transaction_line_id.state', '=', 'in_progress'),
                     ])
-                    if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
-                        raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
 
                     contractor_lines = self.env['lhm.contractor.nap.line'].search([
                         ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('contractor_id.date', '=', pabrik_line.tgl_panen),
-                        # ('contractor_id.state', '=', ''),
                     ])
-                    # if not contractor_lines:
-                    #     raise UserError(f"Buku Kontraktor Harian tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen terkait.")
+                    if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
+                        if contractor_lines:
+                            pass
+                        else:
+                            raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
+
 
                     for nap_line in nap_lines:
                         employee_id = nap_line.employee_id.id
