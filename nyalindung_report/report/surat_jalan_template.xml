@@ -108,10 +108,10 @@
                                             <td t-esc="i + 1"/>
                                             <td t-esc="product.product_id.name" />
                                             <td t-esc="product.product_uom.name"/>
+                                            <td/>
                                             <td t-esc="product.product_uom_qty"/>
                                             <td/>
-                                            <td/>
-                                            <td/>
+                                            <td t-esc="product.product_uom_qty"/>
                                             <td t-esc="product.description_picking"/>
                                         </tr>
                                         <t t-set="i" t-value="i + 1" />
