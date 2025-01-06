@@ -1101,6 +1101,19 @@ class lhm_transaction(models.Model):
     pending_nap_link    = fields.Boolean('LHM belum sama dengan NAP', compute='_check_pending_nap_link', store=True)
     sph_move_ids        = fields.One2many('sph.move', 'lhm_id', string='Sph Move')
 
+    nap_line_zero = fields.Boolean(
+        string="Validasi Get Data Karet",
+        compute="_compute_nap_line_zero",
+        store=True
+    )
+
+    @api.depends('lhm_nap_line_ids.lhm_nap_line_id')
+    def _compute_nap_line_zero(self):
+        for record in self:
+            record.nap_line_zero = any(
+                not nap_line.lhm_nap_line_id for nap_line in record.lhm_nap_line_ids
+            )
+
     @api.depends('lhm_line_ids.activity_id.is_panen')
     def _compute_is_nap(self):
         for record in self:

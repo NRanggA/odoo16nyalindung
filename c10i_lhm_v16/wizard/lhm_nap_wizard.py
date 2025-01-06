@@ -8,8 +8,12 @@ class LhmNapWizard(models.TransientModel):
     # date = fields.Date(string="Tanggal", required=True)
     # kemandoran_id = fields.Many2one('hr.foreman', string="Kemandoran", required=True)
 
-    # lhm_ids = fields.Many2many('lhm.transaction', domain="[('is_nap', '=', True)]", string="Pilih LHM")
-    lhm_ids = fields.Many2many('lhm.transaction', domain="[('is_hasil_2', '=', True)]", string="Pilih LHM")
+    # lhm_ids = fields.Many2many('lhm.transaction', domain="[('is_hasil_2', '=', True)]", string="Pilih LHM")
+    lhm_ids = fields.Many2many(
+        'lhm.transaction',
+        domain="[('is_hasil_2', '=', True), ('nap_line_zero', '=', True)]",
+        string="Pilih LHM"
+    )
 
     # @api.onchange('lhm_ids')
     # def _onchange_lhm_ids(self):
