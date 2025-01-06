@@ -8,7 +8,7 @@ class lhm_drc(models.Model):
     drc_line_ids = fields.One2many('lhm.drc.line', 'drc_id', string="Lines")
     nap_id       = fields.Many2one('lhm.nap', ondelete="cascade")
     name         = fields.Char(string="No. Dok", default='New')
-    date         = fields.Date(string="Tanggal", required=True)
+    date         = fields.Date(string="Tanggal", required=True, default=fields.Date.context_today)
     tgl_panen    = fields.Date("Tgl. Panen")
     confirmed    = fields.Boolean(string="Confirmed", default=False)
     cancel       = fields.Boolean(string="Cancelled", default=False)
