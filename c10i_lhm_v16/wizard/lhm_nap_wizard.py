@@ -29,8 +29,10 @@ class LhmNapWizard(models.TransientModel):
             selected_lhm_lines = self.env['lhm.transaction.nap.line'].search([
                 ('lhm_id', 'in', self.lhm_ids.ids),
                 ('lhm_transaction_line_id.state', '=', 'in_progress'),
-                # ('lhm_transaction_line_id.activity_id.is_hasil_2', '=', True),
+                ('lhm_nap_line_id', '=', False),
             ])
+            if not selected_lhm_lines:
+                raise ValidationError("Tidak bisa menarik data dokumen tersebut dikarenakan dokumen tersebut sudah memiliki data NAP di dalamnya. Harap Proses ulang dokumen yang terkait.")
             lhm_nap.process_data_karet(selected_lhm_lines)
 
     # def action_get_data(self):
