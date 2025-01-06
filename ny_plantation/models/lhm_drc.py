@@ -78,7 +78,22 @@ class lhm_drc(models.Model):
                             )
     
     def action_draft(self):
+        napline = self.env['lhm.nap.line']
         for record in self:
+            affected_nap_ids = set()
+            for line in record.drc_line_ids:
+                nap_line_records = napline.search([
+                    ('block_id', '=', line.block_id.id),
+                    ('tgl_panen', '=', line.date),
+                    ('product_id', '=', line.product.id),
+                    ('lhm_nap_id.state', '=', 'done'),
+                ])
+                for nap_line in nap_line_records:
+                    nap_line.write({'drc': 0})
+                    affected_nap_ids.add(nap_line.lhm_nap_id.id)
+            if affected_nap_ids:
+                nap_ids = self.env['lhm.nap'].browse(list(affected_nap_ids))
+                nap_ids.write({'state': 'confirmed'})
             record.state = 'draft'
 
     def action_cancel(self):
@@ -108,7 +123,7 @@ class lhm_drc(models.Model):
                     ('lhm_nap_id.state', '=', 'confirmed'),
                 ])
                 if not nap_line_records:
-                    raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}'.")
+                    raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}' yang statusnya Confirmed")
                 for nap_line in nap_line_records:
                     nap_line.write({'drc': line.drc})
                     
