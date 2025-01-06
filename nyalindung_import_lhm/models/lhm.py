@@ -131,6 +131,7 @@ class lhm_transaction(models.Model):
                 # Update jika lhm_line ditemukan
                 if lhm_line:
                     to_update.append((1, lhm_line.id, {
+                        'date'              : self.date,      
                         'employee_id'       : employee.id,
                         'attendance_id'     : absensi_kj.id,
                         'location_type_id'  : type_location.id,
@@ -170,6 +171,7 @@ class lhm_transaction(models.Model):
                         )
 
                     to_update.append((0, 0, {
+                        'date'              : self.date,
                         'employee_id'       : employee.id,
                         'attendance_id'     : absensi_kj.id,
                         'location_type_id'  : type_location.id,
@@ -217,6 +219,7 @@ class lhm_transaction(models.Model):
                     continue
 
                 to_update.append((0, 0, {
+                    'date'              : self.date,
                     'employee_id'       : employee.id,
                     'attendance_id'     : absensi_kj.id,
                     'location_type_id'  : type_location.id,
