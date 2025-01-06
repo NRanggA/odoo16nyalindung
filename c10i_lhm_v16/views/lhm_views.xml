@@ -2103,7 +2103,7 @@
                     <field name="mandor_id" optional="show" />
                     <field name="kerani_id" optional="show" />
                     <field name="user_id" optional="show" />
-                    <field name="state" optional="show" />
+                    <field name="state" optional="show" widget="badge" decoration-warning="state == 'in_progress'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'" decoration-info="state == 'close'" />
                 </tree>
             </field>
         </record>
@@ -3622,7 +3622,7 @@
                     <field name="reg_number"/>
                     <field name="vehicle_id"/>
                     <field name="ownership"/>
-                    <field name="state"/>
+                    <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
                 </tree>
             </field>
         </record>
