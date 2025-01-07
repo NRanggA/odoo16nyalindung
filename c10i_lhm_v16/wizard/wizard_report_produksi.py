@@ -492,7 +492,7 @@ class WizardReportProduksi(models.TransientModel):
         #         block.write(data_block[block.block_id.id])
 
     def gen_no_akhir_rotasi(self):
-        n_day       = datetime.datetime.strptime(self.date_end, '%Y-%m-%d').day
+        n_day       = n_day = datetime.datetime.strptime(self.date_end.strftime('%Y-%m-%d'), '%Y-%m-%d').day
         period_id   = self.env['account.period'].search([('date_start', '=', self.date_start), ('special', '=', False)], order='date_stop desc', limit=1)
         Nomor       = self.env['lhm.rotasi.panen.balance'].search([('period_id', '=', period_id.id)],)
         NomorLine   = self.env['lhm.rotasi.panen.balance.nomor']

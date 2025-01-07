@@ -36,12 +36,12 @@
         </record>
 
 
-        <menuitem id="submenu_export_data"
+        <!-- <menuitem id="submenu_export_data"
                   name="Laporan Export Data"
                   action="wizard_export_data_action"
                   parent="menu_plantation_report"
                   groups="group_plantation_supervisor,group_plantation_reporting_all"
-                  sequence="50"/>
+                  sequence="50"/> -->
 
 
         <!-- Reporting -->

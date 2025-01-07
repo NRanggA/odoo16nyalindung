@@ -342,11 +342,11 @@
             <field name="target">current</field>
         </record>
         
-        <menuitem id="submenu_laporan_produksi"
+        <!-- <menuitem id="submenu_laporan_produksi"
                   parent="menu_plantation_report"
                   name="Laporan Produksi"
                   action="wizard_report_produksi_action"
                   groups="group_plantation_supervisor,group_plantation_reporting_all,group_plantation_reporting_production"
-                  sequence="20"/>
+                  sequence="20"/> -->
     </data>
 </odoo>

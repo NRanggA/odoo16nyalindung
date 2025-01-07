@@ -41,7 +41,7 @@
             <field name="target">current</field>
         </record>
 
-        <menuitem id="menu_report_progres_kerja_harian" name="Laporan Progres Pekerjaan Harian" action="action_report_progres_kerja_harian" parent="menu_plantation_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="20"/>
+        <!-- <menuitem id="menu_report_progres_kerja_harian" name="Laporan Progres Pekerjaan Harian" action="action_report_progres_kerja_harian" parent="menu_plantation_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="20"/> -->
 
         <!-- Form -->
         <record model='ir.ui.view' id='wizard_report_progres_kerja_material_detail_form'>
