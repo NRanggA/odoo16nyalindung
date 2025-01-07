@@ -1,7 +1,8 @@
 from odoo import models, fields, api
 import logging
+# import pytz
+from pytz import timezone, utc
 
-_logger = logging.getLogger(__name__)
 
 class HrAttendanceSheet(models.Model):
     _inherit = 'hr.attendance.sheet'
@@ -11,7 +12,9 @@ class HrAttendanceSheet(models.Model):
     def create_attendance_sheets(self, **kwargs):
         # Logika tambahan sebelum memanggil fungsi asli
         employees = self.env['hr.employee'].search([])
-        today_date = fields.Date.context_today(self)
+        # today_date = fields.Date.context_today(self)
+        jakarta     = timezone('Asia/Jakarta')
+        today_date  = utc.localize(fields.Datetime.now()).astimezone(jakarta)
 
         if kwargs.get("force_date"):
             today_date = kwargs['force_date']
@@ -25,7 +28,6 @@ class HrAttendanceSheet(models.Model):
             ], limit=1)
 
             if leave:
-                _logger.info(f"Employee {employee.name} has a leave from {leave.date_from} to {leave.date_to}")
                 attendance_type = leave.holiday_status_id.attendance_type_id
                 if attendance_type:
                     existing_sheet = self.env['hr.attendance.sheet'].search([
@@ -35,15 +37,13 @@ class HrAttendanceSheet(models.Model):
 
                     if existing_sheet:
                         existing_sheet.write({'type_id': attendance_type.id})
-                        _logger.info(f"Updated attendance sheet for {employee.name} with type {attendance_type.code}")
                     else:
                         # Membuat lembar kehadiran baru jika belum ada
-                        new_sheet = self.env['hr.attendance.sheet'].create({
+                        self.env['hr.attendance.sheet'].create({
                             'employee_id': employee.id,
                             'date': today_date,
                             'type_id': attendance_type.id,
                         })
-                        _logger.info(f"Created new attendance sheet for {employee.name} with type {attendance_type.code}")
 
         # Memanggil fungsi asli
         result = super(HrAttendanceSheet, self).create_attendance_sheets(force_date=today_date)
