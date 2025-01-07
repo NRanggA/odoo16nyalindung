@@ -330,6 +330,15 @@ class lhm_activity(models.Model):
     _parent_order                               = 'code, name'
     _order                                      = 'code, parent_left asc'
 
+    @api.constrains('code')
+    def _check_unique_code(self):
+        for record in self:
+            if record.code:
+                # Cek jika ada karyawan lain dengan no_induk yang sama
+                existing_code = self.search([('code', '=', record.code), ('id', '!=', record.id)], limit=1)
+                if existing_code:
+                    raise ValidationError(f"Code '{record.code}' sudah digunakan oleh Aktivitas '{existing_code.name}', silahkan masukkan kode lain !")
+
     def get_price_borongan(self, drc=None, product=None):
         price = 0
         for record in self:
@@ -1100,6 +1109,7 @@ class lhm_transaction(models.Model):
     pending_nab_link    = fields.Boolean('LHM belum sama dengan NAB', compute='_check_pending_nab_link', store=True)
     pending_nap_link    = fields.Boolean('LHM belum sama dengan NAP', compute='_check_pending_nap_link', store=True)
     sph_move_ids        = fields.One2many('sph.move', 'lhm_id', string='Sph Move')
+    # validation_message   = fields.Text('Validation Message')
 
     nap_line_zero = fields.Boolean(
         string="Validasi Get Data Karet",
@@ -1362,7 +1372,9 @@ class lhm_transaction(models.Model):
                 # Tambahkan context 'wizard_shown' untuk mencegah loop
                 check_employee['context']['wizard_shown'] = True
                 return check_employee
-
+        
+        # Panggil fungsi untuk mengecek hasil 1 dan 2
+        self._check_employee_not_hasil_1_2()
         # fungsi untuk menambahkan employee panen ke dalam Nap
         self.lhm_line_ids.get_employee_panen_nap()
         # Panggil fungsi untuk mengambil gaji untuk setiap employee
@@ -1396,6 +1408,24 @@ class lhm_transaction(models.Model):
                 }
             }
 
+    def _check_employee_not_hasil_1_2(self):
+        # Cari semua baris yang tidak memiliki hasil_1 dan hasil_2
+        lines_without_results = self.lhm_line_ids.filtered(lambda line: not line.hasil_1 and not line.hasil_2)
+
+        if lines_without_results:
+            # Buat daftar pesan error
+            validation_message_list = [
+                f"Karyawan '{line.employee_id.name}' tidak memiliki hasil 1 dan hasil 2. Silahkan hapus data terlebih dahulu dan perbaiki absensi nya jika employee tersebut tidak kerja."
+                for line in lines_without_results
+            ]
+
+            # Gabungkan pesan error ke dalam satu string
+            validation_message = '\n'.join(validation_message_list)
+
+            # Raise ValidationError dengan pesan yang terstruktur
+            raise ValidationError(_("Data gagal diproses dengan error berikut:\n%s") % validation_message)
+
+        return True
 
     def _progress(self):
         lhm_progress_list = []
@@ -1945,21 +1975,11 @@ class lhm_transaction_line(models.Model):
         related='transaction_nap_line_ids.hasil_1_nap', 
         readonly=True
     )
-    # satuan_1_nap = fields.Many2one(
-    #     string="Satuan 1 NAP", 
-    #     related='transaction_nap_line_ids.satuan_1_nap', 
-    #     readonly=True
-    # )
     hasil_2_nap = fields.Float(
         string="Hasil 2 NAP", 
         related='transaction_nap_line_ids.hasil_2_nap', 
         readonly=True
     )
-    # satuan_2_nap = fields.Many2one(
-    #     string="Satuan 2 NAP", 
-    #     related='transaction_nap_line_ids.satuan_2_nap', 
-    #     readonly=True
-    # )
     hasil_convert_latex = fields.Float(
         string="Hasil Convert Latex", 
         related='transaction_nap_line_ids.hasil_convert_latex', 
