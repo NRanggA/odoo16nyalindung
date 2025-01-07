@@ -17,6 +17,7 @@
                             <button string="Attendance Sheeet" type="object" name="action_show_sheet" class="btn-secondary" icon="fa-users" attrs="{'invisible': [('state', '=', 'draft')]}"/>
                         </div>
                         <group>
+                            <field name="name"/>
                             <field name="date" attrs="{'readonly': [('state', '=', 'valid')]}"/>
                             <field name="file" filename="file_name" attrs="{'readonly': [('state', '=', 'valid')]}"/>
                             <button string="Import" type="object" name="do_import" class="oe_highlight" attrs="{'invisible': [('state', '=', 'valid')]}"/>
@@ -42,6 +43,7 @@
             <field name="model">hr.attendance.batch</field>
             <field name="arch" type="xml">
                 <tree string="Data Import Absensi">
+                    <field name="name" />
                     <field name="date" />
                     <field name="state" widget="badge" decoration-success="state == 'valid'" decoration-danger="state == 'draft'" />
                 </tree>

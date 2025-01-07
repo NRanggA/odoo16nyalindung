@@ -48,7 +48,7 @@ class HrAttendance(models.Model):
 class HrAttendanceBatch(models.Model):
     _name           = 'hr.attendance.batch'
     _description    = 'Model Attendance Batch'
-    _rec_name       = 'date'
+    # _rec_name       = 'date'
 
     date                    = fields.Date(string='Tanggal', required=True, default=lambda self: fields.Date.context_today(self))
     file                    = fields.Binary(string='Upload File', attachment=True, required=True)
@@ -60,7 +60,8 @@ class HrAttendanceBatch(models.Model):
                                 ('processed', 'Processed'),
                                 ('valid', 'Valid'),
                             ], string='Status', default="draft")
-                            
+    
+    name = fields.Char(string='Name', required=True, copy=False, readonly=True, default='New')
 
     def action_show_sheet(self):
         return {
@@ -95,10 +96,10 @@ class HrAttendanceBatch(models.Model):
         employees_with_full_attendance  = []
 
         # Periksa apakah ada record batch lain dengan tanggal yang sama
-        existing_batch = self.search([('date', '=', self.date), ('id', '!=', self.id)], limit=1)
+        # existing_batch = self.search([('date', '=', self.date), ('id', '!=', self.id)], limit=1)
 
-        if existing_batch:
-            existing_batch.unlink()
+        # if existing_batch:
+        #     existing_batch.unlink()
 
             # Mengumpulkan data check-in dan check-out dari file Excel
         for index, row in df.iterrows():
@@ -268,6 +269,19 @@ class HrAttendanceBatch(models.Model):
 
     def set_to_draft(self):
         self.state = 'draft'
+    
+    @api.model
+    def create(self, vals):
+        if vals.get('date'):
+            date_str = fields.Date.from_string(vals['date']).strftime('%m/%d/%Y')
+            existing_batches = self.env['hr.attendance.batch'].search([('name', 'like', date_str)])
+            if existing_batches:
+                next_number = len(existing_batches)
+                vals['name'] = f"{date_str} - {next_number}"
+            else:
+                vals['name'] = date_str
+        return super(HrAttendanceBatch, self).create(vals)
+
 
     def unlink(self):
         for rec in self:
