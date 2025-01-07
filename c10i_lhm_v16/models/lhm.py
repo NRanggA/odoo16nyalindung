@@ -1177,7 +1177,7 @@ class lhm_transaction(models.Model):
                 ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
                 ('date', '=', self.date),
                 ('check_in', '!=', False),
-                # ('check_in', '<', end_date)
+                ('check_out', '!=', False)
             ])
             absensi_employee_ids = absensi.mapped('employee_id.id')
             

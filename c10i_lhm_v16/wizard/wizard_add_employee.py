@@ -38,7 +38,12 @@ class WizardAddEmployee(models.TransientModel):
     name                = fields.Char("Nama LHM")
     company_id          = fields.Many2one('res.company', string='Company', readonly=True, default=lambda self: self.env.user.company_id)
     employee_id         = fields.Many2one(comodel_name="hr.employee", string="Nama Karyawan")
-    attendance_id       = fields.Many2one(comodel_name="hr.attendance.type", string="Absensi")
+    # attendance_id       = fields.Many2one(comodel_name="hr.attendance.type", string="Absensi" default=lambda self: self.env['hr.attendance.type'].search([('type', '=', 'na')], limit=1))
+    attendance_id = fields.Many2one(
+        comodel_name="hr.attendance.type", 
+        string="Absensi", 
+        default=lambda self: self.env['hr.attendance.type'].search([('type', '=', 'kj')], limit=1)
+    )
     attendance_type     = fields.Selection([('in', 'Masuk'), ('out', 'Keluar'), ('na', 'N/A'), ('kj', 'KJ')], string='Absensi Type', readonly=True, related="attendance_id.type")
     kemandoran_from_id  = fields.Many2one(comodel_name="hr.foreman", string="Asal Kemandoran")
     kemandoran_to_id    = fields.Many2one(comodel_name="hr.foreman", string="Tujuan Kemandoran")
@@ -388,14 +393,15 @@ class WizardAddEmployee(models.TransientModel):
                 'sequence'              : self.next_number,
                 'name'                  : employee.no_induk,
                 'date'                  : self.date,
-                'attendance_id'         : self.attendance_id and self.attendance_id.id or False,
+                # 'attendance_id'         : self.attendance_id and self.attendance_id.id or False,
                 'employee_id'           : employee.id,
                 # 'min_wage_id'           : min_wage and min_wage.id or False,
                 # 'min_wage_value'        : (min_wage.umr_month / (min_wage.work_day or 25)) or False,
-                'contract_id'           : contract and contract.id or False,
-                'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                # 'contract_id'           : contract and contract.id or False,
+                # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                 'lhm_id'                : lhm_transaction_data.id,
-                'work_day'              : self.residual_hk,
+                # 'work_day'              : self.residual_hk,
+                'work_day'              : 0.0,
                 'work_result'           : 0.0,
                 'premi'                 : 0.0,
                 'overtime_hour'         : 0.0,

@@ -128,8 +128,18 @@ class lhm_transaction(models.Model):
                     ('lhm_id', '=', self.id)
                 ], limit=1)
 
-                # Update jika lhm_line ditemukan
                 if lhm_line:
+                    # JIKA ADA DI DALAM LHM LINE MAKA AKAN DITAMBAHKAN
+                    # Cek apakah dia employee yan tidak pada kemandoran yang sama namun tidak ada absen pada lhm_line
+                    if employee not in self.kemandoran_id.employee_ids:
+                        absensi = self.env['hr.attendance.sheet'].search([
+                            ('employee_id', 'in', lhm_line.employee_id.ids),
+                            ('date', '=', self.date),
+                        ])
+                        if absensi.check_in == False or absensi.check_out == False:
+                            error_message_list.append(
+                                f"Baris ke- {index + 2} Employee '{employee.name}' tidak lengkap secara absensi di tanggal '{absensi.date}' dengan tipe absensi '{absensi.type_id.code}', silahkan perbaiki absensi terlebih dahulu."
+                            )
                     to_update.append((1, lhm_line.id, {
                         'date'              : self.date,      
                         'employee_id'       : employee.id,
@@ -151,25 +161,57 @@ class lhm_transaction(models.Model):
                     }))
                     processed_employees[employee_nik] = True
                 else:
-                    # Buat entri baru jika employee tidak ditemukan di lhm_line
-
-                    # Cek jika employee tidak berada pada kemandoran yang saat ini
+                    # BUAT ENTRY BARU JIKA EMPLOYEE TIDAK ADA DI LHM LINE 
+                    # Cek apakah dia employee berada pada kemandoran yang sama namun tidak ada absen
+                    if employee in self.kemandoran_id.employee_ids:
+                        absensi_kemandoran = self.env['hr.attendance.sheet'].search([
+                            ('employee_id', '=', employee.id),
+                            ('date', '=', self.date),
+                        ])
+                        if absensi_kemandoran.check_in == False or absensi_kemandoran.check_out == False:
+                            error_message_list.append(
+                                f"Baris ke- {index + 2} Employee '{employee.name}' tidak lengkap secara absensi di tanggal '{absensi_kemandoran.date}' dengan tipe absensi '{absensi_kemandoran.type_id.code}', silahkan perbaiki absensi terlebih dahulu."
+                            )
+                    
                     if employee not in self.kemandoran_id.employee_ids:
+                        absensi_not_kemandoran = self.env['hr.attendance.sheet'].search([
+                            ('employee_id', '=', employee.id),
+                            ('date', '=', self.date),
+                        ])
+                        if absensi_not_kemandoran.check_in == False or absensi_not_kemandoran.check_out == False:
+                            error_message_list.append(
+                                f"Baris ke- {index + 2} Employee '{employee.name}' tidak lengkap secara absensi di tanggal '{absensi_not_kemandoran.date}' dengan tipe absensi '{absensi_not_kemandoran.type_id.code}', silahkan perbaiki absensi terlebih dahulu."
+                            )
+                        
                         error_message_list.append(
-                            f"Baris ke- {index + 2} Employee dengan nama '{employee.name}' berasal dari kemandoran lain, silahkan 'Tambah Karyawan' terlebih dahulu !"
-                        )
-            
-                    # Cek jika employee tidak ada absen.
-                    absensi = self.env['hr.attendance.sheet'].search([
-                        ('employee_id', '=', employee.id),
-                        ('date', '=', self.date),
-                        ('check_in', '!=', False),
-                    ])
-                    if not absensi:
-                        error_message_list.append(
-                            f"Baris ke- {index + 2} Employee dengan nama '{employee.name}' belum melakukan absensi, silahkan perbaiki absensi terlebih dahulu."
+                            f"Baris ke- {index + 2} Employee '{employee.name}' berasal dari kemandoran lain, silahkan 'Tambah Karyawan' terlebih dahulu !"
                         )
 
+                    # Cek jika employee Tidak pada kemandoran yang sama
+                    # if employee not in self.kemandoran_id.employee_ids:
+                    #     error_message_list.append(
+                    #         f"Baris ke- {index + 2} Employee '{employee.name}' berasal dari kemandoran lain, silahkan 'Tambah Karyawan' terlebih dahulu !"
+                    #     )
+
+                    # CEK DUPLIKASI DATA YANG SAMA PADA FILE YANG DI IMPORT dibedakan berdasarkan employee_id, location_id, activity_id
+                    # Cek apakah employee_id dan location_id sudah ada di to_update
+                    is_duplicate = False
+                    for update in to_update:
+                        # Ambil data yang ada dalam to_update
+                        existing_employee_id = update[2].get('employee_id')
+                        existing_location_id = update[2].get('location_id')
+                        existing_activity_id = update[2].get('activity_id')
+
+                        if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id) and str(existing_activity_id) == str(activity.id):
+                            is_duplicate = True
+                            break
+
+                    if is_duplicate:
+                        error_message_list.append(
+                            f"Baris ke- {index + 2} Duplikat entri ditemukan untuk karyawan {employee.name} pada lokasi {location.code} dan aktivitas {activity.code} dalam data yang sedang diimpor!"
+                        )
+                        continue
+                    
                     to_update.append((0, 0, {
                         'date'              : self.date,
                         'employee_id'       : employee.id,
@@ -190,10 +232,8 @@ class lhm_transaction(models.Model):
                         'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                     }))
             else:
-                # Log untuk melihat isi to_update sebelum melakukan pengecekan
-                # print(f"Data pada varibel: {to_update}")
-                # print(f"Cek Jika ada yang duplicate: Employee = {employee.id}, Location = {location.id}")
-
+                # I
+                
                 # Cek apakah employee_id dan location_id sudah ada di to_update
                 is_duplicate = False
                 for update in to_update:
@@ -202,15 +242,10 @@ class lhm_transaction(models.Model):
                     existing_location_id = update[2].get('location_id')
                     existing_activity_id = update[2].get('activity_id')
 
-                    # cek dengan membangdingkan data
-                    # print(f"Bandingkan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}, Activity ID = {existing_activity_id}")
 
                     if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id) and str(existing_activity_id) == str(activity.id):
-                        # print(f"Duplikat ditemukan: Employee ID = {existing_employee_id}, Location ID = {existing_location_id}, Activity ID = {existing_activity_id}")
                         is_duplicate = True
                         break
-
-                # print(f"Duplikat : {is_duplicate}")
 
                 if is_duplicate:
                     error_message_list.append(
@@ -237,6 +272,7 @@ class lhm_transaction(models.Model):
                     'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                     'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                 }))
+        
 
         if error_message_list:
             error_message = '\n'.join(error_message_list)
