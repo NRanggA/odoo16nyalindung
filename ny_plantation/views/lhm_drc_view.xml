@@ -64,6 +64,7 @@
                         <group>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="date"/>
+                            <field name="afdeling_id"/>
                             <field name="tgl_panen"/>
                         </group>
                         <notebook>

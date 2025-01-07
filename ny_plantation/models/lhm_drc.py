@@ -10,6 +10,7 @@ class lhm_drc(models.Model):
     name         = fields.Char(string="No. Dok", default='New')
     date         = fields.Date(string="Tanggal", required=True, default=fields.Date.context_today)
     tgl_panen    = fields.Date("Tgl. Panen")
+    afdeling_id  = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
     confirmed    = fields.Boolean(string="Confirmed", default=False)
     cancel       = fields.Boolean(string="Cancelled", default=False)
     state        = fields.Selection([
@@ -36,17 +37,21 @@ class lhm_drc(models.Model):
                 raise exceptions.UserError(_("Dokumen dengan status 'Confirmed' tidak dapat dihapus!"))
         return super(lhm_drc, self).unlink()
     
-    @api.onchange('tgl_panen')
-    def _onchange_tgl_panen(self):
-        if not self.tgl_panen:
+    @api.onchange('tgl_panen', 'afdeling_id')
+    def _onchange_tgl_panen_afdeling(self):
+        if not self.tgl_panen or not self.afdeling_id:
             self.drc_line_ids = [(5, 0, 0)]
             return
         nap_lines = self.env['lhm.nap.line'].search([
             ('tgl_panen', '=', self.tgl_panen),
+            ('lhm_nap_id.afdeling_id', '=', self.afdeling_id.id),
             ('lhm_nap_id.state', '=', 'confirmed')
         ])
         if not nap_lines:
-            raise ValidationError("Tidak ditemukan Dokumen NAP yang status 'Confirmed'. Silahkan cek Dokumen NAP yang terkait.")
+            raise ValidationError(
+                "Tidak ditemukan Dokumen NAP dengan status 'Confirmed' "
+                "dan sesuai dengan Afdeling yang dipilih. Silakan cek kembali."
+            )
         grouped_data = {}
         for nap_line in nap_lines:
             key = (nap_line.block_id.id, nap_line.product_id.id)
