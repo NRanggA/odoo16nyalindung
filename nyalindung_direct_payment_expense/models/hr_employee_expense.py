@@ -607,7 +607,7 @@ class HrEmployeeExpenseLine(models.Model):
                         elif line.location_type_id.mills:
                             activities = line.varieties_id.mill_costs_ids
                         else:
-                            activities = line.varieties_id.harvest_activity_id
+                            activities = line.varieties_id.harvest_activity_ids
                             activities |= line.varieties_id.upkeep_activity_ids
                     else:
                         # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])

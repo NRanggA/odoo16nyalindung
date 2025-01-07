@@ -2039,7 +2039,7 @@ class lhm_transaction_line(models.Model):
                             elif line.location_type_id.mills:
                                 activities = line.varieties_id.mill_costs_ids
                             else:
-                                activities = line.varieties_id.harvest_activity_id
+                                activities = line.varieties_id.harvest_activity_ids
                                 activities |= line.varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
@@ -2774,7 +2774,7 @@ class lhm_machine_line(models.Model):
                             elif line.location_type_id.mills:
                                 activities = line.varieties_id.mill_costs_ids
                             else:
-                                activities = line.varieties_id.harvest_activity_id
+                                activities = line.varieties_id.harvest_activity_ids
                                 activities |= line.varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
@@ -3064,7 +3064,7 @@ class lhm_vehicle_line(models.Model):
                             elif line.location_type_id.mills:
                                 activities = line.varieties_id.mill_costs_ids
                             else:
-                                activities = line.varieties_id.harvest_activity_id
+                                activities = line.varieties_id.harvest_activity_ids
                                 activities |= line.varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
@@ -3374,7 +3374,7 @@ class lhm_workshop_line(models.Model):
                             elif line.location_type_id.mills:
                                 activities = line.varieties_id.mill_costs_ids
                             else:
-                                activities = line.varieties_id.harvest_activity_id
+                                activities = line.varieties_id.harvest_activity_ids
                                 activities |= line.varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
@@ -4034,7 +4034,7 @@ class lhm_contractor_line(models.Model):
                             elif line.location_type_id.mills:
                                 activities = line.varieties_id.mill_costs_ids
                             else:
-                                activities = line.varieties_id.harvest_activity_id
+                                activities = line.varieties_id.harvest_activity_ids
                                 activities |= line.varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
@@ -4295,7 +4295,7 @@ class lhm_contractor_nap_line(models.Model):
                             elif line.location_type_id.indirect:
                                 activities = line.varieties_id.indirect_cost_activity_ids
                             else:
-                                activities = line.varieties_id.harvest_activity_id
+                                activities = line.varieties_id.harvest_activity_ids
                                 activities |= line.varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])

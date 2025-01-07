@@ -24,12 +24,13 @@
                             <field name="mill_costs_ids" domain="[('type_id.code','=','MC')]"/>
                         </page>
                         <page name="plantation" string="Upkeep and Harvest">
-                            <group>
+                            <!-- <group>
                                 <field name="harvest_activity_id" domain="[('type_id.plantation','=',True)]" attrs="{'required': [('panen','=',True)]}"/>
-                                
-                            </group>
+                            </group> -->
+                            <label for="harvest_activity_ids"/>
+                            <field name="harvest_activity_ids" widget="many2many" domain="[('type_id.plantation','=',True)]" attrs="{'required': [('panen','=',True)]}"/>
                             <label for="upkeep_activity_ids"/>
-                            <field name="upkeep_activity_ids" domain="[('type_id.plantation','=',True)]"/>
+                            <field name="upkeep_activity_ids" widget="many2many" domain="[('type_id.plantation','=',True)]"/>
                         </page>
                         <page name="gc" string="General Charges">
                             <field name="general_charges_activity_ids" domain="[('type_id.code','=','GC')]"/>
@@ -41,12 +42,10 @@
                             <field name="plant_block_ids" widget="many2many" nolabel="1"/>
                         </page>
                         <page name="other" string="Project and Nursery">
-                            <group string="Project">
-                                <field name="project_ids" widget="many2many"/>
-                            </group>
-                            <group string="Nursery">
-                                <field name="nursery_ids" widget="many2many"/>
-                            </group>
+                            <label for="project_ids"/>
+                            <field name="project_ids" widget="many2many"/>
+                            <label for="nursery_ids"/>
+                            <field name="nursery_ids" widget="many2many"/>
                         </page>
                     </notebook>
                 </sheet>

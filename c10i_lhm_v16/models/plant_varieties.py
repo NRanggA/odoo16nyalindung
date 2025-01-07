@@ -13,7 +13,12 @@ class PlantVarieties(models.Model):
     other_product_ids = fields.Many2many('product.product', 'varitas_product_rel', string='Other Products')
 
     plant_block_ids = fields.One2many('lhm.plant.block', 'varieties_id', string='Planted Block')
-    harvest_activity_id = fields.Many2one('lhm.activity', string='Harvesting Activity')
+    
+    # Many2one
+    # harvest_activity_id = fields.Many2one('lhm.activity', string='Harvesting Activity')
+    # Many2many
+    harvest_activity_ids = fields.Many2many('lhm.activity', string='Harverst Activities')
+    
     upkeep_activity_ids = fields.Many2many('lhm.activity', 'varieties_upkeep_rel', string='Upkeep Activities')
     general_charges_activity_ids = fields.Many2many('lhm.activity', 'varieties_gc_rel', string='Indirec Cost Activities')
     indirect_cost_activity_ids = fields.Many2many('lhm.activity', 'varieties_idc_rel', string='General Charges Activities')

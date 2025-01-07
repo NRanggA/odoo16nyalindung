@@ -101,7 +101,7 @@ class AccountMoveLine(models.Model):
                             elif line.plantation_location_type_id.mills:
                                 activities = line.plantation_varieties_id.mill_costs_ids
                             else:
-                                activities = line.plantation_varieties_id.harvest_activity_id
+                                activities = line.plantation_varieties_id.harvest_activity_ids
                                 activities |= line.plantation_varieties_id.upkeep_activity_ids
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
