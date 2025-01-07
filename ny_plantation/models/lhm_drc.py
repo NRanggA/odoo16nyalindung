@@ -4,6 +4,7 @@ from odoo.exceptions import ValidationError
 class lhm_drc(models.Model):
     _name = 'lhm.drc'
     _description = 'Ini Header DRC'
+    _inherit            = ['mail.thread', 'mail.activity.mixin']
 
     drc_line_ids = fields.One2many('lhm.drc.line', 'drc_id', string="Lines")
     nap_id       = fields.Many2one('lhm.nap', ondelete="cascade")
