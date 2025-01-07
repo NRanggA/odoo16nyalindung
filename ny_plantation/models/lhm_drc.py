@@ -120,8 +120,14 @@ class lhm_drc(models.Model):
                     ('block_id', '=', line.block_id.id),
                     ('tgl_panen', '=', line.date),
                     ('product_id', '=', line.product.id),
-                    ('lhm_nap_id.state', '=', 'confirmed'),
+                    # ('lhm_nap_id.state', '=', 'confirmed'),
                 ])
+                
+                # for nap_line in nap_line_records:
+                #     print(f"====  {nap_line.lhm_nap_id.name}")
+
+                # # print(f"====  {nap_line_records}")
+                # print(f"====  {ns}")
                 if not nap_line_records:
                     raise ValidationError(f"Tidak ditemukan dokumen NAP untuk Lokasi '{line.block_id.name}', Tanggal Panen '{line.date}' yang statusnya Confirmed")
                 for nap_line in nap_line_records:
