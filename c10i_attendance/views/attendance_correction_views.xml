@@ -52,6 +52,7 @@
                                         <field name="check_in" readonly="0"/>
                                         <field name="check_out" readonly="0"/>
                                         <field name="reason"/>
+                                        <field name="correction"/>
                                     </tree>
                                 </field>
                             </page>

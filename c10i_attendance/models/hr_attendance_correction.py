@@ -27,45 +27,26 @@ class HrAttendanceCorrection(models.Model):
     def button_approve(self):
         for record in self:
             for line in record.line_ids:
-                # jakarta = timezone('Asia/Jakarta')
-
-                # # Konversi check_in ke waktu lokal Asia/Jakarta
-                # # if line.check_in:
-                # check_in_utc = fields.Datetime.from_string(line.check_in)  
-                # check_in_local = utc.localize(check_in_utc).astimezone(jakarta)
-
-                # # Menghapus informasi timezone (mengubah menjadi naive datetime)
-                # check_in_naive = check_in_local.replace(tzinfo=None)
-
-                # # Konversi check_out ke waktu lokal Asia/Jakarta
-                # # if line.check_out:
-                # check_out_utc = fields.Datetime.from_string(line.check_out) 
-                # check_out_local = utc.localize(check_out_utc).astimezone(jakarta)
-
-                # # Menghapus informasi timezone (mengubah menjadi naive datetime)
-                # check_out_naive = check_out_local.replace(tzinfo=None)
-
                 if line.attendance_sheet_id:
                     # Perbarui hanya jika check_in dan check_out ada
                     if line.check_in and line.check_out:
-                        attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+                        attendance_type_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
                         line.attendance_sheet_id.write({
-                            # 'check_in': check_in_naive,
-                            # 'check_out': check_out_naive,
                             'check_in': line.check_in,
                             'check_out': line.check_out,
-                            'type_id': attendance_type.id,
-                            'is_correction': True
+                            'type_id': attendance_type_kj.id,
+                            'is_correction': line.correction
                         })
                     else:
+                        attendance_type_m = self.env['hr.attendance.type'].search([('code', '=', 'M')], limit=1)
                         line.attendance_sheet_id.write({
-                            # 'check_in': check_in_naive,
-                            # 'check_out': check_out_naive
                             'check_in': line.check_in,
-                            'check_out': line.check_out
+                            'check_out': line.check_out,
+                            'type_id': attendance_type_m.id,
+                            'is_correction': line.correction
+
                         })
             record.state = 'approve'
-
 
     def set_to_draft(self):
         for rec in self:
@@ -90,6 +71,11 @@ class HrAttendanceCorrection(models.Model):
     # def button_done(self):
     #     for rec in self:
     #         rec.state = 'done'
+    
+    def _delete_false_corrections(self):
+        for line in self.line_ids:
+            if not line.correction:
+                line.unlink()
 
     @api.model
     def create(self, vals):
@@ -101,7 +87,14 @@ class HrAttendanceCorrection(models.Model):
             year_suffix = now.strftime('%y')  # 2 digit terakhir tahun
             date_str = now.strftime('%m%d')   # Bulan dan tanggal
             vals['name'] = f"ATC/{year_suffix}/{date_str}/{sequence}"
-        return super(HrAttendanceCorrection, self).create(vals)
+        record = super(HrAttendanceCorrection, self).create(vals)
+        record._delete_false_corrections()
+        return record
+
+    def write(self, vals):
+        res = super(HrAttendanceCorrection, self).write(vals)
+        self._delete_false_corrections()
+        return res
 
     def unlink(self):
         for rec in self:
@@ -122,6 +115,7 @@ class HrAttendanceCorrectionLine(models.Model):
     check_in                = fields.Datetime(string='Check In')
     check_out               = fields.Datetime(string='Check Out')
     reason                  = fields.Char('Alasan Koreksi')
+    correction              = fields.Boolean('Koreksi', default=False)
 
     @api.onchange('employee_id')
     def _onchange_employee_id(self):
@@ -160,55 +154,16 @@ class HrAttendanceCorrectionLine(models.Model):
                     # Localize check_in waktu UTC ke Asia/Jakarta
                     check_in_utc    = fields.Datetime.from_string(line.check_in)
                     check_in_local  = utc.localize(check_in_utc).astimezone(jakarta)
-                    # print(f"== date_attendance: {date_attendance}")
-                    # print(f"== check_in_local: {check_in_local}")
                     if check_in_local.date() < date_attendance:
-                        raise ValidationError(f"Tanggal Checkin tidak boleh sebelum tanggal absensi: {date_attendance}")
+                        raise ValidationError(f"Tanggal 'Check-In' tidak boleh sebelum tanggal absensi: {date_attendance}")
+                    if check_in_local.date() > date_attendance:
+                        raise ValidationError(f"Tanggal 'Check-In' tidak boleh sesudah tanggal absensi: {date_attendance}")
 
                 if line.check_out:
                     # Mengonversi check_out ke waktu lokal Asia/Jakarta menggunakan localize
                     check_out_utc = fields.Datetime.from_string(line.check_out)
                     check_out_local = utc.localize(check_out_utc).astimezone(jakarta)
-                    # print(f"== date_attendance: {date_attendance}")
-                    # print(f"== check_out_local: {check_out_local}")
                     if check_out_local.date() > date_attendance:
-                        raise ValidationError(f"Tanggal Checkout tidak boleh sesudah tanggal absensi: {date_attendance}")
-
-    # @api.model
-    # def create(self, vals):
-    #     record = super(HrAttendanceCorrectionLine, self).create(vals)
-    #     if record.attendance_sheet_id:
-    #         # Hanya perbarui type_id jika check_in dan check_out ada
-    #         if record.check_in and record.check_out:
-    #             attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
-    #             record.attendance_sheet_id.write({
-    #                 'check_in': record.check_in,
-    #                 'check_out': record.check_out,
-    #                 'type_id': attendance_type.id
-    #             })
-    #         else:
-    #             record.attendance_sheet_id.write({
-    #                 'check_in': record.check_in,
-    #                 'check_out': record.check_out
-    #             })
-    #     return record
-
-    # def write(self, vals):
-    #     res = super(HrAttendanceCorrectionLine, self).write(vals)
-    #     for record in self:
-    #         if 'check_in' in vals or 'check_out' in vals:
-    #             if record.attendance_sheet_id:
-    #                 # Hanya perbarui type_id jika check_in dan check_out ada
-    #                 if record.check_in and record.check_out:
-    #                     attendance_type = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
-    #                     record.attendance_sheet_id.write({
-    #                         'check_in': record.check_in,
-    #                         'check_out': record.check_out,
-    #                         'type_id': attendance_type.id
-    #                     })
-    #                 else:
-    #                     record.attendance_sheet_id.write({
-    #                         'check_in': record.check_in,
-    #                         'check_out': record.check_out
-    #                     })
-    #     return res
+                        raise ValidationError(f"Tanggal 'Check-Out' tidak boleh sesudah tanggal absensi: {date_attendance}")
+                    if check_out_local.date() < date_attendance:
+                        raise ValidationError(f"Tanggal 'Check-Out' tidak boleh sebelum tanggal absensi: {date_attendance}")
