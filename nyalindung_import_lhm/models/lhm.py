@@ -78,9 +78,10 @@ class lhm_transaction(models.Model):
                 error_message_list.append(f"Baris ke- {index + 2} Lokasi dengan kode {row.get('LOKASI', '')} tidak ditemukan!")
             
             if type_location and location:
-                location_2 = self.env['lhm.location'].search([('type_id', '=', type_location.id)])
+                location_2 = self.env['lhm.location'].search([('id', '=', location.id),('type_id', '=', type_location.id)])
                 if not location_2:
-                    error_message_list.append(f"Baris ke- {index + 2} Tipe lokasi {row.get('TIPE', '')} tidak sesuai!")
+                    # error_message_list.append(f"Baris ke- {index + 2} Tipe lokasi {row.get('TIPE', '')} tidak sesuai, dengan lokasi {row.get('LOKASI', '')}")
+                    error_message_list.append(f"Baris ke- {index + 2} Type pada Lokasi {row.get('LOKASI', '')} tidak sesuai dengan type yang diinput {row.get('TIPE', '')}")
             
             if varietas_found and type_location and type_location.code not in ('PJ','NA','WS','VH','MA','NS'):
                 location_3 = self.env['lhm.location'].search([
