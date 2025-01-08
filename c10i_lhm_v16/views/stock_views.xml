@@ -46,9 +46,9 @@
                     <attribute name="invisible">1</attribute>
                 </field>
                 
-                <field name="origin" position="attributes">
+                <!-- <field name="origin" position="attributes">
                     <attribute name="invisible">1</attribute>
-                </field>
+                </field> -->
 
                 <field name="location_dest_id" position="attributes">
                     <attribute name="attrs">{'invisible': [('picking_type_code', '=', 'incoming')], 'readonly': [('picking_type_code', '=', 'plantation')]}</attribute>
