@@ -20,6 +20,9 @@ class ResAfdeling(models.Model):
     group_progress_id   = fields.Many2one(comodel_name="plantation.location.reference", string="Grouping LPPH")
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     active              = fields.Boolean("Active", default=True)
+    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    # varieties_id = fields.Many2one('plant.varieties', string='ORG', related='location_type_id.varieties_id', readonly=True, store=True)
+
 
     @api.model
     def create(self, values):
@@ -27,11 +30,13 @@ class ResAfdeling(models.Model):
         location_code       = values.get('code', False)
         location_type_id    = values.get('location_type_id', False)
         group_progress_id   = values.get('group_progress_id', False)
+        varieties_id   = values.get('varieties_id', False)
         location_values     = {
                                 'name': location_name or "(NoName)",
                                 'code': location_code or "(NoCode)",
                                 'type_id': location_type_id or False,
                                 'group_progress_id': group_progress_id,
+                                'varieties_id': varieties_id,
                             }
         location = super(ResAfdeling, self).create(values)
         if location:
@@ -49,6 +54,8 @@ class ResAfdeling(models.Model):
                 rec.location_id.write({'type_id': values.get('location_type_id', False)})
             if 'group_progress_id' in values and rec.location_id:
                 rec.location_id.write({'group_progress_id': values.get('group_progress_id', False)})
+            if 'varieties_id' in values and rec.location_id:
+                rec.location_id.write({'varieties_id': values.get('varieties_id', False)})
             if 'active' in values and rec.location_id:
                 rec.location_id.write({'active': values.get('active', False)})
         return super(ResAfdeling, self).write(values)
