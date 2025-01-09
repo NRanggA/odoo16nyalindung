@@ -3656,14 +3656,19 @@
             <field name="model">lhm.nap</field>
             <field name="arch" type="xml">
                 <search string="Nota Angkut Panen">
-                    <field name="name" string="Nota Angkut Panen"/>
+                    <field name="name" string="No Register"/>
+                    <field name="no_nap" string="No. Nap Manual"/>
+                    <field name="date_nap" string="Date"/>
                     <separator/>
                     <!-- <filter name="date_today" string="Today" domain="[('date_nap', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
-                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <!-- <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <filter string="Date" name="date_nap" date="date_nap"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Kepemilikan" name="ownership" context="{'group_by':'ownership'}"/>
-                        <filter string="No Polisi" name="reg_number" context="{'group_by':'reg_number'}"/>
+                        <filter string="Afdeling" name="afdeling_id" context="{'group_by':'afdeling_id'}"/>
+                        <filter string="Date" name="date_nap" context="{'group_by':'date_nap'}"/>
+                        <!-- <filter string="Kepemilikan" name="ownership" context="{'group_by':'ownership'}"/> -->
+                        <!-- <filter string="No Polisi" name="reg_number" context="{'group_by':'reg_number'}"/> -->
                     </group>
                 </search>
             </field>
@@ -3689,7 +3694,7 @@
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_lhm_nap_filter"/>
             <field name="domain">[]</field>
-            <field name="context">{'readonly_by_pass': ['ownership','reg_number'], 'search_default_date_monthly':1}</field>
+            <field name="context">{'readonly_by_pass': ['ownership','reg_number']}</field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Nota Angkut Panen.

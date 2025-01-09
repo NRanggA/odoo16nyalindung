@@ -6,6 +6,7 @@
             <field name="arch" type="xml">
                 <tree string="Dry Rubber Content">
                     <field name="name"/>
+                    <field name="afdeling_id"/>
                     <field name="date"/>
                     <field name="state"/>
                 </tree>
@@ -18,8 +19,12 @@
                 <search string="Dry Rubber Content">
                     <field name="name" string="Dry Rubber Content"/>
                     <separator/>
-                    <filter name="date"/>
+                    <filter string="Date" name="date" date="date"/>
                     <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Afdeling" name="afdeling_id" context="{'group_by':'afdeling_id'}"/>
+                        <filter string="Date" name="date" context="{'group_by':'date'}"/>
+                    </group>
                 </search>
             </field>
         </record>
