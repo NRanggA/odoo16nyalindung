@@ -8,7 +8,8 @@ class SheetToProduce(models.TransientModel):
     mrp_id = fields.Many2one('mrp.production', 'Production Order')
     product_latex_id = fields.Many2one('product.product', string='Product')
     product_satuan_id = fields.Many2one('uom.uom', related='product_latex_id.uom_id', string='Satuan', readonly=True, store=True)
-    latex_onhand_qty = fields.Float(related='product_latex_id.qty_available')
+    # latex_onhand_qty = fields.Float(related='product_latex_id.qty_available')
+    latex_onhand_qty = fields.Float('Onhand Qty Lateks')
 
     bom_id = fields.Many2one('mrp.bom', string='Bill of Material')
 
@@ -27,6 +28,10 @@ class SheetToProduce(models.TransientModel):
             else:
                 rec.sheet_to_produce = 0.0
                 rec.drc = 0.0
+    
+    @api.onchange('product_latex_id')
+    def onchange_product(self):
+        self.latex_onhand_qty = self.product_latex_id.qty_available
     
     def action_apply(self):
         self.mrp_id.write({'product_qty': self.sheet_to_produce})
