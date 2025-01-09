@@ -24,9 +24,10 @@
               <group>
                 <field name="code" string="Kode" required="1"/>
                 <field name="location_type_id" required="1" domain="[('indirect','=',True)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                <field name="group_progress_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                <field name="varieties_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
               </group>
               <group>
+                <field name="group_progress_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                 <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
               </group>
