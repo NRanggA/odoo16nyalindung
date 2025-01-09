@@ -219,7 +219,7 @@ class DirectPaymentLine(models.Model):
             if line.payment_id.state!='draft' or not line.plantation_location_type_id:
                 line.filtered_locations = []
             else:
-                if line.plantation_location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
+                if line.plantation_location_type_id.code in ('WS','VH','MA','GC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
                 else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.plantation_location_type_id.id),('varieties_id','=',line.plantation_varieties_id.id)])

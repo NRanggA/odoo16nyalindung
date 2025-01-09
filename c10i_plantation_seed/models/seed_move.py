@@ -144,7 +144,7 @@ class SeedMoveLine(models.Model):
             if line.seed_move_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','GC','IDC','MC','LB'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
                 else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
