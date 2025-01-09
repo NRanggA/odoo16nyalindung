@@ -574,7 +574,7 @@ class lhm_nap(models.Model):
                 transaction_key = (location_id, line.date)
                 if transaction_key not in transaction_data:
                     transaction_data[transaction_key] = 0
-                transaction_data[transaction_key] += line.hasil_1 + line.hasil_2
+                transaction_data[transaction_key] += line.hasil_1
 
             # Validasi kesesuaian total hasil
             for key, transaction_total in transaction_data.items():
