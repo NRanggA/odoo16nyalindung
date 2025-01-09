@@ -2989,7 +2989,7 @@
                     <field name="payment_type"/>
                     <field name="contractor_vehicle"/>
                     <field name="company_id"/>
-                    <field name="state"/>
+                    <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
                     <field name="invoice_id"/>
                     <field name="date_start" invisible="1"/>
                     <field name="date_stop" invisible="1"/>
