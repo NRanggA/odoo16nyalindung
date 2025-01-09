@@ -551,7 +551,8 @@ class lhm_nap(models.Model):
             transaction_lines = self.env['lhm.transaction.line'].search([
                 ('date', '=', record.date_nap),
                 ('location_id','in', location_ids),
-                ('lhm_id.state', '=', 'in_progress')
+                ('lhm_id.state', '=', 'in_progress'),
+                ('activity_id.is_nap', '=', True)
             ])
 
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
