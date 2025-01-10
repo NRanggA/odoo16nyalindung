@@ -1888,7 +1888,7 @@
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="is_nap" invisible="1"/>
-                                <field name="is_borong" invisible="0"/>
+                                <field name="is_borong" invisible="1"/>
                                 <field name="is_hasil_2" invisible="1"/>
                                 <field name="nap_line_zero" invisible="1"/>
                                 <field name="skb" invisible="1"/>
