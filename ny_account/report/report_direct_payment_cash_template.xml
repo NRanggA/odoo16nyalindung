@@ -119,7 +119,7 @@
                                         <th t-att-rowspan="row_count" style="background-color: orange; border: 1px solid black; text-align:center;">
                                             Rincian COA
                                         </th>
-                                        <th style="background-color: orange; border: 1px solid black;">Ketrangan</th>
+                                        <th style="background-color: orange; border: 1px solid black;">Keterangan</th>
                                         <th style="background-color: orange; border: 1px solid black;">No COA</th>
                                         <th style="background-color: orange; border: 1px solid black;">Nilai</th>
                                     </tr>
