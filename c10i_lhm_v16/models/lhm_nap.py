@@ -233,14 +233,16 @@ class lhm_nap(models.Model):
         date_nap = values.get('date_nap')
         if date_nap:
             date_nap = fields.Date.from_string(date_nap)
-        
         if afdeling and date_nap:
             self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id = %s AND date_nap = %s", (afdeling.id, date_nap))
             count = self.env.cr.fetchone()[0] + 1
             values['name'] = f"{afdeling.code}/{date_nap.strftime('%Y-%m-%d')}/{count}"
+        elif date_nap:
+            self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id IS NULL AND date_nap = %s", (date_nap,))
+            count = self.env.cr.fetchone()[0] + 1
+            values['name'] = f"-/{date_nap.strftime('%Y-%m-%d')}/{count}"
         else:
             values['name'] = _('New')
-        
         return super(lhm_nap, self).create(values)
 
     def write(self, values):
@@ -252,11 +254,14 @@ class lhm_nap(models.Model):
                     date_nap = fields.Date.from_string(date_nap)
                 
                 if afdeling and date_nap:
-                    self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id = %s AND date_nap = %s AND id != %s", 
-                                        (afdeling.id, date_nap, record.id))
+                    self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id = %s AND date_nap = %s AND id != %s", (afdeling.id, date_nap, record.id))
                     count = self.env.cr.fetchone()[0] + 1
                     values['name'] = f"{afdeling.code}/{date_nap.strftime('%Y-%m-%d')}/{count}"
-        
+                elif date_nap:
+                    self.env.cr.execute("SELECT COUNT(*) FROM lhm_nap WHERE afdeling_id IS NULL AND date_nap = %s AND id != %s", (date_nap, record.id))
+                    count = self.env.cr.fetchone()[0] + 1
+                    values['name'] = f"-/{date_nap.strftime('%Y-%m-%d')}/{count}"
+
         return super(lhm_nap, self).write(values)
 
     def unlink(self):
