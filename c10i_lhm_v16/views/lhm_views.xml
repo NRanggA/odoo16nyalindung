@@ -1888,6 +1888,7 @@
                                 <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="is_nap" invisible="1"/>
+                                <field name="is_borong" invisible="0"/>
                                 <field name="is_hasil_2" invisible="1"/>
                                 <field name="nap_line_zero" invisible="1"/>
                                 <field name="skb" invisible="1"/>
@@ -1898,7 +1899,8 @@
                                 <group>
                                     <button name="%(c10i_lhm_v16.action_wizard_add_employee)d" class="oe_stat_button" icon="fa-users" string="Tambah Karyawan" states="draft" type="action" groups="c10i_lhm_v16.group_plantation_operator"/>
                                 </group>
-                                <field name="lhm_line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}">
+                                <!-- attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}" -->
+                                <field name="lhm_line_ids" nolabel="1" options='{"always_reload": True}'>
                                     <tree editable="bottom" create="false" class="two-line-header">
                                         <field name="sequence" string="" readonly="1" invisible="1"/>
                                         <field name="name" readonly="1" force_save="1" optional="show"/>
@@ -1906,27 +1908,27 @@
                                         <field name="state" invisible="1"/>
 
                                         <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
-                                        <field name="attendance_id" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="attendance_id" attrs="{'readonly': [('state', '!=', 'draft')]}" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
                                         <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         
-                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"  attrs="{'required': [('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"  attrs="{'readonly': [('state', '!=', 'draft')], 'required': [('attendance_type', 'in', ['kj', 'na'])]}"/>
                                         <field name="varieties_validator" invisible="1"/>
                                         <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
-                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                            attrs="{'readonly': ['|', ('varieties_validator','=',False), ('state', '!=', 'draft')], 
                                                     'required': [('varieties_validator','=',True),('attendance_type','in',['kj','na'])]}"/>
                                         <field name="no_line" invisible="1" />
                                         <field name="filtered_locations" invisible="1"/>
                                             <!-- domain="[('type_id','=',location_type_id)]"  -->
-                                        <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" />
+                                        <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]" attrs="{'readonly': ['|',('attendance_type','not in',['kj','na']), ('state', '!=', 'draft')], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" />
                                         <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1"/> -->
                                         <field name="filtered_activities" invisible="1"/>
                                                 <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
-                                        <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('attendance_type','not in',['kj','na'])], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
+                                        <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('attendance_type','not in',['kj','na']), ('state', '!=', 'draft')], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
                                         <field name="is_borong" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                         <field name="is_hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                         <button icon="fa-plus" type="object" title="Tambah Hasil" name="tambah_hasil_2" class="oe_highlight" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('is_hasil_2', '!=', True)]}"/>
-                                        <field name="work_day" attrs="{'readonly': [('attendance_type','not in',['kj'])], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
-                                        <field name="non_work_day" readonly="1" invisible="1"/>
+                                        <field name="work_day" attrs="{'readonly': ['|',('attendance_type','not in',['kj']), ('state', '!=', 'draft')], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
+                                        <field name="non_work_day" attrs="{'readonly': [('state', '!=', 'draft')]}" readonly="1" invisible="1"/>
                                         
                                         <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
                                         <!-- BEGIN : POC Nyalindung -->
@@ -1936,60 +1938,52 @@
                                         <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
                                         <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
                                         
-                                        <field name="product_id" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="hasil_1" sum="hasil_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
-                                        <field name="satuan_1" optional="show" attrs="{'readonly': ['|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj'])]}"/>
+                                        <field name="product_id" optional="show" attrs="{'readonly': ['|','|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}"/>
+                                        <field name="hasil_1" sum="hasil_1" optional="show" attrs="{'readonly': ['|','|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}"/>
+                                        <field name="satuan_1" optional="show" attrs="{'readonly': ['|', '|',('is_hasil_2','!=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}"/>
 
-                                        <field name="product_id_2" attrs="{'readonly': [('is_hasil_2', '!=', True)]}"/>
-                                        <field name="hasil_2" sum="hasil_2" optional="show"/>
-                                        <field name="satuan_2" optional="show"/>
+                                        <field name="product_id_2" attrs="{'readonly': ['|',('is_hasil_2', '!=', True),('state', '!=', 'draft')]}"/>
+                                        <field name="hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}" sum="hasil_2" optional="show"/>
+                                        <field name="satuan_2" attrs="{'readonly': [('state', '!=', 'draft')]}" optional="show"/>
 
-                                        <field name="drc_latex" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-                                        <field name="target_panen" attrs="{'readonly': ['|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_latex" attrs="{'readonly': ['|','|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}" optional="show"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|','|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}" optional="show"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|','|'  ,('is_hasil_2','=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}" optional="show"/>
                                         <!-- END : POC Nyalindung -->
 
                                         <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
                                         <field name="unit_price" invisible="1" groups="base.group_no_one"/>
-                                        <field name="premi" optional="show"/>
+                                        <field name="premi" attrs="{'readonly': [('state', '!=', 'draft')]}" optional="show"/>
 
                                         <!-- BEGIN : POC Nyalindung -->
                                         <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
-                                        <field name="overtime_value" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="overtime_value" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" groups="base.group_no_one" optional="show"/>
                                         <!-- BEGIN : POC Nyalindung -->
                                         <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
                                         <!-- END : POC Nyalindung -->
 
-                                        <!-- Error ang sama karena groups nya -->
-                                        <!-- <field name="panen" invisible="0" string="P" groups="base.group_no_one"/> -->
                                         <field name="panen" invisible="1" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-
                                         <field name="overtime" invisible="1" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
-                                        <field name="progressive" invisible="0" string="M" groups="base.group_no_one" optional="show"/>
+                                        <field name="progressive" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" string="M" groups="base.group_no_one" optional="show"/>
                                         
-                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])]}" optional="show"/>
-                                        <field name="valid" invisible="0" string="V" groups="base.group_no_one" optional="show"/>
+                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])], 'readonly': [('state', '!=', 'draft')]}" optional="show"/>
+                                        <field name="valid" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" string="V" groups="base.group_no_one" optional="show"/>
                                         <field name="kontanan" invisible="1"/>
                                         <field name="transfer_id" invisible="1"/>
                                         
                                         <!-- Menggunakan contract -->
                                         <!-- <field name="contract_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <field name="contract_id" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16. group_plantation_manager,c10i_lhm_v16.group_plantation_super" optional="show"/>
+                                        <field name="contract_id" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16. group_plantation_manager,c10i_lhm_v16.group_plantation_super" attrs="{'readonly': [('state', '!=', 'draft')]}" optional="show"/>
                                         
-                                        <field name="total_hke" invisible="0" groups="base.group_no_one" optional="show"/>
-                                        <field name="total_hkne" invisible="1" groups="base.group_no_one" optional="show"/>
+                                        <field name="total_hke" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="total_hkne"  invisible="1" groups="base.group_no_one" optional="show"/>
                                         
                                         <!-- <field name="contract_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <field name="contract_wage_value" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_manager,c10i_lhm_v16.group_plantation_super" optional="show"/>
-                                        <field name="contract_value_date" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="contract_wage_value" attrs="{'readonly': [('state', '!=', 'draft'), ('is_borong', '=', False)]}" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_manager,c10i_lhm_v16.group_plantation_super" optional="show"/>
+                                        <field name="contract_value_date" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" groups="base.group_no_one" optional="show"/>
                                         <field name="contract_value_hkne" invisible="1" groups="base.group_no_one" optional="show"/>
-
-
-                                        <!-- <field name="min_wage_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <!-- <field name="min_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <!-- <field name="min_wage_value_date" invisible="0" groups="base.group_no_one" optional="show"/> -->
-                                        <!-- <field name="min_wage_value_hkne" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        
                                     </tree>
                                 </field>
                             </page>
