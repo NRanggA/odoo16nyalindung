@@ -86,7 +86,7 @@ class HrAttendanceBatch(models.Model):
         data = base64.b64decode(self.file)
         excel_file = io.BytesIO(data)
 
-        df = pd.read_excel(excel_file, header=0)
+        df = pd.read_excel(excel_file, dtype={'Nik':str}, header=0)
 
         indonesia_tz = pytz.timezone('Asia/Jakarta')
         date_str = self.date.strftime('%Y-%m-%d')
