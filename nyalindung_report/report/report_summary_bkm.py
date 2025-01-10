@@ -294,7 +294,8 @@ class ReportSummaryBkm(models.AbstractModel):
 
             # Header 2
             sheet.write(5, 0, 'NO.', wbf['header'])
-            sheet.merge_range('B6:C6', 'NAMA', wbf['header'])
+            sheet.write(5, 1, 'NIK', wbf['header'])
+            sheet.merge_range('C6:D6', 'NAMA', wbf['header'])
             # sheet.write(5, 3, 'BSH', wbf['biru_muda'])
             # sheet.write(5, 4, 'KRG', wbf['biru_muda'])
 
@@ -314,7 +315,8 @@ class ReportSummaryBkm(models.AbstractModel):
                 WITH employee_data AS (
                     SELECT 
                         emp.id AS emp_id,
-                        emp.name AS employee_name
+                        emp.name AS employee_name,
+                        emp.no_induk as no_induk
                     FROM 
                         hr_employee emp
                     WHERE emp.kemandoran_id = %s
@@ -357,6 +359,7 @@ class ReportSummaryBkm(models.AbstractModel):
                 SELECT 
                     employee_data.emp_id,
                     employee_data.employee_name,
+                    employee_data.no_induk,
                     SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex_bagi_2,
                     SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
                 FROM 
@@ -367,6 +370,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     trans_data ON employee_data.emp_id = trans_data.employee_id
                 GROUP BY 
                     employee_data.emp_id, 
+                    employee_data.no_induk,
                     employee_data.employee_name;
             """
             
@@ -377,12 +381,18 @@ class ReportSummaryBkm(models.AbstractModel):
             nomor = 1
 
             mandor_name = kemandoran.kepala_mandor_id.name if kemandoran.kepala_mandor_id else ''
+            mandor_nik = kemandoran.kepala_mandor_id.no_induk if kemandoran.kepala_mandor_id else ''
             asisten_mandor_name = kemandoran.mandor_id.name if kemandoran.mandor_id else ''
+            asisten_mandor_nik = kemandoran.mandor_id.no_induk if kemandoran.mandor_id else ''
             kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
+            kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
 
-            for emp_id, employee_name, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+
+
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 sheet.write(row, 0, nomor, wbf['data_center'])
-                sheet.merge_range(row, 1, row, 2, employee_name, wbf['data'])
+                sheet.write(row, 1, no_induk, wbf['data'])
+                sheet.merge_range(row, 2, row, 3, employee_name, wbf['data'])
                 # sheet.write(row, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
                 # sheet.write(row, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
 
@@ -446,8 +456,11 @@ class ReportSummaryBkm(models.AbstractModel):
 
             # Logika untuk Mandor
             row += 1
-            sheet.write(row, 0, "M-1", wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, mandor_name, wbf['data'])
+            # sheet.write(row, 0, "M-1", wbf['data_center'])
+            # sheet.merge_range(row, 1, row, 2, mandor_name, wbf['data'])
+            sheet.write(row, 0, 'M-1', wbf['data_center'])
+            sheet.write(row, 1, mandor_nik, wbf['data'])
+            sheet.merge_range(row, 2, row, 3, mandor_name, wbf['data'])
             # sheet.write(row, 3, 0, wbf['content_number'])
             # sheet.write(row, 4, 0, wbf['content_number'])
 
@@ -504,8 +517,11 @@ class ReportSummaryBkm(models.AbstractModel):
 
             # Logika untuk Asisten Mandor
             row += 1
-            sheet.write(row, 0, "M-2", wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, asisten_mandor_name, wbf['data'])
+            # sheet.write(row, 0, "M-2", wbf['data_center'])
+            # sheet.merge_range(row, 1, row, 2, asisten_mandor_name, wbf['data'])
+            sheet.write(row, 0, 'M-2', wbf['data_center'])
+            sheet.write(row, 1, asisten_mandor_nik, wbf['data'])
+            sheet.merge_range(row, 2, row, 3, asisten_mandor_name, wbf['data'])
             # sheet.write(row, 3, 0, wbf['content_number'])
             # sheet.write(row, 4, 0, wbf['content_number'])
 
@@ -562,8 +578,11 @@ class ReportSummaryBkm(models.AbstractModel):
 
             # Logika untuk Kerani
             row += 1
-            sheet.write(row, 0, "M-3", wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, kerani_name, wbf['data'])
+            # sheet.write(row, 0, "M-3", wbf['data_center'])
+            # sheet.merge_range(row, 1, row, 2, kerani_name, wbf['data'])
+            sheet.write(row, 0, 'M-3', wbf['data_center'])
+            sheet.write(row, 1, kerani_nik, wbf['data'])
+            sheet.merge_range(row, 2, row, 3, kerani_name, wbf['data'])
             # sheet.write(row, 3, 0, wbf['content_number'])
             # sheet.write(row, 4, 0, wbf['content_number'])
 
@@ -625,7 +644,7 @@ class ReportSummaryBkm(models.AbstractModel):
             row += 1
             total_hko_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 current_col = 5
                 for i in range(len(date_columns)):
                     attendance = self.env['lhm.transaction.line'].search([
@@ -667,9 +686,10 @@ class ReportSummaryBkm(models.AbstractModel):
                     total_hko_per_tanggal[i] += 1
 
             sheet.write(row, 0, '-', wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, '-', wbf['data_center'])
-            sheet.write(row, 3, '-', wbf['data_center'])
+            sheet.write(row, 1, '-', wbf['data_center'])
+            sheet.merge_range(row, 2, row, 3, '-', wbf['data_center'])
             sheet.write(row, 4, '-', wbf['data_center'])
+            sheet.write(row, 5, '-', wbf['data_center'])
 
             for i in range(len(date_columns)):
                 sheet.write(row, 3 + i, total_hko_per_tanggal[i], wbf['data_center'])
@@ -691,7 +711,7 @@ class ReportSummaryBkm(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_columns)
             total_m_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 # total_bsh += total_hasil_convert_lump_bagi_2
                 # total_krg += total_hasil_convert_latex_bagi_2
                 current_col = 5
