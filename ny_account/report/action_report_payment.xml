@@ -43,14 +43,14 @@
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
 
-        <!-- Direct Payment -->
+        <!-- Direct Payment Send -->
         <record id="action_report_direct_payment_bank" model="ir.actions.report">
             <field name="name">Report Direct Payment Bank</field>
             <field name="model">account.direct.payment</field>
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">ny_account.report_direct_payment_bank</field>
             <field name="report_file">ny_account.report_direct_payment_bank</field>
-            <field name="print_report_name">("Report Direct Payment Bank %s" % (object.partner_id.name))</field>
+            <field name="print_report_name">("Report Direct Payment Send Bank %s" % (object.partner_id.name))</field>
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
         <record id="action_report_direct_payment_cash" model="ir.actions.report">
@@ -59,7 +59,27 @@
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">ny_account.report_direct_payment_cash</field>
             <field name="report_file">ny_account.report_direct_payment_cash</field>
-            <field name="print_report_name">("Report Direct Payment Cash %s" % (object.partner_id.name))</field>
+            <field name="print_report_name">("Report Direct Payment Send Cash %s" % (object.partner_id.name))</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+
+        <!-- Direct Payment Receive -->
+        <record id="action_report_direct_payment_bank_receive" model="ir.actions.report">
+            <field name="name">Report Direct Payment Bank Receive</field>
+            <field name="model">account.direct.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_direct_payment_bank_receive</field>
+            <field name="report_file">ny_account.report_direct_payment_bank_receive</field>
+            <field name="print_report_name">("Report Direct Payment Receive Bank %s" % (object.partner_id.name))</field>
+            <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        </record>
+        <record id="action_report_direct_payment_cash_receive" model="ir.actions.report">
+            <field name="name">Report Payment Vendor (Cash) Receive</field>
+            <field name="model">account.direct.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ny_account.report_direct_payment_cash_receive</field>
+            <field name="report_file">ny_account.report_direct_payment_cash_receive</field>
+            <field name="print_report_name">("Report Direct Payment Receive Cash %s" % (object.partner_id.name))</field>
             <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
         </record>
 

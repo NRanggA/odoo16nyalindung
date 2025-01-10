@@ -40,9 +40,11 @@
         'report/report_customer_payment_cash_template.xml',
 
         # Direct Payment
-        'views/account_direct_payment_views.xml',
         'report/report_direct_payment_bank_template.xml',
+        'report/report_direct_payment_bank_receive_template.xml',
         'report/report_direct_payment_cash_template.xml',
+        'report/report_direct_payment_cash_receive_template.xml',
+        'views/account_direct_payment_views.xml',
 
         'report/report_amount_charge_template.xml',
 
