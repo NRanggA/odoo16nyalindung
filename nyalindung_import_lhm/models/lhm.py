@@ -24,10 +24,20 @@ class lhm_transaction(models.Model):
             else:
                 return cell_value.strip()
         
-        def handle_nan(value, default):
+        # def handle_nan(value, default):
+        #     if value is None or (isinstance(value, float) and math.isnan(value)):
+        #         return default
+        #     return value
+
+        def handle_nan(value, default=None):
+            # Periksa jika nilai None atau NaN
             if value is None or (isinstance(value, float) and math.isnan(value)):
                 return default
+            # Periksa jika nilai adalah string kosong atau hanya berisi spasi
+            if isinstance(value, str) and not value.strip():
+                return default
             return value
+
 
         if self.is_import:
             if not self.file:
@@ -50,40 +60,53 @@ class lhm_transaction(models.Model):
                 raise ValidationError("Silakan Save Terlebih Dahulu!")
 
             employee_nik = cell_to_string(row.get('NIK', ''))
-
+            
+            # EMPLOYEE
             # Cari employee di master data
             employee = self.env['hr.employee'].sudo().search([('no_induk', '=', employee_nik)], limit=1)
-            
-            # Validasi employee di master data
             if not employee:
                 error_message_list.append(f"Baris ke- {index + 2} karyawan dengan NIK {employee_nik} dan nama {row.get('NAME', '')} tidak ditemukan di master data!")
                 continue
-
+            # CONTRACT EMPLOYEE
             if not employee.contract_id:
                 error_message_list.append(f"Baris ke- {index + 2} kontrak karyawan dengan NIK {employee_nik} dan nama {row.get('NAME', '')} tidak ditemukan pada data LHM {self.name} saat ini!")
             
-            # Validasi tipe lokasi
-            type_location = self.env['lhm.location.type'].search([('code', '=', row.get('TIPE', ''))], limit=1)
-            if not type_location:
+            # TIPE LOKASI
+            type_location_found = self.env['lhm.location.type'].search([('code', '=', row.get('TIPE', ''))], limit=1)
+            if not type_location_found:
                 error_message_list.append(f"Baris ke- {index + 2} Tipe lokasi dengan kode {row.get('TIPE', '')} tidak ditemukan!")
+
+            # VARIETAS
+            varietas_code = handle_nan(row.get('VARIETAS', ''), 0)
+            # Validasi jika VARIETAS tidak kosong
+            if varietas_code:
+                varietas_found = self.env['plant.varieties'].search([('code', '=', varietas_code)], limit=1)
+                if not varietas_found:
+                    error_message_list.append(f"Baris ke-{index + 2} Varietas dengan kode {varietas_code} tidak ditemukan!")
+            else:
+                varietas_found = None
             
-            # Validasi varietas
-            varietas_found = self.env['plant.varieties'].search([('code', '=', row.get('VARIETAS', ''))], limit=1)
-            if not varietas_found:
-                error_message_list.append(f"Baris ke- {index + 2} Varietas dengan kode {row.get('VARIETAS', '')} tidak ditemukan!")
-            
-            # Validasi lokasi
+            ######## ======== Validasi LOKASI dan AKTIVITAS ======== ########
+            # Periksa jika lokasi tipe nya Project (project == True), maka aktivitas nya di ambil dari master data project (detail project Aktivitas)
+            # LOKASI
             location = self.env['lhm.location'].search([('code', '=', row.get('LOKASI', ''))], limit=1)
             if not location:
                 error_message_list.append(f"Baris ke- {index + 2} Lokasi dengan kode {row.get('LOKASI', '')} tidak ditemukan!")
-            
-            if type_location and location:
-                location_2 = self.env['lhm.location'].search([('id', '=', location.id),('type_id', '=', type_location.id)])
+            # AKAN DI CEK lagi
+            # # VALIDASI LOKASI BERDASARKAN TIPE LOKASI
+            # if type_location_found.code in ('WS','VH','MA','GC','MC','LB'):
+            #     locations = self.env['lhm.location'].search([('type_id','=',type_location_found.id)])
+            # else:
+            #     locations = self.env['lhm.location'].search([('id', '=', location.id), ('type_id','=',type_location_found.id),('varieties_id','=',varietas_found.id)])
+
+
+            if type_location_found and location:
+                location_2 = self.env['lhm.location'].search([('id', '=', location.id),('type_id', '=', type_location_found.id)])
                 if not location_2:
                     # error_message_list.append(f"Baris ke- {index + 2} Tipe lokasi {row.get('TIPE', '')} tidak sesuai, dengan lokasi {row.get('LOKASI', '')}")
                     error_message_list.append(f"Baris ke- {index + 2} Type pada Lokasi {row.get('LOKASI', '')} tidak sesuai dengan type yang diinput {row.get('TIPE', '')}")
             
-            if varietas_found and type_location and type_location.code not in ('PJ','NA','WS','VH','MA','NS'):
+            if varietas_found and type_location_found and type_location_found.code not in ('PJ','NA','WS','VH','MA','NS'):
                 location_3 = self.env['lhm.location'].search([
                     ('code', '=', location.code),
                     ('varieties_id', '=', varietas_found.id)
@@ -91,16 +114,18 @@ class lhm_transaction(models.Model):
                 if not location_3:
                     error_message_list.append(f"Baris ke- {index + 2} Varietas kode {row.get('VARIETAS', '')} tidak sesuai dengan lokasi kode {row.get('LOKASI', '')}!")
             
-            # Validasi aktivitas
+            # AKTIVITAS
             activity = self.env['lhm.activity'].search([('code', '=', row.get('AKTIVITAS', ''))], limit=1)
             if not activity:
                 error_message_list.append(f"Baris ke- {index + 2} Aktivitas dengan kode {row.get('AKTIVITAS', '')} tidak ditemukan!")
             
-            if type_location:
-                activity_2 = self.env['lhm.activity'].search([('code', '=', row.get('AKTIVITAS', '')), ('type_id', '=', type_location.id)], limit=1)
+            if type_location_found:
+                activity_2 = self.env['lhm.activity'].search([('code', '=', row.get('AKTIVITAS', '')), ('type_id', '=', type_location_found.id)], limit=1)
                 if not activity_2:
                     error_message_list.append(f"Baris ke- {index + 2} Aktivitas dengan kode {row.get('AKTIVITAS', '')} tidak sesuai dengan tipe {row.get('TIPE', '')}!")
             
+
+            ######## ======== Validasi HK ======== ########
 
             # Validasi HK lebih dari 1
             work_day = handle_nan(row.get('HK', ''), 0)
@@ -145,21 +170,27 @@ class lhm_transaction(models.Model):
                         'date'              : self.date,      
                         'employee_id'       : employee.id,
                         'attendance_id'     : absensi_kj.id,
-                        'location_type_id'  : type_location.id,
-                        'varieties_id'      : varietas_found.id,
+                        'location_type_id'  : type_location_found.id,
+                        'varieties_id'      : varietas_found.id if varietas_found else None,
                         'location_id'       : location.id,
                         'activity_id'       : activity.id,
                         'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
-                        # 'is_hasil_2'        : handle_nan(row.get('IS HASIL 2', ''), False),
                         'is_hasil_2'        : activity.is_hasil_2,
                         'work_day'          : work_day,
-                        # 'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                        'product_id'        : varietas_found.product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        # 'product_id'        : varietas_found.product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        'product_id': (
+                            varietas_found.product_id.id
+                            if varietas_found and activity.id in (varietas_found.harvest_activity_ids.ids if varietas_found.harvest_activity_ids else [])
+                            else False
+                        ),
                         'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
                         'satuan_1'          : activity.uom_id.id if activity and activity.uom_id else False,
-                        # 'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                        'product_id_2'      : varietas_found.secondary_product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
-
+                        # 'product_id_2'      : varietas_found.secondary_product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        'product_id_2': (
+                            varietas_found.secondary_product_id.id
+                            if varietas_found and activity.id in (varietas_found.harvest_activity_ids.ids if varietas_found.harvest_activity_ids else [])
+                            else False
+                        ),
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                         'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                     }))
@@ -220,8 +251,9 @@ class lhm_transaction(models.Model):
                         'date'              : self.date,
                         'employee_id'       : employee.id,
                         'attendance_id'     : absensi_kj.id,
-                        'location_type_id'  : type_location.id,
-                        'varieties_id'      : varietas_found.id,
+                        'location_type_id'  : type_location_found.id,
+                        # 'varieties_id'      : varietas_found.id,
+                        'varieties_id'      : varietas_found.id if varietas_found else None,
                         'location_id'       : location.id,
                         'activity_id'       : activity.id,
                         'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
@@ -229,11 +261,21 @@ class lhm_transaction(models.Model):
                         'is_hasil_2'        : activity.is_hasil_2,
                         'work_day'          : work_day,
                         # 'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                        'product_id'        : varietas_found.product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        # 'product_id'        : varietas_found.product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        'product_id': (
+                            varietas_found.product_id.id
+                            if varietas_found and activity.id in (varietas_found.harvest_activity_ids.ids if varietas_found.harvest_activity_ids else [])
+                            else False
+                        ),
                         'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
                         'satuan_1'          : activity.uom_id.id if activity and activity.uom_id else False,
                         # 'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                        'product_id_2'      : varietas_found.secondary_product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        # 'product_id_2'      : varietas_found.secondary_product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                        'product_id_2': (
+                            varietas_found.secondary_product_id.id
+                            if varietas_found and activity.id in (varietas_found.harvest_activity_ids.ids if varietas_found.harvest_activity_ids else [])
+                            else False
+                        ),
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                         'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                     }))
@@ -263,8 +305,9 @@ class lhm_transaction(models.Model):
                     'date'              : self.date,
                     'employee_id'       : employee.id,
                     'attendance_id'     : absensi_kj.id,
-                    'location_type_id'  : type_location.id,
-                    'varieties_id'      : varietas_found.id,
+                    'location_type_id'  : type_location_found.id,
+                    # 'varieties_id'      : varietas_found.id,
+                    'varieties_id'      : varietas_found.id if varietas_found else None,
                     'location_id'       : location.id,
                     'activity_id'       : activity.id,
                     'is_borong'         : handle_nan(row.get('IS BORONG', ''), False),
@@ -272,11 +315,21 @@ class lhm_transaction(models.Model):
                     'is_hasil_2'        : activity.is_hasil_2,
                     'work_day'          : work_day,
                     # 'product_id'        : varietas_found.product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                    'product_id'        : varietas_found.product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                    # 'product_id'        : varietas_found.product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                    'product_id': (
+                            varietas_found.product_id.id
+                            if varietas_found and activity.id in (varietas_found.harvest_activity_ids.ids if varietas_found.harvest_activity_ids else [])
+                            else False
+                    ),
                     'hasil_1'           : handle_nan(row.get('HASIL 1', ''), 0),
                     'satuan_1'          : activity.uom_id.id if activity and activity.uom_id else False,
                     # 'product_id_2'      : varietas_found.secondary_product_id.id if activity.id == varietas_found.harvest_activity_id.id else False,
-                    'product_id_2'      : varietas_found.secondary_product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                    # 'product_id_2'      : varietas_found.secondary_product_id.id if activity.id in varietas_found.harvest_activity_ids.ids else False,
+                    'product_id_2': (
+                            varietas_found.secondary_product_id.id
+                            if varietas_found and activity.id in (varietas_found.harvest_activity_ids.ids if varietas_found.harvest_activity_ids else [])
+                            else False
+                    ),
                     'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                     'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
                 }))
