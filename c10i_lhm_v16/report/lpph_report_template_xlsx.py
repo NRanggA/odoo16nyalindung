@@ -376,7 +376,7 @@ class ReportLpphExcel(models.AbstractModel):
                     total_shi_total_workday += data.get('shi_subtotal_workday', 0.0)
                     total_shi_total_premi += data.get('shi_subtotal_premi', 0.0)
             
-            row_data = next_row + 3
+            row_data = next_row + 4
 
             for lhm_data in grouped_lhm.values():
                 for line in lhm_data['progress']:
