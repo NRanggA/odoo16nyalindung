@@ -39,22 +39,21 @@
                     <div style="border-bottom: 5px solid black; width: 100%; margin-top: 10px;"></div>
                     <h2 style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 32px;">INVOICE</h2>
                     <div style="width: 100%; display: flex; justify-content: space-between; font-size: 14px;">
-                        <!-- Left Table -->
-                        <table style="width: 48%;">
+                        <table style="width: 100%;">
                             <tr>
                                 <td style="font-weight: bold;"><t t-esc="o.partner_id.name"/></td>
+                                <td>Date Invoice</td>
+                                <td>: </td>
+                                <td><t t-esc="o.invoice_date"/></td>
                             </tr>
                             <tr>
                                 <td><t t-esc="o.partner_id.contact_address"/></td>
+                                <td>Due Date</td>
+                                <td>: </td>
+                                <td><t t-esc="o.invoice_date_due"/></td>
                             </tr>
                             <tr>
                                 <td><t t-esc="o.partner_id.phone or ''"/></td>
-                            </tr>
-                        </table>
-
-                        <!-- Right Table -->
-                        <table style="width: 50%;">
-                            <tr>
                                 <td>No Invoice</td>
                                 <td>: </td>
                                 <td><t t-esc="o.name"/></td>
@@ -64,16 +63,6 @@
                                         <br/>
                                     </t>
                                 </td> -->
-                            </tr>
-                            <tr>
-                                <td>Date Invoice</td>
-                                <td>: </td>
-                                <td><t t-esc="o.invoice_date"/></td>
-                            </tr>
-                            <tr>
-                                <td>Due Date</td>
-                                <td>: </td>
-                                <td><t t-esc="o.invoice_date_due"/></td>
                             </tr>
                         </table>
                     </div>
