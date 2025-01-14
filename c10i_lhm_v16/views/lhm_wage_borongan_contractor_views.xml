@@ -46,15 +46,6 @@
                 <field name="activity_code" string="Kode"/>
                 <field name="activity_id" string="Aktivitas"/>
                 <separator/>
-                <!-- <group expand="0" string="Group By">
-                    <filter string="Status" name="state" context="{'group_by':'state'}"/>
-                    <filter string="Kemandoran" name="kemandoran_id" context="{'group_by':'kemandoran_id'}"/>
-                    <filter string="Mandor Besar" name="asisten_mandor_id" context="{'group_by':'asisten_mandor_id'}"/>
-                    <filter string="Mandor" name="mandor_id" context="{'group_by':'mandor_id'}"/>
-                    <filter string="Afdeling/DIvisi" name="location" context="{'group_by':'location'}"/>
-                    <filter string="Penanggung Jawab" name="user_id" context="{'group_by':'user_id'}"/>
-                    <filter string="Company" name="company_id" context="{'group_by':'company_id'}"/>
-                </group> -->
             </search>
         </field>
     </record>

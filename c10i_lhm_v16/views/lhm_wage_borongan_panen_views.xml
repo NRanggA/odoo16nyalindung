@@ -39,10 +39,23 @@
         </field>
     </record>
 
+    <record id="lhm_wage_borongan_panen_view_filter" model="ir.ui.view">
+        <field name="name">lhm.wage.borongan.panen.view.filter</field>
+        <field name="model">lhm.wage.borongan.panen</field>
+        <field name="arch" type="xml">
+            <search string="Upah Borongan Panen">
+                <field name="activity_code" string="Kode"/>
+                <field name="activity_id" string="Aktivitas"/>
+                <separator/>
+            </search>
+        </field>
+    </record>
+
     <record id="lhm_wage_borongan_panen_action" model="ir.actions.act_window">
         <field name="name">Upah Borongan Panen</field>
         <field name="res_model">lhm.wage.borongan.panen</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="lhm_wage_borongan_panen_view_filter"/>
         <field name="domain">[]</field>
         <field name="context">{}</field>
     </record>
