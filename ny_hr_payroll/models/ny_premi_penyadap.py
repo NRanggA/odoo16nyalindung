@@ -142,13 +142,13 @@ class NyPremiPenyadap(models.Model):
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
                     ('lhm_transaction_line_id.date','<=',self.date_to)]
             # varieties = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).mapped('blok_tanam_id.varieties_id')
-            if len(varieties)>1:
-                if len(varieties.harvest_activity_id)>1:
-                    domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
-                else:
-                    domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            # if len(varieties)>1:
+            if len(varieties.harvest_activity_ids)>1:
+                domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_ids.ids))
             else:
-                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_ids.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
             blok_tanams = kemandorans.filtered(lambda x: x.kepala_mandor_id.id==kepala_mandor.id).blok_tanam_id
             # locations = blok_tanams.location_id
             # if len(locations)==1:
@@ -179,13 +179,13 @@ class NyPremiPenyadap(models.Model):
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
                     ('lhm_transaction_line_id.date','<=',self.date_to)]
             # varieties = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).mapped('blok_tanam_id.varieties_id')
-            if len(varieties)>1:
-                if len(varieties.harvest_activity_id)>1:
-                    domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
-                else:
-                    domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            # if len(varieties)>1:
+            if len(varieties.harvest_activity_ids)>1:
+                domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_ids.ids))
             else:
-                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_ids.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
             blok_tanams = kemandorans.filtered(lambda x: x.tap_kontrol_id.id==tap_kontrol.id).blok_tanam_id
             # locations = blok_tanams.location_id
             # if len(locations)==1:
@@ -217,13 +217,13 @@ class NyPremiPenyadap(models.Model):
                     ('lhm_transaction_line_id.date','>=',self.date_from), \
                     ('lhm_transaction_line_id.date','<=',self.date_to)]
             # varieties = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).mapped('blok_tanam_id.varieties_id')
-            if len(varieties)>1:
-                if len(varieties.harvest_activity_id)>1:
-                    domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
-                else:
-                    domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            # if len(varieties)>1:
+            if len(varieties.harvest_activity_ids)>1:
+                domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_ids.ids))
             else:
-                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_ids.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
             blok_tanams = kemandorans.filtered(lambda x: x.mandor_id.id==mandor.id).blok_tanam_id
             # locations = blok_tanams.location_id
             # if len(locations)==1:

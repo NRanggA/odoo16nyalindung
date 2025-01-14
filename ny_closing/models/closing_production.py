@@ -227,7 +227,7 @@ class ClosingProductionFinishGood(models.Model):
             # ('plantation_activity_id','!=',False),
             ]
         activities = self.env['lhm.activity']
-        activities |= self.varieties_id.harvest_activity_id
+        activities |= self.varieties_id.harvest_activity_ids
         activities |= self.varieties_id.upkeep_activity_ids
         # activities |= varieties.general_charges_activity_ids
         # activities |= varieties.indirect_cost_activity_ids
@@ -715,7 +715,7 @@ class ClosingProduction(models.Model):
             ]
         if varieties:
             activities = self.env['lhm.activity']
-            activities |= varieties.harvest_activity_id
+            activities |= varieties.harvest_activity_ids
             activities |= varieties.upkeep_activity_ids
             # activities |= varieties.general_charges_activity_ids
             # activities |= varieties.indirect_cost_activity_ids
@@ -795,7 +795,7 @@ class ClosingProduction(models.Model):
             ]
         if varieties:
             activities = self.env['lhm.activity']
-            activities |= varieties.harvest_activity_id
+            activities |= varieties.harvest_activity_ids
             activities |= varieties.upkeep_activity_ids
             # activities |= varieties.general_charges_activity_ids
             # activities |= varieties.indirect_cost_activity_ids

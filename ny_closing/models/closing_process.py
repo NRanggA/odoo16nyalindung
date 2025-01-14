@@ -369,7 +369,7 @@ class ClosingProcess(models.Model):
                     # ('plantation_activity_id','!=',False),
                     ]
                 activities = self.env['lhm.activity']
-                activities |= varietas.harvest_activity_id
+                activities |= varietas.harvest_activity_ids
                 activities |= varietas.upkeep_activity_ids
                 # activities |= varieties.general_charges_activity_ids
                 # activities |= varieties.indirect_cost_activity_ids

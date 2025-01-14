@@ -95,13 +95,13 @@ class NyPremiPenyadapMandor(models.Model):
                 ('lhm_transaction_line_id.date','<=',self.ref_id.date_to)]
         # varieties = kemandorans.mapped('blok_tanam_id.varieties_id')
         varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
-        if len(varieties)>1:
-            if len(varieties.harvest_activity_id)>1:
-                domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_id.ids))
-            else:
-                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+        # if len(varieties)>1:
+        if len(varieties.harvest_activity_ids)>1:
+            domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_ids.ids))
         else:
-            domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_ids.id))
+        # else:
+            # domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_ids.id))
         # blok_tanams = kemandorans.blok_tanam_id
         # locations = blok_tanams.location_id
         # if len(locations)==1:
