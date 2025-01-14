@@ -35,34 +35,48 @@
             <t t-foreach="docs" t-as="o">
                 <!-- Tabel Pertama -->
                 <div class="invoice-table">
-                    <h2>NYALINDUNG</h2>
-                    <h6>FAKTUR/INVOICE</h6>
-                    <table class="no-border; font-size: 7px;">
-                        <tr>
-                            <td>No</td>
-                            <td>: </td>
-                            <td><t t-esc="o.name"/></td>
-                            <td t-if="o.invoice_line_ids" rowspan="3">
-                                <t t-foreach="o.invoice_line_ids" t-as="line" t-if="line.plantation_activity_id">
-                                    <span><t t-esc="line.plantation_activity_id.name or 'N/A'"/></span>
-                                    <br/>
-                                </t>
-                            </td>
-                            <td><t t-esc="o.partner_id.name"/></td>
-                        </tr>
-                        <tr>
-                            <td>Date</td>
-                            <td>: </td>
-                            <td><t t-esc="o.invoice_date"/></td>
-                            <td><t t-esc="o.partner_id.contact_address"/></td>
-                        </tr>
-                        <tr>
-                            <td>Due Date</td>
-                            <td>: </td>
-                            <td><t t-esc="o.invoice_date_due"/></td>
-                            <td><t t-esc="o.partner_id.phone or ''"/></td>
-                        </tr>
-                    </table>
+                    <img t-att-src="'%s/nyalindung_report/static/img/ny_logo.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="225px" height="60px" alt="Logo"/>
+                    <div style="border-bottom: 5px solid black; width: 100%; margin-top: 10px;"></div>
+                    <h2 style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 32px;">INVOICE</h2>
+                    <div style="width: 100%; display: flex; justify-content: space-between;">
+                        <!-- Left Table -->
+                        <table style="width: 48%;">
+                            <tr>
+                                <td style="font-weight: bold;"><t t-esc="o.partner_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><t t-esc="o.partner_id.contact_address"/></td>
+                            </tr>
+                            <tr>
+                                <td><t t-esc="o.partner_id.phone or ''"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- Right Table -->
+                        <table style="width: 50%;">
+                            <tr>
+                                <td>No Invoice</td>
+                                <td>: </td>
+                                <td><t t-esc="o.name"/></td>
+                                <!-- <td t-if="o.invoice_line_ids" rowspan="3">
+                                    <t t-foreach="o.invoice_line_ids" t-as="line" t-if="line.plantation_activity_id">
+                                        <span><t t-esc="line.plantation_activity_id.name or 'N/A'"/></span>
+                                        <br/>
+                                    </t>
+                                </td> -->
+                            </tr>
+                            <tr>
+                                <td>Date Invoice</td>
+                                <td>: </td>
+                                <td><t t-esc="o.invoice_date"/></td>
+                            </tr>
+                            <tr>
+                                <td>Due Date</td>
+                                <td>: </td>
+                                <td><t t-esc="o.invoice_date_due"/></td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Tabel Kedua -->
@@ -98,13 +112,13 @@
                 <!-- Tabel Ketiga -->
                 <table class="no-border2">
                     <tr>
-                        <td colspan="4" class="terbilang">Terbilang</td>
+                        <td colspan="4" class="terbilang">Terbilang :</td>
                         <td class="right-align col-narrow">Sub Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align col-narrow"><t t-esc="sub_total"/></td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="terbilang" style="font-style: italic;"># <t t-esc="o.amount_text"/> rupiah #</td>
+                        <td colspan="4" class="terbilang" style="font-style: italic; font-weight: bold;"><t t-esc="o.amount_text"/> rupiah</td>
                         <td class="right-align">Disc Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align"><t t-esc="total_discount"/></td>
