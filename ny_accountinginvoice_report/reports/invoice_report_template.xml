@@ -38,7 +38,7 @@
                     <img t-att-src="'%s/nyalindung_report/static/img/ny_logo.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="225px" height="60px" alt="Logo"/>
                     <div style="border-bottom: 5px solid black; width: 100%; margin-top: 10px;"></div>
                     <h2 style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 32px;">INVOICE</h2>
-                    <div style="width: 100%; display: flex; justify-content: space-between;">
+                    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 14px;">
                         <!-- Left Table -->
                         <table style="width: 48%;">
                             <tr>
@@ -80,7 +80,7 @@
                 </div>
 
                 <!-- Tabel Kedua -->
-                <table class="bordered">
+                <table class="bordered" style="font-size: 14px;">
                     <tr>
                         <th>No.</th>
                         <th>Deskripsi/Product</th>
@@ -110,7 +110,7 @@
                 <t t-set="total_discount" t-value="sum(line.price_unit * line.quantity * line.discount / 100 for line in o.invoice_line_ids)"/>
 
                 <!-- Tabel Ketiga -->
-                <table class="no-border2">
+                <table class="no-border2" style="font-size: 14px;">
                     <tr>
                         <td colspan="4" class="terbilang">Terbilang :</td>
                         <td class="right-align col-narrow">Sub Total:</td>
