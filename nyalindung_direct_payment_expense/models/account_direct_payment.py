@@ -170,51 +170,51 @@ class DirectPayment(models.Model):
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
 
-            # if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
-            #     sequence = None
-            #     if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
-            #         sequence = payment.journal_id.sequence_id
-            #     elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
-            #         sequence = payment.journal_id.sequence_out_id
+            if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
+                sequence = None
+                if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
+                    sequence = payment.journal_id.sequence_id
+                elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
+                    sequence = payment.journal_id.sequence_out_id
 
-            #     if not sequence:
-            #         raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+                if not sequence:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-            #     payment_date = payment.date or datetime.now().date()
-            #     sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+                payment_date = payment.date or datetime.now().date()
+                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
 
-            #     if not sequence_number:
-            #         raise ValidationError("Gagal mendapatkan nomor sequence.")
+                if not sequence_number:
+                    raise ValidationError("Gagal mendapatkan nomor sequence.")
 
-            #     payment.name = sequence_number
-            payment.account_move_id.name = payment.name
+                payment.name = sequence_number
+                payment.account_move_id.name = payment.name
             payment.state="posted"
 
-    @api.model
-    def create(self, vals):
-        payment = super(DirectPayment, self).create(vals)
+    # @api.model
+    # def create(self, vals):
+    #     payment = super(DirectPayment, self).create(vals)
 
-        # Logika yang Anda tambahkan
-        if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
-            sequence = None
-            if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
-                sequence = payment.journal_id.sequence_id
-            elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
-                sequence = payment.journal_id.sequence_out_id
+    #     # Logika yang Anda tambahkan
+    #     if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
+    #         sequence = None
+    #         if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
+    #             sequence = payment.journal_id.sequence_id
+    #         elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
+    #             sequence = payment.journal_id.sequence_out_id
 
-            if not sequence:
-                raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+    #         if not sequence:
+    #             raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-            payment_date = payment.date or datetime.now().date()
-            sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+    #         payment_date = payment.date or datetime.now().date()
+    #         sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
 
-            if not sequence_number:
-                raise ValidationError("Gagal mendapatkan nomor sequence.")
+    #         if not sequence_number:
+    #             raise ValidationError("Gagal mendapatkan nomor sequence.")
 
-            payment.name = sequence_number
+    #         payment.name = sequence_number
 
 
-        return payment
+    #     return payment
 
 class DirectPaymentLine(models.Model):
     _inherit = 'account.direct.payment.line'
