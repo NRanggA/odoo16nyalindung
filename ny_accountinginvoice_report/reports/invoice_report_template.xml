@@ -42,19 +42,19 @@
                         <table style="width: 100%;">
                             <tr>
                                 <td style="font-weight: bold;"><t t-esc="o.partner_id.name"/></td>
-                                <td>Date Invoice</td>
+                                <td style="padding-left: 70px;">Date Invoice</td>
                                 <td>: </td>
                                 <td><t t-esc="o.invoice_date"/></td>
                             </tr>
                             <tr>
-                                <td><t t-esc="o.partner_id.contact_address"/></td>
-                                <td>Due Date</td>
+                                <td style="width: 50%; font-size: 12px;"><t t-esc="o.partner_id.contact_address"/></td>
+                                <td style="padding-left: 70px;">Due Date</td>
                                 <td>: </td>
                                 <td><t t-esc="o.invoice_date_due"/></td>
                             </tr>
                             <tr>
                                 <td><t t-esc="o.partner_id.phone or ''"/></td>
-                                <td>No Invoice</td>
+                                <td style="padding-left: 70px;">No Invoice</td>
                                 <td>: </td>
                                 <td><t t-esc="o.name"/></td>
                                 <!-- <td t-if="o.invoice_line_ids" rowspan="3">
@@ -89,7 +89,7 @@
                             <td><t t-esc="line.product_uom_id.name"/></td>
                             <td class="right-align"><t t-esc="line.price_unit"/></td>
                             <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                            <td class="right-align"><t t-esc="o.amount_total"/></td>
+                            <td class="right-align"><t t-esc="line.price_subtotal"/></td>
                         </tr>
                     </t>
                 </table>
@@ -122,7 +122,7 @@
                         <td colspan="4"></td>
                         <td class="right-align">Grand Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="line.price_total"/></td>
+                        <td class="right-align"><t t-esc="o.amount_residual"/></td>
                     </tr>
                 </table>
             </t>
