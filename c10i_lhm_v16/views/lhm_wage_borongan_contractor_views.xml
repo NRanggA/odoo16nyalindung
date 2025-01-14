@@ -38,10 +38,33 @@
         </field>
     </record>
 
+    <record id="lhm_wage_borongan_contractor_view_filter" model="ir.ui.view">
+        <field name="name">lhm.wage.borongan.contractor.view.filter</field>
+        <field name="model">lhm.wage.borongan.contractor</field>
+        <field name="arch" type="xml">
+            <search string="Upah Borongan Contractor">
+                <field name="activity_code" string="Kode"/>
+                <field name="activity_id" string="Aktivitas"/>
+                <separator/>
+                <!-- <group expand="0" string="Group By">
+                    <filter string="Status" name="state" context="{'group_by':'state'}"/>
+                    <filter string="Kemandoran" name="kemandoran_id" context="{'group_by':'kemandoran_id'}"/>
+                    <filter string="Mandor Besar" name="asisten_mandor_id" context="{'group_by':'asisten_mandor_id'}"/>
+                    <filter string="Mandor" name="mandor_id" context="{'group_by':'mandor_id'}"/>
+                    <filter string="Afdeling/DIvisi" name="location" context="{'group_by':'location'}"/>
+                    <filter string="Penanggung Jawab" name="user_id" context="{'group_by':'user_id'}"/>
+                    <filter string="Company" name="company_id" context="{'group_by':'company_id'}"/>
+                </group> -->
+            </search>
+        </field>
+    </record>
+
+    
     <record id="lhm_wage_borongan_contractor_action" model="ir.actions.act_window">
         <field name="name">Upah Borongan Contractor</field>
         <field name="res_model">lhm.wage.borongan.contractor</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="lhm_wage_borongan_contractor_view_filter"/>
         <field name="domain">[]</field>
         <field name="context">{}</field>
     </record>
