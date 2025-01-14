@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wizard_report_summary_bkm,access_wizard_report_summary_bkm,model_wizard_report_summary_bkm,base.group_user,1,1,1,1
 access_wizard_report_summary_attendance,access_wizard_report_summary_attendance,model_wizard_report_summary_attendance,base.group_user,1,1,1,1
+access_wizard_report_production,access_wizard_report_production,model_wizard_report_production,base.group_user,1,1,1,1

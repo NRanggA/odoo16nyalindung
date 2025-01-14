@@ -40,6 +40,8 @@
         'wizard/wizard_report_summary_bkm_view.xml',
         'report/report_summary_attendance_action.xml',
         'wizard/wizard_report_summary_attendance_view.xml',
+        'wizard/wizard_report_production_view.xml',
+        'report/report_production_action.xml',
 
         'report/bukti_penerimaan_barang_template.xml',
         'report/bukti_penerimaan_barang_action.xml',

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action Report EXCEL Production -->
+    <record id="action_production_report_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Production XLSX</field>
+        <field name="model">wizard.report.production</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">nyalindung_report.production_xlsx</field>
+        <field name="report_file">nyalindung_report.production_xlsx</field>
+        <field name="print_report_name">'(LAPORAN PRODUCTION)'</field>
+        <field name="binding_model_id" ref="nyalindung_report.model_wizard_report_production"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
