@@ -731,7 +731,7 @@ class ReportProduction(models.AbstractModel):
                     ('location_id', '=', location_id)
                 ], limit=1)
 
-                type_code = attendance.type_id.code if attendance else '-'
+                type_code = attendance.attendance_id.code if attendance else '-'
                 sheet.write(row, 5 + i, type_code, wbf['data_center'])
 
                 if type_code in ['KJ', 'KJI', 'KJO']:
@@ -962,7 +962,7 @@ class ReportProduction(models.AbstractModel):
                     ('location_id', '=', location_id)
                 ], limit=1)
 
-                type_code = attendance.type_id.code if attendance else '-'
+                type_code = attendance.attendance_id.code if attendance else '-'
                 sheet.write(row, 5 + i, type_code, wbf['data_center'])
 
                 if type_code in ['KJ', 'KJI', 'KJO']:
@@ -1193,7 +1193,7 @@ class ReportProduction(models.AbstractModel):
                     ('location_id', '=', location_id)
                 ], limit=1)
 
-                type_code = attendance.type_id.code if attendance else '-'
+                type_code = attendance.attendance_id.code if attendance else '-'
                 sheet.write(row, 5 + i, type_code, wbf['data_center'])
 
                 if type_code in ['KJ', 'KJI', 'KJO']:
