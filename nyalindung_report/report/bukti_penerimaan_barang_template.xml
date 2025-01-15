@@ -28,7 +28,7 @@
                             <tr>
                                 <td style="border: none;">Tanggal</td>
                                 <td style="border: none;"> : </td>
-                                <td style="border: none;" t-esc="o.date_done.strftime('%d-%m-%Y')"/>
+                                <td style="border: none;" t-esc="o.date_done.strftime('%d-%m-%Y') or ''"/>
                             </tr>
                             <tr>
                                 <td style="border: none;">Surat Pengantar/Nota No.</td>
@@ -79,7 +79,7 @@
                                 <tr>
                                     <td></td>
                                     <td>Mengetahui,</td>
-                                    <td>Nyalindung, <t t-esc="o.date_done.strftime('%d-%m-%Y')"/></td>
+                                    <td>Nyalindung, <t t-esc="o.date_done.strftime('%d-%m-%Y') or ''"/></td>
                                 </tr>
                                 <tr>
                                     <td>Yang Menyerahkan,</td>
