@@ -43,7 +43,7 @@
 
         'wizard/wizard_move_employee_views.xml',
 
-        'views/account_views.xml',                      # modul account.cost.center tidak di temukan atau tidak digunakan dalam odoo versi 16
+        'views/account_views.xml',                     
         'views/hr_views.xml',
 
         'wizard/wizard_add_employee_views.xml',
@@ -51,20 +51,26 @@
 
         'views/res_views.xml',
         'views/lhm_kontraktor_harian_views.xml',
+        
+        # LHM Transaction
+        'views/lhm_transaction_views.xml',
+        # LHM Activity
+        'views/lhm_activity_views.xml',
+        # LHM Contractor
+        'views/lhm_contractor_views.xml',
+
         'views/lhm_views.xml',
         'wizard/lhm_nap_wizard_views.xml',
         'views/lhm_transaction_line_views.xml',
         'views/plant_varieties_view.xml',
-        'views/product_views.xml',                      # Ada group yang tidak di ketahui pada modul product
+        'views/product_views.xml',                     
         'views/res_partner_views.xml',
         'views/stock_views.xml',
         'views/plantation_salary_views.xml',
         'views/report_invoice.xml',
         'views/account_report.xml',                     
-        'views/running_account_views.xml',              # Error Context pada bagian filter view_running_account_filter
-        'views/report_costing_views.xml',               # Error context pada bagian filter view_report_wp_cost_filter dan pada tag report nya dikomen.
-        # 'views/account_voucher_views.xml',            # C10i_account di ubah menjadi account
-        # 'views/account_payment_views.xml',            # C10i_account di ubah menjadi account
+        'views/running_account_views.xml',              
+        'views/report_costing_views.xml',               
 
 
         # 'wizard/stock_backorder_confirmation_views.xml',
@@ -77,7 +83,6 @@
         'wizard/wizard_report_monitor_views.xml',
         'wizard/wizard_report_invoice_views.xml',
 
-        # 'views/account_invoice_views.xml',              # account.invoice_form dan account.invoice_supplier_form tidak di temukan dan modul c10i_account tidak ada
 
         'wizard/wizard_report_stock_picking_views.xml',
 
@@ -89,7 +94,7 @@
         'wizard/wizard_plasma_bill_views.xml',
         
 
-        'wizard/wizard_running_account_report_views.xml', # error sintaks
+        'wizard/wizard_running_account_report_views.xml',
         'report/report_running_account_template.xml',
         'report/report_running_account_action.xml',
 

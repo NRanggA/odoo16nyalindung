@@ -31,6 +31,8 @@ class AccountPayment(models.Model):
                         ], string='Jenis Pembayaran')
     atas_nama           = fields.Char('Atas Nama')
 
+    join_payment        = fields.Boolean('Pembayaran Digabungkan', default=False)
+
     partner_id = fields.Many2one(
         comodel_name='res.partner',
         string="Customer/Vendor",

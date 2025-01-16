@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_report_stock_card_view_form" model="ir.ui.view">
+        <field name="name">wizard.report.stock.card.view.form</field>
+        <field name="model">wizard.report.stock.card</field>
+        <field name="arch" type="xml">
+            <form string="Report Stock Card">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="from_date" />
+                            <field name="location_id" domain="[('usage', '=', 'internal')]" />
+                            <field name="username" />
+                            <!-- <field name="exclude_exhaust" attrs="{'invisible': [('product_ids', '!=', [])]}"/> -->
+                        </group>
+                        <group>
+                            <field name="to_date" />
+                            <field name="company_id" />
+                            <!-- <field name="show_value" widget="radio" />s -->
+                        </group>
+                    </group>
+                    <group name="product" string="Product">
+                        <field name="product_ids" required="1"/>
+                    </group>
+                    <footer>
+                        <button string="print" type="object" name="create_report" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_report_stock_card_action" model="ir.actions.act_window">
+        <field name="name">Report Stock Card</field>
+        <field name="res_model">wizard.report.stock.card</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="wizard_report_stock_card_menu"
+        name="Stock Card"
+        action="wizard_report_stock_card_action"
+        parent="stock.menu_warehouse_report"
+        sequence="98"/>
+
+</odoo>

@@ -34,6 +34,7 @@
         'views/account_payment_views.xml',
         'views/account_asset_views.xml',
         'views/account_journal_views.xml',
+        'views/account_move_views.xml',
 
         # Customer Payment
         'report/report_customer_payment_bank_template.xml',

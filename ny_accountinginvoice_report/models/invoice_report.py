@@ -19,3 +19,11 @@ class AccountMove(models.Model):
                 record.amount_text = f"{main_part_text} koma {decimal_part_text}"
             else:
                 record.amount_text = main_part_text
+    
+    def format_amount(self, amount):
+        if amount is not None:
+            # Menggunakan format desimal dengan dua tempat desimal dan pemisah ribuan
+            formatted_amount = '{:,.2f}'.format(amount).replace(',', 'X').replace('.', ',').replace('X', '.')
+            return formatted_amount
+        return '0,00'
+

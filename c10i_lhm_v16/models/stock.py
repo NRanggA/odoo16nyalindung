@@ -54,6 +54,7 @@ class StockMove(models.Model):
     lhm_contractor_material_ids = fields.One2many('lhm.contractor.material.line', 'move_id', ' Contractor Realisation')
     plantation_material_allocation = fields.Float(compute='_get_plantation_material', string='Allocated to Plantation Material', store=True)
     pending_material_allocation = fields.Float(compute='_get_plantation_material', string='Pending Plantation Allocation', store=True)
+    nap_tim_pabrik_id = fields.Many2one('timbangan.pabrik', string='NAP Timbangan Pabrik')
 
     @api.depends(
         'lhm_material_ids', 

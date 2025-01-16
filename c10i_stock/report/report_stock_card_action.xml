@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action Report EXCEL stock card -->
+    <record id="action_stock_card_report_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Stock Card XLSX</field>
+        <field name="model">wizard.report.stock.card</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">c10i_stock.stock_card_xlsx</field>
+        <field name="report_file">c10i_stock.stock_card_xlsx</field>
+        <field name="print_report_name">'(LAPORAN STOCK CARD XLSX)'</field>
+        <field name="binding_model_id" ref="c10i_stock.model_wizard_report_stock_card"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

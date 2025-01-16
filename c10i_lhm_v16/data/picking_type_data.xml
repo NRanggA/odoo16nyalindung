@@ -11,6 +11,16 @@
             <field name="default_location_src_id" ref="c10i_lhm_v16.loc_virtual_kebun_loc_1"/>
             <field name="default_location_dest_id" ref="c10i_lhm_v16.loc_stock_kebun_loc_1"/>
         </record>
+
+        <record id="picking_type_nap_return_1" model="stock.picking.type">
+            <field name="name">Nota Angkut Buah - Return</field>
+            <field name="code">outgoing</field>
+            <field name="sequence_code">NAP/OUT/</field>
+            <field name="sequence">10</field>
+            <field name="default_location_src_id" ref="c10i_lhm_v16.loc_stock_kebun_loc_1"/>
+            <field name="default_location_dest_id" ref="c10i_lhm_v16.loc_virtual_kebun_loc_1"/>
+        </record>
+
     
     </data>
     

@@ -496,11 +496,19 @@ class lhm_nap(models.Model):
 
     def button_cancel(self):
         for record in self:
+            # for record in self:
+            #     pabrik_picking = record.pabrik_line_ids.filtered(lambda line: line.stock_picking_id and line.stock_picking_id.state != "draft")
+            #     if pabrik_picking:
+            #         raise ValidationError(
+            #             _("Anda tidak bisa membatalkan dokumen ini karena terdapat Material Receipt yang sudah di proses / status dokumen tidak Draft.")
+            #         )
             for record in self:
-                pabrik_picking = record.pabrik_line_ids.filtered(lambda line: line.stock_picking_id and line.stock_picking_id.state != "draft")
-                if pabrik_picking:
+                if any(line.qty_received > 0 for line in record.pabrik_line_ids):
                     raise ValidationError(
-                        _("Anda tidak bisa membatalkan dokumen ini karena terdapat Material Receipt yang sudah di proses / status dokumen tidak Draft.")
+                        _(
+                            "Terdapat dokumen Material Receipt dengan quantity yang belum di-return. "
+                            "Silakan return semua dokumen terlebih dahulu sebelum melanjutkan."
+                        )
                     )
 
             for nap_line in record.line_ids:
@@ -1101,7 +1109,9 @@ class TimbanganPabrik(models.Model):
     tgl_terima         = fields.Date(string='Tanggal Terima')
     block_id           = fields.Many2one("lhm.plant.block", string="Lokasi", ondelete="restrict", readonly=True)
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
+    stock_move_ids     = fields.One2many('stock.move', 'nap_tim_pabrik_id',string='Stock Move', ondelete='cascade')
     timbangan_kebun_id = fields.Many2one('timbangan.kebun', string="Data Timbangan Kebun", ondelete='cascade')
+    qty_received       = fields.Float(string='Quantity Received', compute='_compute_stock_move_qty')
     # drc_line_ids       = fields.One2many('lhm.drc.line', 'timbangan_pabrik_id', string="DRC Lines", ondelete="cascade")
 
     @api.model
@@ -1132,6 +1142,7 @@ class TimbanganPabrik(models.Model):
                     'product_uom': self.uom_id.id,
                     'location_id': self.env.ref('c10i_lhm_v16.loc_virtual_kebun_loc_1').id,
                     'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
+                    'nap_tim_pabrik_id': self.id,
                 })],
                 'picking_type_id': self.env.ref('c10i_lhm_v16.picking_type_nap_1').id,
             }
@@ -1143,3 +1154,14 @@ class TimbanganPabrik(models.Model):
                 'product_uom_qty': self.product_qty,
                 'product_uom': self.uom_id.id,
             })
+
+    @api.depends('stock_move_ids', 'stock_move_ids.state', 'stock_move_ids.product_qty')
+    def _compute_stock_move_qty(self):
+        for record in self:
+            qty_received = 0
+            for move in record.stock_move_ids.filtered(lambda m: m.state == 'done'):
+                if move.location_id.usage != 'internal' and move.location_dest_id.usage == 'internal':
+                    qty_received += move.product_qty
+                elif move.location_id.usage == 'internal' and move.location_dest_id.usage != 'internal':
+                    qty_received -= move.product_qty
+            record.qty_received = qty_received

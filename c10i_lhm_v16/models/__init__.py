@@ -7,6 +7,11 @@ from . import lhm_nap
 from . import lhm_plant_block
 from . import lhm_nursery
 from . import lhm_transaction_material_line
+
+from . import lhm_transaction
+from . import lhm_activity
+from . import lhm_contractor
+
 from . import res
 from . import hr
 from . import account

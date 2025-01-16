@@ -7,17 +7,17 @@ class lhm_nap(models.Model):
 
     def _compute_material_receipt_count(self):
         for record in self:
-            stock_picking_ids = record.pabrik_line_ids.mapped('stock_picking_id')
-            record.material_receipt_count = len(stock_picking_ids)
+            stock_move_ids = record.pabrik_line_ids.mapped('stock_move_ids.picking_id')
+            record.material_receipt_count = len(stock_move_ids)
 
     def action_open_material_receipt(self):
-        stock_picking_ids = self.pabrik_line_ids.mapped('stock_picking_id')
+        stock_move_ids = self.pabrik_line_ids.mapped('stock_move_ids.picking_id')
         action = self.env.ref('stock.action_picking_tree_all').read()[0]
-        if len(stock_picking_ids) == 1:
+        if len(stock_move_ids) == 1:
             action['views'] = [(self.env.ref('stock.view_picking_form').id, 'form')]
-            action['res_id'] = stock_picking_ids.id
+            action['res_id'] = stock_move_ids.id
         else:
-            action['domain'] = [('id', 'in', stock_picking_ids.ids)]
+            action['domain'] = [('id', 'in', stock_move_ids.ids)]
         return action
 
     unique_lhm_transaction_ids = fields.Many2many('lhm.transaction', string="Laporan Harian Mandor", compute='_compute_unique_lhm_transactions')
