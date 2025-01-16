@@ -22,6 +22,8 @@ class NyAttendance(ApiBase):
             Verification using nyalindung standard API
             we will verify based on Token
         '''
+        if ROUTES not in request.httprequest.url:
+            return super()._verify_auth()
         # # Create or Update API Client List
         client_req_addrs = request.httprequest.environ['REMOTE_ADDR']
         # added_addrs = request.env['c10i_base_api.client.list'].sudo().search([('name','=',client_req_addrs)])
