@@ -315,6 +315,7 @@ class ReportStockMutation(models.AbstractModel):
                 sheet.write(row, 1, transaction_name, wbf['content'])
                 qty = move.qty_done
                 if move.location_id.usage == 'internal' and move.location_dest_id.usage != 'internal':
+                    qty = -qty
                     sheet.write(row, 2, '', wbf['negative'])
                     sheet.write(row, 3, qty, wbf['negative'])
                 else:
