@@ -194,7 +194,7 @@
                                     </t>
                                     <tr>
                                         <!-- <t t-if="o.charge_account_id"> -->
-                                        <t t-if="o.no_memo and o.date_memo">
+                                        <t t-if="o.join_payment">
                                             <td />
                                             <td t-esc="o.charge_account_id.name or ''"/> 
                                             <td style="text-align:right;"><span t-esc="o.format_amount(o.amount_charge)"/></td>
@@ -269,7 +269,8 @@
                             </tr>
                         </t>
                         <tr>
-                            <t t-if="o.no_memo and o.date_memo">
+                            <!-- <t t-if="o.no_memo and o.date_memo"> -->
+                            <t t-if="o.join_payment">
                                 <td><span t-field="o.journal_id.name"/></td>
                                 <td><span t-field="o.no_memo"/></td>
                                 <td><span t-esc="o.date and o.date.strftime('%d/%m/%Y')"/></td>
@@ -283,7 +284,8 @@
                             <th >Jumlah</th>
                             <td> : 
                                 <!-- <span t-esc="o.format_amount(o.amount - o.amount_charge)"/> -->
-                                <span t-esc="o.format_amount((o.amount) if o.no_memo and o.date_memo else (o.amount - o.amount_charge))"/>
+                                <!-- <span t-esc="o.format_amount((o.amount) if o.no_memo and o.date_memo else (o.amount - o.amount_charge))"/> -->
+                                <span t-esc="o.format_amount((o.amount) if o.join_payment else (o.amount - o.amount_charge))"/>
                             </td>
                         </tr>
                         <tr>

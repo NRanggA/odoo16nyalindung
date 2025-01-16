@@ -14,17 +14,15 @@
             </xpath>
 
             <xpath expr="//header" position="inside">
-                <!-- <button name="report_amount_charge" type="object"
-                    string="Print Report Amount Adm" class="btn-primary"
-                    attrs="{'invisible': ['|', ('amount_charge', '=', 0), ('charge_account_id', '=', False), ('no_memo', '=', True)]}"/> -->
                     <button name="report_amount_charge" type="object"
                         string="Print Report Amount Adm" class="btn-primary"
-                        attrs="{'invisible': ['|', '|',
+                        attrs="{'invisible': ['|', ('charge_account_id', '=', False), ('join_payment', '=', True)]}"/>
+                                            <!-- '|',
                                             ('amount_charge', '=', 0),
                                             ('charge_account_id', '=', False),
-                                            '&amp;', 
-                                            ('no_memo', '!=', False), 
-                                            ('date_memo', '!=', False)]}"/>
+                                            '&amp;',  -->
+                                            <!-- ('no_memo', '!=', False), 
+                                            ('date_memo', '!=', False)]}"/> -->
             </xpath>
 
             <xpath expr="//header" position="inside">
@@ -39,6 +37,7 @@
                 <field name="charge_account_id" attrs="{'invisible': ['|',('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier')], 'readonly': [('state','!=','draft')]}"/>
                 <field name="no_memo" />
                 <field name="date_memo" />
+                <field name="join_payment" />
             </xpath>
 
             <xpath expr="//field[@name='ref']" position="after">
