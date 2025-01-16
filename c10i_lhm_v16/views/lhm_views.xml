@@ -3525,6 +3525,7 @@
                                         <field name="quality_pabrik"/>
                                         <field name="drc" invisible="1"/>
                                         <field name="stock_picking_id" invisible="1"/>
+                                        <field name="qty_received" invisible="1"/>
                                     </tree>
                                 </field>
                                 <group>
