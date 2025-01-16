@@ -47,7 +47,7 @@ class ProfileApi(ApiBase):
         
         # datas = self._get_payload() or {}
         try:
-            result = {'data': self._get_profile(user_id), 'count': 1}
+            result = {'data': self._get_profile(int(user_id)), 'count': 1}
             return Response(json.dumps({
                     'message': f"Successfully get User Profile",
                     'data': result
