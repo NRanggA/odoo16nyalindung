@@ -1,5 +1,5 @@
 from odoo import models
-
+from pytz import timezone, UTC
 class ReportStockMutation(models.AbstractModel):
     _name = 'report.c10i_stock.stock_card_xlsx'
     _inherit = 'report.report_xlsx.abstract'
@@ -293,8 +293,10 @@ class ReportStockMutation(models.AbstractModel):
             row += 1
 
             domain = [
+                '|',
+                ('location_id', '=', obj.location_id.id),
+                ('location_dest_id', '=', obj.location_id.id),
                 ('product_id', '=', product.id),
-                # ('location_id', '=', obj.location_id.id),
                 ('date', '>=', obj.from_date),
                 ('date', '<=', obj.to_date),
                 ('state', '=', 'done')
@@ -303,7 +305,12 @@ class ReportStockMutation(models.AbstractModel):
 
             balance = opening_qty + opening_2_qty
             for move in moves:
-                sheet.write(row, 0, move.date.strftime('%d-%m-%Y %H:%M:%S'), wbf['content'])
+                # Konversi waktu dari UTC ke Asia/Jakarta
+                utc_time = move.date
+                jakarta_tz = timezone('Asia/Jakarta')
+                local_time = utc_time.replace(tzinfo=UTC).astimezone(jakarta_tz)
+                
+                sheet.write(row, 0, local_time.strftime('%d-%m-%Y %H:%M:%S'), wbf['content'])
                 transaction_name = move.reference or move.picking_id.name
                 sheet.write(row, 1, transaction_name, wbf['content'])
                 qty = move.qty_done
