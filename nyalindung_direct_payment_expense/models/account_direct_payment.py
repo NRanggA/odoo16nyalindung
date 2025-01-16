@@ -137,27 +137,28 @@ class DirectPayment(models.Model):
                 continue
             
             # Ketika employee_expense_id ada, maka akan memunculkan wizard
-            if self.employee_expense_id:
-                confirmation_message = "Apakah Anda yakin ingin memproses dari Rekening: %s?" % self.journal_id.name
-                return {
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'wizard.action.confirm',
-                    'view_mode': 'form',
-                    'view_id': self.env.ref('nyalindung_direct_payment_expense.view_wizard_action_confirm').id,
-                    'target': 'new',
-                    'context': {
-                        'active_id': self.id, 
-                        'active_model': self._name,
-                        'confirmation_message': confirmation_message  
-                    },
-                }
+            # if self.employee_expense_id:
+            confirmation_message = "Apakah Anda yakin ingin memproses dari Rekening: %s?" % self.journal_id.name
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'wizard.action.confirm',
+                'view_mode': 'form',
+                'view_id': self.env.ref('nyalindung_direct_payment_expense.view_wizard_action_confirm').id,
+                'target': 'new',
+                'context': {
+                    'active_id': self.id, 
+                    'active_model': self._name,
+                    'confirmation_message': confirmation_message  
+                },
+            }
             
-            for line in payment.line_ids:
-                if line.amount is not None and line.amount <= 0:
-                    raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
-            # if payment.name == 'New':
-            #     payment.name = self.env['ir.sequence'].next_by_code('account.direct.payment')
-            payment.state="confirm"
+            # Dikomen karena harus memunculkan wizard confirm terus 
+            # for line in payment.line_ids:
+            #     if line.amount is not None and line.amount <= 0:
+            #         raise ValidationError(_('You cannot confirm payment if any amount in payment lines is equal to or less than 0'))
+            # # if payment.name == 'New':
+            # #     payment.name = self.env['ir.sequence'].next_by_code('account.direct.payment')
+            # payment.state="confirm"
 
     def action_post(self):
         for payment in self:

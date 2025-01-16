@@ -20,7 +20,7 @@ class WizardActionConfirm(models.TransientModel):
         active_id = self.env.context.get('active_id')
         if active_model == 'account.direct.payment':
             payment_record = self.env[active_model].browse(active_id)
-            if payment_record.employee_expense_id:
-                payment_record.with_context(from_wizard=True).action_confirm()
+            # if payment_record.employee_expense_id:
+            payment_record.with_context(from_wizard=True).action_confirm()
             
         return {'type': 'ir.actions.act_window_close'}

@@ -37,7 +37,7 @@
                 <field name="charge_account_id" attrs="{'invisible': ['|',('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier')], 'readonly': [('state','!=','draft')]}"/>
                 <field name="no_memo" />
                 <field name="date_memo" />
-                <field name="join_payment" />
+                <field name="join_payment" attrs="{'invisible': ['|', '|', ('payment_type', '!=', 'outbound'), ('partner_type', '!=', 'supplier'), ('id', '=', False)]}" />
             </xpath>
 
             <xpath expr="//field[@name='ref']" position="after">

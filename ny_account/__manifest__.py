@@ -57,6 +57,9 @@
         # E-Faktur List
         'views/efaktur_list_views.xml',
 
+        'wizard/wizard_action_confirm_payment.xml',
+        'wizard/wizard_action_confirm_invoice.xml',
+
         # payment sequence
         # 'data/payment_sequence_data.xml',
 

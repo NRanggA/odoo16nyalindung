@@ -1,2 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_e_faktur_list_user,e.faktur.list user,model_e_faktur_list,base.group_user,1,1,1,1
+
+access_wizard_action_confirm_payment,wizard.action.confirm.payment,model_wizard_action_confirm_payment,,1,1,1,1
+access_wizard_action_confirm_invoice,wizard.action.confirm.invoice,model_wizard_action_confirm_invoice,,1,1,1,1

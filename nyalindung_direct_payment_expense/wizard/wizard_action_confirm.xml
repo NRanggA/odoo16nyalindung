@@ -5,9 +5,7 @@
             <field name="model">wizard.action.confirm</field>
             <field name="arch" type="xml">
                 <form string="Konfirmasi Pembayaran">
-                    <group>
-                        <field name="confirmation_message" readonly="1"/>
-                    </group>
+                    <field name="confirmation_message" readonly="1" nolabel="1"/>
                     <footer>
                         <button string="OK" type="object" name="action_confirm" class="btn-primary"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
