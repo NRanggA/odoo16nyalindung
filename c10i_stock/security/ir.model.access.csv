@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wizard_report_stock_mutation,c10i_stock.access_wizard_report_stock_mutation,c10i_stock.model_wizard_report_stock_mutation,base.group_user,1,1,1,1
+access_wizard_report_stock_card,c10i_stock.access_wizard_report_stock_card,c10i_stock.model_wizard_report_stock_card,base.group_user,1,1,1,1

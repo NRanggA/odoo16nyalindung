@@ -25,8 +25,15 @@
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        
+        # Stock Mutation
         'wizard/wizard_report_stock_mutation_views.xml',
         'report/report_stock_mutation_action.xml',
+
+        # Stock Card
+        'wizard/wizard_report_stock_card_views.xml',
+        'report/report_stock_card_action.xml',
+
 
         'views/stock_picking_views.xml',
         
