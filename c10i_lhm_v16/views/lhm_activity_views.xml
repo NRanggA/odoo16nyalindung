@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    
+    <data>
+    
+        <!-- LHM Activity -->
+        <record id="view_lhm_activity_form" model="ir.ui.view">
+            <field name="name">view.lhm.activity.form</field>
+            <field name="model">lhm.activity</field>
+            <field name="arch" type="xml">
+                <form string="Aktivitas">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                                <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+                            </button>
+                        </div>
+                        <div class="oe_button_box" name="button_box"/>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" placeholder="Grading Jalan" required="1"/></h1>
+                        </div>
+                        <field name="parent_id" placeholder="Parent Activity"/>
+                        <group name="activity">
+                            <group string="Informasi">
+                                <field name="code" string="Kode" required="1"/>
+                                <field name="type_id" required="0"/>
+                                <field name="account_id" required="0"/>
+                                <field name="is_panen" required="0"/>
+                                <field name="is_hasil_2" required="0"/>
+                                <field name="is_nap" required="0"/>
+                            </group>
+                            <group string="Satuan">
+                                <field name="uom_id" required="0"/>
+                                <field name="uom2_id" required="0"/>
+                                <field name="product_id" required="0"/>
+                                <field name="product2_id" required="0"/>
+                            </group>
+                            <group string="Reporting">
+                                <field name="is_variance" required="0" string="Variance Progress Kerja"/>
+                            </group>
+                            <group string="Slip Keluar Barang">
+                                <field name="skb" required="0" string="Validation Material"/>
+                            </group>
+                            <group>
+                                <field name="parent_code" invisible="1"/>
+                                <field name="company_id" readonly="1"/>
+                                <field name="level" readonly="1"/>
+                            </group>
+                            <group string="Running Account">
+                                <field name="bypass"/>
+                                <field name="vh2vh"/>
+                            </group>
+                            <group>
+                                <field name="parent_left" invisible="1"/>
+                                <field name="parent_right" invisible="1"/>
+                            </group>
+                        </group>
+                        <group name="accounting">
+                            <!-- <group>
+                                <field name="beban_closing_account_id" />
+                                <field name="tm_beban_closing_account_id" />
+                                <field name="tm_plasma_closing_account_id" />
+                            </group>
+                            <group>
+                                <field name="counterpart_closing_account_id" />
+                                <field name="tm_counterpart_closing_account_id" />
+                                <field name="tm_plasma_counterpart_closing_account_id" />
+                            </group> -->
+                        </group>
+                        <separator attrs="{'invisible' : [('type_id','=',False)]}" string="Tipe Dokumen" />
+                        <field name="doc_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_res_doc_type_m2m_tree'}" attrs="{'invisible' : [('type_id','=',False)]}" />
+
+                        <separator attrs="{'invisible': [('type_id','=',False)]}" string="Default Muatan"/>
+                        <field name="charge_ids" nolabel="1" context="{'tree_view_ref':'c10i_lhm_v16.view_lhm_charge_type_tree'}" attrs="{'invisible': [('type_id','=',False)]}"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_activity_tree" model="ir.ui.view">
+            <field name="name">view.lhm.activity.tree</field>
+            <field name="model">lhm.activity</field>
+            <field name="priority">16</field>
+            <field name="arch" type="xml">
+                <tree string="Aktivitas" class="table_header_freeze">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="parent_id"/>
+                    <field name="uom_id"/>
+                    <field name="uom2_id"/>
+                    <field name="type_id"/>
+                    <field name="is_panen"/>
+                    <field name="is_hasil_2"/>
+                    <field name="is_nap"/>
+                    <field name="company_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_activity_filter" model="ir.ui.view">
+            <field name="name">view.lhm.activity.filter</field>
+            <field name="model">lhm.activity</field>
+            <field name="arch" type="xml">
+                <search string="Aktivitas">
+                    <field name="name" string="Aktifitas" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
+                    <field name="parent_id"/>
+                    <field name="type_id"/>
+                    <field name="uom_id"/>
+                    <field name="uom2_id"/>
+                    <separator/>
+                    <filter name="panen" string="Panen" domain="[('is_panen','=',True)]"/>
+                    <separator/>
+                    <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                    <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Type" name="type_id" context="{'group_by':'type_id'}"/>
+                        <filter string="Company" name="company_id" context="{'group_by':'company_id'}"/>  
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_lhm_activity" model="ir.actions.act_window">
+            <field name="name">Aktivitas</field>
+            <field name="res_model">lhm.activity</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_activity_filter"/>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Aktifitas LHM.
+              </p>
+            </field>
+        </record>
+        <menuitem id="menu_lhm_master_activity" action="action_lhm_activity" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="10"/>
+
+        <record id="view_activity_noparent_tree" model="ir.ui.view">
+            <field name="name">view.activity.noparent.tree</field>
+            <field name="model">lhm.activity</field>
+            <field name="field_parent">child_ids</field>
+            <field name="priority">17</field>
+            <field name="arch" type="xml">
+                <tree string="Activity Hierarchy">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="type_id"/>
+                    <field name="parent_id" invisible="1" />
+                    <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="open_view_activity_noparent_tree" model="ir.actions.act_window">
+            <field name="name">Hirarki Aktivitas</field>
+            <field name="res_model">lhm.activity</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('parent_id','=',False)]</field>
+            <field name="view_id" ref="view_activity_noparent_tree"/>
+            <field name="context">{}</field>
+        </record>
+        <menuitem id="menu_activity_hierarchy" action="open_view_activity_noparent_tree" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="20"/>
+        <!-- End Of LHM Activity -->
+    
+    </data>
+    
+
+
+</odoo>

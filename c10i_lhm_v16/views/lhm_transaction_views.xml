@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <!-- Transaksi LHM --> 
+        <record id="view_lhm_transaction_form" model="ir.ui.view">
+            <field name="name">view.lhm.transaction.form</field>
+            <field name="model">lhm.transaction</field>
+            <field name="arch" type="xml">
+                <form string="Laporan Harian Mandor">
+                    <header>
+                        <button name="run_progress" string="Proses" states="draft" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator"/>
+                        <button name="button_confirm" string="Confirm" states="in_progress" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator" confirm="Apakah anda yakin akan dikonfirmasi?"/>
+                        <button name="button_approve" string="Approve" states="confirmed" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_manager" confirm="Apakah anda menyetujui dokumen ini?"/>
+                        <button name="button_reject" string="Reject" states="confirmed" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_manager" confirm="Apakah anda menolak dokumen ini?"/>
+                        <button name="button_draft" string="Set Draft" states="in_progress,done" type="object" groups="c10i_lhm_v16.group_plantation_operator"/>
+                        <!-- <button name="get_material" string="Material" states="in_progress,done" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator"/> -->
+                        <button name="recalculate_plantation" class="oe_stat_button" icon="fa-refresh" string="Recalculate" type="object" groups="base.group_no_one"/>
+                        <button name="reprogress_plantation" class="oe_stat_button" icon="fa-refresh" string="Reprogress" states="in_progress,done" type="object" groups="base.group_no_one"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,in_progress,confirmed,done,close"/>
+                    </header>
+                    <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
+                        </div>
+                        <group name="lhm_transaction">
+                            <group>
+                                <field name="date" attrs="{'required':[('state','=','draft')],'readonly': [('state','!=','draft')]}"/>
+                                <field name="kemandoran_id" attrs="{'required':[('state','=','draft')],'readonly': [('state','!=','draft')]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':False}"/>
+                                <field name="asisten_mandor_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="mandor_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="kerani_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="account_period_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <!-- <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                            </group>
+                            <group>
+                                <field name="date_start" readonly="1" invisible="1"/>
+                                <field name="date_stop" readonly="1" invisible="1"/>
+                                <field name="kemandoran_code" readonly="1"/>
+                                <field name="location" readonly="1"/>
+                                <field name="nik_mandor_1" readonly="1"/>
+                                <field name="nik_mandor" readonly="1"/>
+                                <field name="nik_kerani" readonly="1"/>
+                                <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="is_nap" invisible="1"/>
+                                <field name="is_borong" invisible="1"/>
+                                <field name="is_hasil_2" invisible="1"/>
+                                <field name="nap_line_zero" invisible="1"/>
+                                <field name="skb" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Daftar Karyawan">
+                                <group>
+                                    <button name="%(c10i_lhm_v16.action_wizard_add_employee)d" class="oe_stat_button" icon="fa-users" string="Tambah Karyawan" states="draft" type="action" groups="c10i_lhm_v16.group_plantation_operator"/>
+                                </group>
+                                <!-- attrs="{'readonly': [('state','!=','draft')]}" options='{"always_reload": True}' context="{'readonly_by_pass': True, 'form_view_ref': 'c10i_lhm_v16.view_lhm_transaction_line_form'}" -->
+                                <field name="lhm_line_ids" nolabel="1" options='{"always_reload": True}' >
+                                    <tree editable="bottom" create="false" class="two-line-header">
+                                        <field name="sequence" string="" readonly="1" invisible="1"/>
+                                        <field name="name" readonly="1" force_save="1" optional="show"/>
+                                        <field name="date" invisible="1"/>
+                                        <field name="state" invisible="1"/>
+
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="attendance_id" attrs="{'readonly': [('state', '!=', 'draft')]}" domain="[('type','=','kj')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <!-- <field name="attendance_id" domain="[('type','not in',['in','out'])]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
+                                        
+                                        <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"  attrs="{'readonly': [('state', '!=', 'draft')], 'required': [('attendance_type', 'in', ['kj', 'na'])]}"/>
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': ['|', ('varieties_validator','=',False), ('state', '!=', 'draft')], 
+                                                    'required': [('varieties_validator','=',True),('attendance_type','in',['kj','na'])]}"/>
+                                        <field name="no_line" invisible="1" />
+                                        <field name="filtered_locations" invisible="1"/>
+                                            <!-- domain="[('type_id','=',location_type_id)]"  -->
+                                        <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('id','in',filtered_locations)]" attrs="{'readonly': ['|',('attendance_type','not in',['kj','na']), ('state', '!=', 'draft')], 'required': [('attendance_type','in',['kj','na']), ('no_line', '=', False)]}" />
+                                        <!-- <field name="doc_activity_ids" widget="many2many_tags" invisible="1"/> -->
+                                        <field name="filtered_activities" invisible="1"/>
+                                                <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" domain="[('id','in',filtered_activities)]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('attendance_type','not in',['kj','na']), ('state', '!=', 'draft')], 'required': [('attendance_type','in',['kj','na']), ('no_line','=',False)]}"/>
+                                        <field name="is_borong" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <field name="is_hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        <button icon="fa-plus" type="object" title="Tambah Hasil" name="tambah_hasil_2" class="oe_highlight" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('is_hasil_2', '!=', True)]}"/>
+                                        <field name="work_day" attrs="{'readonly': ['|',('attendance_type','not in',['kj']), ('state', '!=', 'draft')], 'required': [('attendance_type','in',['kj'])]}" optional="show"/>
+                                        <field name="non_work_day" attrs="{'readonly': [('state', '!=', 'draft')]}" readonly="1" invisible="1"/>
+                                        
+                                        <!-- <field name="satuan_id" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/> -->
+                                        <!-- BEGIN : POC Nyalindung -->
+                                        <!-- <field name="hasil_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
+                                        <!-- <field name="drc_latex" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="hasil_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/> -->
+                                        
+                                        <field name="product_id" optional="show" attrs="{'readonly': ['|','|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}"/>
+                                        <field name="hasil_1" sum="hasil_1" optional="show" attrs="{'readonly': ['|','|' ,('is_hasil_2','!=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}"/>
+                                        <field name="satuan_1" optional="show" attrs="{'readonly': ['|', '|',('is_hasil_2','!=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}"/>
+
+                                        <field name="product_id_2" attrs="{'readonly': ['|',('is_hasil_2', '!=', True),('state', '!=', 'draft')]}"/>
+                                        <field name="hasil_2" attrs="{'readonly': [('state', '!=', 'draft')]}" sum="hasil_2" optional="show"/>
+                                        <field name="satuan_2" attrs="{'readonly': [('state', '!=', 'draft')]}" optional="show"/>
+
+                                        <field name="drc_latex" attrs="{'readonly': ['|','|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}" optional="show"/>
+                                        <field name="drc_lump" attrs="{'readonly': ['|','|' ,('is_hasil_2','=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}" optional="show"/>
+                                        <field name="target_panen" attrs="{'readonly': ['|','|'  ,('is_hasil_2','=',False), ('attendance_type','not in',['kj']), ('state', '!=', 'draft')]}" optional="show"/>
+                                        <!-- END : POC Nyalindung -->
+
+                                        <field name="work_result" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" invisible="1"/>
+                                        <field name="unit_price" invisible="1" groups="base.group_no_one"/>
+                                        <field name="premi" attrs="{'readonly': [('state', '!=', 'draft')]}" optional="show"/>
+
+                                        <!-- BEGIN : POC Nyalindung -->
+                                        <field name="overtime_hour" attrs="{'readonly': ['|' ,('overtime','=',False), ('attendance_type','not in',['kj','na'])]}" invisible="1"/>
+                                        <!-- END : POC Nyalindung -->
+                                        <field name="overtime_value" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <!-- BEGIN : POC Nyalindung -->
+                                        <field name="penalty" attrs="{'readonly': [('attendance_type','not in',['kj','na'])]}" invisible="1"/>
+                                        <!-- END : POC Nyalindung -->
+
+                                        <field name="panen" invisible="1" string="P" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="overtime" invisible="1" string="O" attrs="{'readonly': ['|' ,('panen','=',False), ('attendance_type','not in',['kj'])]}" optional="show"/>
+                                        <field name="progressive" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" string="M" groups="base.group_no_one" optional="show"/>
+                                        
+                                        <field name="attendance_type" attrs="{'required': [('attendance_type','in',['kj','na'])], 'readonly': [('state', '!=', 'draft')]}" optional="show"/>
+                                        <field name="valid" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" string="V" groups="base.group_no_one" optional="show"/>
+                                        <field name="kontanan" invisible="1"/>
+                                        <field name="transfer_id" invisible="1"/>
+                                        
+                                        <!-- Menggunakan contract -->
+                                        <!-- <field name="contract_id" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_id" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16. group_plantation_manager,c10i_lhm_v16.group_plantation_super" attrs="{'readonly': [('state', '!=', 'draft')]}" optional="show"/>
+                                        
+                                        <field name="total_hke" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="total_hkne"  invisible="1" groups="base.group_no_one" optional="show"/>
+                                        
+                                        <!-- <field name="contract_wage_value" invisible="0" groups="base.group_no_one" optional="show"/> -->
+                                        <field name="contract_wage_value" attrs="{'readonly': [('state', '!=', 'draft'), ('is_borong', '=', False)]}" invisible="0" groups="c10i_lhm_v16.group_plantation_supervisor,c10i_lhm_v16.group_plantation_manager,c10i_lhm_v16.group_plantation_super" optional="show"/>
+                                        <field name="contract_value_date" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="0" groups="base.group_no_one" optional="show"/>
+                                        <field name="contract_value_hkne" invisible="1" groups="base.group_no_one" optional="show"/>
+                                        
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="NAP" attrs="{'invisible': [('is_nap', '=', False)]}">
+                                <field name="lhm_nap_line_ids">
+                                    <tree editable="bottom" create="false" class="two-line-header">
+                                        <field name="name" readonly="1" force_save="1" optional="show"/>
+                                        <field name="employee_id" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" domain="[('is_lhm','=',True)]" readonly="1" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" optional="show"/>
+                                        <field name="product_id" optional="show"  readonly="1"/>
+                                        <field name="hasil_1_nap" sum="hasil_1_nap" optional="show"  readonly="1"/>
+                                        <field name="satuan_1_nap" optional="show"  readonly="1"/>
+
+                                        <field name="product_id_2" optional="show"  readonly="1"/>
+                                        <field name="hasil_2_nap" sum="hasil_2_nap" optional="show"  readonly="1"/>
+                                        <field name="satuan_2_nap" optional="show"  readonly="1"/>
+
+                                        <field name="drc_latex_nap" optional="show"  readonly="1"/>
+                                        <field name="drc_lump_nap" optional="show"  readonly="1"/>
+
+                                        <!-- dikomen dlu karena blum siap -->
+                                        <field name="hasil_convert_latex" optional="show"  readonly="1"/>
+                                        <field name="hasil_convert_lump" optional="show"  readonly="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Progress" attrs="{'invisible': ['|',('process_line_ids','=',[]),('state','=','draft')]}">
+                                <field name="process_line_ids" nolabel="1" attrs="{'readonly': [('state','not in',['draft','in_progress']),('approval','=',True)]}">
+                                    <tree editable="bottom" create="false" colors="red:deleted==True;blue:updated==True">
+                                        <field name="sequence" string="" readonly="1" invisible="1"/>
+                                        <field name="date" readonly="1"/>
+                                        <field name="activity_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        
+                                        <field name="product_id" attrs="{'readonly': [('uom_id','=',False)]}"/>
+                                        <field name="nilai" sum="nilai" attrs="{'readonly': [('uom_id','=',False)]}"/>
+                                        <field name="uom_id" attrs="{'readonly': [('uom_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        
+                                        <field name="product_id_2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
+                                        <field name="nilai2" sum="nilai2" attrs="{'readonly': [('uom2_id','=',False)]}"/>
+                                        <field name="uom2_id" attrs="{'readonly': [('uom2_id','=',False)]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        
+                                        <field name="work_day" readonly="1"/>
+                                        <field name="non_work_day" readonly="1"/>
+                                        <field name="premi" readonly="1" groups="base.group_no_one"/>
+                                        <field name="realization" readonly="1"/>
+                                        <field name="realization_date" readonly="1" groups="base.group_no_one"/>
+                                        <field name="deleted" invisible="1"/>
+                                        <field name="updated" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Material" attrs="{'invisible': [('skb', '=', False)]}"> 
+                                <!--attrs="{'invisible': ['|',('material_line_ids','=',[]),('state','=','draft')]}"> -->
+                                <field name="material_line_ids" nolabel="1" attrs="{'readonly': [('state','not in',['draft','in_progress']),('approval','=',True)]}">
+                                    <tree editable="bottom" create="false">
+                                        <field name="date" readonly="1" groups="base.group_no_one"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="product_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="activity_name" readonly="1"/>
+                                        <field name="location_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="move_id" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="picking_id" invisible="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="product_uom_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="real_stock_qty" readonly="1"/>
+                                        <field name="stock_qty" readonly="1"/>
+                                        <field name="realization"/>
+                                        <field name="residual_qty" readonly="1"/>
+                                        <field name="progress_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="History" attrs="{'invisible': [('emp_out_ids','=',[]),('emp_in_ids','=',[])]}">
+                                <separator string="Keluar"/>
+                                <field name="emp_out_ids" nolabel="1" readonly="1"/>
+                                <separator string="Masuk"/>
+                                <field name="emp_in_ids" nolabel="1" readonly="1"/>
+                            </page>
+                        </notebook>
+                        <separator string="SPH Related"/>
+                        <field name="sph_move_ids"  nolabel="1" context="{'default_date':date}">
+                            <tree editable="bottom">
+                                <field name="type"/>
+                                <field name="date" invisible="1" force_save="1"/>
+                                <field name="location_type_id" />
+                                <field name="block_tanam_id" />
+                                <field name="qty" />
+                            </tree>
+                        </field>
+                        <field name="note" placeholder="Tulis Catatan Disini..." nolabel="1" colspan="8"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_transaction_tree" model="ir.ui.view">
+            <field name="name">view.lhm.transaction.tree</field>
+            <field name="model">lhm.transaction</field>
+            <field name="arch" type="xml">
+                <tree string="Laporan Harian Mandor">
+                    <field name="name" optional="show"/>
+                    <field name="date" optional="show" />
+                    <field name="date_start" invisible="0" optional="show" />
+                    <field name="date_stop" invisible="0" optional="show" />
+                    <field name="kemandoran_id" optional="show" />
+                    <field name="location" optional="show" />
+                    <field name="asisten_mandor_id" optional="show" />
+                    <field name="mandor_id" optional="show" />
+                    <field name="kerani_id" optional="show" />
+                    <field name="user_id" optional="show" />
+                    <field name="state" optional="show" widget="badge" decoration-warning="state == 'in_progress'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'" decoration-info="state == 'close'" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_transaction_filter" model="ir.ui.view">
+            <field name="name">view.lhm.transaction.filter</field>
+            <field name="model">lhm.transaction</field>
+            <field name="arch" type="xml">
+                <search string="Laporan Harian Mandor">
+                    <field name="name" string="Nama LHM"/>
+                    <field name="kemandoran_id" string="Kemandoran" filter_domain="['|',('kemandoran_code','ilike',self),('kemandoran_id','ilike',self)]"/>
+                    <field name="asisten_mandor_id" string="Mandor 1" filter_domain="['|',('asisten_mandor_id','ilike',self),('nik_mandor','ilike',self)]"/>
+                    <field name="mandor_id" string="Mandor" filter_domain="['|',('mandor_id','ilike',self),('nik_mandor','ilike',self)]"/>
+                    <separator/>
+                    <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <!-- <filter name="date_monthly" string="Current Month" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/> -->
+                    <filter string="Date" name="date" date="date"/>
+                    <separator/>
+                    <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                    <filter name="in_progress" string="In Progress" domain="[('state','=','in_progress')]"/>
+                    <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                    <filter name="cancel" string="Cancel" domain="[('state','=','cancel')]"/>
+                    <filter name="done" string="Done" domain="[('state','=','done')]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="state" context="{'group_by':'state'}"/>
+                        <filter string="Kemandoran" name="kemandoran_id" context="{'group_by':'kemandoran_id'}"/>
+                        <filter string="Mandor Besar" name="asisten_mandor_id" context="{'group_by':'asisten_mandor_id'}"/>
+                        <filter string="Mandor" name="mandor_id" context="{'group_by':'mandor_id'}"/>
+                        <filter string="Afdeling/DIvisi" name="location" context="{'group_by':'location'}"/>
+                        <filter string="Penanggung Jawab" name="user_id" context="{'group_by':'user_id'}"/>
+                        <filter string="Company" name="company_id" context="{'group_by':'company_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_lhm_transaction" model="ir.actions.act_window">
+            <field name="name">Laporan Harian Mandor</field>
+            <field name="res_model">lhm.transaction</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_transaction_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'readonly_by_pass': True, 'search_default_date':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik new untuk menambahkan Laporan Harian Mandor.
+              </p>
+            </field>
+        </record>
+
+        <record id="action_lhm_transaction_button_box" model="ir.actions.act_window">
+            <field name="name">Laporan Harian Mandor</field>
+            <field name="res_model">lhm.transaction</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_transaction_filter"/>
+            <field name="domain">[]</field>
+            <field name="context"></field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik new untuk menambahkan Laporan Harian Mandor.
+              </p>
+            </field>
+        </record>
+
+        <!-- <record id="action_lhm_transaction_all" model="ir.actions.act_window">
+            <field name="name">Laporan Harian Mandor</field>
+            <field name="res_model">lhm.transaction</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_transaction_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'readonly_by_pass': True}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Laporan Harian Mandor.
+              </p>
+            </field>
+        </record> -->
+        <menuitem id="submenu_lhm_transaction" name="Laporan Harian Mandor" action="action_lhm_transaction" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="10"/>
+        <!-- <menuitem id="submenu_lhm_transaction_all" name="Laporan Harian Mandor" action="action_lhm_transaction_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="10"/> -->
+        <!-- End Of Transaksi LHM -->
+
+
+        <!-- LHM Transaction Line-->
+        <record id="view_lhm_transaction_line_form" model="ir.ui.view">
+            <field name="name">view.lhm.transaction.line.form</field>
+            <field name="model">lhm.transaction.line</field>
+            <field name="arch" type="xml">
+                <form string="Daftar Aktivitas LHM">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group name="lhm_transaction">
+                            <group string="Emlpoyee">
+                                <field name="sequence" string="" invisible="1"/>
+                                <field name="employee_id" context="{'form_view_ref':'c10i_lhm.view_karyawan_form'}" domain="[('is_lhm','=',True)]" string="Nama Karyawan" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="attendance_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                            <group string="Location &amp; Activity">
+                                <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                            <group string="Detail Pekerjaan">
+                                <field name="panen" invisible="1"/>
+                                <field name="work_day"/>
+                                <!-- <field name="satuan_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
+                                <!-- <field name="work_result"/> -->
+                                <field name="product_id"/>
+                                <field name="hasil_1"/>
+                                <field name="satuan_1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="product_id_2"/>
+                                <field name="hasil_2"/>
+                                <field name="satuan_2" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="unit_price" invisible="1"/>
+                                <field name="premi"/>
+                                <field name="overtime_hour"/>
+                                <field name="overtime_value" invisible="1"/>
+                                <field name="penalty"/>
+                                <field name="kontanan" invisible="1"/>
+                                <field name="contract_id" groups="base.group_no_one" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="contract_wage_value" groups="base.group_no_one"/>
+                            </group>
+                            <group string="Detail NAP" attrs="{'invisible':[('panen','=',False)]}">
+                                <field name='lhm_nap_ids' nolabel="1" readonly="1" >
+                                    <tree string="Link NAP Line" >
+                                        <field name="nap_id" />
+                                        <field name="nap_date" />
+                                        <field name="nap_date_pks" />
+                                        <field name="nilai" sum="nilai"/>
+                                        <field name="uom_id" />
+                                        <field name="nilai2" sum="nilai2"/>
+                                        <field name="uom_id2" />
+                                    </tree>
+                                </field>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!-- End Of LHM Transaction Line -->
+
+        <!-- LHM Transaction Process Line-->
+        <record id="view_lhm_transaction_process_form" model="ir.ui.view">
+            <field name="name">view.lhm.transaction.process.line.form</field>
+            <field name="model">lhm.transaction.process.line</field>
+            <field name="arch" type="xml">
+                <form string="Daftar Progress LHM">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group name="lhm_transaction">
+                            <group string="Information">
+                                <field name="date"/>
+                                <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="lhm_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                            <group string="Value">
+                                <field name="work_day"/>
+                                <label for="nilai"/>
+                                <div>
+                                    <field name="nilai" nolabel="1" style="width:60%;"/>
+                                    <field name="uom_id" nolabel="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                </div>
+                                <label for="nilai2"/>
+                                <div>
+                                    <field name="nilai2" nolabel="1" style="width:60%;"/>
+                                    <field name="uom2_id" nolabel="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                </div>
+                                <field name="realization"/>
+                            </group>
+                        </group>
+                        <!-- <field name="nap_line_ids" nolabel="1" readonly="1">
+                            <tree editable="bottom">
+                                <field name="lhm_nap_id"/>
+                                <field name="tgl_panen"/>
+                                <field name="block_id" />
+                                <field name="qty_nap" sum="qty_nap"/>
+                            </tree>
+                        </field>
+                        <field name="nap_afkir_line_ids" nolabel="1" readonly="1">
+                            <tree editable="bottom">
+                                <field name="lhm_nap_afkir_id"/>
+                                <field name="tgl_panen"/>
+                                <field name="block_id" />
+                                <field name="qty" sum="qty"/>
+                            </tree>
+                        </field> -->
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!-- End Of LHM Transaction Process Line -->
+
+</odoo>
