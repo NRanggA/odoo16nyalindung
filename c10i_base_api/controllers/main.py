@@ -32,7 +32,7 @@ class ApiBase(http.Controller):
         # Create or Update API Client List
         client_req_addrs = request.httprequest.environ['REMOTE_ADDR']
         # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth")
-        added_addrs = request.env['c10i_base_api.client.list'].sudo().search([('name','=',client_req_addrs)])
+        added_addrs = request.env['c10i_base_api.client.list'].sudo().search([('name','=',client_req_addrs)], limit=1)
         if not added_addrs:
             added_addrs = request.env['c10i_base_api.client.list'].sudo().create({'name': client_req_addrs})
         # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth", added_addrs)
