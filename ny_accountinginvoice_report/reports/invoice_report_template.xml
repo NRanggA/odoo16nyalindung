@@ -42,9 +42,9 @@
                         <table style="width: 100%;">
                             <tr>
                                 <td style="font-weight: bold;"><t t-esc="o.partner_id.name"/></td>
-                                <td style="padding-left: 70px;">Date Invoice</td>
+                                <td style="padding-left: 70px;">No Invoice</td>
                                 <td>: </td>
-                                <td><t t-esc="o.invoice_date"/></td>
+                                <td><t t-esc="o.name"/></td>
                             </tr>
                             <tr>
                                 <td style="width: 50%; font-size: 12px;"><t t-esc="o.partner_id.contact_address"/></td>
@@ -54,9 +54,9 @@
                             </tr>
                             <tr>
                                 <td><t t-esc="o.partner_id.phone or ''"/></td>
-                                <td style="padding-left: 70px;">No Invoice</td>
+                                <td style="padding-left: 70px;">Date Invoice</td>
                                 <td>: </td>
-                                <td><t t-esc="o.name"/></td>
+                                <td><t t-esc="o.invoice_date"/></td>
                                 <!-- <td t-if="o.invoice_line_ids" rowspan="3">
                                     <t t-foreach="o.invoice_line_ids" t-as="line" t-if="line.plantation_activity_id">
                                         <span><t t-esc="line.plantation_activity_id.name or 'N/A'"/></span>
@@ -72,12 +72,11 @@
                 <table class="bordered" style="font-size: 14px;">
                     <tr>
                         <th>No.</th>
-                        <th>Deskripsi/Product</th>
-                        <th>Qty</th>
-                        <th>UoM</th>
-                        <th>Price</th>
-                        <th></th>
-                        <th>Amount</th>
+                        <th style="text-align: center;">Deskripsi/Product</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: center;">UoM</th>
+                        <th style="text-align: center;">Price</th>
+                        <th style="text-align: center;">Amount</th>
                     </tr>
                     <t t-set="index" t-value="0"/>
                     <t t-foreach="o.invoice_line_ids" t-as="line">
@@ -85,11 +84,10 @@
                         <tr style="border: 1px solid black;">
                             <td style="border: 1px solid black;"><t t-esc="index"/></td>
                             <td><t t-esc="line.name"/></td>
-                            <td class="right-align"><t t-esc="line.quantity"/></td>
-                            <td><t t-esc="line.product_uom_id.name"/></td>
-                            <td class="right-align"><t t-esc="line.price_unit"/></td>
-                            <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                            <td class="right-align"><t t-esc="line.price_subtotal"/></td>
+                            <td style="text-align: center;"><t t-esc="line.quantity"/></td>
+                            <td style="text-align: center;"><t t-esc="line.product_uom_id.name"/></td>
+                            <td class="right-align">Rp <t t-esc="o.format_amount(line.price_unit)"/></td>
+                            <td class="right-align">Rp <t t-esc="o.format_amount(line.price_subtotal)"/></td>
                         </tr>
                     </t>
                 </table>
@@ -104,25 +102,25 @@
                         <td colspan="4" class="terbilang">Terbilang :</td>
                         <td class="right-align col-narrow">Sub Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align col-narrow"><t t-esc="sub_total"/></td>
+                        <td class="right-align col-narrow"><t t-esc="o.format_amount(sub_total)"/></td>
                     </tr>
                     <tr>
                         <td colspan="4" class="terbilang" style="font-style: italic; font-weight: bold;"><t t-esc="o.amount_text"/> rupiah</td>
                         <td class="right-align">Disc Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="total_discount"/></td>
+                        <td class="right-align"><t t-esc="o.format_amount(total_discount)"/></td>
                     </tr>
                     <tr>
                         <td colspan="4"></td>
                         <td class="right-align">PPN 11%:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="o.amount_tax"/></td>
+                        <td class="right-align"><t t-esc="o.format_amount(o.amount_tax)"/></td>
                     </tr>
                     <tr>
                         <td colspan="4"></td>
-                        <td class="right-align">Grand Total:</td>
-                        <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="o.amount_residual"/></td>
+                        <td class="right-align"><strong>Grand Total:</strong></td>
+                        <td class="right-align"><strong><t t-esc="o.currency_id.symbol"/></strong></td>
+                        <td class="right-align"><strong><t t-esc="o.format_amount(o.amount_residual)"/></strong></td>
                     </tr>
                 </table>
             </t>
