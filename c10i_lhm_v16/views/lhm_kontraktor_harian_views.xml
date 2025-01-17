@@ -27,6 +27,7 @@
                                 <field name="account_period_id" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
                                 <field name="date"/>
                                 <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="is_hasil_2" invisible="0"/>
                             </group>
                             <group>
                                 <field name="supplier_code"/>

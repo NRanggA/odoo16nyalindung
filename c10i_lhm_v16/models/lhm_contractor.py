@@ -118,12 +118,18 @@ class lhm_contractor(models.Model):
                                 comodel_name='account.account',
                                 related='company_id.account_payable_contractor_id', readonly=False,
                                 string="Account Payable Perantara Buku Kontraktor")
+    is_hasil_2                   = fields.Boolean(string='Is Hasil 2', compute='_compute_is_hasil_2', store=True)
 
     @api.onchange('line_ids')
     def _onchange_line_ids(self):
         for line in self.line_ids:
             if not line.date:
                 line.date = self.date
+
+    @api.depends('line_ids.activity_id.is_panen')
+    def _compute_is_hasil_2(self):
+        for record in self:
+            record.is_hasil_2 = any(line.activity_id.is_hasil_2 for line in record.line_ids)
 
     @api.depends('line_ids.unit_price', 'line_ids.nilai', 'line_vehicle_ids.unit_price', 'line_vehicle_ids.nilai')
     def _compute_total(self):
@@ -222,9 +228,9 @@ class lhm_contractor(models.Model):
     #     self.state = 'confirmed'
 
     def button_confirm_harian(self):
-        # if not any(line.nilai for line in self.line_ids):
-        #     self.state = 'confirmed'
-        #     return
+        if not self.is_hasil_2:
+            self.state = 'confirmed'
+            return
         for contractor_nap in self.line_nap_ids:
             if not contractor_nap.nilai and not contractor_nap.nilai2:
                 raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" belum memiliki nilai. Silahkan isi melalui Dokumen NAP'))
