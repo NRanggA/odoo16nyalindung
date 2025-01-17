@@ -36,12 +36,22 @@
                 <field name="material_request_id" invisible="1" groups="c10i_material_request.group_material_request_user"/>
             </xpath>
             <xpath expr="//field[@name='picking_type_id']" position="before">
-                <field name="warehouse_id"/>
+                <field name="warehouse_id" options="{'no_create': True, 'no_edit': True}"/>
             </xpath>
             <xpath expr="//field[@name='picking_type_id']" position="attributes">
                 <attribute name="domain">
                     [('warehouse_id', '=', warehouse_id),('code','=','incoming')]
                 </attribute>
+                <attribute name="options">{'no_create': True, 'no_edit': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='assigned_to']" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_edit': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='group_id']" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_edit': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='product_id']" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_edit': True}</attribute>
             </xpath>
             
 
