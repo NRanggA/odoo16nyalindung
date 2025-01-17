@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ny_hr_attendance_sheet_view_form" model="ir.ui.view">
+        <field name="name">hr.attendance.sheet.view.form</field>
+        <field name="model">hr.attendance.sheet</field>
+        <field name="inherit_id" ref="c10i_attendance.attendance_sheet_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="inside">
+                <field name="longitude_in" readonly="1"/>
+                <field name="latitude_in" readonly="1"/>
+                <field name="distance_in" />
+                <field name="longitude_out" readonly="1"/>
+                <field name="latitude_out" readonly="1"/>
+                <field name="distance_out" />
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <field name="att_log_ids" readonly="1">
+                    <tree>
+                        <field name="waktu"/>
+                        <field name="longitude" optional="hide"/>
+                        <field name="latitude" optional="hide"/>
+                        <field name="statusmasuk"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
