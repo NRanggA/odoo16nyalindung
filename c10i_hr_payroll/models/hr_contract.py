@@ -61,7 +61,7 @@ class HrContract(models.Model):
             else:
                 contract[code] = 0.0
 
-    def get_amount_bpjs(self, type, base_amount):
+    def get_amount_bpjs(self, type, base_amount, person_addition=0):
         self.ensure_one()
         res = {'tunjangan': 0.0, 'potongan': 0.0, 'iuran': 0.0}
         proceed_compute = False
@@ -82,8 +82,8 @@ class HrContract(models.Model):
                 else:
                     base_bpjs = base_amount
                 res['tunjangan'] = base_bpjs * bpjs_found.allowance_pct/100.0
-                if type=='bpjs_kesehatan' and self.add_person_bpjs_kesehatan:
-                    res['potongan'] = base_bpjs * (bpjs_found.deduction_pct + float(self.add_person_bpjs_kesehatan))/100.0
+                if type=='bpjs_kesehatan' and (person_addition or self.add_person_bpjs_kesehatan):
+                    res['potongan'] = base_bpjs * (bpjs_found.deduction_pct + float(person_addition or self.add_person_bpjs_kesehatan))/100.0
                 else:
                     res['potongan'] = base_bpjs * bpjs_found.deduction_pct/100.0
                 res['iuran'] = res['tunjangan'] + res['potongan']

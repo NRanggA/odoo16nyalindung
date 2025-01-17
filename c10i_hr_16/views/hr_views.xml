@@ -194,6 +194,7 @@
                             <field name="identification_id" groups="hr.group_hr_user" string="No. KTP"/>
                             <field name="npwp"/>
                             <field name="bpjs_kesehatan"/>
+                            <field name="bpjs_kesehatan_add_person"/>
                             <field name="bpjs_ketenagakerjaan"/>
                             <field name="pensiun"/>
                             <field name="passport_id" groups="hr.group_hr_user" string="No. Passport"/>
