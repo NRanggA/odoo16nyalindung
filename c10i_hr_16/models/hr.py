@@ -23,7 +23,7 @@ class hr_employee(models.Model):
     work_phone_company      = fields.Char('No. Telephone Perusahaan', related='address_id.phone', readonly=True) #sudah ada
     mobile_phone_company    = fields.Char('No. Handphone Perusahaan', related='address_id.mobile', readonly=True) #sudah ada
     work_email_company      = fields.Char('Alamat Email Perusaahaan', related='address_id.email', readonly=True) #sudah ada
-    work_location_company   = fields.Char('Lokasi Pekerjaan') ##sudah ada tapi berubah menjadi work_location_id
+    work_location_company   = fields.Char('Lokasi Pekerjaan', groups="hr.group_hr_user") ##sudah ada tapi berubah menjadi work_location_id
     # gender          = fields.Selection([
     #                     ('Laki-laki', 'Laki-laki'),
     #                     ('Perempuan', 'Perempuan'),
@@ -35,27 +35,26 @@ class hr_employee(models.Model):
     #                     ], string='Status Pernikahan', groups='hr.group_hr_user') #sudah ada
 
     #New Fields
-    street                  = fields.Char(string="Alamat 1")
-    street2                 = fields.Char(string="Alamat 2")
-    zip                     = fields.Char(string="Kode Pos")
-    country_id              = fields.Many2one('res.country', 'Negara')
-    state_id                = fields.Many2one('res.country.state', 'Provinsi', domain="[('country_id', '=', country_id)]")
-    city_id                 = fields.Many2one('res.city', 'Kota/ Kabupaten', domain="[('state_id', '=', state_id),('country_id', '=', country_id)]")
-    nationality_id          = fields.Many2one('res.country', 'Kewarganegaraan')
-    no_induk                = fields.Char('NIK')
-    npwp                    = fields.Char('NPWP', )
-    bpjs_kesehatan          = fields.Char('BPJS Kesehatan', )
-    bpjs_kesehatan_add_person = fields.Integer("Tanggungan BPJS Kesehatan")
-    bpjs_ketenagakerjaan    = fields.Char('BPJS Ketenagakerjaan', )
-    ptkp_id                 = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", tracking=True)
-    religion                = fields.Many2one(comodel_name='hr.employee.religion', string="Agama")
-    education_ids           = fields.One2many('hr.employee.education.line','employee_id', string="Jenjang Pendidikan", )
+    street                  = fields.Char(string="Alamat 1", groups="hr.group_hr_user")
+    street2                 = fields.Char(string="Alamat 2", groups="hr.group_hr_user")
+    zip                     = fields.Char(string="Kode Pos", groups="hr.group_hr_user")
+    country_id              = fields.Many2one('res.country', 'Negara', groups="hr.group_hr_user")
+    state_id                = fields.Many2one('res.country.state', 'Provinsi', domain="[('country_id', '=', country_id)]", groups="hr.group_hr_user")
+    city_id                 = fields.Many2one('res.city', 'Kota/ Kabupaten', domain="[('state_id', '=', state_id),('country_id', '=', country_id)]", groups="hr.group_hr_user")
+    nationality_id          = fields.Many2one('res.country', 'Kewarganegaraan', groups="hr.group_hr_user")
+    no_induk                = fields.Char('NIK', groups="hr.group_hr_user")
+    npwp                    = fields.Char('NPWP', groups="hr.group_hr_user")
+    bpjs_kesehatan          = fields.Char('BPJS Kesehatan', groups="hr.group_hr_user")
+    bpjs_ketenagakerjaan    = fields.Char('BPJS Ketenagakerjaan', groups="hr.group_hr_user")
+    ptkp_id                 = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", tracking=True, groups="hr.group_hr_user")
+    religion                = fields.Many2one(comodel_name='hr.employee.religion', string="Agama", groups="hr.group_hr_user")
+    education_ids           = fields.One2many('hr.employee.education.line','employee_id', string="Jenjang Pendidikan", groups="hr.group_hr_user")
     license_ids             = fields.One2many('hr.employee.driving.license.line', 'employee_id', string="SIM", )
-    experinece_ids          = fields.One2many('hr.employee.experience.line', 'employee_id', string="Pengalaman Kerja", )
-    ptkp_history_ids        = fields.One2many('hr.ptkp.history', 'employee_id', string="PTKP History", )
-    calendar_id             = fields.Many2one('resource.calendar', string="Jam Kerja")
-    pensiun                 = fields.Boolean(string='Pensiun', default=False)
-    place_of_birth          = fields.Char('Tempat Lahir')
+    experinece_ids          = fields.One2many('hr.employee.experience.line', 'employee_id', string="Pengalaman Kerja", groups="hr.group_hr_user")
+    ptkp_history_ids        = fields.One2many('hr.ptkp.history', 'employee_id', string="PTKP History", groups="hr.group_hr_user")
+    calendar_id             = fields.Many2one('resource.calendar', string="Jam Kerja", groups="hr.group_hr_user")
+    pensiun                 = fields.Boolean(string='Pensiun', default=False, groups="hr.group_hr_user")
+    place_of_birth          = fields.Char('Tempat Lahir', groups="hr.group_hr_user")
 
     def name_get(self):
         result = []        

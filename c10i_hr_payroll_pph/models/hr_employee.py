@@ -3,8 +3,8 @@ from odoo import api, fields, models, _
 class EmployeePrivate(models.Model):
     _inherit = 'hr.employee'
 
-    work_start_date = fields.Date()
-    termination_date = fields.Date()
+    work_start_date = fields.Date(groups="hr.group_hr_user")
+    termination_date = fields.Date(groups="hr.group_hr_user")
 
     ##################################################
     #                     HELPER                     #

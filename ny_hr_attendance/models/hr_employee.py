@@ -5,8 +5,8 @@ from odoo.exceptions import ValidationError
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
-    mydaya_user_login = fields.Char()
-    mydaya_user_pwd = fields.Char()
+    mydaya_user_login = fields.Char(groups="hr.group_hr_user")
+    mydaya_user_pwd = fields.Char(groups="hr.group_hr_user")
     # lat_acuan = fields.Char()
     # long_acuan = fields.Char()
     # value_jarak = fields.Char()
