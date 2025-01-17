@@ -984,6 +984,14 @@ class lhm_transaction_line(models.Model):
     
     state        = fields.Selection(related='lhm_id.state', readonly=True, store=True)
 
+    # kemandoran
+    kemandoran_id = fields.Many2one(
+        string="Kemandoran", 
+        related='lhm_id.kemandoran_id', 
+        readonly=True
+    )
+
+
     # Report pada detail LHM
     hasil_1_nap = fields.Float(
         string="Hasil 1 NAP", 

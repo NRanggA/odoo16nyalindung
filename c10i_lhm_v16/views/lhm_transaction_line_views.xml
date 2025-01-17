@@ -9,11 +9,13 @@
             <tree string="LHM Transaction Line">
                 <field name="date" />
                 <field name="lhm_id" />
+                <field name="kemandoran_id" />
                 <field name="employee_id" />
                 <field name="location_type_id" />
                 <field name="location_id" />
                 <field name="varieties_id" />
                 <field name="activity_id" />
+                <field name="work_day" />
                 <field name="product_id" />
                 <field name="hasil_1" />
                 <field name="product_id_2" />
@@ -61,6 +63,7 @@
                 <field name="date" string="Date"/>
                 <field name="employee_id" string="Karyawan"/>
                 <field name="lhm_id" string="LHM"/>
+                <field name="kemandoran_id" string="Kemandoran"/>
                 <field name="location_id" string="Lokasi"/>
                 <field name="location_type_id" string="Tipe Lokasi"/>
                 <field name="varieties_id" string="ORG"/>
