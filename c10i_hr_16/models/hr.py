@@ -23,7 +23,7 @@ class hr_employee(models.Model):
     work_phone_company      = fields.Char('No. Telephone Perusahaan', related='address_id.phone', readonly=True) #sudah ada
     mobile_phone_company    = fields.Char('No. Handphone Perusahaan', related='address_id.mobile', readonly=True) #sudah ada
     work_email_company      = fields.Char('Alamat Email Perusaahaan', related='address_id.email', readonly=True) #sudah ada
-    work_location_company   = fields.Char('Lokasi Pekerjaan', groups="hr.group_hr_user") ##sudah ada tapi berubah menjadi work_location_id
+    # work_location_company   = fields.Char('Lokasi Pekerjaan', groups="hr.group_hr_user") ##sudah ada tapi berubah menjadi work_location_id
     # gender          = fields.Selection([
     #                     ('Laki-laki', 'Laki-laki'),
     #                     ('Perempuan', 'Perempuan'),
@@ -44,7 +44,9 @@ class hr_employee(models.Model):
     nationality_id          = fields.Many2one('res.country', 'Kewarganegaraan', groups="hr.group_hr_user")
     no_induk                = fields.Char('NIK', groups="hr.group_hr_user")
     npwp                    = fields.Char('NPWP', groups="hr.group_hr_user")
+    
     bpjs_kesehatan          = fields.Char('BPJS Kesehatan', groups="hr.group_hr_user")
+    bpjs_kesehatan_add_person = fields.Integer("Tanggungan BPJS Kesehatan")
     bpjs_ketenagakerjaan    = fields.Char('BPJS Ketenagakerjaan', groups="hr.group_hr_user")
     ptkp_id                 = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", tracking=True, groups="hr.group_hr_user")
     religion                = fields.Many2one(comodel_name='hr.employee.religion', string="Agama", groups="hr.group_hr_user")
