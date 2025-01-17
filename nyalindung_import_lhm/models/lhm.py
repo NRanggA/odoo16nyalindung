@@ -88,7 +88,7 @@ class lhm_transaction(models.Model):
             # CHECK VARIETAS
             ############################## BEGIN CHECK VARIETAS
             varietas_code = handle_nan(row.get('VARIETAS', ''), 0)
-            depend_on_varieties = type_location_found.code in ('FC','GC','IDC', 'PJ', 'NS')
+            depend_on_varieties = type_location_found.code in ('FC','GC','IDC', 'PJ')
             if depend_on_varieties and not varietas_code:
                 error_message_list.append(f"Baris ke-{index + 2} Tipe Lokasi {row.get('TIPE')} Wajib mengisi Varitas/ORG")
                 continue

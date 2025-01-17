@@ -24,7 +24,7 @@ class PlantVarieties(models.Model):
 
     # project_activity_ids = fields.Many2many('lhm.activity', 'project_upkeep_rel', string='Project Activities')
     project_ids = fields.One2many('lhm.project', 'varieties_id', string='Project')
-    nursery_ids = fields.One2many('lhm.nursery', 'varieties_id', string='Nursery')
+    # nursery_ids = fields.One2many('lhm.nursery', 'varieties_id', string='Nursery')
     
     mill_costs_ids = fields.Many2many('lhm.activity', 'varieties_mill_costs_rel', string='Mill Costs Activities')
 
