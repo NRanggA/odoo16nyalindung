@@ -46,7 +46,7 @@ class hr_employee(models.Model):
     npwp                    = fields.Char('NPWP', groups="hr.group_hr_user")
     
     bpjs_kesehatan          = fields.Char('BPJS Kesehatan', groups="hr.group_hr_user")
-    bpjs_kesehatan_add_person = fields.Integer("Tanggungan BPJS Kesehatan")
+    bpjs_kesehatan_add_person = fields.Integer("Tanggungan BPJS Kesehatan",  groups="hr.group_hr_user")
     bpjs_ketenagakerjaan    = fields.Char('BPJS Ketenagakerjaan', groups="hr.group_hr_user")
     ptkp_id                 = fields.Many2one(comodel_name='hr.ptkp', string="PTKP", tracking=True, groups="hr.group_hr_user")
     religion                = fields.Many2one(comodel_name='hr.employee.religion', string="Agama", groups="hr.group_hr_user")
