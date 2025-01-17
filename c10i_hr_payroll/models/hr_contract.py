@@ -35,6 +35,7 @@ class HrContract(models.Model):
                               default=lambda self: self.env['hr.contract.type'].search([], limit=1))
     
     bpjs_kesehatan = fields.Boolean('BPJS Kesehatan', default=True)
+    add_person_bpjs_kesehatan = fields.Integer('Tambahan Tanggungan BPJS Kesehatan')
     bpjs_ketenagakerjaan = fields.Boolean('BPJS Ketenagakerjaan', default=True)
     bpjs_tk_pensiun = fields.Boolean('BPJS TK Pensiun', default=True)
 
@@ -80,9 +81,11 @@ class HrContract(models.Model):
                     base_bpjs = base_amount if base_amount<=bpjs_found.plafond_salary else bpjs_found.plafond_salary
                 else:
                     base_bpjs = base_amount
-                
                 res['tunjangan'] = base_bpjs * bpjs_found.allowance_pct/100.0
-                res['potongan'] = base_bpjs * bpjs_found.deduction_pct/100.0
+                if type=='bpjs_kesehatan' and self.add_person_bpjs_kesehatan:
+                    res['potongan'] = base_bpjs * (bpjs_found.deduction_pct + float(self.add_person_bpjs_kesehatan))/100.0
+                else:
+                    res['potongan'] = base_bpjs * bpjs_found.deduction_pct/100.0
                 res['iuran'] = res['tunjangan'] + res['potongan']
         return res
 

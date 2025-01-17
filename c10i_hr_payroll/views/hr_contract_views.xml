@@ -61,6 +61,7 @@
                 </group>
                 <group name="bpjs" string="BPJS">
                     <field name="bpjs_kesehatan" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    <field name="add_person_bpjs_kesehatan" />
                     <field name="bpjs_ketenagakerjaan" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                     <field name="bpjs_tk_pensiun" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                 </group>
