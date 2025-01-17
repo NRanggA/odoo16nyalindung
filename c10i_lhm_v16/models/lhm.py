@@ -747,7 +747,8 @@ class lhm_project(models.Model):
     categ_id                = fields.Many2one('lhm.project.type', 'Kategory')
 
     varieties_id        = fields.Many2one('plant.varieties', string='Varietas', copy=False)
-    activity_ids            = fields.One2many('lhm.activity', 'project_id', string="Detail Aktivitas", )
+    # activity_ids            = fields.One2many('lhm.activity', 'project_id', string="Detail Aktivitas", )
+    activity_ids            = fields.Many2many('lhm.activity', 'lhm_project_activity_rel', string="Detail Aktivitas", )
 
     @api.onchange('activity_ids')
     def _onchange_activity_ids(self):

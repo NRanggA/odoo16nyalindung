@@ -67,7 +67,7 @@ class lhm_activity(models.Model):
     is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
     is_nap                                      = fields.Boolean('NAP', default=False)
 
-    project_id      = fields.Many2one("lhm.project", string="Project")
+    # project_id      = fields.Many2one("lhm.project", string="Project")
 
     product_id                                  = fields.Many2one('product.product', string="Product 1", ondelete="restrict")
     product2_id                                 = fields.Many2one('product.product', string="Product 2", ondelete="restrict")
