@@ -44,6 +44,10 @@
                 <field name="employee_id"/>
                 <field name="date"/>
                 <field name="type_id"/>
+                
+                <filter name="filter_today" string="Today" domain="[('date','=',datetime.date.today())]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date" />
                 <group expand="1" string="Group By">
                     <filter name="group_by_date" string="Tanggal" context="{'group_by':'date:day'}"/>
                 </group>
@@ -57,7 +61,7 @@
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="attendance_sheet_tree"/>
         <field name="search_view_id" ref="attendance_sheet_search"/>
-        <field name="context">{'group_by': 'date'}</field>
+        <field name="context">{'search_default_filter_date': 1, 'search_filter_today': 1}</field>
     </record>
 
 </odoo>

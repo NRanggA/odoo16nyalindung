@@ -11,6 +11,7 @@ class HrAttendanceSheet(models.Model):
     _name = 'hr.attendance.sheet'
     _description = 'Attendance Sheet'
     _rec_name = 'date'
+    _order = 'date desc'
 
     employee_id  = fields.Many2one('hr.employee', string='Karyawan', ondelete="cascade", required=True)
     check_in     = fields.Datetime('Check-In')
