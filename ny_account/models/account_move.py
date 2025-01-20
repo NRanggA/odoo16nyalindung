@@ -3,6 +3,23 @@ from odoo import models, fields, api, _
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    partner_id = fields.Many2one(
+        comodel_name='res.partner',
+        string="Customer/Vendor",
+        store=True, readonly=False, ondelete='restrict',
+        compute='_compute_partner_id',
+        tracking=True,
+        check_company=True)
+
+    @api.onchange('partner_id')
+    def _compute_partner_id(self):
+        for rec in self:
+            if rec.move_type == 'out_invoice':
+                return {'domain': {'partner_id': [('customer_category', '=', True)]}}
+
+            if rec.move_type == 'in_invoice':
+                return {'domain': {'partner_id': [('vendor_category', '=', True)]}}
+
     def _must_check_constrains_date_sequence(self):
         
         if self.journal_id.type in ['bank', 'cash']:
