@@ -11,6 +11,7 @@ class Picking(models.Model):
         vendor_bills = self.env["account.move"].search([
             ("invoice_origin", "=", self.purchase_id.name),
             ("move_type", "=", "in_invoice"),
+            ("ref", "=", self.name)
         ])
 
         if vendor_bills.filtered(lambda bill: bill.payment_state == "paid"):
