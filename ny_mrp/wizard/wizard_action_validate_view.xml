@@ -1,0 +1,24 @@
+<odoo>
+    <data>
+        <record id="view_wizard_action_validate_mo" model="ir.ui.view">
+            <field name="name">action.validate.wizard.form</field>
+            <field name="model">wizard.action.validate</field>
+            <field name="arch" type="xml">
+                <form string="Konfirmasi Validasi Manufacturing Order">
+                    <field name="confirmation_message" readonly="1" nolabel="1"/>
+                    <footer>
+                        <button string="OK" type="object" name="action_confirm" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_confirm_validate_wizard" model="ir.actions.act_window">
+            <field name="name">Konfirmasi MO</field>
+            <field name="res_model">wizard.action.validate</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -58,3 +58,22 @@ class MrpProduction(models.Model):
                              'default_product_latex_id': self.bom_id.bom_line_ids.filtered(lambda x: x.product_id.name=='Lateks').product_id.id,
                              'default_bom_id': self.bom_id.id}
         return action
+
+    def button_mark_done(self):
+        for rec in self:
+            if not rec.env.context.get('from_wizard'):
+                confirmation_message = f"Anda akan mencatat produksi {rec.qty_producing}/{rec.product_uom_id.name}  '{rec.product_id.name}', apakah akan dilanjutkan?" 
+                return {
+                    'type'      : 'ir.actions.act_window',
+                    'res_model' : 'wizard.action.validate',
+                    'view_mode' : 'form',
+                    'view_id'   : self.env.ref('ny_mrp.view_wizard_action_validate_mo').id,
+                    'target'    : 'new',
+                    'context': {
+                        'active_id'             : rec.id, 
+                        'active_model'          : rec._name,
+                        'confirmation_message'  : confirmation_message  
+                    },
+                }
+        print(f"===== dsadasdasdsa")
+        return super(MrpProduction, self).button_mark_done()

@@ -28,5 +28,6 @@
         'views/mrp_production_view.xml',
         'views/mrp_bom_views.xml',
         'wizard/sheet_to_produce_view.xml',
+        'wizard/wizard_action_validate_view.xml',
     ],
 }
