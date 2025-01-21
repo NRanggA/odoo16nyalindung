@@ -14,10 +14,14 @@
         'account'
     ],
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
 
         'views/financial_report.xml',
         'wizard/balance_sheet.xml',
         'report/report_financial.xml',
+        
+        # General Ledger Excell
+        'wizard/wizard_general_ledger_xlsx.xml',
+        'report/report_general_ledger_xlsx_action.xml',
     ],
 }

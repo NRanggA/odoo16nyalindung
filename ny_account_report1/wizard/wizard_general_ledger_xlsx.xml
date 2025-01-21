@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_general_ledger_xlsx_view_form" model="ir.ui.view">
+        <field name="name">wizard.general.ledger.xlsx.view.form</field>
+        <field name="model">wizard.general.ledger.xlsx</field>
+        <field name="arch" type="xml">
+            <form string="Report General Ledger Excell">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="from_date" />
+                            <field name="company_id" />
+                        </group>
+                        <group>
+                            <field name="to_date" />
+                        </group>
+                    </group>
+                    <!-- <group name="jorunal" string="Journals">
+                        <field name="journal_ids" widget="many2many_tags"/>
+                    </group> -->
+                    <group name="account_ids" string="Accounts">
+                        <field name="account_ids" widget="many2many_tags"/>
+                    </group>
+                    <footer>
+                        <button string="print" type="object" name="create_report" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_general_ledger_xlsx_action" model="ir.actions.act_window">
+        <field name="name">Report General Ledger Excell</field>
+        <field name="res_model">wizard.general.ledger.xlsx</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="wizard_general_ledger_xlsx_menu"
+        name="General Ledger Excell"
+        action="wizard_general_ledger_xlsx_action"
+        parent	= "account.menu_finance_reports"
+        sequence="162"/>
+
+</odoo>

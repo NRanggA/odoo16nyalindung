@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action Report excell General Lefger -->
+    <record id="action_general_ledger_xlsx" model="ir.actions.report">
+        <field name="name">Laporan General Ledger XLSX</field>
+        <field name="model">wizard.general.ledger.xlsx</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_account_report1.general_ledger_xlsx</field>
+        <field name="report_file">ny_account_report1.general_ledger_xlsx</field>
+        <field name="print_report_name">'(Laporan General Ledger XLSX)'</field>
+        <field name="binding_model_id" ref="ny_account_report1.model_wizard_general_ledger_xlsx"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
