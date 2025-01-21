@@ -32,7 +32,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         self.wbf['content_datetime'] = workbook.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
         self.wbf['content_datetime'].set_left()
         self.wbf['content_datetime'].set_right()
-                
+        
         self.wbf['content_date'] = workbook.add_format({'num_format': 'yyyy-mm-dd'})
         self.wbf['content_date'].set_left()
         self.wbf['content_date'].set_right() 
@@ -98,15 +98,17 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.write(next_row+1, 2, "NIP", wbf['header'])
         worksheet.set_column(2,2,15)
         worksheet.write(next_row+1, 3, "Nama", wbf['header'])
-        worksheet.set_column(3,3,25)
-        worksheet.write(next_row+1, 4, "NPWP", wbf['header'])
+        worksheet.set_column(3,3,15)
+        worksheet.write(next_row+1, 4, "Kemandoran", wbf['header'])
         worksheet.set_column(4,4,25)
-        worksheet.write(next_row+1, 5, "KTP", wbf['header'])
-        worksheet.set_column(5,5,26)
-        worksheet.write(next_row+1, 6, "Jabatan", wbf['header'])
-        worksheet.set_column(6,6,15)
-        worksheet.write(next_row+1, 7, "Tgl. Masuk", wbf['header'])
-        worksheet.set_column(7,7,10)
+        worksheet.write(next_row+1, 5, "NPWP", wbf['header'])
+        worksheet.set_column(5,5,25)
+        worksheet.write(next_row+1, 6, "KTP", wbf['header'])
+        worksheet.set_column(6,6,26)
+        worksheet.write(next_row+1, 7, "Jabatan", wbf['header'])
+        worksheet.set_column(7,7,15)
+        worksheet.write(next_row+1, 8, "Tgl. Masuk", wbf['header'])
+        worksheet.set_column(8,8,10)
 
         rules_basic = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='BASIC')
         rules_allowance = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' not in r.name)
@@ -114,7 +116,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         rules_premi = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' in r.name)
         rules_deduction = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='DED')
         rules_net = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='NET')
-        cur_col = 8
+        cur_col = 9
         if rules_basic:
             if len(rules_basic.ids)>1:
                 worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_basic.ids)-1, "Gaji Pokok", wbf['header'])
@@ -187,14 +189,15 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             indx += 1
             worksheet.write(next_row, 2, payslip.employee_id.no_induk or '', wbf['content'])
             worksheet.write(next_row, 3, payslip.employee_id.name or '', wbf['content'])
-            worksheet.write(next_row, 4, payslip.employee_id.npwp or '', wbf['content'])
-            worksheet.write(next_row, 5, payslip.employee_id.identification_id or '', wbf['content'])
-            worksheet.write(next_row, 6, payslip.employee_id.job_id.name if payslip.employee_id.job_id else '', wbf['content'])
-            worksheet.write(next_row, 7, payslip.employee_id.work_start_date or '', wbf['content_date'])
+            worksheet.write(next_row, 4, payslip.employee_id.kemandoran_id.name or '', wbf['content'])
+            worksheet.write(next_row, 5, payslip.employee_id.npwp or '', wbf['content'])
+            worksheet.write(next_row, 6, payslip.employee_id.identification_id or '', wbf['content'])
+            worksheet.write(next_row, 7, payslip.employee_id.job_id.name if payslip.employee_id.job_id else '', wbf['content'])
+            worksheet.write(next_row, 8, payslip.employee_id.work_start_date or '', wbf['content_date'])
             
             mapped_line = dict(map(lambda l: (l.salary_rule_id.id, l.total), payslip.line_ids))
 
-            l_cur_col = 8
+            l_cur_col = 9
             for rb in rules_basic.sorted(key=lambda x: x.sequence):
                 worksheet.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
                 l_cur_col += 1
