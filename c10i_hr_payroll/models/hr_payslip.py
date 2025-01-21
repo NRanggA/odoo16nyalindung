@@ -85,6 +85,8 @@ class HrPayslip(models.Model):
             raise ValidationError(_("Payslip 'Date From' must be earlier 'Date To'."))
 
     def action_payslip_draft(self):
+        if any([x.state!='cancel' for x in self]):
+            ValidationError("Could not set draft if the payslip is not in Cancel state")
         return self.write({'state': 'draft'})
 
     def action_payslip_done(self):
@@ -94,6 +96,8 @@ class HrPayslip(models.Model):
     def action_payslip_cancel(self):
         # if self.filtered(lambda slip: slip.state == 'done'):
         #     raise UserError(_("Cannot cancel a payslip that is done."))
+        if any([x.state not in ['done','verify'] for x in self]):
+            ValidationError("Could not Cancel if the payslip is not in Waiting or Done state")
         return self.write({'state': 'cancel'})
 
     def refund_sheet(self):
@@ -516,6 +520,7 @@ class HrPayslipRun(models.Model):
     name = fields.Char(required=True, readonly=True, states={'draft': [('readonly', False)]})
     slip_ids = fields.One2many('hr.payslip', 'payslip_run_id', string='Payslips', readonly=True,
                                states={'draft': [('readonly', False)]})
+    slip_count = fields.Integer(compute='_count_slip', string='Payslips')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('done', 'Done'),
@@ -529,6 +534,10 @@ class HrPayslipRun(models.Model):
     credit_note = fields.Boolean(string='Credit Note', readonly=True,
                                  states={'draft': [('readonly', False)]},
                                  help="If its checked, indicates that all payslips generated from here are refund payslips.")
+
+    def _count_slip(self):
+        for rec in self:
+            rec.slip_count = len(rec.slip_ids.ids) if rec.slip_ids else 0
 
     def draft_payslip_run(self):
         return self.write({'state': 'draft'})
@@ -546,3 +555,8 @@ class HrPayslipRun(models.Model):
             if rec.state == 'done':
                 raise ValidationError(_('You Cannot Delete Done Payslips Batches'))
         return super(HrPayslipRun, self).unlink()
+
+    def action_view_payslip(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("c10i_hr_payroll.action_view_hr_payslip_form")
+        action['domain'] = [('id','in',self.slip_ids.id)]
+        return action
