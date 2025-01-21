@@ -558,5 +558,5 @@ class HrPayslipRun(models.Model):
 
     def action_view_payslip(self):
         action = self.env["ir.actions.actions"]._for_xml_id("c10i_hr_payroll.action_view_hr_payslip_form")
-        action['domain'] = [('id','in',self.slip_ids.id)]
+        action['domain'] = [('id','in',self.slip_ids.ids)]
         return action

@@ -10,7 +10,8 @@
     <menuitem id="menu_hr_payroll_root"
         name="Payroll"
         sequence="186"
-        web_icon="c10i_hr_payroll,static/description/icon.png"/>
+        web_icon="c10i_hr_payroll,static/description/icon.png"
+        groups="c10i_hr_payroll.group_hr_payroll_user"/>
 
         <menuitem id="menu_department_tree"
             action="action_view_hr_payslip_form"
