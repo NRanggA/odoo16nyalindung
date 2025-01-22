@@ -464,6 +464,8 @@ class HrEmployee(models.Model):
                 running_contract = self._get_running_contract(new_type_id, 'employee_type')
                 if running_contract:
                     values['contract_id'] = running_contract.id
+                else:
+                    values['contract_id'] = False
 
         if 'basic_salary_type' in values:
             basic_salary_type = values['basic_salary_type']
