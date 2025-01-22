@@ -260,6 +260,7 @@ class ReportProduction(models.AbstractModel):
         sheet = workbook.add_worksheet("Laporan Produksi")
         sheet2= workbook.add_worksheet("Laporan Produksi Per Penyadap")
         row = 0
+        row2 = 0
 
         for kemandoran in kemandoran_ids:
             # sheet_name = kemandoran.name if kemandoran.name else "Sheet"
@@ -1720,7 +1721,7 @@ class ReportProduction(models.AbstractModel):
 
 
 ##################################### Laporan Produksi Per Penyadap #############################################################
-            row2 = 0
+            # row2 = 0
             sheet2.write(row2, 0, 'Laporan Produksi Per Penyadap')
             row2 += 1
             sheet2.write(row2, 0,'BULAN')
