@@ -38,6 +38,7 @@ class LHMContractor(models.Model):
         for row_no in range(1, sheet.nrows):  
             row = sheet.row(row_no)
             tanggal = datetime(*xlrd.xldate_as_tuple(row[0].value, workbook.datemode))
+            # tanggal = row[0].value
             varieties_name = row[1].value
             tipe_name = row[2].value
             lokasi_name = row[3].value
@@ -50,12 +51,12 @@ class LHMContractor(models.Model):
             # CHECK TIPE LOKASI
             ############################## BEGIN CHECK TIPE LOKASI
             if not tipe_name: # Wajib isi Tipe Lokasi
-                error_message_list.append(f"Baris ke- {row_no + 2} Tipe lokasi WAJIB diisi")
+                error_message_list.append(f"Baris ke- {row_no + 1} Tipe lokasi WAJIB diisi")
                 continue
 
             type_location_found = self.env['lhm.location.type'].search([('code', '=', tipe_name)], limit=1)
             if not type_location_found:
-                error_message_list.append(f"Baris ke- {row_no + 2} Tipe lokasi dengan kode {tipe_name} tidak ditemukan")
+                error_message_list.append(f"Baris ke- {row_no + 1} Tipe lokasi dengan kode {tipe_name} tidak ditemukan")
                 continue
             ############################## END CHECK TIPE LOKASI
         
@@ -64,13 +65,13 @@ class LHMContractor(models.Model):
             varietas_code = handle_nan(varieties_name, 0)
             depend_on_varieties = type_location_found.code in ('FC','GC','IDC', 'PJ')
             if depend_on_varieties and not varietas_code:
-                error_message_list.append(f"Baris ke-{row_no + 2} Tipe Lokasi {tipe_name} Wajib mengisi Varitas/ORG")
+                error_message_list.append(f"Baris ke-{row_no + 1} Tipe Lokasi {tipe_name} Wajib mengisi Varitas/ORG")
                 continue
             
             if varietas_code:
                 varietas_found = self.env['plant.varieties'].search([('code', '=', varietas_code)], limit=1)
                 if not varietas_found:
-                    error_message_list.append(f"Baris ke-{row_no + 2} Varietas dengan kode {varietas_code} tidak ditemukan!")
+                    error_message_list.append(f"Baris ke-{row_no + 1} Varietas dengan kode {varietas_code} tidak ditemukan!")
             else:
                 varietas_found = None
             ############################## END CHECK VARIETAS
@@ -78,20 +79,20 @@ class LHMContractor(models.Model):
             if depend_on_varieties and varietas_found:
                 ################## BEGIN CHECK LOKASI
                 if not lokasi_name:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Lokasi Wajib Diisi")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Lokasi Wajib Diisi")
                     continue
                 
                 location = self.env['lhm.location'].search([('code', '=', lokasi_name),
                                         ('type_id','=',type_location_found.id),
                                         ('varieties_id','=',varietas_found.id)], limit=1)
                 if not location:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Lokasi dengan kode {lokasi_name} tidak ditemukan untuk ORG {varietas_found.code} ({varietas_found.name})")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Lokasi dengan kode {lokasi_name} tidak ditemukan untuk ORG {varietas_found.code} ({varietas_found.name})")
                     continue
                 ################## END CHECK LOKASI
 
                 ################## BEGIN CHECK AKTIVITAS
                 if not aktivitas_name:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Aktivitas Wajib Diisi")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Aktivitas Wajib Diisi")
                     continue
 
                 if type_location_found.code=='PJ':
@@ -99,15 +100,15 @@ class LHMContractor(models.Model):
                     if project_found.activity_ids:
                         activity = project_found.activity_ids.filtered(lambda x: x.code==aktivitas_name)
                         if not activity:
-                            error_message_list.append(f"Baris ke- {row_no + 2} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada Project {project_found.code}!")
+                            error_message_list.append(f"Baris ke- {row_no + 1} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada Project {project_found.code}!")
                         else:
                             activity = activity[0]
                     else:
-                        error_message_list.append(f"Baris ke- {row_no + 2} Project {project_found.code} tidak memiliki daftar aktifitas")
+                        error_message_list.append(f"Baris ke- {row_no + 1} Project {project_found.code} tidak memiliki daftar aktifitas")
                 elif type_location_found.code in ('WS','VH','MA','NS','LB'):
                     activity = self.env['lhm.activity'].search([('type_id','=',type_location_found.id),('code','=',aktivitas_name)], limit=1)
                     if not activity:
-                        error_message_list.append(f"Baris ke- {row_no + 2} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada Tipe Lokasi {type_location_found.code}")
+                        error_message_list.append(f"Baris ke- {row_no + 1} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada Tipe Lokasi {type_location_found.code}")
                 else: # Plantation, GC, IDC
                     org_activities = self.env['lhm.activity']
                     if varietas_found.harvest_activity_ids:
@@ -119,34 +120,34 @@ class LHMContractor(models.Model):
                     if varietas_found.indirect_cost_activity_ids:
                         org_activities |= varietas_found.indirect_cost_activity_ids
                     if not org_activities:
-                        error_message_list.append(f"Baris ke- {row_no + 2} ORG {varietas_found.code} tidak memiliki Aktifitas yang terdaftar")
+                        error_message_list.append(f"Baris ke- {row_no + 1} ORG {varietas_found.code} tidak memiliki Aktifitas yang terdaftar")
                         continue
                     activity = self.env['lhm.activity'].search([('code', '=', aktivitas_name),('type_id','=',type_location_found.id),('id','in',org_activities.ids)], limit=1)
                     if not activity:
-                        error_message_list.append(f"Baris ke- {row_no + 2} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada ORG {varietas_found.code}")
+                        error_message_list.append(f"Baris ke- {row_no + 1} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada ORG {varietas_found.code}")
                 ################## END CHECK AKTIVITAS
             else:
                 ################## BEGIN CHECK LOKASI
                 if not lokasi_name:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Lokasi Wajib Diisi")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Lokasi Wajib Diisi")
                     continue
 
                 location = self.env['lhm.location'].search([('code', '=', lokasi_name),
                                         ('type_id','=',type_location_found.id)], limit=1)
                 if not location:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Lokasi dengan kode {lokasi_name} tidak ditemukan pada Tipe Lokasi {type_location_found.code}")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Lokasi dengan kode {lokasi_name} tidak ditemukan pada Tipe Lokasi {type_location_found.code}")
                     continue
                 ################## END CHECK LOKASI
 
                 ################## BEGIN CHECK AKTIVITAS
                 if not aktivitas_name:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Aktivitas Wajib Diisi")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Aktivitas Wajib Diisi")
                     continue
 
                 activity = self.env['lhm.activity'].search([('code', '=', aktivitas_name),
                                         ('type_id','=',type_location_found.id)], limit=1)
                 if not activity:
-                    error_message_list.append(f"Baris ke- {row_no + 2} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada Tipe Lokasi {type_location_found.code}")
+                    error_message_list.append(f"Baris ke- {row_no + 1} Aktivitas dengan kode {aktivitas_name} tidak ditemukan pada Tipe Lokasi {type_location_found.code}")
                 
                 ################## END CHECK AKTIVITAS
 
