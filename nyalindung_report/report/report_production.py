@@ -2138,102 +2138,37 @@ class ReportProduction(models.AbstractModel):
             sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lump (Kg)
-            total_hasil_baris_lump = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = third_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', mandor_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
-
-                if hasil_nap_lump and hasil_nap_lump != '-':
-                    try:
-                        total_hasil_baris_lump += float(hasil_nap_lump)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_baris_lump += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-                if hasil_nap_lump == 0:
-                    hasil_nap_lump = '-'
-                sheet2.write(row2, col_index, hasil_nap_lump, cell_format)
-            if total_hasil_baris_lump == 0:
-                total_hasil_baris_lump = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = third_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_baris_lump, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lateks (L)
-            total_hasil_konversi_lateks = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = sixth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', mandor_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
-
-                if konversi_nap_lateks and konversi_nap_lateks != '-':
-                    try:
-                        total_hasil_konversi_lateks += float(konversi_nap_lateks)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_konversi_lateks += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet2.write(row2, col_index, konversi_nap_lateks, cell_format)
-            if total_hasil_konversi_lateks == 0:
-                total_hasil_konversi_lateks = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = sixth_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_konversi_lateks, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lump (Kg)
-            total_hasil_konversi_lump = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = seventh_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', mandor_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
-
-                if konversi_nap_lump and konversi_nap_lump != '-':
-                    try:
-                        total_hasil_konversi_lump += float(konversi_nap_lump)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_konversi_lump += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-                if konversi_nap_lump == 0:
-                    konversi_nap_lump = '-'
-                sheet2.write(row2, col_index, konversi_nap_lump, cell_format)
-            if total_hasil_konversi_lump == 0:
-                total_hasil_konversi_lump = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = seventh_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_konversi_lump, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Logika untuk Asisten Mandor
             row2 += 1
@@ -2258,28 +2193,7 @@ class ReportProduction(models.AbstractModel):
                     ('state', '=', 'done')
                 ], limit=1)
 
-                # type_code = attendance.attendance_id.code if attendance else '-'
-                # sheet2.write(row2, 5 + i, type_code, wbf['data_center'])
                 sheet2.write(row2, 4 + i, "-", wbf['data_center'])
-
-                # if type_code in ['KJ', 'KJI', 'KJO']:
-                #     sheet2.write(row2, 5 + i, type_code, wbf['hijau_muda'])
-                #     asisten_hko_count += 1
-                # elif type_code == 'NA':
-                #     sheet2.write(row2, 5 + i, type_code, wbf['hijau_tua'])
-                #     asisten_l_count += 1
-                # elif type_code == 'S1':
-                #     sheet2.write(row2, 5 + i, type_code, wbf['kuning'])
-                #     asisten_s_count += 1
-                # elif type_code == 'P1':
-                #     sheet2.write(row2, 5 + i, type_code, wbf['biru_tua'])
-                #     asisten_p_count += 1
-                # elif type_code == 'CT':
-                #     sheet2.write(row2, 5 + i, type_code, wbf['biru_muda'])
-                #     asisten_ct_count += 1
-                # elif type_code == 'M':
-                #     sheet2.write(row2, 5 + i, type_code, wbf['merah'])
-                #     asisten_m_count += 1
 
             sheet2.write(row2, hko_start, asisten_hko_count, wbf['biru_muda'])
             sheet2.write(row2, hko_start + 1, asisten_l_count, wbf['data_center'])
@@ -2290,134 +2204,48 @@ class ReportProduction(models.AbstractModel):
             sheet2.write(row2, total_hk_start, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lateks (L)
-            total_hasil_baris_lateks = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = second_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', asisten_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
-
-                if hasil_nap_lateks and hasil_nap_lateks != '-':
-                    try:
-                        total_hasil_baris_lateks += float(hasil_nap_lateks)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_baris_lateks += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet2.write(row2, col_index, hasil_nap_lateks, cell_format)
-            if total_hasil_baris_lateks == 0:
-                total_hasil_baris_lateks = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = second_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_baris_lateks, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lump (Kg)
-            total_hasil_baris_lump = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = third_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', asisten_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
-
-                if hasil_nap_lump and hasil_nap_lump != '-':
-                    try:
-                        total_hasil_baris_lump += float(hasil_nap_lump)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_baris_lump += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-                if hasil_nap_lump == 0:
-                    hasil_nap_lump = '-'
-                sheet2.write(row2, col_index, hasil_nap_lump, cell_format)
-            if total_hasil_baris_lump == 0:
-                total_hasil_baris_lump = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = third_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_baris_lump, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lateks (L)
-            total_hasil_konversi_lateks = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = sixth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', asisten_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
-
-                if konversi_nap_lateks and konversi_nap_lateks != '-':
-                    try:
-                        total_hasil_konversi_lateks += float(konversi_nap_lateks)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_konversi_lateks += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet2.write(row2, col_index, konversi_nap_lateks, cell_format)
-            if total_hasil_konversi_lateks == 0:
-                total_hasil_konversi_lateks = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = sixth_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_konversi_lateks, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lump (Kg)
-            total_hasil_konversi_lump = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = seventh_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', asisten_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
-
-                if konversi_nap_lump and konversi_nap_lump != '-':
-                    try:
-                        total_hasil_konversi_lump += float(konversi_nap_lump)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_konversi_lump += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-                if konversi_nap_lump == 0:
-                    konversi_nap_lump = '-'
-                sheet2.write(row2, col_index, konversi_nap_lump, cell_format)
-            if total_hasil_konversi_lump == 0:
-                total_hasil_konversi_lump = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = seventh_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_konversi_lump, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Logika untuk Kerani
             row2 += 1
@@ -2453,134 +2281,48 @@ class ReportProduction(models.AbstractModel):
             sheet2.write(row2, total_hk_start, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lateks (L)
-            total_hasil_baris_lateks = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = second_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', kerani_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
-
-                if hasil_nap_lateks and hasil_nap_lateks != '-':
-                    try:
-                        total_hasil_baris_lateks += float(hasil_nap_lateks)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_baris_lateks += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet2.write(row2, col_index, hasil_nap_lateks, cell_format)
-            if total_hasil_baris_lateks == 0:
-                total_hasil_baris_lateks = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = second_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_baris_lateks, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lump (Kg)
-            total_hasil_baris_lump = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = third_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', kerani_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
-
-                if hasil_nap_lump and hasil_nap_lump != '-':
-                    try:
-                        total_hasil_baris_lump += float(hasil_nap_lump)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_baris_lump += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-                if hasil_nap_lump == 0:
-                    hasil_nap_lump = '-'
-                sheet2.write(row2, col_index, hasil_nap_lump, cell_format)
-            if total_hasil_baris_lump == 0:
-                total_hasil_baris_lump = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = third_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_baris_lump, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lateks (L)
-            total_hasil_konversi_lateks = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = sixth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', kerani_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
-
-                if konversi_nap_lateks and konversi_nap_lateks != '-':
-                    try:
-                        total_hasil_konversi_lateks += float(konversi_nap_lateks)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_konversi_lateks += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet2.write(row2, col_index, konversi_nap_lateks, cell_format)
-            if total_hasil_konversi_lateks == 0:
-                total_hasil_konversi_lateks = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = sixth_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_konversi_lateks, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lump (Kg)
-            total_hasil_konversi_lump = 0
 
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = seventh_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', kerani_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done')
-                ], limit=1)
-
-                konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
-
-                if konversi_nap_lump and konversi_nap_lump != '-':
-                    try:
-                        total_hasil_konversi_lump += float(konversi_nap_lump)
-                        cell_format = wbf['data_center']
-                    except ValueError:
-                        total_hasil_konversi_lump += 0
-                        cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-                if konversi_nap_lump == 0:
-                    konversi_nap_lump = '-'
-                sheet2.write(row2, col_index, konversi_nap_lump, cell_format)
-            if total_hasil_konversi_lump == 0:
-                total_hasil_konversi_lump = '-'
+                sheet2.write(row2, col_index, '-', cell_format)
 
             total_column_index = seventh_date_start + (to_date - from_date).days + 1
-            sheet2.write(row2, total_column_index, total_hasil_konversi_lump, wbf['data_center'])
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             row2 += 1
             nomor += 1
