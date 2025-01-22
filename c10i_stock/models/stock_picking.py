@@ -11,8 +11,11 @@ class Picking(models.Model):
         vendor_bills = self.env["account.move"].search([
             ("invoice_origin", "=", self.purchase_id.name),
             ("move_type", "=", "in_invoice"),
-            ("ref", "=", self.name)
+            ("purchase_vendor_bill_id", "=", self.name)
         ])
+
+        # print(vendor_bills,">>>>>>>>>>>>>>>>")
+        # print(stop)
 
         if vendor_bills.filtered(lambda bill: bill.payment_state == "paid"):
             raise UserError(_("Tidak bisa di Return karena Vendor Bill sudah dalam state Paid"))
