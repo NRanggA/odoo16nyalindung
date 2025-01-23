@@ -18,7 +18,7 @@ class MrpBom(models.Model):
                 })
                 bom.sequence_id = sequence.id
                 
-    
+    @api.model    
     def create(self, vals):
         bom = super(MrpBom, self).create(vals)
         bom.create_sequence()
