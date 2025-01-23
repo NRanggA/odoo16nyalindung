@@ -53,7 +53,7 @@
                                 <td><t t-esc="o.invoice_date_due"/></td>
                             </tr>
                             <tr>
-                                <td><t t-esc="o.partner_id.phone or ''"/></td>
+                                <td><t t-esc="o.partner_id.vat or ''"/></td>
                                 <td style="padding-left: 70px;">Date Invoice</td>
                                 <td>: </td>
                                 <td><t t-esc="o.invoice_date"/></td>
