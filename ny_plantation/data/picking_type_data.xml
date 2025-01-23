@@ -12,6 +12,15 @@
             <field name="default_location_src_id" ref="c10i_lhm_v16.loc_stock_kebun_loc_1"/>
             <field name="default_location_dest_id" ref="ny_plantation.loc_ripening_loc_1"/>
         </record>
+      
+        <record id="picking_type_scrap_1" model="stock.picking.type">
+            <field name="name">Return Scrap</field>
+            <field name="code">internal</field>
+            <field name="sequence_code">R-SCRAP</field>
+            <field name="sequence">10</field>
+            <!-- <field name="default_location_src_id" ref="c10i_lhm_v16.loc_stock_kebun_loc_1"/> -->
+            <!-- <field name="default_location_dest_id" ref="ny_plantation.loc_ripening_loc_1"/> -->
+        </record>
     
     </data>
     

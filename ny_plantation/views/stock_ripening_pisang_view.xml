@@ -20,17 +20,25 @@
                 <header>
                     <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" states="draft"/>
                     <button string="Validate" name="action_validate" type="object" class="oe_highlight" states="confirm"/>
+                    <button string="Cancel" name="action_cancel" type="object" class="btn btn-danger" states="draft,confirm,done"/>
+                    <button string="Set to draft" name="action_draft" type="object" class="btn btn-primary" states="cancel"/>
+                    <button string="Return Scrap" name="create_return_scrap" type="object" class="btn btn-primary" attrs="{'invisible': [('has_qty_scrap', '=', False)]}"/>
 
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirm,done" />
                 </header>
                 <sheet>
-                    <field name="picking_ids" invisible="1"/>
-                    <field name="scrap_ids" invisible="1"/>
+                    <field name="stock_picking_repening_count" invisible="1"/>
+                    <field name="stock_picking_return_scrap_count" invisible="1"/>
+                    <field name="stock_scrap_count" invisible="1"/>
+                    <field name="has_qty_scrap" invisible="1"/>
+                    <!-- <field name="scrap_ids" invisible="1"/> -->
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_pickings" type="object" class="oe_stat_button" icon="fa-exchange" 
-                            string="Transfers" attrs="{'invisible': [('picking_ids','=',[])]}"/>
+                            string="Transfers" attrs="{'invisible': [('stock_picking_repening_count', '=', 0)]}" />
+                        <button name="action_view_return_scrap" type="object" class="oe_stat_button" icon="fa-exchange" 
+                            string="Return Scraps" attrs="{'invisible': [('stock_picking_return_scrap_count', '=', 0)]}"/>
                         <button name="action_view_scraps" type="object" class="oe_stat_button" icon="fa-arrows-v" 
-                            string="Scraps" attrs="{'invisible': [('scrap_ids','=',[])]}"/>
+                            string="Scraps" attrs="{'invisible': [('stock_scrap_count', '=', 0)]}"/>
                     </div>
                     <h1>
                         <field name="name" nolabel="1" readonly="1"/>
@@ -59,6 +67,8 @@
                                     <field name="out_product_qty" />
                                     <field name="out_product_scrap_qty" />
                                     <field name="company_id" invisible="1"/>
+                                    <field name="qty_received" />
+                                    <field name="qty_scrap" />
                                 </tree>
                             </field>
 
