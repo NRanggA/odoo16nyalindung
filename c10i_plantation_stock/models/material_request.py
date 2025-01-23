@@ -15,7 +15,7 @@ class MaterialRequestLine(models.Model):
             validator = False
             if line.location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') #, 'NS'
             line.varieties_validator = validator
     varieties_id = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     filtered_locations = fields.Many2many('lhm.location', 'mrl_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
@@ -43,10 +43,10 @@ class MaterialRequestLine(models.Model):
     #         line.doc_activity_ids = [(6, 0, activity_ids)]
 
     # Menambahkan onchange tipe lokasi yang otomatis akan mengisi ke varieties_id 
-    @api.onchange('location_type_id')
-    def _onchange_location_type_id(self):
-        if self.location_type_id:
-            self.varieties_id = self.location_type_id.varieties_id.id
+    # @api.onchange('location_type_id')
+    # def _onchange_location_type_id(self):
+    #     if self.location_type_id:
+    #         self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.depends('varieties_id','location_type_id', 'mr_id.state')
     def _filter_locations(self):
