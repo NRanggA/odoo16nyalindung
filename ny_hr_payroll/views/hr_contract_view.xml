@@ -11,7 +11,7 @@
             </field>
             <field name="bpjs_ketenagakerjaan" position="after">
                 <field name="base_amount_bpjs_tk" />
-                <field name="allw_transportion"/>
+                <field name="allw_transportation"/>
                 <field name="allw_communication"/>
             </field>
             <xpath expr="//sheet" position="before">

@@ -7,7 +7,7 @@ class HrContract(models.Model):
     base_amount_bpjs_kes = fields.Float('Dasar Pengali BPJS Kesehatan')
     base_amount_bpjs_tk = fields.Float('Dasar Pengali BPJS Jamsostek')
 
-    allw_transportion = fields.Float("Tunj. Transport")
+    allw_transportation = fields.Float("Tunj. Transport")
     allw_communication = fields.Float("Tunj. Komunikasi")
 
     # contract_id = fields.Many2one('hr.contract', string="Contract")
