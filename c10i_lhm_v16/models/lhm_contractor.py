@@ -563,7 +563,7 @@ class lhm_contractor_line(models.Model):
             validator = False
             if line.location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS
             line.varieties_validator = validator
     varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
@@ -808,7 +808,7 @@ class lhm_contractor_nap_line(models.Model):
             validator = False
             if line.location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS
             line.varieties_validator = validator
     varieties_id        = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')

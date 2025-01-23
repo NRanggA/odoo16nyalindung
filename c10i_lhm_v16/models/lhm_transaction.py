@@ -945,7 +945,7 @@ class lhm_transaction_line(models.Model):
             validator = False
             if line.location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS
             line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")

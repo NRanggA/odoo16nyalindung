@@ -234,7 +234,7 @@ class DirectPaymentLine(models.Model):
             validator = False
             if line.plantation_location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.plantation_location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.plantation_location_type_id.code in ('FC','GC','IDC', 'PJ') #, 'NS'
             line.varieties_validator = validator
     has_plantation = fields.Boolean('Has Plantation')
 

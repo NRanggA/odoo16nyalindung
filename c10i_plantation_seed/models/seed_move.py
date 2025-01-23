@@ -82,7 +82,7 @@ class SeedMoveLine(models.Model):
             validator = False
             if line.location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS
             line.varieties_validator = validator
     varieties_id                 = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     no_line                      = fields.Boolean(string="No Line", related="location_type_id.no_line")

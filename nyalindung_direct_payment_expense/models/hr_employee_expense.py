@@ -564,7 +564,7 @@ class HrEmployeeExpenseLine(models.Model):
             validator = False
             if line.location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') #, 'NS'
             line.varieties_validator = validator
     filtered_activities = fields.Many2many('lhm.activity', 'lhm_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
     filtered_locations = fields.Many2many('lhm.location', 'lhm_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')

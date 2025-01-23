@@ -48,7 +48,7 @@ class AccountMoveLine(models.Model):
             validator = False
             if line.plantation_location_type_id:
                 # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.plantation_location_type_id.code in ('FC','GC','IDC', 'PJ', 'NS')
+                validator = line.plantation_location_type_id.code in ('FC','GC','IDC', 'PJ') #, 'NS'
             line.varieties_validator = validator
     
     plantation_src_journal_id = fields.Many2one('account.journal', string="Asal Journal")
@@ -121,7 +121,7 @@ class AccountMoveLine(models.Model):
             self.plantation_location_id = False
             self.plantation_activity_id = False
             
-            # Menambahkan onchage ORG ketika memilih tipe lokasi
+            # # Menambahkan onchage ORG ketika memilih tipe lokasi
             self.plantation_varieties_id = self.plantation_location_type_id.varieties_id.id
             
             if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):

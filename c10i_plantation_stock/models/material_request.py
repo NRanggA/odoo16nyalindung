@@ -43,10 +43,10 @@ class MaterialRequestLine(models.Model):
     #         line.doc_activity_ids = [(6, 0, activity_ids)]
 
     # Menambahkan onchange tipe lokasi yang otomatis akan mengisi ke varieties_id 
-    # @api.onchange('location_type_id')
-    # def _onchange_location_type_id(self):
-    #     if self.location_type_id:
-    #         self.varieties_id = self.location_type_id.varieties_id.id
+    @api.onchange('location_type_id')
+    def _onchange_location_type_id(self):
+        if self.location_type_id:
+            self.varieties_id = self.location_type_id.varieties_id.id
 
     @api.depends('varieties_id','location_type_id', 'mr_id.state')
     def _filter_locations(self):
