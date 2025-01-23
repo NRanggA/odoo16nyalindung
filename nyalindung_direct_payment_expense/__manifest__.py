@@ -32,6 +32,13 @@
         'views/res_partner_views.xml',
 
         'wizard/wizard_action_confirm.xml',
+
+        # Report
+        'report/my_advance_report_template.xml',
+        'report/my_advance_report_action.xml',
+
+
+
     ],
     # only loaded in demonstration mode
     'demo': [

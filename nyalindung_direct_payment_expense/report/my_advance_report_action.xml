@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+    
+        <record id="my_advance_report_action" model="ir.actions.report">
+            <field name="name">Nyalindung MyExpense Report</field>
+            <field name="model">hr.employee.expense</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">nyalindung_direct_payment_expense.my_advance_report_template</field>
+            <field name="report_file">nyalindung_direct_payment_expense.my_advance_report_template</field>
+            <field name="print_report_name">'My Expense Report (%s)' %object.name</field>
+            <field name="binding_model_id" ref="nyalindung_direct_payment_expense.model_hr_employee_expense"/>
+        </record>
+    
+    </data>
+    
+
+</odoo>

@@ -1,0 +1,181 @@
+<odoo>
+    <data>
+        <template t-name="nyalindung_direct_payment_expense.my_advance_report_template">
+            <t t-name="nyalindung_direct_payment_expense.my_advance_report_template">
+                <t t-call="web.html_container">
+                    <t t-call="web.external_layout">
+                        <t t-foreach="docs" t-as="o">
+                            <div class="page" style="font-size:15px;">
+                                <div>
+                                    <h3>
+                                        <span t-field="o.name"/>
+                                    </h3>
+                                </div>
+                                <div class="row">
+                                    <table width="100%" class="table-bordered">
+                                        <tr width="50%">
+                                            <td>Journal:
+                                                <span t-field="o.employee_advance_journal_id.name"/>
+                                            </td>
+                                            <td>
+                                                Date:
+                                                <span t-field="o.date" t-options="{'widget': 'date'}"/>
+                                            </td>
+                                        </tr>
+                                        <tr width="50%">
+                                            <td>
+                                                Partner:
+                                                <span t-field="o.partner_id.display_name"/>
+                                            </td>
+                                            <td>
+                                                Description:
+                                                <span t-field="o.description"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <br/>
+
+                                <!-- My Reports -->
+                                <t t-if="o.advance_found">
+                                    <div>
+                                        <h5>
+                                            Advance To Settle
+                                        </h5>
+                                    </div>
+                                    <div class="row">
+                                        <br/>
+                                            <table width="100%" class="table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Advance Amount</th>
+                                                        <!-- <th>Credit</th> -->
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-set="total_ammount_settle" t-value="0"/>
+                                                    <t t-foreach="o.advance_to_settle_ids" t-as="line">
+                                                        <tr>
+                                                            <td>
+                                                                <span t-field="line.name"/>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <span t-field="line.amount_total" t-options="{'widget': 'monetary', 'display_currency': line.currency_id}"/>
+                                                            </td>
+                                                            <t t-set="total_ammount_settle" t-value="total_ammount_settle + line.amount_total"/>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                                <!-- <tfooter>
+                                                    <tr>
+                                                        <td colspan="5"/>
+                                                        <td class="text-end">
+                                                            <span t-esc="total_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                                        </td>
+                                                    </tr>
+                                                </tfooter> -->
+                                            </table>
+                                    </div>
+                                </t>
+
+                                <br/>
+                                <br/>
+
+                                <div class="row">
+                                    <br/>
+                                    <table width="100%" class="table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Account</th>
+                                                <th>Date</th>
+                                                <th>Partner</th>
+                                                <th>Label</th>
+                                                <th>Analytic Account</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-set="total_amount" t-value="0"/>
+                                            <t t-foreach="o.line_ids" t-as="line">
+                                                <tr>
+                                                    <td>
+                                                        <span t-field="line.account_id.name"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="o.date" t-options="{'widget': 'date'}"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="o.partner_id.display_name"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="line.name"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="line.analytic_account_id.name"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': line.currency_id}"/>
+
+                                                    </td>
+                                                    <t t-set="total_amount" t-value="total_amount + line.amount"/>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfooter>
+                                            <tr>
+                                                <td colspan="5"/>
+                                                <!-- <td class="text-end">
+                                                    <span t-esc="total_debit" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                                </td> -->
+                                                <td class="text-end">
+                                                    <span t-esc="total_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                                </td>
+                                            </tr>
+                                        </tfooter>
+                                    </table>
+                                </div>
+                                
+                                <br/>
+                                <br/>
+                                
+                                <!-- My Reports -->
+                                <t t-if="o.advance_found">
+                                    <div>
+                                        <h5>
+                                            Amount Total
+                                        </h5>
+                                    </div>
+                                    <div class="row">
+                                        <br/>
+                                            <table width="100%" class="table-bordered">
+                                                <tr>
+                                                    <th class="text-start">Settlement Amount</th>
+                                                    <td class="text-end">
+                                                        <span t-field="o.amount_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Advance Amount</th>
+                                                    <td class="text-end">
+                                                        <span t-field="o.advance_amount_settle" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                                    </td>
+                                                </tr>
+                                                <tr style="font-weight: bold;">
+                                                    <th class="text-start">Amount Outstanding</th>
+                                                    <td class="text-end">
+                                                        <span t-field="o.amount_total2" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                    </div>
+                                </t>
+                            
+                            </div>
+                        </t>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
