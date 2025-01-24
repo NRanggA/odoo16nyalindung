@@ -52,7 +52,12 @@ class AccountBankStatement(models.Model):
             'view_mode': 'kanban',
             'res_model': 'account.bank.statement.line',
             'view_id': self.env.ref('account_reconcile_oca.bank_statement_line_reconcile_view').id,
-            'context': {'default_journal_id': self.journal_id.id, 'search_default_not_reconciled': True, 'view_ref': 'account_reconcile_oca.bank_statement_line_form_reconcile_view'},
+            'context': {
+                'active_id': self.journal_id.id,
+                'default_journal_id': self.journal_id.id, 
+                'search_default_not_reconciled': True, 
+                'view_ref': 'account_reconcile_oca.bank_statement_line_form_reconcile_view'
+            },
             'domain': [('statement_id', '=', self.id)],
         }
         
