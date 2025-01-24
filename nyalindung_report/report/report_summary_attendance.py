@@ -249,21 +249,21 @@ class ReportSummaryAttendance(models.AbstractModel):
         if not kemandoran_ids:
             kemandoran_ids = self.env['hr.foreman'].search([])
 
+        sheet = workbook.add_worksheet("Summary Attendance")
+        row = 0
         for kemandoran in kemandoran_ids:
-            sheet_name = kemandoran.name if kemandoran.name else "Sheet"
-            sheet = workbook.add_worksheet(sheet_name[:31])
-
             # Judul Laporan
-            sheet.write('A1', 'BLOK')
-            sheet.write('B1', ':', wbf['content_center'])
-            sheet.write('C1', kemandoran.name)
-            sheet.write('A2', 'BULAN')
-            sheet.write('B2', ':', wbf['content_center'])
-            sheet.write('C2', f'{from_date.strftime("%d-%m-%Y")} s/d {to_date.strftime("%d-%m-%Y")}' if from_date and to_date else '')
-
+            sheet.write(row, 0, 'BLOK')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2, kemandoran.name)
+            row += 1
+            sheet.write(row, 0, 'BULAN')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2, f'{from_date.strftime("%d-%m-%Y")} s/d {to_date.strftime("%d-%m-%Y")}' if from_date and to_date else '')
+            row += 2
             # Bagian Header 1
-            sheet.merge_range('A4:C5', kemandoran.code, wbf['kemandoran'])
-            sheet.merge_range('D4:E5', 'JUMLAH', wbf['header'])
+            sheet.merge_range(row, 0, row + 1, 2, kemandoran.name or '', wbf['kemandoran'])
+            sheet.merge_range(row, 3, row + 1, 4, 'JUMLAH', wbf['header'])
 
             if from_date and to_date:
                 delta = to_date - from_date
@@ -274,26 +274,28 @@ class ReportSummaryAttendance(models.AbstractModel):
 
                 start_col = 5
                 end_col = start_col + len(date_columns) - 1
-                sheet.merge_range(3, start_col, 4, end_col, 'TANGGAL', wbf['header'])
-
+                
+                sheet.merge_range(row, start_col, row + 1, end_col, 'TANGGAL', wbf['header'])
                 for i, date in enumerate(date_columns):
-                    sheet.write(5, start_col + i, date, wbf['header'])
+                    sheet.write(row + 2, start_col + i, date, wbf['header'])
                     sheet.set_column(start_col + i, start_col + i, 5)
 
             hko_start = end_col + 1
-            sheet.merge_range(3, hko_start, 4, hko_start + 5, 'JUMLAH HKO', wbf['header'])
-
-            # tunjangan_start = hko_start + 6
-            # sheet.merge_range(3, tunjangan_start, 4, tunjangan_start + 3, 'TUNJANGAN', wbf['header'])
+            sheet.merge_range(row, hko_start, row + 1, hko_start + 5, 'JUMLAH HKO', wbf['header'])
 
             total_hk_start = hko_start + 6
-            sheet.merge_range(3, total_hk_start, 5, total_hk_start + 1, 'TOTAL HK', wbf['header'])
+            sheet.merge_range(row, total_hk_start, row + 2, total_hk_start, 'TOTAL HK', wbf['header'])
 
             # Header 2
-            sheet.write(5, 0, 'NO.', wbf['header'])
-            sheet.merge_range('B6:C6', 'NAMA', wbf['header'])
-            sheet.write(5, 3, 'BSH', wbf['biru_muda'])
-            sheet.write(5, 4, 'KRG', wbf['biru_muda'])
+            sheet.write(row + 2, 0, 'NO.', wbf['header'])
+            sheet.write(row + 2, 1, 'NIK', wbf['header'])
+            sheet.set_column(5, 1, 13)
+            sheet.write(row + 2, 2, 'NAMA', wbf['header'])
+            sheet.set_column(5, 2, 22)
+            sheet.write(row + 2, 3, 'BSH', wbf['biru_muda'])
+            sheet.set_column(5, 3, 8)
+            sheet.write(row + 2, 4, 'KRG', wbf['biru_muda'])
+            sheet.set_column(5, 4, 8)
 
             hko_headers = ['HKO', 'L', 'S', 'P', 'CT', 'M']
             hko_formats = [self.wbf['biru_muda'], self.wbf['hijau_tua'], self.wbf['kuning'], self.wbf['biru_tua'], self.wbf['biru_muda'], self.wbf['merah']]
@@ -301,7 +303,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             # tunjangan_formats = [self.wbf['merah'], self.wbf['kuning'], self.wbf['kuning'], self.wbf['kuning']]
 
             for i, header in enumerate(hko_headers):
-                sheet.write(5, hko_start + i, header, hko_formats[i])
+                sheet.write(row + 2, hko_start + i, header, hko_formats[i])
 
             # for i, header in enumerate(tunjangan_headers):
             #     sheet.write(5, tunjangan_start + i, header, tunjangan_formats[i])
@@ -311,7 +313,8 @@ class ReportSummaryAttendance(models.AbstractModel):
                 WITH employee_data AS (
                     SELECT 
                         emp.id AS emp_id,
-                        emp.name AS employee_name
+                        emp.name AS employee_name,
+                        emp.no_induk as no_induk
                     FROM 
                         hr_employee emp
                     WHERE emp.kemandoran_id = %s
@@ -353,6 +356,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 SELECT 
                     employee_data.emp_id,
                     employee_data.employee_name,
+                    employee_data.no_induk,
                     SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex_bagi_2,
                     SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
                 FROM 
@@ -363,25 +367,29 @@ class ReportSummaryAttendance(models.AbstractModel):
                     trans_data ON employee_data.emp_id = trans_data.employee_id
                 GROUP BY 
                     employee_data.emp_id, 
-                    employee_data.employee_name;
+                    employee_data.no_induk,
+                    employee_data.employee_name
+                ORDER BY
+                    employee_data.employee_name ASC;
             """
 
             self.env.cr.execute(query, (kemandoran.id, from_date, to_date, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
 
-            row = 7
+            row += 4
             nomor = 1
 
-            mandor_name = kemandoran.foreman_id.name if kemandoran.foreman_id else ''
-            asisten_mandor_name = kemandoran.foreman_id_1.name if kemandoran.foreman_id_1 else ''
-            kerani_name = kemandoran.admin_id.name if kemandoran.admin_id else ''
             mandor_name = kemandoran.kepala_mandor_id.name if kemandoran.kepala_mandor_id else ''
+            mandor_nik = kemandoran.kepala_mandor_id.no_induk if kemandoran.kepala_mandor_id else ''
             asisten_mandor_name = kemandoran.mandor_id.name if kemandoran.mandor_id else ''
+            asisten_mandor_nik = kemandoran.mandor_id.no_induk if kemandoran.mandor_id else ''
             kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
+            kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
 
-            for emp_id, employee_name, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 sheet.write(row, 0, nomor, wbf['data_center'])
-                sheet.merge_range(row, 1, row, 2, employee_name, wbf['data'])
+                sheet.write(row, 1, no_induk, wbf['data'])
+                sheet.write(row, 2, employee_name, wbf['data'])
                 sheet.write(row, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
                 sheet.write(row, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
 
@@ -405,7 +413,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     if type_code in ['KJ', 'KJI', 'KJO']:
                         sheet.write(row, current_col, type_code, wbf['hijau_muda'])
                         hko_count += 1
-                    elif type_code == 'NA':
+                    elif type_code == 'L':
                         sheet.write(row, current_col, type_code, wbf['hijau_tua'])
                         l_count += 1
                     elif type_code == 'S1':
@@ -432,20 +440,16 @@ class ReportSummaryAttendance(models.AbstractModel):
                 sheet.write(row, hko_start + 3, p_count, wbf['data_center'])
                 sheet.write(row, hko_start + 4, ct_count, wbf['data_center'])
                 sheet.write(row, hko_start + 5, m_count, wbf['data_center'])
-
-                # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-                # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-                # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-                # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-                sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+                sheet.write(row, total_hk_start, '-', wbf['data_center'])
 
                 row += 1
                 nomor += 1
 
             # Logika untuk Mandor
             row += 1
-            sheet.write(row, 0, "M-1", wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, mandor_name, wbf['data'])
+            sheet.write(row, 0, 'M-1', wbf['data_center'])
+            sheet.write(row, 1, mandor_nik, wbf['data'])
+            sheet.write(row, 2, mandor_name, wbf['data'])
             sheet.write(row, 3, 0, wbf['content_number'])
             sheet.write(row, 4, 0, wbf['content_number'])
 
@@ -461,6 +465,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             for i in range(len(date_columns)):
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', mandor_employee.name),
+                    ('employee_id.sub_department_id', '=', "Mandor Besar"),
                     ('date', '=', from_date + timedelta(days=i))
                 ], limit=1)
 
@@ -470,7 +475,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 if type_code in ['KJ', 'KJI', 'KJO']:
                     sheet.write(row, 5 + i, type_code, wbf['hijau_muda'])
                     mandor_hko_count += 1
-                elif type_code == 'NA':
+                elif type_code == 'L':
                     sheet.write(row, 5 + i, type_code, wbf['hijau_tua'])
                     mandor_l_count += 1
                 elif type_code == 'S1':
@@ -497,12 +502,13 @@ class ReportSummaryAttendance(models.AbstractModel):
             # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
             # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
             # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
 
             # Logika untuk Asisten Mandor
             row += 1
-            sheet.write(row, 0, "M-2", wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, asisten_mandor_name, wbf['data'])
+            sheet.write(row, 0, 'M-2', wbf['data_center'])
+            sheet.write(row, 1, asisten_mandor_nik, wbf['data'])
+            sheet.write(row, 2, asisten_mandor_name, wbf['data'])
             sheet.write(row, 3, 0, wbf['content_number'])
             sheet.write(row, 4, 0, wbf['content_number'])
 
@@ -518,6 +524,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             for i in range(len(date_columns)):
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', asisten_employee.name),
+                    ('employee_id.job_id', '=', "Mandor"),
                     ('date', '=', from_date + timedelta(days=i))
                 ], limit=1)
 
@@ -527,7 +534,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 if type_code in ['KJ', 'KJI', 'KJO']:
                     sheet.write(row, 5 + i, type_code, wbf['hijau_muda'])
                     asisten_hko_count += 1
-                elif type_code == 'NA':
+                elif type_code == 'L':
                     sheet.write(row, 5 + i, type_code, wbf['hijau_tua'])
                     asisten_l_count += 1
                 elif type_code == 'S1':
@@ -549,17 +556,13 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 3, asisten_p_count, wbf['data_center'])
             sheet.write(row, hko_start + 4, asisten_ct_count, wbf['data_center'])
             sheet.write(row, hko_start + 5, asisten_m_count, wbf['data_center'])
-
-            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
 
             # Logika untuk Kerani
             row += 1
-            sheet.write(row, 0, "M-3", wbf['data_center'])
-            sheet.merge_range(row, 1, row, 2, kerani_name, wbf['data'])
+            sheet.write(row, 0, 'M-3', wbf['data_center'])
+            sheet.write(row, 1, kerani_nik, wbf['data'])
+            sheet.write(row, 2, kerani_name, wbf['data'])
             sheet.write(row, 3, 0, wbf['content_number'])
             sheet.write(row, 4, 0, wbf['content_number'])
 
@@ -584,7 +587,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 if type_code in ['KJ', 'KJI', 'KJO']:
                     sheet.write(row, 5 + i, type_code, wbf['hijau_muda'])
                     kerani_hko_count += 1
-                elif type_code == 'NA':
+                elif type_code == 'L':
                     sheet.write(row, 5 + i, type_code, wbf['hijau_tua'])
                     kerani_l_count += 1
                 elif type_code == 'S1':
@@ -606,12 +609,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 3, kerani_p_count, wbf['data_center'])
             sheet.write(row, hko_start + 4, kerani_ct_count, wbf['data_center'])
             sheet.write(row, hko_start + 5, kerani_m_count, wbf['data_center'])
-
-            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
 
             row += 1
             nomor += 1
@@ -620,7 +618,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             row += 1
             total_hko_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 current_col = 5
                 for i in range(len(date_columns)):
                     attendance = self.env['hr.attendance.sheet'].search([
@@ -636,6 +634,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', mandor_employee.name),
+                    ('employee_id.sub_department_id', '=', "Mandor Besar"),
                     ('date', '=', from_date + timedelta(days=i))
                 ], limit=1)
                 if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
@@ -644,6 +643,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', asisten_employee.name),
+                    ('employee_id.job_id', '=', "Mandor"),
                     ('date', '=', from_date + timedelta(days=i))
                 ], limit=1)
                 if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
@@ -669,7 +669,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             for i in range(6):
                 sheet.write(row, start_col + i, '-', wbf['data_center'])
 
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, total_hk_start, '-', wbf['data_center'])
 
             #2
             row += 1
@@ -682,7 +682,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_columns)
             total_m_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 total_bsh += total_hasil_convert_lump_bagi_2
                 total_krg += total_hasil_convert_latex_bagi_2
                 current_col = 5
@@ -695,7 +695,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     type_code = attendance.type_id.code if attendance else '-'
                     if type_code == 'KJ':
                         total_hko_per_tanggal[i] += 1
-                    elif type_code == 'NA':
+                    elif type_code == 'L':
                         total_l_per_tanggal[i] += 1
                     elif type_code == 'S1':
                         total_s_per_tanggal[i] += 1
@@ -710,6 +710,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', mandor_employee.name),
+                    ('employee_id.sub_department_id', '=', "Mandor Besar"),
                     ('date', '=', from_date + timedelta(days=i))
                 ], limit=1)
                 if attendance.type_id.code == 'KJ':
@@ -728,6 +729,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', asisten_employee.name),
+                    ('employee_id.job_id', '=', "Mandor"),
                     ('date', '=', from_date + timedelta(days=i))
                 ], limit=1)
                 if attendance.type_id.code == 'KJ':
@@ -775,12 +777,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.write(row, hko_start + 3, sum(total_p_per_tanggal), wbf['hijau_tua'])
             sheet.write(row, hko_start + 4, sum(total_ct_per_tanggal), wbf['hijau_tua'])
             sheet.write(row, hko_start + 5, sum(total_m_per_tanggal), wbf['hijau_tua'])
-
-            # start_col = 11 + len(date_columns)
-            # for i in range(4):
-            #     sheet.write(row, start_col + i, '', wbf['hijau_tua'])
-
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '', wbf['hijau_tua'])
+            sheet.write(row, total_hk_start, '', wbf['hijau_tua'])
 
             row += 1
 
@@ -820,3 +817,5 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet.merge_range(row, 0, row, 1, 'Mandor Besar Karet', wbf['content_center'])
             sheet.merge_range(row, 3, row, 4, 'Asisten Kebun', wbf['content_center'])
             sheet.merge_range(row, 8, row, 8 + len(date_columns), 'Manager Kebun', wbf['content_center'])
+
+            row += 4
