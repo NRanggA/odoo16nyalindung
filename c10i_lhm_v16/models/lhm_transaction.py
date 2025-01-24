@@ -756,16 +756,54 @@ class lhm_transaction(models.Model):
 
         self.state = 'confirmed'
 
-    def button_approve(self):
-        # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
+    # def button_approve(self):  
+    #     # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
+    #     mismatch_names = []
+
+    #     for line in self.lhm_line_ids:
+    #     # for lhm_line in self.lhm_line_ids:
+    #         if line.contract_wage_value == 0.0:
+    #             raise ValidationError(_(
+    #                 f"Gaji Karyawan tidak boleh 0.0 untuk karyawan {line.employee_id.name}"
+    #             ))
+
+
+    #         # Cari sheet absensi yang sesuai untuk setiap karyawan
+    #         attendance_sheet = self.env['hr.attendance.sheet'].search([
+    #             ('employee_id', '=', line.employee_id.id),
+    #             ('date', '=', self.date)
+    #         ], limit=1)
+    #         # Jika tidak ada catatan absensi yang ditemukan, lanjutkan ke karyawan berikutnya
+    #         if not attendance_sheet:
+    #             continue
+
+    #         # Cek apakah kode tipe absensi tidak sesuai
+    #         if line.attendance_id.code != attendance_sheet.type_id.code:
+    #             mismatch_names.append(line.employee_id.name)
+
+    #     # Jika ada ketidakcocokan, tampilkan pesan kesalahan dengan semua nama karyawan
+    #     if mismatch_names:
+    #         mismatch_names_str = ", ".join(mismatch_names)
+    #         raise UserError(_("Tipe absensi pada form LHM tidak sama dengan yang di Attendance untuk karyawan: [%s]") % mismatch_names_str)
+    #     else:
+    #         self.state = 'done'
+
+    def button_approve(self):  
+        # Kumpulkan nama karyawan dengan masalah gaji atau tipe absensi
+        zero_wage_names = []
         mismatch_names = []
 
         for line in self.lhm_line_ids:
+            # Validasi gaji karyawan
+            if line.contract_wage_value == 0.0:
+                zero_wage_names.append(line.employee_id.name)
+
             # Cari sheet absensi yang sesuai untuk setiap karyawan
             attendance_sheet = self.env['hr.attendance.sheet'].search([
                 ('employee_id', '=', line.employee_id.id),
                 ('date', '=', self.date)
             ], limit=1)
+            
             # Jika tidak ada catatan absensi yang ditemukan, lanjutkan ke karyawan berikutnya
             if not attendance_sheet:
                 continue
@@ -774,12 +812,19 @@ class lhm_transaction(models.Model):
             if line.attendance_id.code != attendance_sheet.type_id.code:
                 mismatch_names.append(line.employee_id.name)
 
-        # Jika ada ketidakcocokan, tampilkan pesan kesalahan dengan semua nama karyawan
+        # Validasi Jika ada karyawan dengan gaji kosong
+        if zero_wage_names:
+            zero_wage_names_str = ", ".join(zero_wage_names)
+            raise ValidationError(_("Terdapat Upah Karyawan dengan nilai 0.0 untuk karyawan: [%s], silahkan perbaiki terlebih dahulu !") % zero_wage_names_str)
+
+        # Validasi Jika ada ketidaksesuaian tipe absensi
         if mismatch_names:
             mismatch_names_str = ", ".join(mismatch_names)
             raise UserError(_("Tipe absensi pada form LHM tidak sama dengan yang di Attendance untuk karyawan: [%s]") % mismatch_names_str)
-        else:
-            self.state = 'done'
+
+        # Jika semua validasi lolos, ubah state
+        self.state = 'done'
+
 
     def button_reject(self):
         self.state = 'in_progress'
