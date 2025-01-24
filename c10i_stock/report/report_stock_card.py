@@ -314,19 +314,20 @@ class ReportStockMutation(models.AbstractModel):
                 transaction_name = move.reference or move.picking_id.name
                 sheet.write(row, 1, transaction_name, wbf['content'])
                 qty = move.qty_done
-                if move.location_id.usage == 'internal' and move.location_dest_id.usage != 'internal':
+                # if move.location_id.usage == 'internal' and move.location_dest_id.usage != 'internal':
+                #     qty = -qty
+                #     sheet.write(row, 2, '', wbf['negative'])
+                #     sheet.write(row, 3, qty, wbf['negative'])
+                # else:
+                #     sheet.write(row, 2, qty, wbf['positive'])
+                #     sheet.write(row, 3, '', wbf['positive'])
+                if move.location_id.id == obj.location_id.id and move.location_dest_id.id != obj.location_id.id:
                     qty = -qty
                     sheet.write(row, 2, '', wbf['negative'])
                     sheet.write(row, 3, qty, wbf['negative'])
-                else:
+                elif move.location_id.id != obj.location_id.id and move.location_dest_id.id == obj.location_id.id:
                     sheet.write(row, 2, qty, wbf['positive'])
                     sheet.write(row, 3, '', wbf['positive'])
-
-                #     qty = -qty
-                # if qty < 0:
-                #     sheet.write(row, 2, qty, wbf['negative'])
-                # else:
-                #     sheet.write(row, 2, qty, wbf['positive'])
                 
                 sheet.write(row, 4, move.product_id.uom_id.name, wbf['content'])
 
