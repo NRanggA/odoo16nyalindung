@@ -397,7 +397,7 @@ class ReportProduction(models.AbstractModel):
             sheet.write(row + 2, 0, 'NO.', wbf['header'])
             sheet.set_column(5, 0, 7)
             sheet.write(row + 2, 1,'NIK', wbf['header'])
-            sheet.set_column(5, 2, 13)
+            sheet.set_column(5, 1, 13)
             sheet.write(row + 2, 2,'NAMA', wbf['header'])
             sheet.set_column(5, 2, 13)
             sheet.write(row + 2, 3, 'KEMANDORAN', wbf['header'])

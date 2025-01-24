@@ -248,22 +248,22 @@ class ReportSummaryBkm(models.AbstractModel):
 
         if not kemandoran_ids:
             kemandoran_ids = self.env['hr.foreman'].search([])
-
+        
+        sheet = workbook.add_worksheet("Summary LHM")
+        row = 0
         for kemandoran in kemandoran_ids:
-            sheet_name = kemandoran.name if kemandoran.name else "Sheet"
-            sheet = workbook.add_worksheet(sheet_name[:31])
 
             # Judul Laporan
-            sheet.write('A1', 'BLOK')
-            sheet.write('B1', ':', wbf['content_center'])
-            sheet.write('C1', kemandoran.name)
-            sheet.write('A2', 'BULAN')
-            sheet.write('B2', ':', wbf['content_center'])
-            sheet.write('C2', f'{from_date.strftime("%d-%m-%Y")} s/d {to_date.strftime("%d-%m-%Y")}' if from_date and to_date else '')
-
+            sheet.write(row, 0, 'BLOK')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2, kemandoran.name)
+            row += 1
+            sheet.write(row, 0, 'BULAN')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2, f'{from_date.strftime("%d-%m-%Y")} s/d {to_date.strftime("%d-%m-%Y")}' if from_date and to_date else '')
+            row += 2
             # Bagian Header 1
-            sheet.merge_range('A4:C5', kemandoran.code, wbf['kemandoran'])
-            # sheet.merge_range('D4:E5', 'JUMLAH', wbf['header'])
+            sheet.merge_range(row, 0, row + 1, 2, kemandoran.name or '', wbf['kemandoran'])
 
             if from_date and to_date:
                 delta = to_date - from_date
@@ -274,41 +274,30 @@ class ReportSummaryBkm(models.AbstractModel):
 
                 start_col = 3
                 end_col = start_col + len(date_columns) - 1
-                sheet.merge_range(3, start_col, 4, end_col, 'TANGGAL', wbf['header'])
-
+                
+                sheet.merge_range(row, start_col, row + 1, end_col, 'TANGGAL', wbf['header'])
                 for i, date in enumerate(date_columns):
-                    sheet.write(5, start_col + i, date, wbf['header'])
+                    sheet.write(row + 2, start_col + i, date, wbf['header'])
                     sheet.set_column(start_col + i, start_col + i, 5)
 
             hko_start = end_col + 1
-            sheet.merge_range(3, hko_start, 4, hko_start + 5, 'JUMLAH HKO', wbf['header'])
-
-            # tunjangan_start = hko_start + 6
-            # sheet.merge_range(3, tunjangan_start, 4, tunjangan_start + 3, 'TUNJANGAN', wbf['header'])
-
-            # total_hk_start = tunjangan_start + 4
-            # sheet.merge_range(3, total_hk_start, 5, total_hk_start + 1, 'TOTAL HK', wbf['header'])
+            sheet.merge_range(row, hko_start, row + 1, hko_start + 5, 'JUMLAH HKO', wbf['header'])
 
             total_hk_start = hko_start + 6
-            sheet.merge_range(3, total_hk_start, 5, total_hk_start + 1, 'TOTAL HK', wbf['header'])
+            sheet.merge_range(row, total_hk_start, row + 2, total_hk_start, 'TOTAL HK', wbf['header'])
 
             # Header 2
-            sheet.write(5, 0, 'NO.', wbf['header'])
-            sheet.write(5, 1, 'NIK', wbf['header'])
-            sheet.merge_range('C6:D6', 'NAMA', wbf['header'])
-            # sheet.write(5, 3, 'BSH', wbf['biru_muda'])
-            # sheet.write(5, 4, 'KRG', wbf['biru_muda'])
+            sheet.write(row + 2, 0, 'NO.', wbf['header'])
+            sheet.write(row + 2, 1, 'NIK', wbf['header'])
+            sheet.set_column(5, 1, 13)
+            sheet.write(row + 2, 2, 'NAMA', wbf['header'])
+            sheet.set_column(5, 2, 22)
 
             hko_headers = ['HKO', 'L', 'S', 'P', 'CT', 'M']
             hko_formats = [self.wbf['biru_muda'], self.wbf['hijau_tua'], self.wbf['kuning'], self.wbf['biru_tua'], self.wbf['biru_muda'], self.wbf['merah']]
-            # tunjangan_headers = ['MG', 'RY', 'S', 'CT']
-            # tunjangan_formats = [self.wbf['merah'], self.wbf['kuning'], self.wbf['kuning'], self.wbf['kuning']]
 
             for i, header in enumerate(hko_headers):
-                sheet.write(5, hko_start + i, header, hko_formats[i])
-
-            # for i, header in enumerate(tunjangan_headers):
-            #     sheet.write(5, hko_start + i, header, tunjangan_formats[i])
+                sheet.write(row + 2, hko_start + i, header, hko_formats[i])
 
             # Bagian Isi Data
             query = """
@@ -371,13 +360,15 @@ class ReportSummaryBkm(models.AbstractModel):
                 GROUP BY 
                     employee_data.emp_id, 
                     employee_data.no_induk,
-                    employee_data.employee_name;
+                    employee_data.employee_name
+                ORDER BY
+                    employee_data.employee_name ASC;
             """
             
             self.env.cr.execute(query, (kemandoran.id, from_date, to_date, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
 
-            row = 7
+            row += 4
             nomor = 1
 
             mandor_name = kemandoran.kepala_mandor_id.name if kemandoran.kepala_mandor_id else ''
@@ -387,14 +378,10 @@ class ReportSummaryBkm(models.AbstractModel):
             kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
             kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
 
-
-
             for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
                 sheet.write(row, 0, nomor, wbf['data_center'])
                 sheet.write(row, 1, no_induk, wbf['data'])
-                sheet.merge_range(row, 2, row, 3, employee_name, wbf['data'])
-                # sheet.write(row, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
-                # sheet.write(row, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
+                sheet.write(row, 2, employee_name, wbf['data'])
 
                 current_col = 3
                 hko_count = 0
@@ -444,198 +431,85 @@ class ReportSummaryBkm(models.AbstractModel):
                 sheet.write(row, hko_start + 3, p_count, wbf['data_center'])
                 sheet.write(row, hko_start + 4, ct_count, wbf['data_center'])
                 sheet.write(row, hko_start + 5, m_count, wbf['data_center'])
-
-                # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-                # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-                # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-                # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-                sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+                sheet.write(row, total_hk_start, '-', wbf['data_center'])
 
                 row += 1
                 nomor += 1
 
             # Logika untuk Mandor
             row += 1
-            # sheet.write(row, 0, "M-1", wbf['data_center'])
-            # sheet.merge_range(row, 1, row, 2, mandor_name, wbf['data'])
             sheet.write(row, 0, 'M-1', wbf['data_center'])
             sheet.write(row, 1, mandor_nik, wbf['data'])
-            sheet.merge_range(row, 2, row, 3, mandor_name, wbf['data'])
-            # sheet.write(row, 3, 0, wbf['content_number'])
-            # sheet.write(row, 4, 0, wbf['content_number'])
-
-            mandor_hko_count = 0
-            mandor_l_count = 0
-            mandor_s_count = 0
-            mandor_p_count = 0
-            mandor_ct_count = 0
-            mandor_m_count = 0
+            sheet.write(row, 2, mandor_name, wbf['data'])
 
             mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', mandor_employee.name),
+                    ('employee_id', '=', mandor_employee.id),
                     ('date', '=', from_date + timedelta(days=i)),
                     ('state', '=', 'done'),
                 ], limit=1)
 
-                type_code = attendance.attendance_id.code if attendance else '-'
-                sheet.write(row, 3 + i, type_code, wbf['data_center'])
+                sheet.write(row, 3 + i, "-", wbf['data_center'])
 
-                if type_code in ['KJ', 'KJI', 'KJO']:
-                    sheet.write(row, 5 + i, type_code, wbf['hijau_muda'])
-                    mandor_hko_count += 1
-                elif type_code == 'NA':
-                    sheet.write(row, 5 + i, type_code, wbf['hijau_tua'])
-                    mandor_l_count += 1
-                elif type_code == 'S1':
-                    sheet.write(row, 5 + i, type_code, wbf['kuning'])
-                    mandor_s_count += 1
-                elif type_code == 'P1':
-                    sheet.write(row, 5 + i, type_code, wbf['biru_tua'])
-                    mandor_p_count += 1
-                elif type_code == 'CT':
-                    sheet.write(row, 5 + i, type_code, wbf['biru_muda'])
-                    mandor_ct_count += 1
-                elif type_code == 'M':
-                    sheet.write(row, 5 + i, type_code, wbf['merah'])
-                    mandor_m_count += 1
-
-            sheet.write(row, hko_start, mandor_hko_count, wbf['biru_muda'])
-            sheet.write(row, hko_start + 1, mandor_l_count, wbf['data_center'])
-            sheet.write(row, hko_start + 2, mandor_s_count, wbf['data_center'])
-            sheet.write(row, hko_start + 3, mandor_p_count, wbf['data_center'])
-            sheet.write(row, hko_start + 4, mandor_ct_count, wbf['data_center'])
-            sheet.write(row, hko_start + 5, mandor_m_count, wbf['data_center'])
-
-            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row, total_hk_start, '-', wbf['data_center'])
 
             # Logika untuk Asisten Mandor
             row += 1
-            # sheet.write(row, 0, "M-2", wbf['data_center'])
-            # sheet.merge_range(row, 1, row, 2, asisten_mandor_name, wbf['data'])
             sheet.write(row, 0, 'M-2', wbf['data_center'])
             sheet.write(row, 1, asisten_mandor_nik, wbf['data'])
-            sheet.merge_range(row, 2, row, 3, asisten_mandor_name, wbf['data'])
-            # sheet.write(row, 3, 0, wbf['content_number'])
-            # sheet.write(row, 4, 0, wbf['content_number'])
-
-            asisten_hko_count = 0
-            asisten_l_count = 0
-            asisten_s_count = 0
-            asisten_p_count = 0
-            asisten_ct_count = 0
-            asisten_m_count = 0
+            sheet.write(row, 2, asisten_mandor_name, wbf['data'])
 
             asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', asisten_employee.name),
+                    ('employee_id', '=', asisten_employee.id),
                     ('date', '=', from_date + timedelta(days=i)),
                     ('state', '=', 'done'),
                 ], limit=1)
 
-                type_code = attendance.attendance_id.code if attendance else '-'
-                sheet.write(row, 3 + i, type_code, wbf['data_center'])
+                sheet.write(row, 3 + i, "-", wbf['data_center'])
 
-                if type_code in ['KJ', 'KJI', 'KJO']:
-                    sheet.write(row, 5 + i, type_code, wbf['hijau_muda'])
-                    asisten_hko_count += 1
-                elif type_code == 'NA':
-                    sheet.write(row, 5 + i, type_code, wbf['hijau_tua'])
-                    asisten_l_count += 1
-                elif type_code == 'S1':
-                    sheet.write(row, 5 + i, type_code, wbf['kuning'])
-                    asisten_s_count += 1
-                elif type_code == 'P1':
-                    sheet.write(row, 5 + i, type_code, wbf['biru_tua'])
-                    asisten_p_count += 1
-                elif type_code == 'CT':
-                    sheet.write(row, 5 + i, type_code, wbf['biru_muda'])
-                    asisten_ct_count += 1
-                elif type_code == 'M':
-                    sheet.write(row, 5 + i, type_code, wbf['merah'])
-                    asisten_m_count += 1
-
-            sheet.write(row, hko_start, asisten_hko_count, wbf['biru_muda'])
-            sheet.write(row, hko_start + 1, asisten_l_count, wbf['data_center'])
-            sheet.write(row, hko_start + 2, asisten_s_count, wbf['data_center'])
-            sheet.write(row, hko_start + 3, asisten_p_count, wbf['data_center'])
-            sheet.write(row, hko_start + 4, asisten_ct_count, wbf['data_center'])
-            sheet.write(row, hko_start + 5, asisten_m_count, wbf['data_center'])
-
-            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
 
             # Logika untuk Kerani
             row += 1
-            # sheet.write(row, 0, "M-3", wbf['data_center'])
-            # sheet.merge_range(row, 1, row, 2, kerani_name, wbf['data'])
             sheet.write(row, 0, 'M-3', wbf['data_center'])
             sheet.write(row, 1, kerani_nik, wbf['data'])
-            sheet.merge_range(row, 2, row, 3, kerani_name, wbf['data'])
-            # sheet.write(row, 3, 0, wbf['content_number'])
-            # sheet.write(row, 4, 0, wbf['content_number'])
-
-            kerani_hko_count = 0
-            kerani_l_count = 0
-            kerani_s_count = 0
-            kerani_p_count = 0
-            kerani_ct_count = 0
-            kerani_m_count = 0
+            sheet.write(row, 2, kerani_name, wbf['data'])
 
             kerani_employee = self.env['hr.employee'].search([('name', '=', kerani_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', kerani_employee.name),
+                    ('employee_id', '=', kerani_employee.id),
                     ('date', '=', from_date + timedelta(days=i)),
                     ('state', '=', 'done'),
                 ], limit=1)
 
-                type_code = attendance.attendance_id.code if attendance else '-'
-                sheet.write(row, 3 + i, type_code, wbf['data_center'])
+                sheet.write(row, 3 + i, "-", wbf['data_center'])
 
-                if type_code in ['KJ', 'KJI', 'KJO']:
-                    sheet.write(row, 5 + i, type_code, wbf['hijau_muda'])
-                    kerani_hko_count += 1
-                elif type_code == 'NA':
-                    sheet.write(row, 5 + i, type_code, wbf['hijau_tua'])
-                    kerani_l_count += 1
-                elif type_code == 'S1':
-                    sheet.write(row, 5 + i, type_code, wbf['kuning'])
-                    kerani_s_count += 1
-                elif type_code == 'P1':
-                    sheet.write(row, 5 + i, type_code, wbf['biru_tua'])
-                    kerani_p_count += 1
-                elif type_code == 'CT':
-                    sheet.write(row, 5 + i, type_code, wbf['biru_muda'])
-                    kerani_ct_count += 1
-                elif type_code == 'M':
-                    sheet.write(row, 5 + i, type_code, wbf['merah'])
-                    kerani_m_count += 1
-
-            sheet.write(row, hko_start, kerani_hko_count, wbf['biru_muda'])
-            sheet.write(row, hko_start + 1, kerani_l_count, wbf['data_center'])
-            sheet.write(row, hko_start + 2, kerani_s_count, wbf['data_center'])
-            sheet.write(row, hko_start + 3, kerani_p_count, wbf['data_center'])
-            sheet.write(row, hko_start + 4, kerani_ct_count, wbf['data_center'])
-            sheet.write(row, hko_start + 5, kerani_m_count, wbf['data_center'])
-
-            # sheet.write(row, tunjangan_start, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 1, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 2, '-', wbf['data_center'])
-            # sheet.write(row, tunjangan_start + 3, '-', wbf['data_center'])
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
 
             row += 1
             nomor += 1
@@ -657,37 +531,10 @@ class ReportSummaryBkm(models.AbstractModel):
                     if type_code in ['KJ', 'KJI', 'KJO']:
                         total_hko_per_tanggal[i] += 1
 
-            for i in range(len(date_columns)):
-                mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
-                attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', mandor_employee.name),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('state', '=', 'done'),
-                ], limit=1)
-                if attendance.attendance_id.code in ['KJ', 'KJI', 'KJO']:
-                    total_hko_per_tanggal[i] += 1
-
-                asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
-                attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', asisten_employee.name),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('state', '=', 'done'),
-                ], limit=1)
-                if attendance.attendance_id.code in ['KJ', 'KJI', 'KJO']:
-                    total_hko_per_tanggal[i] += 1
-
-                kerani_employee = self.env['hr.employee'].search([('name', '=', kerani_name)], limit=1)
-                attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', kerani_employee.name),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('state', '=', 'done'),
-                ], limit=1)
-                if attendance.attendance_id.code in ['KJ', 'KJI', 'KJO']:
-                    total_hko_per_tanggal[i] += 1
-
             sheet.write(row, 0, '-', wbf['data_center'])
             sheet.write(row, 1, '-', wbf['data_center'])
-            sheet.merge_range(row, 2, row, 3, '-', wbf['data_center'])
+            sheet.write(row, 2, '-', wbf['data_center'])
+            sheet.write(row, 3, '-', wbf['data_center'])
             sheet.write(row, 4, '-', wbf['data_center'])
             sheet.write(row, 5, '-', wbf['data_center'])
 
@@ -698,7 +545,7 @@ class ReportSummaryBkm(models.AbstractModel):
             for i in range(6):
                 sheet.write(row, start_col + i, '-', wbf['data_center'])
 
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '-', wbf['data_center'])
+            sheet.write(row, total_hk_start, '-', wbf['data_center'])
 
             #2
             row += 1
@@ -712,8 +559,6 @@ class ReportSummaryBkm(models.AbstractModel):
             total_m_per_tanggal = [0] * len(date_columns)
 
             for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
-                # total_bsh += total_hasil_convert_lump_bagi_2
-                # total_krg += total_hasil_convert_latex_bagi_2
                 current_col = 5
                 for i in range(len(date_columns)):
                     attendance = self.env['lhm.transaction.line'].search([
@@ -736,68 +581,8 @@ class ReportSummaryBkm(models.AbstractModel):
                     elif type_code == 'M':
                         total_m_per_tanggal[i] += 1
 
-            for i in range(len(date_columns)):
-                mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
-                attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', mandor_employee.name),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('state', '=', 'done'),
-                ], limit=1)
-                if attendance.attendance_id.code == 'KJ':
-                    total_hko_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'NA':
-                    total_l_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'S1':
-                    total_s_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'P1':
-                    total_p_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'CT':
-                    total_ct_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'M':
-                    total_m_per_tanggal[i] += 1
-
-                asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
-                attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', asisten_employee.name),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('state', '=', 'done'),
-                ], limit=1)
-                if attendance.attendance_id.code == 'KJ':
-                    total_hko_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'NA':
-                    total_l_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'S1':
-                    total_s_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'P1':
-                    total_p_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'CT':
-                    total_ct_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'M':
-                    total_m_per_tanggal[i] += 1
-
-                kerani_employee = self.env['hr.employee'].search([('name', '=', kerani_name)], limit=1)
-                attendance = self.env['lhm.transaction.line'].search([
-                    ('employee_id', '=', kerani_employee.name),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('state', '=', 'done'),
-                ], limit=1)
-                if attendance.attendance_id.code == 'KJ':
-                    total_hko_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'NA':
-                    total_l_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'S1':
-                    total_s_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'P1':
-                    total_p_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'CT':
-                    total_ct_per_tanggal[i] += 1
-                elif attendance.attendance_id.code == 'M':
-                    total_m_per_tanggal[i] += 1
-
             row += 1
             sheet.merge_range(row, 0, row, 2, "JUMLAH TOTAL", wbf['jumlah_total'])
-            # sheet.write(row, 3, total_bsh, wbf['kuning'])
-            # sheet.write(row, 4, total_krg, wbf['kuning'])
 
             for i in range(len(date_columns)):
                 sheet.write(row, 3 + i, '', wbf['kuning'])
@@ -808,12 +593,7 @@ class ReportSummaryBkm(models.AbstractModel):
             sheet.write(row, hko_start + 3, sum(total_p_per_tanggal), wbf['hijau_tua'])
             sheet.write(row, hko_start + 4, sum(total_ct_per_tanggal), wbf['hijau_tua'])
             sheet.write(row, hko_start + 5, sum(total_m_per_tanggal), wbf['hijau_tua'])
-
-            # start_col = 9 + len(date_columns)
-            # for i in range(1):
-            #     sheet.write(row, start_col + i, '', wbf['hijau_tua'])
-            
-            sheet.merge_range(row, total_hk_start, row, total_hk_start + 1, '', wbf['hijau_tua'])
+            sheet.write(row, total_hk_start, '', wbf['hijau_tua'])
 
             row += 1
 
@@ -853,3 +633,5 @@ class ReportSummaryBkm(models.AbstractModel):
             sheet.merge_range(row, 0, row, 1, 'Mandor Besar Karet', wbf['content_center'])
             sheet.merge_range(row, 3, row, 5, 'Asisten Kebun', wbf['content_center'])
             sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Manager Kebun', wbf['content_center'])
+
+            row += 4
