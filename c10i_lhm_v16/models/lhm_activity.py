@@ -66,6 +66,7 @@ class lhm_activity(models.Model):
     # Menambahkan field is hasil 2 untuk menandakan bahwa aktivitas ini hasilnya terdapat 2 hasil
     is_hasil_2                                  = fields.Boolean('Hasil 2', default=False)
     is_nap                                      = fields.Boolean('NAP', default=False)
+    is_contractor_day                           = fields.Boolean('Kontraktor Harian', default=False)
 
     # project_id      = fields.Many2one("lhm.project", string="Project")
 

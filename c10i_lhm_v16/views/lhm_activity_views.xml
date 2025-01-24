@@ -30,6 +30,7 @@
                                 <field name="is_panen" required="0"/>
                                 <field name="is_hasil_2" required="0"/>
                                 <field name="is_nap" required="0"/>
+                                <field name="is_contractor_day" required="0"/>
                             </group>
                             <group string="Satuan">
                                 <field name="uom_id" required="0"/>

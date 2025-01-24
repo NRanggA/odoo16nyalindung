@@ -577,7 +577,8 @@ class lhm_nap(models.Model):
                 ('contractor_id.date', '=', record.date_nap),
                 ('location_id','in', location_ids),
                 ('contractor_id.state', '=', 'process'),
-                ('activity_id.is_nap', '=', True)
+                ('activity_id.is_nap', '=', True),
+                ('activity_id.is_contractor_day', '=', True),
             ])
 
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
