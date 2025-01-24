@@ -452,6 +452,11 @@ class lhm_nap(models.Model):
                             'lhm_nap_line_id': nap_line.id,
                         })
                 if nap_line.supplier_id:
+                    if nap_line.product_id.name in ["Lateks", "Lump"] and nap_line.drc == 0:
+                        raise ValidationError(
+                            _("Tidak dapat mengkonfirmasi dokumen ini karena DRC untuk produk '%s' bernilai 0. Harap periksa dan masukkan nilai DRC di form DRC.")
+                            % nap_line.product_id.name
+                        )
                     if nap_line.lhm_contractor_nap_id.contractor_id.state == 'draft':
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen tersebut.")
