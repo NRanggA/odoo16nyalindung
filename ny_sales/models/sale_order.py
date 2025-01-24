@@ -4,6 +4,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     # pricelist_id_2 = fields.Many2one('product.pricelist', string='Grading')
+    route_id = fields.Many2one('stock.route', string='Route', domain=[('sale_selectable', '=', True)], ondelete='restrict', check_company=True)
 
     def _create_invoices(self, grouped=False, final=False):
         invoices = super(SaleOrder, self)._create_invoices(grouped=grouped, final=final)
@@ -37,3 +38,12 @@ class SaleOrder(models.Model):
 #         if product_price:
 #             return product_price[0]
 #         return None
+
+    @api.onchange('route_id')
+    def onchange_route(self):
+        if self.route_id:
+            for line in self.order_line:
+                line.route_id = self.route_id.id
+        else:
+            for line in self.order_line:
+                line.route_id = False

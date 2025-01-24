@@ -5,7 +5,7 @@
     'description': 'Menambahkan Fitur 2 Pricelist dll',
     'category': 'Sales',
     'author': 'Your Name',
-    'depends': ['base','product','sale','account', 'l10n_id_efaktur', 'ny_account'],
+    'depends': ['base','product','sale','sale_stock','account', 'l10n_id_efaktur', 'ny_account'],
     'data': [
         'security/ir.model.access.csv',
         'views/product_pricelist_views.xml',
