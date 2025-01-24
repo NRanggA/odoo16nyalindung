@@ -63,7 +63,7 @@
                     }
 
                     .signature-table td {
-                        height: 100px;
+                        height: 90px;
                         vertical-align: bottom;
                         text-align: center;
                     }
