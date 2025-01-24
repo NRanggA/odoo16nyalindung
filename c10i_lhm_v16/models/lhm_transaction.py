@@ -187,7 +187,7 @@ class lhm_transaction(models.Model):
             end_date    = start_date + timedelta(days=1)
 
             # Pencarian absensi karyawan pada tanggal yang sama
-            absensi = self.env['hr.attendance.sheet'].search([
+            absensi = self.env['hr.attendance.sheet'].sudo().search([
                 ('employee_id', 'in', self.kemandoran_id.employee_ids.ids),
                 ('date', '=', self.date),
                 ('check_in', '!=', False),
