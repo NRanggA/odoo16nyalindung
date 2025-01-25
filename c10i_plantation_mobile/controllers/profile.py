@@ -18,7 +18,7 @@ class ProfileApi(ApiBase):
         
         if user_data[0].get('employee_ids',[]):
             employee_data = request.env['hr.employee'].sudo().search_read(domain=[('id','=',user_data[0]['employee_ids'][0])], 
-                    fields=['name','department_id','job_id','no_induk','identification_id'])
+                    fields=['name','department_id','kemandoran_id','job_id','no_induk','identification_id'])
             if employee_data:
                 user_data[0].update(employee_data[0])
         return user_data
