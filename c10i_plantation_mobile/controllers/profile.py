@@ -18,9 +18,12 @@ class ProfileApi(ApiBase):
         
         if user_data[0].get('employee_ids',[]):
             employee_data = request.env['hr.employee'].sudo().search_read(domain=[('id','=',user_data[0]['employee_ids'][0])], 
-                    fields=['name','department_id','kemandoran_id','job_id','no_induk','identification_id'])
+                    fields=['name','department_id','job_id','no_induk','identification_id'])
             if employee_data:
                 user_data[0].update(employee_data[0])
+                foreman = request.env['hr.foreman'].sudo().search([('mandor_id','=',user_data[0]['employee_ids'][0])])
+                if foreman:
+                    user_data[0].update({'allowed_kemandoran_ids': foreman.ids})
         return user_data
     
     @http.route(f"{ROUTES}/dosignin", auth='public', website=False, csrf=False, type='http', methods=['POST'])
