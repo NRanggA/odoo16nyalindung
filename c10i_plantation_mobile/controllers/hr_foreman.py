@@ -28,7 +28,7 @@ class HrForemanApi(ApiBase):
             else:
                 if last_sync_date:
                     domain.extend(['|',('create_date','>',last_sync_date),('write_date','>',last_sync_date)])
-            fields = ['id','name','assisten_id','kepala_mandor_id', 'mandor_id','tap_kontrol_id','create_date','write_date']
+            fields = ['id','name','assisten_id','kepala_mandor_id', 'mandor_id','tap_kontrol_id','employee_ids','create_date','write_date']
             result['data'] = request.env['hr.foreman'].sudo().search_read(domain=domain, fields=fields)
             result['count'] = request.env['hr.foreman'].sudo().search_count(domain=domain)
 
