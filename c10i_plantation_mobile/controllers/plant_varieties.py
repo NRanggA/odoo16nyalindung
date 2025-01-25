@@ -33,7 +33,7 @@ class VarietiesApi(ApiBase):
                     'id': varieties.id,
                     'name': varieties.name,
                     'code': varieties.code,
-                    'allowed_location_id': varieties.plant_block_ids.location_id.ids + varieties.project_ids.location_id.ids + varieties.nursery_ids.location_id.ids,
+                    'allowed_location_id': varieties.plant_block_ids.location_id.ids + varieties.project_ids.location_id.ids,
                     'allowed_fc_activity_id': varieties.harvest_activity_ids.ids + varieties.upkeep_activity_ids.ids,
                     'allowed_gc_activity_id': varieties.general_charges_activity_ids.ids,
                     'allowed_idc_activity_id': varieties.indirect_cost_activity_ids.ids,

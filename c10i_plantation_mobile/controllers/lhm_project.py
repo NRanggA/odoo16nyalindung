@@ -28,19 +28,21 @@ class ProjectApi(ApiBase):
             else:
                 if last_sync_date:
                     domain.extend(['|',('create_date','>',last_sync_date),('write_date','>',last_sync_date)])
-            # for project in request.env['lhm.project'].sudo().search(domain):
-            #     result['data'].append({
-            #         'id': project.id,
-            #         'name': project.name,
-            #         'code': project.code,
-            #         'allowed_activity_id': project.actvity_ids.ids,
-            #         'create_date': project.create_date,
-            #         'write_date': project.write_date,
-            #     })
+            
+            for project in request.env['lhm.project'].sudo().search(domain):
+                result['data'].append({
+                    'id': project.id,
+                    'name': project.name,
+                    'code': project.code,
+                    'allowed_activity_id': project.actvity_ids.ids,
+                    'create_date': project.create_date,
+                    'write_date': project.write_date,
+                })
 
-            fields = ['id','name','code','actvity_ids','create_date','write_date']
-            result['data'] = request.env['lhm.project'].sudo().search_read(domain=domain, fields=fields)
-            result['count'] = request.env['lhm.project'].sudo().search_count(domain=domain)
+            # fields = ['id','name','code','create_date','write_date']
+            # result['data'] = request.env['lhm.project'].sudo().search_read(domain=domain, fields=fields)
+            # result['count'] = request.env['lhm.project'].sudo().search_count(domain=domain)
+            result['count'] = len(result['data'])
 
             if not result['count']:
                 raise MissingError("Project not Found")
