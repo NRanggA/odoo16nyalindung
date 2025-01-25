@@ -12,13 +12,13 @@ class APIClientList(models.Model):
     blacklist = fields.Boolean('Blacklisted')
 
     def write(self, update_vals):
-        if 'number_of_error' in update_vals.keys():
-            if update_vals['number_of_error'] > 20:
-                update_vals.update({'blacklist': True})
+        # if 'number_of_error_allowed' in update_vals.keys():
+        #     if update_vals['number_of_error_allowed'] > 20:
+        #         update_vals.update({'blacklist': True})
         if 'number_of_error_half_hour_allowed' in update_vals.keys() and 'number_of_error_allowed' in update_vals.keys():
-            if update_vals['number_of_error']<=0:
+            if update_vals['number_of_error_allowed']<=0:
                 update_vals.update({'blacklist': True})
-            elif update_vals['number_of_error_half_hour_allowed']<=0 and update_vals['number_of_error']>0:
+            elif update_vals['number_of_error_half_hour_allowed']<=0 and update_vals['number_of_error_allowed']>0:
                 update_vals.update({'next_temp_blacklist_reset': fields.Datetime.now() + relativedelta(minutes=30)})
         
         if 'blacklist' in update_vals.keys() and update_vals['blacklist']==False:
