@@ -37,8 +37,8 @@ class ApiBase(http.Controller):
             added_addrs = request.env['c10i_base_api.client.list'].sudo().create({'name': client_req_addrs})
         # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth", added_addrs)
         # Blacklisted Address
-        if added_addrs.blacklist:
-            return False, 'Unauthorized, You have failed authorization proceess several times. Please contact the admin for further details.'
+        # if added_addrs.blacklist:
+        #     return False, 'Unauthorized, You have failed authorization proceess several times. Please contact the admin for further details.'
         elif added_addrs.number_of_error_half_hour_allowed<=0:
             return False, 'Temporary Blocked, You have failed authorization proceess several times. Please wait for 30 minutes or contact the admin for further details.'
         auth_header = request.httprequest.headers.get('Authorization')
