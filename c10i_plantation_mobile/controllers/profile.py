@@ -20,6 +20,7 @@ class ProfileApi(ApiBase):
             employee_data = request.env['hr.employee'].sudo().search_read(domain=[('id','=',user_data[0]['employee_ids'][0])], 
                     fields=['name','department_id','job_id','no_induk','identification_id'])
             if employee_data:
+                del employee_data['id']
                 user_data[0].update(employee_data[0])
                 foreman = request.env['hr.foreman'].sudo().search([('mandor_id','=',user_data[0]['employee_ids'][0])])
                 if foreman:
