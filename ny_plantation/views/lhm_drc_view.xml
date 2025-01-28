@@ -93,6 +93,6 @@
                 </form>
             </field>
         </record>
-        <menuitem id="submenu_lhm_drc_input" name="Dry Rubber Content - Input" action="action_lhm_drc_input" parent="c10i_lhm_v16.submenu_lhm_nap" groups="c10i_lhm_v16.group_plantation_operator" sequence="2"/>
+        <menuitem id="submenu_lhm_drc_input" name="Dry Rubber Content - Input" action="action_lhm_drc_input" parent="c10i_lhm_v16.submenu_lhm_nap" sequence="2"/>
     </data>
 </odoo>

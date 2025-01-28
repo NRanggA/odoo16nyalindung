@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.module.category" id="module_category_plantation_nursery">
+        <field name="name">Nursery</field>
+        <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+        <field name="sequence">26</field>
+    </record>
+
+    <record id="plantation_nursery_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_plantation_nursery"/>
+        <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+    </record>
+
+    <record id="plantation_nursery_approver" model="res.groups">
+        <field name="name">Approver</field>
+        <field name="category_id" ref="module_category_plantation_nursery"/>
+        <field name="implied_ids" eval="[(4, ref('c10i_plantation_seed.plantation_nursery_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    </record>
+
+</odoo>

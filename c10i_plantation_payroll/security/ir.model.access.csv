@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_c10i_plantation_payroll_c10i_plantation_payroll,c10i_plantation_payroll.c10i_plantation_payroll,model_c10i_plantation_payroll_c10i_plantation_payroll,base.group_user,1,1,1,1
+access_plantation_payroll_1,lhm.transaction payrolluser,c10i_lhm_v16.model_lhm_transaction,c10i_hr_payroll.group_hr_payroll_user,1,0,0,0
+access_plantation_payroll_2,lhm.transaction.line payrolluser,c10i_lhm_v16.model_lhm_transaction_line,c10i_hr_payroll.group_hr_payroll_user,1,0,0,0
+access_plantation_payroll_3,lhm.transaction.nap.line payrolluser,c10i_lhm_v16.model_lhm_transaction_nap_line,c10i_hr_payroll.group_hr_payroll_user,1,0,0,0

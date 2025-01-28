@@ -11,7 +11,7 @@ class NyOngkosPikulLine(models.Model):
     ref_id = fields.Many2one('ny.ongkos.pikul', string='Reference', ondelete='restrict')
     employee_id = fields.Many2one('hr.employee', requried=True, string='Employee', ondelete='restrict')
     plant_block_id = fields.Many2one('lhm.plant.block', 'Blok Tanam')
-    qty = fields.Float('Karet Kering')
+    qty = fields.Float('Lateks + Lump')
     rate = fields.Float('Harga')
     amount = fields.Float(compute='_compute_amount', store=True, string='Total')
     other_input_id = fields.Many2one('hr.payslip.other.input', string='Other Input')

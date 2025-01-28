@@ -121,6 +121,6 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_stock_ripening_pisang" action="action_stock_ripening_pisang" parent="c10i_lhm_v16.submenu_lhm_nap" groups="c10i_lhm_v16.group_plantation_operator" sequence="3"/>
+    <menuitem id="menu_stock_ripening_pisang" action="action_stock_ripening_pisang" parent="c10i_lhm_v16.submenu_lhm_nap" sequence="3"/>
 
 </odoo>

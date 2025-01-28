@@ -1159,7 +1159,7 @@ class lhm_vehicle(models.Model):
     _description    = 'Buku Kendaraan'
 
     def _default_account_period_id(self):
-        date        = time.strftime('%Y-%m-%d')
+        date        = fields.Date.today()
         period_id   = self.env['account.period'].search([('date_start', '<=', date),
                                                          ('date_stop', '>=', date),
                                                          ('special', '=', False)])

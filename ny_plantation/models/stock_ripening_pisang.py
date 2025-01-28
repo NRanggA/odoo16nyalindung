@@ -179,17 +179,17 @@ class StockRipeningPisang(models.Model):
                 'picking_type_id': picking_type.id,
                 'move_ids': move_lines
             } 
-            picking = self.env['stock.picking'].create(int_picking_vals)
-            # picking.action_confirm()
+            picking = self.env['stock.picking'].sudo().create(int_picking_vals)
+            picking.action_confirm()
             # picking.action_assign()
-            if picking.state=='assigned':
+            # if picking.state=='assigned':
                 # picking.move_ids.action_done()
-                picking.action_set_quantities_to_reservation()
+                # picking.action_set_quantities_to_reservation()
                 # picking.button_validate()
             # rec.picking_ids = [(6,0,picking.ids)]
             # Create Scrap
             scrap_to_create = rec._prepare_scrap_lines(picking)
-            scrap_datas = self.env['stock.scrap'].create(scrap_to_create)
+            scrap_datas = self.env['stock.scrap'].sudo().create(scrap_to_create)
             # for scrap_data in scrap_datas:
                 # scrap_data.action_validate()
             # rec.scrap_ids = [(6,0,scrap_datas.ids)]

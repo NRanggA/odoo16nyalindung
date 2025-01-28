@@ -36,7 +36,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_master_lhm_product" action="menu_master_lhm_product_action" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="13"/>
+        <menuitem id="menu_master_lhm_product" action="menu_master_lhm_product_action" parent="menu_lhm_master" sequence="13"/>
 
         <!-- <menuitem id="menu_plantation_pricelist" name="Plantation Pricelist" parent="menu_plantation_config" groups="group_plantation_manager" sequence="20"/> -->
 

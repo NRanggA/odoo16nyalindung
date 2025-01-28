@@ -420,16 +420,16 @@ class lhm_nap(models.Model):
                             _("Tidak dapat mengkonfirmasi dokumen ini karena DRC untuk produk '%s' bernilai 0. Harap periksa dan masukkan nilai DRC di form DRC.")
                             % nap_line.product_id.name
                         )
-                    if nap_line.lhm_transaction_nap_id.lhm_id.state == 'draft':
+                    if nap_line.lhm_transaction_nap_id.sudo().lhm_id.state == 'draft':
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
                         )
-                    if nap_line.lhm_contractor_nap_id.contractor_id.state == 'draft':
+                    if nap_line.lhm_contractor_nap_id.sudo().contractor_id.state == 'draft':
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen LHM dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen LHM tersebut.")
                         )
                     if nap_line.product_id.name == "Lateks":
-                        nap_line.lhm_transaction_nap_id.write({
+                        nap_line.lhm_transaction_nap_id.sudo().write({
                             'product_id': nap_line.product_id.id,
                             'hasil_1_nap': nap_line.qty_nap,
                             'satuan_1_nap': nap_line.uom_id.id,
@@ -437,7 +437,7 @@ class lhm_nap(models.Model):
                             'lhm_nap_line_id': nap_line.id,
                         })
                     elif nap_line.product_id.name == "Lump":
-                        nap_line.lhm_transaction_nap_id.write({
+                        nap_line.lhm_transaction_nap_id.sudo().write({
                             'product_id_2': nap_line.product_id.id,
                             'hasil_2_nap': nap_line.qty_nap,
                             'satuan_2_nap': nap_line.uom_id.id,
@@ -445,7 +445,7 @@ class lhm_nap(models.Model):
                             'lhm_nap_line_id': nap_line.id,
                         })
                     else:
-                        nap_line.lhm_transaction_nap_id.write({
+                        nap_line.lhm_transaction_nap_id.sudo().write({
                             'product_id': nap_line.product_id.id,
                             'hasil_1_nap': nap_line.qty_nap,
                             'satuan_1_nap': nap_line.uom_id.id,
@@ -457,32 +457,32 @@ class lhm_nap(models.Model):
                             _("Tidak dapat mengkonfirmasi dokumen ini karena DRC untuk produk '%s' bernilai 0. Harap periksa dan masukkan nilai DRC di form DRC.")
                             % nap_line.product_id.name
                         )
-                    if nap_line.lhm_contractor_nap_id.contractor_id.state == 'draft':
+                    if nap_line.lhm_contractor_nap_id.sudo().contractor_id.state == 'draft':
                         raise ValidationError(
                             _("Tidak dapat mengkonfirmasi dokumen ini karena terdapat dokumen Buku Kontraktor Harian dengan tanggal yang sama dalam status 'draft'. Periksa dan selesaikan terlebih dahulu dokumen tersebut.")
                         )
                     if nap_line.product_id.name == "Lateks":
-                        nap_line.lhm_contractor_nap_id.write({
+                        nap_line.lhm_contractor_nap_id.sudo().write({
                             'product_id': nap_line.product_id.id,
                             'nilai': nap_line.qty_nap,
                             'uom_id': nap_line.uom_id.id,
                             'drc_latex_nap': nap_line.drc,
                         })
                     elif nap_line.product_id.name == "Lump":
-                        nap_line.lhm_contractor_nap_id.write({
+                        nap_line.lhm_contractor_nap_id.sudo().write({
                             'product_id_2': nap_line.product_id.id,
                             'nilai2': nap_line.qty_nap,
                             'uom2_id': nap_line.uom_id.id,
                             'drc_lump_nap': nap_line.drc,
                         })
                     else:
-                        nap_line.lhm_contractor_nap_id.write({
+                        nap_line.lhm_contractor_nap_id.sudo().write({
                             'product_id': nap_line.product_id.id,
                             'nilai': nap_line.qty_nap,
                             'uom_id': nap_line.uom_id.id,
                         })
-                nap_line.lhm_transaction_nap_id.lhm_transaction_line_id.get_wage_borong_panen()
-                nap_line.lhm_contractor_nap_id.convert_karet_contractor()
+                nap_line.lhm_transaction_nap_id.sudo().lhm_transaction_line_id.get_wage_borong_panen()
+                nap_line.lhm_contractor_nap_id.sudo().convert_karet_contractor()
             self.state = 'done'
 
     def button_draft(self):
@@ -566,14 +566,14 @@ class lhm_nap(models.Model):
             ])
             location_ids = [line.block_id.location_id.id for line in record.kebun_line_ids]
             # Mendapatkan data dari lhm.transaction.line berdasarkan tanggal LHM
-            transaction_lines = self.env['lhm.transaction.line'].search([
+            transaction_lines = self.env['lhm.transaction.line'].sudo().search([
                 ('date', '=', record.date_nap),
                 ('location_id','in', location_ids),
                 ('lhm_id.state', '=', 'in_progress'),
                 ('activity_id.is_nap', '=', True)
             ])
             # Mendapatkan data dari lhm.contractor.line berdasarkan tanggal Contractor Harian
-            contractor_day_lines = self.env['lhm.contractor.line'].search([
+            contractor_day_lines = self.env['lhm.contractor.line'].sudo().search([
                 ('contractor_id.date', '=', record.date_nap),
                 ('location_id','in', location_ids),
                 ('contractor_id.state', '=', 'process'),
@@ -707,14 +707,14 @@ class lhm_nap(models.Model):
                 ], limit=1)
 
                 if kebun_line:
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].sudo().search([
                         ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('lhm_transaction_line_id.date', '=', pabrik_line.tgl_panen),
                         ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
                         ('lhm_transaction_line_id.state', '=', 'in_progress'),
                     ])
 
-                    contractor_lines = self.env['lhm.contractor.nap.line'].search([
+                    contractor_lines = self.env['lhm.contractor.nap.line'].sudo().search([
                         ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('contractor_id.date', '=', pabrik_line.tgl_panen),
                     ])
@@ -799,7 +799,7 @@ class lhm_nap(models.Model):
             for employee_id, data in employee_data.items():
                 if data['hasil_1_nap']:
                     transaction_exists = (
-                        self.env['lhm.transaction.nap.line'].search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
+                        self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
                     )
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
@@ -816,7 +816,7 @@ class lhm_nap(models.Model):
 
                 if data['product_2'] and data['hasil_2_nap']:
                     transaction_exists = (
-                        self.env['lhm.transaction.nap.line'].search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
+                        self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
                     )
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
@@ -834,7 +834,7 @@ class lhm_nap(models.Model):
             for supplier_key, data in supplier_data.items():
                 if data['hasil_1_nap']:
                     transaction_exists = (
-                        self.env['lhm.contractor.nap.line'].search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
+                        self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
                     )    
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
@@ -851,7 +851,7 @@ class lhm_nap(models.Model):
 
                 if data['product_2'] and data['hasil_2_nap']:
                     transaction_exists = (
-                        self.env['lhm.contractor.nap.line'].search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
+                        self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
                     )
                     if transaction_exists:
                         self.env['lhm.nap.line'].create({
@@ -886,7 +886,7 @@ class lhm_nap_line(models.Model):
                         ('block_id', '=', line.block_id.id),
                         ('tgl_panen', '=', line.tgl_panen)]
                 other_nap       = self.env['lhm.nap.line'].search(domain)
-                progress_ids    = self.env['lhm.transaction.process.line'].search([('date', '=', line.tgl_panen), ('location_id', '=', line.block_id.location_id.id)])
+                progress_ids    = self.env['lhm.transaction.process.line'].sudo().search([('date', '=', line.tgl_panen), ('location_id', '=', line.block_id.location_id.id)])
                 balance_ids     = self.env['lhm.restan.balance'].search([('tgl_panen', '=', line.tgl_panen), ('block_id', '=', line.block_id.id)])
                 if balance_ids:
                     for balance in balance_ids:

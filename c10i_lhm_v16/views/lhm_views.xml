@@ -74,7 +74,8 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_plantation_location_reference_config" name="Grouping LPPH" action="action_plantation_location_reference" parent="menu_plantation_config" groups="group_plantation_operator_all" sequence="12"/>
+        <!-- <menuitem id="menu_plantation_location_reference_config" name="Grouping LPPH" action="action_plantation_location_reference" parent="menu_plantation_config" groups="group_plantation_operator_all" sequence="12"/> -->
+        <menuitem id="menu_plantation_location_reference_config" name="Grouping LPPH" action="action_plantation_location_reference" parent="menu_plantation_config" sequence="12"/>
         <!-- End Of Plantation Location Reference -->
 
 
@@ -193,7 +194,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_location_type_config" name="Tipe Lokasi" action="action_lhm_location_type" parent="menu_plantation_config" groups="base.group_no_one" sequence="13"/>
+        <menuitem id="menu_lhm_location_type_config" name="Tipe Lokasi" action="action_lhm_location_type" parent="menu_plantation_config" sequence="13"/>
         <!-- End Of LHM Location Type -->
 
 
@@ -268,7 +269,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_sub_location_type_config" action="action_lhm_sub_location_type" parent="menu_plantation_config" groups="base.group_no_one" sequence="14"/>
+        <menuitem id="menu_lhm_sub_location_type_config" action="action_lhm_sub_location_type" parent="menu_plantation_config" sequence="14"/>
         <!-- End Of LHM Sub Location Type -->
 
 
@@ -350,7 +351,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_location_config" name="Lokasi" action="action_lhm_location" parent="main_menu_lhm" groups="group_plantation_operator_all" sequence="22"/>
+        <menuitem id="menu_lhm_location_config" name="Lokasi" action="action_lhm_location" parent="main_menu_lhm" sequence="22"/>
         <!-- End Of LHM Location -->
 
 
@@ -503,7 +504,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_charge_type_config" action="action_lhm_charge_type" parent="menu_plantation_config" groups="base.group_no_one" sequence="27"/>
+        <menuitem id="menu_lhm_charge_type_config" action="action_lhm_charge_type" parent="menu_plantation_config" sequence="27"/>
         <!-- End Of Master Beban Muatan -->
 
 
@@ -659,7 +660,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_plantation_indirect_cost_master" name="Indirect Cost" action="action_plantation_indirect_cost_lhm" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="28"/>
+        <menuitem id="menu_plantation_indirect_cost_master" name="Indirect Cost" action="action_plantation_indirect_cost_lhm" parent="menu_lhm_master" sequence="28"/>
         <!--End Of Master Indirect Cost -->
 
 
@@ -772,7 +773,7 @@
             <field name="act_window_id" ref="action_lhm_utility_vehicle"/>
         </record>
 
-        <menuitem id="menu_master_lhm_utility_vehicle" name="Kendaraan" action="action_lhm_utility_vehicle" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="30"/>
+        <menuitem id="menu_master_lhm_utility_vehicle" name="Kendaraan" action="action_lhm_utility_vehicle" parent="menu_lhm_master" sequence="30"/>
         <!--End Of LHM Master Utility Vehicle -->
 
 
@@ -878,7 +879,7 @@
             <field name="act_window_id" ref="action_lhm_utility_machine"/>
         </record>
 
-        <menuitem id="menu_master_lhm_utility_machine" name="Mesin" action="action_lhm_utility_machine" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="40"/>
+        <menuitem id="menu_master_lhm_utility_machine" name="Mesin" action="action_lhm_utility_machine" parent="menu_lhm_master" sequence="40"/>
         <!--End Of LHM Master Utility Machine-->
 
 
@@ -979,7 +980,7 @@
             <field name="act_window_id" ref="action_lhm_utility_workshop"/>
         </record>
 
-        <menuitem id="menu_master_lhm_utility_workshop" name="Workshop" action="action_lhm_utility_workshop" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="50"/>
+        <menuitem id="menu_master_lhm_utility_workshop" name="Workshop" action="action_lhm_utility_workshop" parent="menu_lhm_master" sequence="50"/>
         <!--End Of LHM Master Utility Workshop-->
 
 
@@ -1054,7 +1055,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_land_block_config" action="action_lhm_land_block" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="59"/>
+        <menuitem id="menu_lhm_land_block_config" action="action_lhm_land_block" parent="menu_lhm_master" sequence="59"/>
         <!-- End Of LHM Blok Tanah -->
 
 
@@ -1195,7 +1196,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_master_lhm_plant_block" action="action_lhm_plant_block" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="60"/>
+        <menuitem id="menu_master_lhm_plant_block" action="action_lhm_plant_block" parent="menu_lhm_master" sequence="60"/>
         <!--End Of LHM Master Blok Tanam-->
 
 
@@ -1270,7 +1271,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_quality_pabrik_config" action="action_lhm_quality_pabrik" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="61"/>
+        <menuitem id="menu_lhm_quality_pabrik_config" action="action_lhm_quality_pabrik" parent="menu_lhm_master" sequence="61"/>
         <!-- End Of LHM Quality Pabrik-->
 
 
@@ -1357,7 +1358,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_master_lhm_nursery" action="action_lhm_nursery" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="70"/>
+        <menuitem id="menu_master_lhm_nursery" action="action_lhm_nursery" parent="menu_lhm_master" sequence="70"/>
         <!--End Of Master LHM Nursery-->
 
 
@@ -1465,7 +1466,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_master_lhm_infrastruktur" action="action_lhm_infrastruktur" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="80"/>
+        <menuitem id="menu_master_lhm_infrastruktur" action="action_lhm_infrastruktur" parent="menu_lhm_master" sequence="80"/>
         <!--End Of Master LHM Infrastruktur-->
 
 
@@ -1601,7 +1602,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_master_lhm_project" action="action_lhm_project" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="90"/>
+        <menuitem id="menu_master_lhm_project" action="action_lhm_project" parent="menu_lhm_master" sequence="90"/>
         <!--End Of Master LHM Project-->
 
 
@@ -1678,7 +1679,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_master_lhm_bjr" action="action_lhm_bjr" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="120"/>
+        <menuitem id="menu_master_lhm_bjr" action="action_lhm_bjr" parent="menu_lhm_master" sequence="120"/>
         <!-- End Of Master BJR -->
 
 
@@ -1817,8 +1818,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="submenu_lhm_machine" action="action_lhm_machine" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="20"/>
-        <!-- <menuitem id="submenu_lhm_machine_all" action="action_lhm_machine_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="20"/> -->
+        <menuitem id="submenu_lhm_machine" action="action_lhm_machine" parent="menu_plantation_transaction" sequence="20"/>
         <!-- End of Transaksi Buku Mesin -->
 
         <!-- LHM Machine Line-->
@@ -1991,8 +1991,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="submenu_lhm_vehicle" action="action_lhm_vehicle" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="30"/>
-        <!-- <menuitem id="submenu_lhm_vehicle_all" action="action_lhm_vehicle_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
+        <menuitem id="submenu_lhm_vehicle" action="action_lhm_vehicle" parent="menu_plantation_transaction" sequence="30"/>
         <!-- End of Transaksi Buku Kendaraan -->
 
         <!-- LHM Vehicle Line-->
@@ -2166,8 +2165,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="submenu_lhm_workshop" action="action_lhm_workshop" parent="menu_plantation_transaction" groups="group_plantation_operator" sequence="30"/>
-        <!-- <menuitem id="submenu_lhm_workshop_all" action="action_lhm_workshop_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
+        <menuitem id="submenu_lhm_workshop" action="action_lhm_workshop" parent="menu_plantation_transaction" sequence="30"/>
         <!-- End of Transaksi Buku Workshop -->
 
         <!-- LHM Workshop Line-->
@@ -2660,8 +2658,8 @@
         <!-- <menuitem id="submenu_lhm_nab_input_all" name="Nota Angkut Panen - Input" action="action_lhm_nab_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End of Transaksi Nota Angkut Panen Input-->
 
-        <menuitem id="submenu_lhm_nap" name="Nota Angkut Panen" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="30"/>
-        <menuitem id="submenu_lhm_nap_input" name="Nota Angkut Panen - Input" action="action_lhm_nap_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="1"/>
+        <menuitem id="submenu_lhm_nap" name="Nota Angkut Panen" parent="menu_lhm_transaction" sequence="30"/>
+        <menuitem id="submenu_lhm_nap_input" name="Nota Angkut Panen - Input" action="action_lhm_nap_input" parent="submenu_lhm_nap" sequence="1"/>
         <!-- <menuitem id="submenu_lhm_nap_all" name="Nota Angkut Panen" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- <menuitem id="submenu_lhm_nap_input_all" name="Nota Angkut Panen - Input" action="action_lhm_nap_input_all" parent="submenu_lhm_nap_all" groups="group_plantation_operator" sequence="10"/> -->
         <!-- End of Transaksi Nota Angkut Panen Input-->
@@ -2871,11 +2869,9 @@
         </record>
 
         <!-- <menuitem id="submenu_lhm_nab_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input" parent="submenu_lhm_nab" groups="group_plantation_operator" sequence="30"/> -->
-        <!-- <menuitem id="submenu_lhm_nab_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nab_afkir_input_all" parent="submenu_lhm_nab_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Nota Afkir Buah Input-->
 
         <!-- <menuitem id="submenu_lhm_nap_afkir_input" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input" parent="submenu_lhm_nap" groups="group_plantation_operator" sequence="30"/> -->
-        <!-- <menuitem id="submenu_lhm_nap_afkir_input_all" name="Nota Afkir Buah - Input" action="action_lhm_nap_afkir_input_all" parent="submenu_lhm_nap_all" groups="group_plantation_operator" sequence="30"/> -->
         <!-- End of Transaksi Nota Afkir Buah Input-->
 
 
@@ -3020,7 +3016,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_land_class_config" action="action_lhm_land_class" parent="menu_plantation_config" groups="base.group_no_one" sequence="40"/>
+        <menuitem id="menu_lhm_land_class_config" action="action_lhm_land_class" parent="menu_plantation_config" sequence="40"/>
         <!-- End Of LHM Land Class -->
 
 
@@ -3096,7 +3092,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_palm_oil_sprouts_config" action="action_lhm_palm_oil_sprouts" parent="menu_plantation_config" groups="base.group_no_one" sequence="50"/>
+        <menuitem id="menu_lhm_palm_oil_sprouts_config" action="action_lhm_palm_oil_sprouts" parent="menu_plantation_config" sequence="50"/>
         <!-- End Of LHM Kecambah Kelapa Sawit -->
 
 
@@ -3174,7 +3170,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_master_lhm_rotasi_panen_balance" action="action_lhm_rotasi_panen_balance" parent="menu_lhm_master" groups="group_plantation_supervisor" sequence="121"/>
+        <menuitem id="menu_master_lhm_rotasi_panen_balance" action="action_lhm_rotasi_panen_balance" parent="menu_lhm_master" sequence="121"/>
         <!-- End Of Master Nomor Akhir Rotasi Panen -->
 
         <!-- -->

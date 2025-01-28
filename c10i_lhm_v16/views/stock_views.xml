@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <menuitem id="stock.menu_warehouse_report" name="Reports" sequence="99" parent="stock.menu_stock_root" groups="stock.group_stock_manager,stock.group_stock_user"/>
+        <!-- <menuitem id="stock.menu_warehouse_report" name="Reports" sequence="99" parent="stock.menu_stock_root" groups="stock.group_stock_manager,stock.group_stock_user"/> -->
 
         <record id="view_view_picking_type_skb_form" model="ir.ui.view">
             <field name="name">view.stock.picking.type.skb.form</field>
@@ -147,7 +147,7 @@
             <field name="view_id" ref="view_stock_picking_skb_form"/>
             <field name="act_window_id" ref="action_stock_picking_skb"/>
         </record>
-        <menuitem id="menu_stock_picking_skb" name="Slip Keluar Barang" action="action_stock_picking_skb" parent="stock.menu_stock_warehouse_mgmt" groups="stock.group_stock_manager,stock.group_stock_user" sequence="20"/>
+        <!-- <menuitem id="menu_stock_picking_skb" name="Slip Keluar Barang" action="action_stock_picking_skb" parent="stock.menu_stock_warehouse_mgmt" groups="stock.group_stock_manager,stock.group_stock_user" sequence="20"/> -->
 
         <record id="stock.action_picking_tree_all" model="ir.actions.act_window">
             <field name="name">Stock Operations</field>

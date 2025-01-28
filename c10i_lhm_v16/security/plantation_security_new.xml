@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="0">
+    
+        <record model="ir.module.category" id="module_category_plantation_lhm">
+            <field name="name">LHM</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">1</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_contractor">
+            <field name="name">Buku Kontraktor</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">2</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_nap">
+            <field name="name">Nota Angkut Buah</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">3</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_workshop">
+            <field name="name">Workshop</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">11</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_vehicle">
+            <field name="name">Vehicle</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">12</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_machine">
+            <field name="name">Machine</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">13</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_management">
+            <field name="name">Management</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">30</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_plantation_support">
+            <field name="name">Technical</field>
+            <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+            <field name="sequence">50</field>
+        </record>
+    
+        <record id="plantation_base_user" model="res.groups">
+            <field name="name">Base Users</field>
+            <!-- <field name="category_id" ref="module_category_plantation_support"/> -->
+            <field name="comment">Base User Plantation</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_itsupport_user" model="res.groups">
+            <field name="name">IT Support</field>
+            <field name="category_id" ref="module_category_plantation_support"/>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_lhm_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="category_id" ref="module_category_plantation_lhm"/>
+            <field name="comment">Operator Laporan Harian Mandor</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+        </record>
+
+        <record id="plantation_lhm_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="module_category_plantation_lhm"/>
+            <field name="comment">Approver Laporan Harian Mandor</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_lhm_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_lhm_contractor_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="category_id" ref="module_category_plantation_contractor"/>
+            <field name="comment">Operator Buku Kontraktor</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+        </record>
+
+        <record id="plantation_lhm_contractor_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="module_category_plantation_contractor"/>
+            <field name="comment">Approver Buku Kontraktor</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_lhm_contractor_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_lhm_nap_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="category_id" ref="module_category_plantation_nap"/>
+            <field name="comment">Operator Nota Angkut Panen</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+        </record>
+
+        <record id="plantation_lhm_nap_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="module_category_plantation_nap"/>
+            <field name="comment">Approver Nota Angkut Panen</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_lhm_nap_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_lhm_workshop_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="category_id" ref="module_category_plantation_workshop"/>
+            <field name="comment">Operator Buku Workshop</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+        </record>
+
+        <record id="plantation_lhm_workshop_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="module_category_plantation_workshop"/>
+            <field name="comment">Approver Buku Workshop</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_lhm_workshop_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_lhm_vehicle_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="category_id" ref="module_category_plantation_vehicle"/>
+            <field name="comment">Operator Buku Kendaraan</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+        </record>
+
+        <record id="plantation_lhm_vehicle_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="module_category_plantation_vehicle"/>
+            <field name="comment">Approver Buku Kendaraan</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_lhm_vehicle_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_lhm_machine_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="category_id" ref="module_category_plantation_machine"/>
+            <field name="comment">Operator Buku Mesin</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+        </record>
+
+        <record id="plantation_lhm_machine_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="module_category_plantation_machine"/>
+            <field name="comment">Approver Buku Mesin</field>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_lhm_machine_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <record id="plantation_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_plantation_management"/>
+            <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+    </data>
+</odoo>

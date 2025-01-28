@@ -117,7 +117,7 @@ class lhm_drc(models.Model):
         self.state = 'cancel'
 
     def action_confirm(self):
-        napline = self.env['lhm.nap.line']
+        napline = self.env['lhm.nap.line'].sudo()
         for record in self:
             for line in record.drc_line_ids:
                 if not line.drc or line.drc == 0:

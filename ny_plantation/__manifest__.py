@@ -23,6 +23,7 @@
 
     # always loaded
     'data': [
+        'security/ny_security.xml',
         'security/ir.model.access.csv',
         'data/stock_location_data.xml',
         'data/picking_type_data.xml',

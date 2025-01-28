@@ -4,7 +4,7 @@
         id="menu_lab_root"
         name="Laboratorium"
         parent="c10i_lhm_v16.main_menu_lhm"
-        sequence="20"/>
+        sequence="12"/>
         <!-- groups="groups_id" -->
     
     <menuitem

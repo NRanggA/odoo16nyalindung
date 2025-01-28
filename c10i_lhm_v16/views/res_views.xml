@@ -248,6 +248,6 @@
         </p>
       </field>
     </record>
-    <menuitem id="menu_res_running_plantation" name="Running Sequence" action="action_res_running_plantation" parent="menu_running_config" groups="group_plantation_supervisor" sequence="10"/>
+    <!-- <menuitem id="menu_res_running_plantation" name="Running Sequence" action="action_res_running_plantation" parent="menu_running_config" groups="group_plantation_supervisor" sequence="10"/> -->
   </data>
 </odoo>

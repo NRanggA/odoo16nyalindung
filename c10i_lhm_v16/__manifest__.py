@@ -25,6 +25,7 @@
     # always loaded
     'data': [
         'security/plantation_security.xml',
+        'security/plantation_security_new.xml',
         'security/ir.model.access.csv',
 
         'data/res_doc_type_data.xml',

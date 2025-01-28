@@ -2,51 +2,58 @@
 <odoo>
     <data>
         <!-- Main Menu LHM -->
-        <menuitem id="main_menu_lhm" name="Plantation" web_icon="c10i_lhm_v16,static/description/farmer.png" groups="group_plantation_operator,group_plantation_reporting_all" sequence="1"/>
+        <!-- <menuitem id="main_menu_lhm" name="Plantation" web_icon="c10i_lhm_v16,static/description/farmer.png" groups="group_plantation_operator,group_plantation_reporting_all,plantation_base_user" sequence="1"/> -->
+        <menuitem id="main_menu_lhm" name="Plantation" web_icon="c10i_lhm_v16,static/description/farmer.png" groups="plantation_base_user" sequence="1"/>
         <!--SubMenu LHM -->
-        <menuitem id="menu_lhm_transaction" name="Transaksi" parent="main_menu_lhm" groups="group_plantation_operator" sequence="10"/>
+            <!-- <menuitem id="menu_lhm_transaction" name="Transaksi" parent="main_menu_lhm" groups="group_plantation_operator,plantation_base_user" sequence="10"/> -->
+            <menuitem id="menu_lhm_transaction" name="Transaksi" parent="main_menu_lhm" sequence="10"/>
+                
+                <menuitem id="menu_plantation_transaction" name="Plantation" parent="menu_lhm_transaction" sequence="10" />
 
-        <menuitem id="menu_lhm_running" name="Running" parent="main_menu_lhm" groups="group_plantation_super" sequence="11"/>
+            <!-- <menuitem id="menu_lhm_running" name="Running" parent="main_menu_lhm" groups="group_plantation_super" sequence="11"/> -->
+            <menuitem id="menu_lhm_running" name="Running" parent="main_menu_lhm" sequence="100"/>
 
-        <!-- <menuitem id="menu_lhm_transaction_all" name="Transaksi All" parent="main_menu_lhm" groups="group_plantation_super" sequence="11"/> -->
+            <!-- <menuitem id="menu_bibitan" name="Bibitan" parent="main_menu_lhm" groups="group_plantation_super"/> -->
+            <menuitem id="menu_bibitan" name="Bibitan" parent="main_menu_lhm" sequence="11"/>
 
-        <menuitem id="menu_plantation_transaction" name="Plantation" parent="menu_lhm_transaction" groups="group_plantation_operator" sequence="10"/>
+            <!-- <menuitem id="menu_lhm_karyawan" name="Karyawan" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="19"/> -->
+            <menuitem id="menu_lhm_karyawan" name="Karyawan" parent="main_menu_lhm" sequence="19"/>
 
-        <!-- <menuitem id="menu_plantation_transaction_all" name="Plantation" parent="menu_lhm_transaction_all" groups="group_plantation_operator" sequence="10"/> -->
+                <menuitem id="menu_plantation_ptkp" action="c10i_hr_16.action_ptkp" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="45"/>
 
-        <menuitem id="menu_lhm_karyawan" name="Karyawan" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="19"/>
+                <menuitem id="menu_plantation_insurance" action="c10i_hr_16.action_insurance" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="55" name="Asuransi/BPJS"/>
 
-        <menuitem id="menu_lhm_master" name="Master Data" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="20"/>
+                <menuitem id="menu_plantation_overtime" action="c10i_hr_16.action_overtime" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="60"/>
 
-        <menuitem id="menu_lhm_activity" name="Aktivitas" parent="main_menu_lhm" groups="group_plantation_supervisor" sequence="21"/>
+                <menuitem id="menu_plantation_employee_religion" action="c10i_hr_16.action_employee_religion" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="70"/>
 
-        <menuitem id="menu_lhm_rawat" name="Rawat" parent="main_menu_lhm" groups="group_plantation_operator" sequence="30"/>
+                <menuitem id="menu_plantation_nature" action="c10i_hr_16.action_nature" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="49"/>
 
-        <menuitem id="menu_lhm_closing" name="Closing" parent="main_menu_lhm" groups="group_plantation_manager" sequence="40"/>
+            <!-- <menuitem id="menu_lhm_master" name="Master Data" parent="main_menu_lhm" groups="group_plantation_supervisor,group_plantation_operator_employee" sequence="20"/> -->
+            <menuitem id="menu_lhm_master" name="Master Data" parent="main_menu_lhm" sequence="20"/>
 
-        <menuitem id="menu_lhm_report" name="Laporan" parent="main_menu_lhm" groups="group_plantation_operator,group_plantation_operator_can_see_salary,group_plantation_reporting_all,group_plantation_reporting_production" sequence="50"/>
+                <menuitem id="menu_partner_kontraktor" name="Kontraktor" parent="menu_lhm_master" action="base.action_partner_supplier_form" sequence="10" groups="group_plantation_supervisor"/>
 
-        <menuitem id="menu_plantation_report" name="Plantation" parent="menu_lhm_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="10"/>
+            <!-- <menuitem id="menu_lhm_activity" name="Aktivitas" parent="main_menu_lhm" groups="group_plantation_supervisor" sequence="21"/> -->
+            <menuitem id="menu_lhm_activity" name="Aktivitas" parent="main_menu_lhm" sequence="21"/>
 
-        <menuitem id="menu_lhm_config" name="Konfigurasi" parent="main_menu_lhm" groups="base.group_no_one" sequence="60"/>
+            <!-- <menuitem id="menu_lhm_rawat" name="Rawat" parent="main_menu_lhm" groups="group_plantation_operator" sequence="30"/> -->
+            <menuitem id="menu_lhm_rawat" name="Rawat" parent="main_menu_lhm" sequence="30"/>
 
-        <menuitem id="menu_running_config" name="Running Account" parent="menu_lhm_config" groups="base.group_no_one" sequence="10"/>
+            <!-- <menuitem id="menu_lhm_closing" name="Closing" parent="main_menu_lhm" groups="group_plantation_manager" sequence="40"/> -->
+            <menuitem id="menu_lhm_closing" name="Closing" parent="main_menu_lhm" sequence="40"/>
 
-        <menuitem id="menu_plantation_config" name="Plantation" parent="menu_lhm_config" groups="base.group_no_one" sequence="11"/>
+            <!-- <menuitem id="menu_lhm_report" name="Laporan" parent="main_menu_lhm" groups="group_plantation_operator,group_plantation_operator_can_see_salary,group_plantation_reporting_all,group_plantation_reporting_production" sequence="50"/> -->
+            <menuitem id="menu_lhm_report" name="Laporan" parent="main_menu_lhm" groups="plantation_manager" sequence="50"/>
 
-        <menuitem id="menu_plantation_ptkp" action="c10i_hr_16.action_ptkp" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="45"/>
+                <!-- <menuitem id="menu_plantation_report" name="Plantation" parent="menu_lhm_report" groups="group_plantation_supervisor,group_plantation_reporting_all" sequence="10"/> -->
+                <menuitem id="menu_plantation_report" name="Plantation" parent="menu_lhm_report" sequence="10"/>
 
-        <menuitem id="menu_plantation_insurance" action="c10i_hr_16.action_insurance" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="55" name="Asuransi/BPJS"/>
+            <menuitem id="menu_lhm_config" name="Konfigurasi" parent="main_menu_lhm" groups="base.group_no_one" sequence="60"/>
 
-        <menuitem id="menu_plantation_overtime" action="c10i_hr_16.action_overtime" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="60"/>
+                <!-- <menuitem id="menu_running_config" name="Running Account" parent="menu_lhm_config" groups="base.group_no_one" sequence="10"/> -->
 
-        <menuitem id="menu_plantation_employee_religion" action="c10i_hr_16.action_employee_religion" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="70"/>
-
-        <menuitem id="menu_plantation_nature" action="c10i_hr_16.action_nature" parent="menu_lhm_karyawan" groups="group_plantation_manager" sequence="49"/>
-
-        <menuitem id="menu_partner_kontraktor" name="Kontraktor" parent="menu_lhm_master" action="base.action_partner_supplier_form" sequence="10" groups="group_plantation_supervisor"/>
-
-        <menuitem id="menu_bibitan" name="Bibitan" parent="main_menu_lhm" groups="group_plantation_super"/>
+                <menuitem id="menu_plantation_config" name="Plantation" parent="menu_lhm_config" sequence="11"/>
 
         <!-- <menuitem id="menu_account_period" name="Account Period" action="account_period_action" parent="main_menu_lhm"/> -->
         <!-- <menuitem id="menu_account_period" name="Account Period" action="account_period_action" parent="main_menu_lhm" sequence="10"/> -->

@@ -15,6 +15,7 @@
     'data': [
         'data/ir_sequence_data.xml',
         
+        'security/lab_security.xml',
         'security/ir.model.access.csv',
 
         'views/location_type_view.xml',

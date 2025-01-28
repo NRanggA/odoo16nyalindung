@@ -73,7 +73,7 @@ class LabOrder(models.Model):
             'picking_type_id': picking_type.id,
             'move_ids': [(0,0,self._prepare_move_lines())],
         } 
-        picking = self.env['stock.picking'].create(int_picking_vals)
+        picking = self.env['stock.picking'].sudo().create(int_picking_vals)
         picking.action_confirm()
         picking.action_assign()
         # if picking.state=='assigned':

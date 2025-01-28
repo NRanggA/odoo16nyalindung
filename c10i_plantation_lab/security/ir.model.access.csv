@@ -1,3 +1,16 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_lab_product_user,lab.product user,model_lab_product,base.group_user,1,1,1,1
-access_lab_production_order_user,lab.production.order user,model_lab_production_order,base.group_user,1,1,1,1
+access_lab_product_user,lab.product user,model_lab_product,c10i_plantation_lab.plantation_lab_user,1,0,0,0
+access_lab_product_approver,lab.product approver,model_lab_product,c10i_plantation_lab.plantation_lab_approver,1,1,1,1
+access_lab_production_order_user,lab.production.order user,model_lab_production_order,c10i_plantation_lab.plantation_lab_user,1,1,1,0
+access_lab_production_order_approver,lab.production.order approver,model_lab_production_order,c10i_plantation_lab.plantation_lab_approver,1,1,1,1
+access_stock_move_user,stock.move user,stock.model_stock_move,c10i_plantation_lab.plantation_lab_user,1,0,0,0
+access_stock_move_approver,stock.move approver,stock.model_stock_move,c10i_plantation_lab.plantation_lab_approver,1,1,1,0
+access_stock_move_line_user,stock.move.line user,stock.model_stock_move_line,c10i_plantation_lab.plantation_lab_user,1,0,0,0
+access_stock_move_line_approver,stock.move.line approver,stock.model_stock_move_line,c10i_plantation_lab.plantation_lab_approver,1,1,1,0
+access_stock_picking_user,stock.picking user,stock.model_stock_picking,c10i_plantation_lab.plantation_lab_user,1,0,0,0
+access_stock_picking_approver,stock.picking approver,stock.model_stock_picking,c10i_plantation_lab.plantation_lab_approver,1,1,1,0
+access_stock_order_point_approver,stock.warehouse.orderpoint approver,stock.model_stock_warehouse_orderpoint,c10i_plantation_lab.plantation_lab_approver,1,1,1,0
+access_lab_product_itsupport,lab.product itsupport,model_lab_product,c10i_lhm_v16.plantation_itsupport_user,1,0,0,0
+access_lab_product_manager,lab.product manager,model_lab_product,c10i_lhm_v16.plantation_manager,1,0,0,0
+access_lab_production_order_itsupport,lab.production.order itsupport,model_lab_production_order,c10i_lhm_v16.plantation_itsupport_user,1,0,0,0
+access_lab_production_order_manager,lab.production.order mangaer,model_lab_production_order,c10i_lhm_v16.plantation_manager,1,0,0,0

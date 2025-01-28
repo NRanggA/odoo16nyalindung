@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.module.category" id="module_category_plantation_drc">
+        <field name="name">Form DRC</field>
+        <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="plantation_drc_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_plantation_drc"/>
+        <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+    </record>
+
+    <record id="plantation_drc_approver" model="res.groups">
+        <field name="name">Approver</field>
+        <field name="category_id" ref="module_category_plantation_drc"/>
+        <field name="implied_ids" eval="[(4, ref('ny_plantation.plantation_drc_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    </record>
+
+    <record model="ir.module.category" id="module_category_plantation_ripening">
+        <field name="name">Nota Ripening</field>
+        <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="plantation_ripening_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_plantation_ripening"/>
+        <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_base_user'))]"/>
+    </record>
+
+    <record id="plantation_ripening_approver" model="res.groups">
+        <field name="name">Approver</field>
+        <field name="category_id" ref="module_category_plantation_ripening"/>
+        <field name="implied_ids" eval="[(4, ref('ny_plantation.plantation_ripening_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    </record>
+
+    <record model="ir.module.category" id="module_category_plantation_supervise">
+        <field name="name">Supervisi</field>
+        <field name="parent_id" ref="c10i_lhm_v16.module_category_c10i_plantation" />
+        <field name="sequence">90</field>
+    </record>
+
+    <record id="plantation_mandor_user" model="res.groups">
+        <field name="name">Mandor</field>
+        <field name="category_id" ref="module_category_plantation_supervise"/>
+        <field name="implied_ids" eval="[
+(4, ref('c10i_lhm_v16.plantation_lhm_approver')),
+(4, ref('c10i_lhm_v16.plantation_lhm_contractor_approver')),
+(4, ref('c10i_lhm_v16.plantation_lhm_workshop_approver')),
+(4, ref('c10i_lhm_v16.plantation_lhm_vehicle_approver')),
+(4, ref('c10i_lhm_v16.plantation_lhm_machine_approver'))]"/>
+    </record>
+
+    <record id="plantation_kepala_mandor_user" model="res.groups">
+        <field name="name">Kepala Mandor</field>
+        <field name="category_id" ref="module_category_plantation_supervise"/>
+        <field name="implied_ids" eval="[(4, ref('ny_plantation.plantation_mandor_user'))]"/>
+    </record>
+
+    <record id="plantation_asisten_kebun_user" model="res.groups">
+        <field name="name">Asisten</field>
+        <field name="category_id" ref="module_category_plantation_supervise"/>
+        <field name="implied_ids" eval="[(4, ref('ny_plantation.plantation_kepala_mandor_user'))]"/>
+    </record>
+
+</odoo>

@@ -247,7 +247,8 @@
         </record>
         
 
-        <menuitem id="menu_lhm_contractor_group" name="Buku Kontraktor" parent="menu_lhm_transaction" sequence="29" groups="group_plantation_operator"/>
+        <!-- <menuitem id="menu_lhm_contractor_group" name="Buku Kontraktor" parent="menu_lhm_transaction" sequence="29" groups="group_plantation_operator"/> -->
+        <menuitem id="menu_lhm_contractor_group" name="Buku Kontraktor" parent="menu_lhm_transaction" sequence="29" />
         <menuitem id="submenu_lhm_contractor_harian" action="action_lhm_contractor_harian" parent="menu_lhm_contractor_group" sequence="1"/>
         <menuitem id="submenu_lhm_contractor" action="action_lhm_contractor" parent="menu_lhm_contractor_group" sequence="2"/>
         <!-- <menuitem id="submenu_lhm_contractor_all" action="action_lhm_contractor_all" parent="menu_plantation_transaction_all" groups="group_plantation_operator" sequence="50"/> -->

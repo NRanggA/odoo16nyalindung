@@ -215,7 +215,7 @@ class lhm_transaction(models.Model):
                         'premi'                 : 0.0,
                         'overtime_value'        : 0.0,
                         'penalty'               : 0.0,
-                        'name'                  : employee and employee.no_induk or False,
+                        'name'                  : employee and employee.sudo().no_induk or False,
                         'employee_id'           : employee and employee.id or False,
                         'attendance_id'         : False, 
                         # 'contract_id'           : contract and contract.id or False,
@@ -282,13 +282,13 @@ class lhm_transaction(models.Model):
             
             for emp_transaction in all_transaction_employee:
                 # if not emp_transaction.is_borong:
-                if emp_transaction.attendance_id and emp_transaction.employee_id.contract_id.wage_type_id.name == 'Month' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
+                if emp_transaction.attendance_id and emp_transaction.employee_id.sudo().contract_id.wage_type_id.name == 'Month' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
                     trans_valid.append(emp_transaction.id)
                     if emp_transaction.lhm_id.id not in lhm_list:
                         lhm_list.append(emp_transaction.lhm_id.id)
                 if emp_transaction.work_day > 0 and emp_transaction.attendance_id and emp_transaction.attendance_id.type_hk == 'hke' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
                     total_hke += emp_transaction.work_day
-                elif emp_transaction.non_work_day > 0 and emp_transaction.attendance_id and emp_transaction.attendance_id.type_hk == 'hkne' and emp_transaction.employee_id.contract_id.wage_type_id.name == 'Month' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
+                elif emp_transaction.non_work_day > 0 and emp_transaction.attendance_id and emp_transaction.attendance_id.type_hk == 'hkne' and emp_transaction.employee_id.sudo().contract_id.wage_type_id.name == 'Month' and (emp_transaction.lhm_id.state == 'done' or emp_transaction.lhm_id.state == 'in_progress'):
                     total_hkne += emp_transaction.non_work_day
                 # else:
                 #     trans_valid_borongan.append(emp_transaction.id)
@@ -298,13 +298,13 @@ class lhm_transaction(models.Model):
             for emp_transaction_write in plantation_line_obj.search([('id', 'in', trans_valid)], order='date asc'):
                 if emp_transaction_write.work_day > 0 and emp_transaction_write.attendance_id and emp_transaction_write.attendance_id.type_hk == 'hke' and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
                     total_hke_day += emp_transaction_write.work_day
-                elif emp_transaction_write.non_work_day > 0 and emp_transaction_write.attendance_id and emp_transaction_write.attendance_id.type_hk == 'hkne' and emp_transaction_write.employee_id.contract_id.wage_type_id.name == 'Month' and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
+                elif emp_transaction_write.non_work_day > 0 and emp_transaction_write.attendance_id and emp_transaction_write.attendance_id.type_hk == 'hkne' and emp_transaction_write.employee_id.sudo().contract_id.wage_type_id.name == 'Month' and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
                     total_hkne_day += emp_transaction_write.non_work_day
                 if emp_transaction_write.attendance_id and (emp_transaction_write.non_work_day > 0 or emp_transaction_write.work_day > 0) and (emp_transaction_write.lhm_id.state == 'done' or emp_transaction_write.lhm_id.state == 'in_progress'):
 
-                    contract_wage_value         = emp_transaction_write.contract_id.wage / (total_hke + total_hkne)
-                    contract_value_date         = emp_transaction_write.contract_id.wage / (total_hke_day + total_hkne_day)
-                    contract_value_hkne         = ((emp_transaction_write.contract_id.wage / (total_hke + total_hkne)) * total_hkne)
+                    contract_wage_value         = emp_transaction_write.sudo().contract_id.wage / (total_hke + total_hkne)
+                    contract_value_date         = emp_transaction_write.sudo().contract_id.wage / (total_hke_day + total_hkne_day)
+                    contract_value_hkne         = ((emp_transaction_write.sudo().contract_id.wage / (total_hke + total_hkne)) * total_hkne)
 
                     values  = {
                         # 'total_hke'             : total_hke_2 + total_hke,
@@ -320,7 +320,7 @@ class lhm_transaction(models.Model):
                     values = {
                         'total_hke'             : 0.0,
                         'total_hkne'            : 0.0,
-                        'contract_wage_value'   : emp_transaction_write.contract_id.wage if emp_transaction_write.contract_id.wage_type_id.name == 'Month' else emp_transaction_write.contract_id.wage_day / emp_transaction_write.contract_id.work_day,
+                        'contract_wage_value'   : emp_transaction_write.sudo().contract_id.wage if emp_transaction_write.sudo().contract_id.wage_type_id.name == 'Month' else emp_transaction_write.sudo().contract_id.wage_day / emp_transaction_write.sudo().contract_id.work_day,
                         'contract_value_date'   : 0.0,
                     }
                     emp_transaction_write.write(values)
@@ -344,7 +344,7 @@ class lhm_transaction(models.Model):
 
             for lhm_reprogress in plantation_line_obj.search([('lhm_id', 'in', lhm_list)], order='date asc'):
                 if (lhm_reprogress.lhm_id.state == 'done' or lhm_reprogress.lhm_id.state == 'in_progress'):
-                    if lhm_reprogress.attendance_id and lhm_reprogress.employee_id and lhm_reprogress.employee_id.type_id and lhm_reprogress.employee_id.contract_id.wage_type_id.name == 'Month' and \
+                    if lhm_reprogress.attendance_id and lhm_reprogress.employee_id and lhm_reprogress.employee_id.type_id and lhm_reprogress.employee_id.sudo().contract_id.wage_type_id.name == 'Month' and \
                         (lhm_reprogress.non_work_day > 0 or lhm_reprogress.work_day > 0):
                         self.env.cr.execute("""
                             SELECT 
@@ -588,7 +588,7 @@ class lhm_transaction(models.Model):
         employee_ids = []
         for line in self.lhm_line_ids:
             if line.attendance_id and line.employee_id and \
-                    line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
+                    line.employee_id.sudo().contract_id and line.employee_id.sudo().contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
                     and line.valid and (line.work_day > 0 or line.non_work_day > 0):
                 employee_ids.append(line.employee_id.id)
         if employee_ids:
@@ -599,13 +599,13 @@ class lhm_transaction(models.Model):
         for rec in self:
             # Validasi jika state NAP done tidak bisa di hapus
             for line in rec.lhm_nap_line_ids:
-                if line.lhm_nap_line_id.lhm_nap_id.state == 'done':
+                if line.sudo().lhm_nap_line_id.lhm_nap_id.state == 'done':
                     raise ValidationError(_("Anda tidak dapat membatalkan dokumen ini karena status NAP sudah Done, silahkan cancel terlebih dahulu dokumen NAP yang bersangkutan!"))
 
             # Menghapus semua data pada NAP
             if rec.lhm_nap_line_ids:
                 for line in rec.lhm_nap_line_ids:
-                    line.unlink()
+                    line.sudo().unlink()
         
             if rec.state in ['close']:
                 raise ValidationError(_("Anda tidak dapat membatalkan dokumen dalam status Close!"))
@@ -616,7 +616,7 @@ class lhm_transaction(models.Model):
                     material.unlink()
                 for line in rec.lhm_line_ids:
                     if line.attendance_id and line.employee_id and \
-                            line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
+                            line.employee_id.sudo().contract_id and line.employee_id.sudo().contract_id.wage_type_id.name == "Month" and line.employee_id.id not in employee_ids \
                             and line.valid and (line.work_day > 0 or line.non_work_day > 0):
                         employee_ids.append(line.employee_id.id)
                 if employee_ids != []:
@@ -624,7 +624,7 @@ class lhm_transaction(models.Model):
 
                 for line in rec.lhm_line_ids:
                     if line.attendance_id and line.employee_id and \
-                        line.employee_id.contract_id and line.employee_id.contract_id.wage_type_id.name == "Month" and line.employee_id and \
+                        line.employee_id.sudo().contract_id and line.employee_id.sudo().contract_id.wage_type_id.name == "Month" and line.employee_id and \
                         line.valid and (line.work_day > 0 or line.non_work_day > 0):
                         values = {
                             'total_hke'             : 0.0,
@@ -651,7 +651,7 @@ class lhm_transaction(models.Model):
         all_plantation_ids  = self.env['lhm.transaction'].search([('account_period_id', '=', self.account_period_id.id)])
         for plantation in all_plantation_ids:
             for line in plantation.lhm_line_ids:
-                if line.attendance_id and line.employee_id and line.contract_id:
+                if line.attendance_id and line.employee_id and line.sudo().contract_id:
                     if line.attendance_id:
                         line.valid      = True
                     if line.overtime_hour and line.overtime_hour > 0:
@@ -660,18 +660,18 @@ class lhm_transaction(models.Model):
                         holiday_data    = self.env['hr.holidays.public.line'].search([('date', '=', line.date)])
                         if holiday_data:
                             holiday     = True
-                        if overtime_data and line.employee_id.type_id and line.employee_id.type_id.overtime_calc:
-                            if holiday and overtime_data and line.contract_id.wage != 0.00:
-                                line.overtime_value = (line.contract_id.wage / 173) * overtime_data.holiday
-                            elif not holiday and overtime_data and line.contract_id.wage != 0.00:
-                                line.overtime_value = (line.contract_id.wage / 173) * overtime_data.normal_day
+                        if overtime_data and line.employee_id.sudo().type_id and line.employee_id.sudo().type_id.overtime_calc:
+                            if holiday and overtime_data and line.sudo().contract_id.wage != 0.00:
+                                line.overtime_value = (line.sudo().contract_id.wage / 173) * overtime_data.holiday
+                            elif not holiday and overtime_data and line.sudo().contract_id.wage != 0.00:
+                                line.overtime_value = (line.sudo().contract_id.wage / 173) * overtime_data.normal_day
                             else:
                                 line.overtime_value = 0
-                        if overtime_data and line.employee_id.type_id and not line.employee_id.type_id.overtime_calc:
-                            if holiday and overtime_data and line.contract_id.wage != 0.00:
-                                line.overtime_value = (line.contract_id.wage / 25) * float(float(3) / float(20)) * overtime_data.holiday
-                            elif not holiday and overtime_data and line.contract_id.wage != 0.00:
-                                line.overtime_value = (line.contract_id.wage / 25) * float(float(3) / float(20)) * overtime_data.normal_day
+                        if overtime_data and line.employee_id.sudo().type_id and not line.employee_id.sudo().type_id.overtime_calc:
+                            if holiday and overtime_data and line.sudo().contract_id.wage != 0.00:
+                                line.overtime_value = (line.sudo().contract_id.wage / 25) * float(float(3) / float(20)) * overtime_data.holiday
+                            elif not holiday and overtime_data and line.sudo().contract_id.wage != 0.00:
+                                line.overtime_value = (line.sudo().contract_id.wage / 25) * float(float(3) / float(20)) * overtime_data.normal_day
                             else:
                                 line.overtime_value = 0
 
@@ -1211,7 +1211,7 @@ class lhm_transaction_line(models.Model):
                 contract             = False
                 lhm_transaction_date = record.lhm_id.date if record.lhm_id else False
                 
-                if record.employee_id and record.employee_id.basic_salary_type == 'employee':
+                if record.employee_id and record.employee_id.sudo().basic_salary_type == 'employee':
                     contract = self.env['hr.contract'].sudo().search([
                         ('employee_id', '=', record.employee_id.id),
                         ('date_start', '<=', lhm_transaction_date),
@@ -1219,9 +1219,9 @@ class lhm_transaction_line(models.Model):
                         ('state', '=', 'open'),
                         ('is_lhm', '=', True ),
                     ], limit=1)
-                elif record.employee_id and record.employee_id.basic_salary_type == 'employee_type':
+                elif record.employee_id and record.employee_id.sudo().basic_salary_type == 'employee_type':
                     contract = self.env['hr.contract'].sudo().search([
-                        ('employee_type_id', '=', record.employee_id.type_id.id),
+                        ('employee_type_id', '=', record.employee_id.sudo().type_id.id),
                         ('date_start', '<=', lhm_transaction_date),
                         '|',('date_end', '=', False),('date_end', '>=', lhm_transaction_date),
                         # ('date_end', '>=', lhm_transaction_date),
@@ -1229,7 +1229,7 @@ class lhm_transaction_line(models.Model):
                         ('is_lhm', '=', True ),
                     ], limit=1)
                 if not contract:
-                    raise ValidationError(_(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.type_id.name}, tidak ditemukan !"))
+                    raise ValidationError(_(f"Contract pada Karyawan : { record.employee_id.name } dengan Tipe Karyawan : {record.employee_id.sudo().type_id.name}, tidak ditemukan !"))
 
                 values = {
                     'contract_id'           : contract and contract.id or False,
@@ -1265,7 +1265,7 @@ class lhm_transaction_line(models.Model):
         employee_bulanan_names = [] 
         for record in self:
             if record.is_borong:
-                if record.employee_id.contract_id.wage_type_id.name == 'Month':
+                if record.employee_id.sudo().contract_id.wage_type_id.name == 'Month':
                     employee_bulanan_names.append(record.employee_id.name)
         
         if employee_bulanan_names:
@@ -1312,8 +1312,8 @@ class lhm_transaction_line(models.Model):
     def _onchange_attendance_id(self):
         non_work_day    = 0
         if self.attendance_id and self.attendance_id.type_hk == 'hkne' and \
-                (self.employee_id.type_id.monthly_employee or self.employee_id.type_id.sku_employee \
-                or self.employee_id.type_id.contract_employee):
+                (self.employee_id.sudo().type_id.monthly_employee or self.employee_id.sudo().type_id.sku_employee \
+                or self.employee_id.sudo().type_id.contract_employee):
             non_work_day    = 1
         if self.attendance_id:
             self.location_type_id   = False
@@ -1452,14 +1452,14 @@ class lhm_transaction_line(models.Model):
             holiday_data    = self.env['hr.holidays.public.line'].search([('date', '=', self.date)])
             if holiday_data:
                 holiday = True
-            if overtime_data and self.employee_id.type_id and self.employee_id.type_id.overtime_calc:
+            if overtime_data and self.employee_id.sudo().type_id and self.employee_id.sudo().type_id.overtime_calc:
                 if holiday and overtime_data and self.min_wage_id.umr_month != 0.00:
                     self.overtime_value = (self.min_wage_id.umr_month / 173) * overtime_data.holiday
                 elif not holiday and overtime_data and self.min_wage_id.umr_month != 0.00:
                     self.overtime_value = (self.min_wage_id.umr_month / 173) * overtime_data.normal_day
                 else:
                     self.overtime_value = 0
-            if overtime_data and self.employee_id.type_id and not self.employee_id.type_id.overtime_calc:
+            if overtime_data and self.employee_id.sudo().type_id and not self.employee_id.sudo().type_id.overtime_calc:
                 if holiday and overtime_data and self.min_wage_id.umr_month != 0.00:
                     self.overtime_value = (self.min_wage_id.umr_month / 25) * float(float(3)/float(20)) * overtime_data.holiday
                 elif not holiday and overtime_data and self.min_wage_id.umr_month != 0.00:

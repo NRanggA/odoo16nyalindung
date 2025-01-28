@@ -71,7 +71,7 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_plant_varieties" action="plant_varieties_action" parent="c10i_lhm_v16.menu_lhm_master" groups="group_plantation_supervisor" sequence="60"/>
+    <menuitem id="menu_plant_varieties" action="plant_varieties_action" parent="c10i_lhm_v16.menu_lhm_master" sequence="60"/>
 
 
 </odoo>

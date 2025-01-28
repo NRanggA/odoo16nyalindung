@@ -136,7 +136,7 @@
               </p>
             </field>
         </record>
-        <menuitem id="menu_lhm_master_activity" action="action_lhm_activity" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="10"/>
+        <menuitem id="menu_lhm_master_activity" action="action_lhm_activity" parent="menu_lhm_activity" sequence="10"/>
 
         <record id="view_activity_noparent_tree" model="ir.ui.view">
             <field name="name">view.activity.noparent.tree</field>
@@ -162,7 +162,8 @@
             <field name="view_id" ref="view_activity_noparent_tree"/>
             <field name="context">{}</field>
         </record>
-        <menuitem id="menu_activity_hierarchy" action="open_view_activity_noparent_tree" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="20"/>
+        <!-- <menuitem id="menu_activity_hierarchy" action="open_view_activity_noparent_tree" parent="menu_lhm_activity" groups="group_plantation_supervisor" sequence="20"/> -->
+        <menuitem id="menu_activity_hierarchy" action="open_view_activity_noparent_tree" parent="menu_lhm_activity" sequence="20"/>
         <!-- End Of LHM Activity -->
     
     </data>
