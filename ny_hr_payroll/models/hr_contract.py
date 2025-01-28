@@ -12,8 +12,9 @@ class HrContract(models.Model):
 
     # contract_id = fields.Many2one('hr.contract', string="Contract")
     employee_ids = fields.One2many('hr.employee', 'contract_id', string="Employees")
-    employee_count = fields.Integer(string="Employee Count", compute='_compute_employee_count',store=True)
+    employee_count = fields.Integer(string="Employee Count", compute='_compute_employee_count')
     
+    @api.depends('employee_ids')
     def _compute_employee_count(self):
         for contract in self:
             contract.employee_count = len(contract.employee_ids)
