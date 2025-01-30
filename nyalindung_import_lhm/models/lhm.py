@@ -235,7 +235,7 @@ class lhm_transaction(models.Model):
                 # continue
             
             # Mendapatkan data absensi KJ
-            absensi_kj = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1)
+            absensi_kj = self.env['hr.attendance.type'].sudo().search([('code', '=', 'KJ')], limit=1)
 
             # Cek apakah employee sudah diproses pada iterasi pertama
             if employee_nik not in processed_employees:
@@ -249,7 +249,7 @@ class lhm_transaction(models.Model):
                     # JIKA ADA DI DALAM LHM LINE MAKA AKAN DITAMBAHKAN
                     # Cek apakah dia employee yan tidak pada kemandoran yang sama namun tidak ada absen pada lhm_line
                     if employee not in self.kemandoran_id.employee_ids:
-                        absensi = self.env['hr.attendance.sheet'].search([
+                        absensi = self.env['hr.attendance.sheet'].sudo().search([
                             ('employee_id', 'in', lhm_line.employee_id.ids),
                             ('date', '=', self.date),
                         ])
@@ -290,7 +290,7 @@ class lhm_transaction(models.Model):
                     # BUAT ENTRY BARU JIKA EMPLOYEE TIDAK ADA DI LHM LINE 
                     # Cek apakah dia employee berada pada kemandoran yang sama namun tidak ada absen
                     if employee in self.kemandoran_id.employee_ids:
-                        absensi_kemandoran = self.env['hr.attendance.sheet'].search([
+                        absensi_kemandoran = self.env['hr.attendance.sheet'].sudo().search([
                             ('employee_id', '=', employee.id),
                             ('date', '=', self.date),
                         ])
@@ -300,7 +300,7 @@ class lhm_transaction(models.Model):
                             )
                     
                     if employee not in self.kemandoran_id.employee_ids:
-                        absensi_not_kemandoran = self.env['hr.attendance.sheet'].search([
+                        absensi_not_kemandoran = self.env['hr.attendance.sheet'].sudo().search([
                             ('employee_id', '=', employee.id),
                             ('date', '=', self.date),
                         ])
