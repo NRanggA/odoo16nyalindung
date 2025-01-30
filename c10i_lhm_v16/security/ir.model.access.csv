@@ -999,3 +999,4 @@ access_plantation_179,model_timbangan_pabrik c10i_lhm_v16.plantation_manager,mod
 access_plantation_180,stock.model_stock_move c10i_lhm_v16.plantation_manager,stock.model_stock_move,c10i_lhm_v16.plantation_manager,1,0,0,0
 access_plantation_181,stock.model_stock_move_line c10i_lhm_v16.plantation_manager,stock.model_stock_move_line,c10i_lhm_v16.plantation_manager,1,0,0,0
 access_plantation_182,stock.model_stock_picking c10i_lhm_v16.plantation_manager,stock.model_stock_picking,c10i_lhm_v16.plantation_manager,1,0,0,0
+access_plantation_183,lhm.transaction c10i_lhm_v16.plantation_lhm_nap_user,c10i_lhm_v16.model_lhm_transaction,c10i_lhm_v16.plantation_lhm_nap_user,1,0,0,0

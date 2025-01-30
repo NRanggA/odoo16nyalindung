@@ -335,7 +335,7 @@
               </p>
             </field>
         </record> -->
-        <menuitem id="submenu_lhm_transaction" name="Laporan Harian Mandor" action="action_lhm_transaction" parent="menu_plantation_transaction" sequence="10"/>
+        <menuitem id="submenu_lhm_transaction" name="Laporan Harian Mandor" action="action_lhm_transaction" parent="menu_plantation_transaction" sequence="10" groups="c10i_lhm_v16.plantation_lhm_user,c10i_lhm_v16.plantation_manager"/>
         <!-- End Of Transaksi LHM -->
 
 
