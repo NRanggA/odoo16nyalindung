@@ -7,7 +7,8 @@ class EmployeeContractReport(models.Model):
 
     tanggal = fields.Date(string="Tanggal")
     employee_id = fields.Many2one('hr.employee', string="Employee")
-    identification_id = fields.Char(string="Identification No")
+    no_induk = fields.Char(string="Identification No")
+    activity_name = fields.Char(string="Aktivitas")
     contract_id = fields.Many2one('hr.contract', string="Current Contract")
     employee_type_id = fields.Many2one('hr.contract', string="Employee Type")
     wage_type_id = fields.Many2one('hr.contract', string="Wage Type")
@@ -19,15 +20,16 @@ class EmployeeContractReport(models.Model):
     total_contract_wage_value = fields.Float(string="Borong")
     kemandoran_id = fields.Many2one('hr.foreman', string="Kemandoran")
     kemandoran_name = fields.Char(string="Kemandoran", readonly=True)
+    lhm_transaction_name = fields.Char(string="Dokumen LHM", readonly=True)
 
     def init(self):
         self._cr.execute("""
             DROP VIEW IF EXISTS employee_contract_report;
             CREATE OR REPLACE VIEW employee_contract_report AS (
                 SELECT 
-                    ROW_NUMBER() OVER() AS id,
+                    ROW_NUMBER() OVER () AS id,
                     e.id AS employee_id,
-                    e.identification_id AS identification_id,
+                    e.no_induk AS no_induk,
                     e.contract_id AS contract_id,
                     c.employee_type_id AS employee_type_id,
                     c.wage_type_id AS wage_type_id,
@@ -38,6 +40,9 @@ class EmployeeContractReport(models.Model):
                     e.kemandoran_id AS kemandoran_id,
                     f.name AS kemandoran_name,
                     l.date AS tanggal,
+                    a.id AS activity_id,
+                    a.name AS activity_name,
+                    lt.name AS lhm_transaction_name,
                     SUM(l.work_day) AS total_work_day,
                     SUM(
                         CASE 
@@ -56,6 +61,14 @@ class EmployeeContractReport(models.Model):
                 ON 
                     l.employee_id = e.id
                 LEFT JOIN 
+                    lhm_transaction lt
+                ON 
+                    l.lhm_id = lt.id
+                LEFT JOIN 
+                    lhm_activity a
+                ON 
+                    l.activity_id = a.id
+                LEFT JOIN 
                     hr_contract_wage_type wt
                 ON 
                     c.wage_type_id = wt.id
@@ -66,9 +79,9 @@ class EmployeeContractReport(models.Model):
                 WHERE 
                     l.date IS NOT NULL
                 GROUP BY 
-                    e.id, e.contract_id, e.identification_id, 
+                    e.id, lt.name, e.contract_id, e.no_induk, 
                     c.employee_type_id, c.wage_type_id, wt.name,
                     c.wage, c.wage_day, c.is_lhm, e.kemandoran_id, f.name,
-                    l.date
+                    l.date, a.id, a.name
             )
         """)

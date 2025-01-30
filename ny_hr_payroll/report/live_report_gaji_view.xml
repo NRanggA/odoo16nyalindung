@@ -9,11 +9,11 @@
             <tree string="Live Report Gaji">
                 <!-- <field name="employee_id"/> -->
                 <field name="tanggal"/>
-                <field name="identification_id"/>
+                <field name="no_induk"/>
+                <field name="lhm_transaction_name"/>
                 <field name="kemandoran_name"/>
+                <field name="activity_name"/>
                 <field name="contract_id"/>
-                <!-- <field name="employee_type_id"/> -->
-                <!-- <field name="wage_type_id"/> -->
                 <field name="wage_type_name"/>
                 <field name="wage"/>
                 <field name="wage_day"/>
