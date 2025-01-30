@@ -183,18 +183,36 @@ class lhm_contractor(models.Model):
                                 'message': _("Dokumen sudah ada: %s.") % other_ids.name, },
                 }
             if self.payment_type:
-                month           = self.account_period_id.date_start.strftime('%m')
-                year            = self.account_period_id.date_start.strftime('%Y')
-                last_day        = calendar.monthrange(int(year), int(month))[1]
-                if self.payment_type=='payment1':
-                    self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '01')
-                    self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + '15')
-                elif self.payment_type=='payment2':
-                    self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '16')
-                    self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + str(last_day))
+                month = int(self.account_period_id.date_start.strftime('%m'))
+                year = int(self.account_period_id.date_start.strftime('%Y'))
+                
+                last_day = calendar.monthrange(year, month)[1]
+
+                if self.payment_type == 'payment1':
+                    self.date_start = datetime(year, month, 1).strftime('%Y-%m-%d')
+                    self.date_end = datetime(year, month, 15).strftime('%Y-%m-%d')
+
+                elif self.payment_type == 'payment2':
+                    self.date_start = datetime(year, month, 16).strftime('%Y-%m-%d')
+                    self.date_end = datetime(year, month, last_day).strftime('%Y-%m-%d')
+
                 else:
                     self.date_start = self.account_period_id.date_start
                     self.date_end = self.account_period_id.date_stop
+
+            # if self.payment_type:
+            #     month           = self.account_period_id.date_start.strftime('%m')
+            #     year            = self.account_period_id.date_start.strftime('%Y')
+            #     last_day        = calendar.monthrange(int(year), int(month))[1]
+            #     if self.payment_type=='payment1':
+            #         self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '01')
+            #         self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + '15')
+            #     elif self.payment_type=='payment2':
+            #         self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '16')
+            #         self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + str(last_day))
+            #     else:
+            #         self.date_start = self.account_period_id.date_start
+            #         self.date_end = self.account_period_id.date_stop
 
     def unlink(self):
         for contractor in self:
