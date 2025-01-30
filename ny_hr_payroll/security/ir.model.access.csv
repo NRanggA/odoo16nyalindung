@@ -8,3 +8,4 @@ access_ny_ongkos_pikul_line,ny.ongkos.pikul.line,model_ny_ongkos_pikul_line,c10i
 access_ny_payslip_other_input,ny.payslip.other.input,model_ny_payslip_other_input,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
 access_ny_payslip_batch_other_input,ny.payslip.batch.other.input,model_ny_payslip_batch_other_input,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
 access_payroll_report_wizard,payroll.report.wizard,model_payroll_report_wizard,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_employee_contract_report,employee.contract.report,model_employee_contract_report,base.group_system,1,0,0,0
