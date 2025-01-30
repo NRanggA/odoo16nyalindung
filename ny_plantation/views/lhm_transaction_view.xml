@@ -17,6 +17,15 @@
                     </button>
                 </div>
             </div>
+
+            <button name="run_progress" position="attributes">
+                <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver</attribute>
+            </button>
+
+            <button name="button_confirm" position="attributes">
+                <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver</attribute>
+            </button>
+
             <!-- <field name="afdeling_id" position="replace"/> -->
             <field name="asisten_mandor_id" position="replace"/>
             <field name="mandor_id" position="replace"/>

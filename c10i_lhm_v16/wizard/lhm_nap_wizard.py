@@ -30,7 +30,7 @@ class LhmNapWizard(models.TransientModel):
         lhm_nap_id = self.env.context.get('active_id')
         lhm_nap = self.env['lhm.nap'].browse(lhm_nap_id)
         if lhm_nap:
-            selected_lhm_lines = self.env['lhm.transaction.nap.line'].search([
+            selected_lhm_lines = self.env['lhm.transaction.nap.line'].sudo().search([
                 ('lhm_id', 'in', self.lhm_ids.ids),
                 ('lhm_transaction_line_id.state', '=', 'in_progress'),
                 ('lhm_nap_line_id', '=', False),
