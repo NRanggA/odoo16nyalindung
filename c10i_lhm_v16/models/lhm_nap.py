@@ -561,25 +561,28 @@ class lhm_nap(models.Model):
         for record in self:
             # Mendapatkan data dari timbangan.kebun berdasarkan tanggal panen
             kebun_lines = self.env['timbangan.kebun'].search([
-                ('tgl_panen', '=', record.date_nap),
+                ('tgl_panen', 'in', [line.tgl_panen for line in record.kebun_line_ids]),
                 ('lhm_nap_id', '=', record.id)
             ])
             location_ids = [line.block_id.location_id.id for line in record.kebun_line_ids]
             # Mendapatkan data dari lhm.transaction.line berdasarkan tanggal LHM
             transaction_lines = self.env['lhm.transaction.line'].sudo().search([
-                ('date', '=', record.date_nap),
+                ('date', 'in', [line.tgl_panen for line in record.kebun_line_ids]),
                 ('location_id','in', location_ids),
                 ('lhm_id.state', '=', 'in_progress'),
-                ('activity_id.is_nap', '=', True)
+                ('activity_id.is_nap', '=', True),
             ])
             # Mendapatkan data dari lhm.contractor.line berdasarkan tanggal Contractor Harian
             contractor_day_lines = self.env['lhm.contractor.line'].sudo().search([
-                ('contractor_id.date', '=', record.date_nap),
+                ('contractor_id.date', 'in', [line.tgl_panen for line in record.kebun_line_ids]),
                 ('location_id','in', location_ids),
                 ('contractor_id.state', '=', 'process'),
                 ('activity_id.is_nap', '=', True),
                 ('activity_id.is_contractor_day', '=', True),
             ])
+
+            # print(">>>>>>>>>>>>>>>>",transaction_lines)
+            # print(">>>>>>>>>>>>>>>>",contractor_day_lines)
 
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
             kebun_data = {}

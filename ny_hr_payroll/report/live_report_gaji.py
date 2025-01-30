@@ -7,7 +7,8 @@ class EmployeeContractReport(models.Model):
 
     tanggal = fields.Date(string="Tanggal")
     employee_id = fields.Many2one('hr.employee', string="Employee")
-    no_induk = fields.Char(string="Identification No")
+    employee_name = fields.Char(string="Karyawan")
+    no_induk = fields.Char(string="NIK")
     activity_name = fields.Char(string="Aktivitas")
     contract_id = fields.Many2one('hr.contract', string="Current Contract")
     employee_type_id = fields.Many2one('hr.contract', string="Employee Type")
@@ -31,6 +32,7 @@ class EmployeeContractReport(models.Model):
                 SELECT 
                     ROW_NUMBER() OVER () AS id,
                     e.id AS employee_id,
+                    e.name AS employee_name,
                     e.no_induk AS no_induk,
                     e.contract_id AS contract_id,
                     c.employee_type_id AS employee_type_id,
@@ -89,7 +91,7 @@ class EmployeeContractReport(models.Model):
                 WHERE 
                     l.date IS NOT NULL
                 GROUP BY 
-                    e.id, lt.name, e.contract_id, e.no_induk, 
+                    e.id, e.name, lt.name, e.contract_id, e.no_induk, 
                     c.employee_type_id, c.wage_type_id, wt.name,
                     c.wage, c.wage_day, c.is_lhm, e.kemandoran_id, f.name,
                     l.date, l.is_borong, l.hasil_1, l.satuan_1, a.id, a.name
