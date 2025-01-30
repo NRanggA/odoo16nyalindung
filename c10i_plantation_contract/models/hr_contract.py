@@ -4,7 +4,7 @@ from odoo.exceptions import UserError, ValidationError
 class HrContract(models.Model):
     _inherit = 'hr.contract'
 
-    wage_type_id          = fields.Many2one('hr.contract.wage.type', string='Wage Type')
+    wage_type_id          = fields.Many2one('hr.contract.wage.type', string='Wage Type', required=True)
     employee_type_id      = fields.Many2one('hr.employee.type', string="Tipe Karyawan")
     work_day              = fields.Integer(string="Work Day", default=25)
     wage_day              = fields.Float(string="Wage Daily", compute='_compute_worked_hours', store=True, readonly=True)
@@ -18,10 +18,15 @@ class HrContract(models.Model):
 
     def write(self, vals):
         res = super(HrContract, self).write(vals)
+
+        if vals.get('active') == False:
+            if self.employee_ids:
+                raise ValidationError(_("Contract tidak bisa di non-aktifkan karena masih terdapat karyawan yang terhubung dengan contract ini."))
+            
+            self.state = 'draft'
         
         if vals.get('state') == 'open':
             # self._assign_open_contract()
-
             if self.structure_type_id.id==2 and self.employee_type_id:
                 employees = self.env['hr.employee'].search([('type_id', '=', self.employee_type_id.id),('basic_salary_type','=','employee_type')])
                 # cek employee pada tipe karyawan tersebut apakah contract_id nya memiliki field employee_id yang mengarah ke dia
@@ -30,7 +35,6 @@ class HrContract(models.Model):
                     #     raise ValidationError(_("Employee dengan nama %s memiliki contract_id yang mengarah ke dia") % employee.name)
                     employee.write({'contract_id': self.id})
                     # print(f"== Memperbaruhi field contract id untuk employee : {employee.name}")
-            
             elif self.structure_type_id.id==1 and self.employee_type_id:
                 # print(f"===== {self.structure_type_id.name}")
                 # print(f"===== karyawan")
