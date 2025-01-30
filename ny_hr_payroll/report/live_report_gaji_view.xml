@@ -18,6 +18,8 @@
                 <field name="wage"/>
                 <field name="wage_day"/>
                 <field name="is_lhm"/>
+                <field name="hasil_1"/>
+                <field name="satuan_1"/>
                 <field name="total_work_day"/>
                 <field name="total_contract_wage_value"/>
             </tree>

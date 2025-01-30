@@ -16,11 +16,13 @@ class EmployeeContractReport(models.Model):
     wage = fields.Float(string="Wage")
     wage_day = fields.Integer(string="Wage Daily")
     is_lhm = fields.Boolean(string="Is LHM")
-    total_work_day = fields.Integer(string="HK")
+    total_work_day = fields.Float(string="HK")
     total_contract_wage_value = fields.Float(string="Borong")
     kemandoran_id = fields.Many2one('hr.foreman', string="Kemandoran")
     kemandoran_name = fields.Char(string="Kemandoran", readonly=True)
     lhm_transaction_name = fields.Char(string="Dokumen LHM", readonly=True)
+    hasil_1 = fields.Float(string="Hasil 1")
+    satuan_1 = fields.Many2one("uom.uom", string="Satuan 1")
 
     def init(self):
         self._cr.execute("""
@@ -40,6 +42,14 @@ class EmployeeContractReport(models.Model):
                     e.kemandoran_id AS kemandoran_id,
                     f.name AS kemandoran_name,
                     l.date AS tanggal,
+                    CASE 
+                        WHEN l.is_borong = true THEN l.hasil_1
+                        ELSE NULL
+                    END AS hasil_1,
+                    CASE 
+                        WHEN l.is_borong = true THEN l.satuan_1
+                        ELSE NULL
+                    END AS satuan_1,
                     a.id AS activity_id,
                     a.name AS activity_name,
                     lt.name AS lhm_transaction_name,
@@ -82,6 +92,6 @@ class EmployeeContractReport(models.Model):
                     e.id, lt.name, e.contract_id, e.no_induk, 
                     c.employee_type_id, c.wage_type_id, wt.name,
                     c.wage, c.wage_day, c.is_lhm, e.kemandoran_id, f.name,
-                    l.date, a.id, a.name
+                    l.date, l.is_borong, l.hasil_1, l.satuan_1, a.id, a.name
             )
         """)
