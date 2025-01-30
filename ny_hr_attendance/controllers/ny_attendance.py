@@ -278,32 +278,13 @@ class NyAttendance(ApiBase):
         namafile = statusmasuk = ketmasuk = ketkeluar = ""
         masuk = pulang = ""
 
-        if attendance.is_correction:
-            if attendance.att_log_ids:
-                if len(attendance.att_log_ids.ids)>1:
-                    first_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu)[0]
-                    last_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
-                    statusmasuk = first_att.statusmasuk
-                    ketmasuk = first_att.keterangan
-                    ketkeluar = last_att.keterangan
-                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                        and res_field='foto' and res_id={first_att.id}"""
-                    request.env.cr.execute(query_attachment)
-                    attc_ids = request.env.cr.fetchone()
-                    if attc_ids:
-                        namafile = f"{self._base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
-                else:
-                    statusmasuk = attendance.att_log_ids.statusmasuk
-                    ketmasuk = attendance.att_log_ids.keterangan
-                    query_attachment = f"""SELECT id,name FROM ir_attachment WHERE res_model='ny.attendance.log' 
-                        and res_field='foto' and res_id={attendance.att_log_ids.id}"""
-                    request.env.cr.execute(query_attachment)
-                    attc_ids = request.env.cr.fetchone()
-                    if attc_ids:
-                        namafile = f"{self._base_url}/web/image/{attc_ids[0]}/{attc_ids[1]}"
-        else:
-            first_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu)[0]
-            last_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+        if attendance.att_log_ids:
+            if len(attendance.att_log_ids.ids)>1:
+                first_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu)[0]
+                last_att = attendance.att_log_ids.sorted(key=lambda t: t.waktu, reverse=True)[0]
+            else:
+                first_att = attendance.att_log_ids
+                last_att = attendance.att_log_ids
             statusmasuk = first_att.statusmasuk
             ketmasuk = first_att.keterangan
             ketkeluar = last_att.keterangan
