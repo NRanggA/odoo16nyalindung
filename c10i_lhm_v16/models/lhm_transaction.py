@@ -47,13 +47,13 @@ class lhm_transaction(models.Model):
             state = [('draft', 'New'), ('done', 'Progress'),('close', 'Close')]
         return state
 
-    @api.depends('date','state')
-    def _compute_account_period_id(self):
-        for plantation_transaction in self:
-            if plantation_transaction.date:
-                period_id = self.env['account.period'].search([('date_start', '<=', plantation_transaction.date), ('date_stop', '>=', plantation_transaction.date), ('special','=',False)])
-                if period_id:
-                    plantation_transaction.account_period_id = period_id
+    # @api.depends('date','state')
+    # def _compute_account_period_id(self):
+    #     for plantation_transaction in self:
+    #         if plantation_transaction.date:
+    #             period_id = self.env['account.period'].search([('date_start', '<=', plantation_transaction.date), ('date_stop', '>=', plantation_transaction.date), ('special','=',False)])
+    #             if period_id:
+    #                 plantation_transaction.account_period_id = period_id
 
     @api.depends('kemandoran_id','kemandoran_id.afdeling_id', 'kemandoran_id.division_id')
     def _compute_location(self):
@@ -101,9 +101,9 @@ class lhm_transaction(models.Model):
     emp_in_ids              = fields.One2many('hr.employee.foreman.transfer', 'lhm_id', string="Detail Employee Transfer In LHM", domain=[('type', '=', 'in')], readonly=1)
     user_id                 = fields.Many2one('res.users', string='Penanggung Jawab', index=True, tracking=True, default=lambda self: self.env.user)
     operating_unit_id       = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)
-    account_period_id       = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', readonly=True, store=True)
-    date_start              = fields.Date(related="account_period_id.date_start", string="Range Start Date", readonly=1)
-    date_stop               = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
+    # account_period_id       = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', readonly=True, store=True)
+    # date_start              = fields.Date(related="account_period_id.date_start", string="Range Start Date", readonly=1)
+    # date_stop               = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
     company_id              = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     note                    = fields.Text("Catatan")
     state                   = fields.Selection(selection=_get_state, string='Status',
@@ -592,7 +592,12 @@ class lhm_transaction(models.Model):
                     and line.valid and (line.work_day > 0 or line.non_work_day > 0):
                 employee_ids.append(line.employee_id.id)
         if employee_ids:
-            self.check_all(self.account_period_id.date_start, self.account_period_id.date_stop, employee_ids)
+            month = self.date.month
+            year = self.date.year
+            next_month = datetime(year, month + 1, 1)
+            start_date = datetime(year, month, 1)
+            end_date = next_month - timedelta(days=1)
+            self.check_all(start_date, end_date, employee_ids)
 
     # Mengunakan contract_id
     def button_draft(self):
@@ -620,7 +625,12 @@ class lhm_transaction(models.Model):
                             and line.valid and (line.work_day > 0 or line.non_work_day > 0):
                         employee_ids.append(line.employee_id.id)
                 if employee_ids != []:
-                    rec.check_all(rec.account_period_id.date_start, rec.account_period_id.date_stop, employee_ids)
+                    month = rec.date.month
+                    year = rec.date.year
+                    next_month = datetime(year, month + 1, 1)
+                    start_date = datetime(year, month, 1)
+                    end_date = next_month - timedelta(days=1)
+                    rec.check_all(start_date, end_date, employee_ids)
 
                 for line in rec.lhm_line_ids:
                     if line.attendance_id and line.employee_id and \
@@ -645,7 +655,14 @@ class lhm_transaction(models.Model):
                         line.write(values)
                 return True
             return True
+        
+    # TODO tidak digunakan
+    def reprogress_plantation(self):
+        all_plantation_ids = self.env['lhm.transaction'].search([('state', 'in', ['in_progress','done']), ('account_period_id', '=', self.account_period_id.id)])
+        for plantation in all_plantation_ids:
+            plantation.run_progress()
 
+    # TODO(Akan dilanjutkan)
     # Menggunakan Contract ID
     def recalculate_plantation(self):
         all_plantation_ids  = self.env['lhm.transaction'].search([('account_period_id', '=', self.account_period_id.id)])
@@ -739,11 +756,6 @@ class lhm_transaction(models.Model):
                     }
                     material_line_obj.create(values_skb)
 
-    def reprogress_plantation(self):
-        all_plantation_ids = self.env['lhm.transaction'].search([('state', 'in', ['in_progress','done']), ('account_period_id', '=', self.account_period_id.id)])
-        for plantation in all_plantation_ids:
-            plantation.run_progress()
-
     def button_confirm(self):
         for nap_line in self.lhm_nap_line_ids:
             # if (not nap_line.hasil_1_nap or nap_line.hasil_1_nap == 0 or nap_line.hasil_2_nap or nap_line.hasil_2_nap == 0) and nap_line.lhm_transaction_line_id.is_hasil_2:
@@ -755,38 +767,6 @@ class lhm_transaction(models.Model):
                     ))
 
         self.state = 'confirmed'
-
-    # def button_approve(self):  
-    #     # Kumpulkan nama karyawan yang tipe absensinya tidak sesuai
-    #     mismatch_names = []
-
-    #     for line in self.lhm_line_ids:
-    #     # for lhm_line in self.lhm_line_ids:
-    #         if line.contract_wage_value == 0.0:
-    #             raise ValidationError(_(
-    #                 f"Gaji Karyawan tidak boleh 0.0 untuk karyawan {line.employee_id.name}"
-    #             ))
-
-
-    #         # Cari sheet absensi yang sesuai untuk setiap karyawan
-    #         attendance_sheet = self.env['hr.attendance.sheet'].search([
-    #             ('employee_id', '=', line.employee_id.id),
-    #             ('date', '=', self.date)
-    #         ], limit=1)
-    #         # Jika tidak ada catatan absensi yang ditemukan, lanjutkan ke karyawan berikutnya
-    #         if not attendance_sheet:
-    #             continue
-
-    #         # Cek apakah kode tipe absensi tidak sesuai
-    #         if line.attendance_id.code != attendance_sheet.type_id.code:
-    #             mismatch_names.append(line.employee_id.name)
-
-    #     # Jika ada ketidakcocokan, tampilkan pesan kesalahan dengan semua nama karyawan
-    #     if mismatch_names:
-    #         mismatch_names_str = ", ".join(mismatch_names)
-    #         raise UserError(_("Tipe absensi pada form LHM tidak sama dengan yang di Attendance untuk karyawan: [%s]") % mismatch_names_str)
-    #     else:
-    #         self.state = 'done'
 
     def button_approve(self):  
         # Kumpulkan nama karyawan dengan masalah gaji atau tipe absensi
@@ -824,7 +804,6 @@ class lhm_transaction(models.Model):
 
         # Jika semua validasi lolos, ubah state
         self.state = 'done'
-
 
     def button_reject(self):
         self.state = 'in_progress'

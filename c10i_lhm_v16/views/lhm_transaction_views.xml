@@ -31,12 +31,12 @@
                                 <field name="asisten_mandor_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="mandor_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="kerani_id" readonly="1" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
-                                <field name="account_period_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <!-- <field name="account_period_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                 <!-- <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                             </group>
                             <group>
-                                <field name="date_start" readonly="1" invisible="1"/>
-                                <field name="date_stop" readonly="1" invisible="1"/>
+                                <!-- <field name="date_start" readonly="1" invisible="1"/> -->
+                                <!-- <field name="date_stop" readonly="1" invisible="1"/> -->
                                 <field name="kemandoran_code" readonly="1"/>
                                 <field name="location" readonly="1"/>
                                 <field name="nik_mandor_1" readonly="1"/>
@@ -248,8 +248,8 @@
                 <tree string="Laporan Harian Mandor">
                     <field name="name" optional="show"/>
                     <field name="date" optional="show" />
-                    <field name="date_start" invisible="0" optional="show" />
-                    <field name="date_stop" invisible="0" optional="show" />
+                    <!-- <field name="date_start" invisible="0" optional="show" /> -->
+                    <!-- <field name="date_stop" invisible="0" optional="show" /> -->
                     <field name="kemandoran_id" optional="show" />
                     <field name="location" optional="show" />
                     <field name="asisten_mandor_id" optional="show" />
