@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- View wizard.report.nota.angkut.panen form -->
+    <record id="view_wizard_report_nota_angkut_panen_form" model="ir.ui.view">
+        <field name="name">view.wizard.report.nota.angkut.panen.form</field>
+        <field name="model">wizard.report.nota.angkut.panen</field>
+        <field name="arch" type="xml">
+            <form string="Wizard Report Nota Angkut Panen">
+                <group>
+                    <field name="date_start" />
+                    <field name="date_end" />
+                    <field name="product_id" />
+                    
+                </group>
+                <footer>
+                    <button name="action_print_report" type="object" string="Print" class="oe_highlight"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action wizard.report.nota.angkut.panen -->
+    <record id="action_wizard_report_nota_angkut_panen" model="ir.actions.act_window">
+        <field name="name">Nota Angkut Panen (NAP)</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">wizard.report.nota.angkut.panen</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="report_nota_angkut_panen_menu"
+        name="Nota Angkut Panen (NAP)"
+        action="action_wizard_report_nota_angkut_panen"
+        parent="c10i_lhm_v16.menu_plantation_report"
+        sequence="10"/>
+
+</odoo>

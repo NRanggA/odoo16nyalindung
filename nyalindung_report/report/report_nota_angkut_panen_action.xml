@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action Report EXCEL Nota Angkut Panen (NAP) -->
+    <record id="action_nota_angkut_panen_report_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Nota Angkut Panen (NAP) XLSX</field>
+        <field name="model">wizard.report.nota.angkut.panen</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">nyalindung_report.nota_angkut_panen</field>
+        <field name="report_file">nyalindung_report.nota_angkut_panen</field>
+        <field name="print_report_name">'Laporan NAP periode %s s/d %s'%(object.date_start,object.date_end)</field>
+        <field name="binding_model_id" ref="nyalindung_report.model_wizard_report_nota_angkut_panen"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
