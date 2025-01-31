@@ -112,7 +112,8 @@ class ReportProduction(models.AbstractModel):
         self.wbf['content_float'] = workbook.add_format({
             'align': 'right',
             'valign': 'vcenter',
-            'num_format': '#,##0.00'
+            # 'num_format': '#,##0.00'
+            'num_format': '#,##0.00;-#,##0.00;-',
         })
         self.wbf['content_float'].set_border()
 
@@ -150,7 +151,7 @@ class ReportProduction(models.AbstractModel):
         self.wbf['total_float'] = workbook.add_format({
             'align': 'center',
             'valign': 'vcenter',
-            'num_format': '#.##0,00;-#.##0,00;-',
+            'num_format': '#,##0.00;-#,##0.00;-',
             'font_color': '#000000',
             'border': 1,
             'font_size' : 8
@@ -163,7 +164,7 @@ class ReportProduction(models.AbstractModel):
             'align': 'right',
             'valign': 'vcenter',
             'bg_color': '#FFFFDB',
-            'num_format': '#,##0.00',
+            'num_format': '#,##0.00;-#,##0.00;-',
             'font_color': '#000000'
         })
         self.wbf['total_float_kuning'].set_border()
@@ -428,7 +429,7 @@ class ReportProduction(models.AbstractModel):
             sheet.write(clump_row_start, clump_col_start, 'LUMP (Kg)', wbf['header'])
 
             # Bagian Isi Data
-            query = """
+            queryx = """
                 WITH employee_data AS (
                     SELECT 
                         emp.id AS emp_id,
@@ -478,6 +479,18 @@ class ReportProduction(models.AbstractModel):
                     employee_data.employee_name ASC,
                     trans_data.location_id ASC;
             """
+            query = """SELECT 
+                    ltl.employee_id,
+                    ltl.name,
+                    lt.kemandoran_id,
+                    he.name,
+                    ltl.location_id
+                FROM lhm_transaction_line ltl 
+                    inner join hr_employee he ON he.id=ltl.employee_id
+                    inner join lhm_transaction lt ON lt.id=ltl.lhm_id
+                    inner join lhm_transaction_nap_line ltnl ON ltnl.id=ltl.lhm_transaction_line_id
+                WHERE ltl.date between %s and %s
+                    and lt.kemandoran_id = %s"""
 
             self.env.cr.execute(query, (kemandoran.id, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
@@ -510,14 +523,21 @@ class ReportProduction(models.AbstractModel):
                 m_count = 0
 
                 for i in range(delta.days + 1):
-                    attendance = self.env['lhm.transaction.line'].search([
+                    # attendance = self.env['lhm.transaction.line'].search([
+                    #     ('employee_id', '=', emp_id),
+                    #     ('date', '=', from_date + timedelta(days=i)),
+                    #     ('state', '=', 'done'),
+                    #     ('location_id', '=', location_id)
+                    # ], limit=1)
+                    attendance = self.env['lhm.transaction.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('date', '=', from_date + timedelta(days=i)),
                         ('state', '=', 'done'),
                         ('location_id', '=', location_id)
-                    ], limit=1)
+                    ], fields=['attendance_id'], limit=1)
 
-                    type_code = attendance.attendance_id.code if attendance else '-'
+                    # type_code = attendance.attendance_id.code if attendance else '-'
+                    type_code = attendance[0]['attendance_id'][1] if attendance else '-'
                     sheet.write(row, current_col, type_code, wbf['data_center'])
 
                     if type_code in ['KJ', 'KJI', 'KJO']:
@@ -559,12 +579,18 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = second_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    # nap_line = self.env['lhm.transaction.nap.line'].search([
+                    #     ('employee_id', '=', emp_id),
+                    #     ('lhm_transaction_line_id.date', '=', current_date),
+                    #     ('lhm_transaction_line_id.state', '=', 'done'),
+                    #     ('lhm_transaction_line_id.location_id', '=', location_id)
+                    # ], limit=1)
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_1_nap'], limit=1)
 
                     # hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
 
@@ -579,8 +605,13 @@ class ReportProduction(models.AbstractModel):
                     #     cell_format = wbf['total_float']
 
                     # sheet.write(row, col_index, hasil_nap_lateks, cell_format)
-                    total_hasil_baris_lateks += float(nap_line.hasil_1_nap)
-                    sheet.write(row, col_index, nap_line.hasil_1_nap, wbf['total_float'])
+                    # total_hasil_baris_lateks += float(nap_line.hasil_1_nap)
+                    # sheet.write(row, col_index, nap_line.hasil_1_nap, wbf['total_float'])
+                    if nap_line:
+                        total_hasil_baris_lateks += float(nap_line[0]['hasil_1_nap'])
+                        sheet.write(row, col_index, nap_line[0]['hasil_1_nap'], wbf['total_float'])
+                    else:
+                        sheet.write(row, col_index, 0, wbf['total_float'])
                     
                 # if total_hasil_baris_lateks == 0:
                 #     total_hasil_baris_lateks = '-'
