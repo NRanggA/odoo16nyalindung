@@ -489,8 +489,7 @@ class ReportProduction(models.AbstractModel):
                     inner join hr_employee he ON he.id=ltl.employee_id
                     inner join lhm_transaction lt ON lt.id=ltl.lhm_id
                     inner join lhm_transaction_nap_line ltnl ON ltnl.lhm_transaction_line_id=ltl.id
-                WHERE ltl.date between %s and %s
-                    and lt.kemandoran_id = %s"""
+                WHERE lt.kemandoran_id = %s and ltl.date between %s and %s"""
 
             self.env.cr.execute(query, (kemandoran.id, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
