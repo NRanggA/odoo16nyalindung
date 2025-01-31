@@ -24,7 +24,7 @@
                             <group>
                                 <field name="supplier_id" force_save="1" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <!-- <field name="payment_type" force_save="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" required="0"/> -->
-                                <field name="account_period_id" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <!-- <field name="account_period_id" force_save="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/> -->
                                 <field name="date"/>
                                 <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="is_hasil_2" invisible="1"/>
@@ -49,7 +49,8 @@
                         </group>
                         <notebook>
                             <page string="Detail Aktivitas">
-                                <field name="line_vehicle_ids" force_save="1" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form_harian', 'line_vehicle_ids':line_vehicle_ids,'period_id':account_period_id, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
+                            <!-- 'period_id':account_period_id, -->
+                                <field name="line_vehicle_ids" force_save="1" nolabel="1" attrs="{'invisible':[('contractor_vehicle','!=',True)],'readonly': [('state','!=','draft'),('approval','=',True)]}" options="{'always_reload': True}" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_contractor_line_form_harian', 'line_vehicle_ids':line_vehicle_ids, 'supplier_id':supplier_id, 'contractor_vehicle':contractor_vehicle}" widget="one2many_list">
                                     <tree editable="bottom">
                                         <field name="name" invisible="1"/>
                                         <field name="tidak_ditagihkan" optional="show"/>
@@ -188,7 +189,7 @@
                     <field name="date"/>
                     <field name="supplier_id"/>
                     <field name="supplier_code"/>
-                    <field name="account_period_id"/>
+                    <!-- <field name="account_period_id"/> -->
                     <!-- <field name="payment_type"/> -->
                     <!-- <field name="contractor_vehicle"/> -->
                     <field name="company_id"/>
@@ -207,11 +208,11 @@
                     <field name="supplier_id" string="Nama Kontraktor" filter_domain="['|',('supplier_id','ilike',self),('supplier_code','ilike',self)]"/>
                     <separator/>
                     <!-- <filter name="date_today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/> -->
-                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <!-- <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/> -->
                     <separator/>
                     <group expand="0" string="Group By">
                         <filter string="Kontraktor" name="supplier_id" context="{'group_by':'supplier_id'}"/>
-                        <filter string="Periode" name="supplier_id" context="{'group_by':'account_period_id'}"/>
+                        <!-- <filter string="Periode" name="supplier_id" context="{'group_by':'account_period_id'}"/> -->
                     </group>
                 </search>
             </field>
@@ -331,7 +332,7 @@
                                 <field name="payment_type" attrs="{'readonly': [('line_ids','!=',[])]}" required="1"/>
 
                                 <!-- error domain pada field ini, domain="[('special','=',False),('state','=','draft')]" -->
-                                <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('line_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <!-- <field name="account_period_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" attrs="{'readonly': [('line_ids','!=',[])]}" domain="[('special','=',False),('state','=','draft')]"/> -->
 
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="contractor_vehicle"/>
@@ -397,7 +398,7 @@
                     <field name="name"/>
                     <field name="supplier_id"/>
                     <field name="supplier_code"/>
-                    <field name="account_period_id"/>
+                    <!-- <field name="account_period_id"/> -->
                     <field name="payment_type"/>
                     <!-- <field name="contractor_vehicle"/> -->
                     <field name="company_id"/>
@@ -415,7 +416,7 @@
                     <separator/>
                     <group expand="0" string="Group By">
                         <filter string="Kontraktor" name="supplier_id" context="{'group_by':'supplier_id'}"/>
-                        <filter string="Periode" name="account_period_id" context="{'group_by':'account_period_id'}"/>
+                        <!-- <filter string="Periode" name="account_period_id" context="{'group_by':'account_period_id'}"/> -->
                     </group>
                 </search>
             </field>
@@ -427,7 +428,8 @@
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_lhm_vehicle_contractor_filter_harian"/>
             <field name="domain">[('type','=','vehicle')]</field>
-            <field name="context">{'readonly_by_pass': ['supplier_id','payment_type','account_period_id','date_start','date_end'], 'default_type':'vehicle'}</field>
+            <!-- 'account_period_id' -->
+            <field name="context">{'readonly_by_pass': ['supplier_id','payment_type','date_start','date_end'], 'default_type':'vehicle'}</field>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Klik untuk menambahkan Buku Kontraktor Alat.

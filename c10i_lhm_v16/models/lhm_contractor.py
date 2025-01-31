@@ -37,18 +37,18 @@ class lhm_contractor(models.Model):
     _inherit        = ['mail.thread', 'mail.activity.mixin']
     _description    = 'Buku Kontraktor'
 
-    def _default_account_period_id(self):
-        # date = time.strftime('%Y-%m-%d')
-        date = datetime.now().strftime('%Y-%m-%d')
-        period_id = self.env['account.period'].search([('date_start', '<=', date),
-                                                       ('date_stop', '>=', date),
-                                                       ('special', '=', False)])
-        period = False
-        if period_id and len(period_id) > 1:
-            period = period_id[-1]
-        elif period_id and len(period_id) == 1:
-            period = period_id
-        return period and period.id or False
+    # def _default_account_period_id(self):
+    #     # date = time.strftime('%Y-%m-%d')
+    #     date = datetime.now().strftime('%Y-%m-%d')
+    #     period_id = self.env['account.period'].search([('date_start', '<=', date),
+    #                                                    ('date_stop', '>=', date),
+    #                                                    ('special', '=', False)])
+    #     period = False
+    #     if period_id and len(period_id) > 1:
+    #         period = period_id[-1]
+    #     elif period_id and len(period_id) == 1:
+    #         period = period_id
+    #     return period and period.id or False
 
     @api.depends('user_id')
     def _compute_operating_unit_id(self):
@@ -81,11 +81,14 @@ class lhm_contractor(models.Model):
     supplier_code                 = fields.Char('Kode', readonly=True, related="supplier_id.ref")
     doc_type_id                   = fields.Many2one("res.doc.type", string="Document Type", ondelete="restrict", tracking=True, default=_default_doc_id)
     approval                      = fields.Boolean(string="Approval", related="doc_type_id.approval", readonly=True)
-    account_period_id             = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", tracking=True, default=_default_account_period_id)
-    date_stop                     = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
-    operating_unit_id             = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)  #
+    
+    # account_period_id             = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", tracking=True, default=_default_account_period_id)
+    # date_stop                     = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
+    
     date_start                    = fields.Date("Tanggal Pembayaran Mulai")
     date_end                      = fields.Date("Tanggal Pembayaran Selesai")
+    
+    operating_unit_id             = fields.Many2one('operating.unit', string='Operating Unit', compute='_compute_operating_unit_id', readonly=True, store=True)  #
     contractor_vehicle            = fields.Boolean(string="Vehicle")
     total_type                    = fields.Selection([('used', 'HM/KM Terpakai'), ('result', 'Hasil Kerja')], string='Kalkulasi')
     company_id                    = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
@@ -159,22 +162,30 @@ class lhm_contractor(models.Model):
                     ('contractor_id.type','=',rec.type)])
 
             if records:
+                
                 raise UserError(_('Buku Kontraktor sudah pernah dibuat untuk periode %s.')%rec.account_period_id.name)
 
-    @api.onchange('supplier_id','account_period_id','payment_type','contractor_vehicle')
+    # @api.onchange('supplier_id','account_period_id','payment_type','contractor_vehicle')
+    @api.onchange('supplier_id','date_start','date_end','contractor_vehicle')
     def onchange_validate(self):
         if self.env.context.get('is_harian'):
             return
-        if self.supplier_id and self.account_period_id and self.type:
-            other_ids = self.env['lhm.contractor'].search([('id', '!=', self._origin.id), ('account_period_id', '=', self.account_period_id.id), ('supplier_id', '=', self.supplier_id.id), ('payment_type', '=', self.payment_type), ('type','=',self.type), ('contractor_vehicle','=',self.contractor_vehicle)])
-            # other_ids = self.env['lhm.contractor'].search([('id', '!=', self._origin.id), 
-            #     ('account_period_id', '=', self.account_period_id.id), 
-            #     ('supplier_id', '=', self.supplier_id.id), 
-            #     ('payment_type', '=', self.payment_type), 
-            #     ('type','=',self.type), 
-            #     ('contractor_vehicle','=',self.contractor_vehicle)])
+        # if self.supplier_id and self.account_period_id and self.type:
+        if self.supplier_id and self.type:
+            print(f"berfore Date Start: {self.date_start}")
+            print(f"berfore date_end: {self.date_end}")
+            # other_ids = self.env['lhm.contractor'].search([('id', '!=', self._origin.id), ('account_period_id', '=', self.account_period_id.id), ('supplier_id', '=', self.supplier_id.id), ('payment_type', '=', self.payment_type), ('type','=',self.type), ('contractor_vehicle','=',self.contractor_vehicle)])
+            other_ids = self.env['lhm.contractor'].search([
+                ('id', '!=', self._origin.id),
+                ('date_start', '<=', self.date_end),
+                ('date_end', '>=', self.date_start),
+                ('supplier_id', '=', self.supplier_id.id),
+                ('payment_type', '=', self.payment_type),
+                ('type', '=', self.type),
+                ('contractor_vehicle', '=', self.contractor_vehicle)
+            ])
             if other_ids:
-                self.account_period_id  = False
+                # self.account_period_id  = False
                 self.supplier_id        = False
                 self.date_start         = False
                 self.date_end           = False
@@ -182,37 +193,25 @@ class lhm_contractor(models.Model):
                     'warning': {'title': _('Kesalahan Input Data'),
                                 'message': _("Dokumen sudah ada: %s.") % other_ids.name, },
                 }
-            if self.payment_type:
-                month = int(self.account_period_id.date_start.strftime('%m'))
-                year = int(self.account_period_id.date_start.strftime('%Y'))
-                
-                last_day = calendar.monthrange(year, month)[1]
-
-                if self.payment_type == 'payment1':
-                    self.date_start = datetime(year, month, 1).strftime('%Y-%m-%d')
-                    self.date_end = datetime(year, month, 15).strftime('%Y-%m-%d')
-
-                elif self.payment_type == 'payment2':
-                    self.date_start = datetime(year, month, 16).strftime('%Y-%m-%d')
-                    self.date_end = datetime(year, month, last_day).strftime('%Y-%m-%d')
-
-                else:
-                    self.date_start = self.account_period_id.date_start
-                    self.date_end = self.account_period_id.date_stop
-
             # if self.payment_type:
-            #     month           = self.account_period_id.date_start.strftime('%m')
-            #     year            = self.account_period_id.date_start.strftime('%Y')
-            #     last_day        = calendar.monthrange(int(year), int(month))[1]
-            #     if self.payment_type=='payment1':
-            #         self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '01')
-            #         self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + '15')
-            #     elif self.payment_type=='payment2':
-            #         self.date_start  = time.strftime(str(year) + '-' + str(month) + '-' + '16')
-            #         self.date_end    = time.strftime(str(year) + '-' + str(month) + '-' + str(last_day))
-            #     else:
-            #         self.date_start = self.account_period_id.date_start
-            #         self.date_end = self.account_period_id.date_stop
+            #     # month = int(self.account_period_id.date_start.strftime('%m'))
+            #     # year = int(self.account_period_id.date_start.strftime('%Y'))
+            #     month = self.date_start.strftime('%m')
+            #     year = self.date_start.strftime('%Y')
+                
+            #     last_day = calendar.monthrange(year, month)[1]
+
+            #     if self.payment_type == 'payment1':
+            #         self.date_start = datetime(year, month, 1).strftime('%Y-%m-%d')
+            #         self.date_end = datetime(year, month, 15).strftime('%Y-%m-%d')
+
+            #     elif self.payment_type == 'payment2':
+            #         self.date_start = datetime(year, month, 16).strftime('%Y-%m-%d')
+            #         self.date_end = datetime(year, month, last_day).strftime('%Y-%m-%d')
+
+                # else:
+                #     self.date_start = self.account_period_id.date_start
+                #     self.date_end = self.account_period_id.date_stop
 
     def unlink(self):
         for contractor in self:
@@ -324,9 +323,15 @@ class lhm_contractor(models.Model):
             else:
                 values['name'] = supplier.ref or supplier.name or 'Harian'
         else:
-            if period:
-                month = period.date_start.strftime('%m')
-                year = period.date_start.strftime('%Y')
+            # if period:
+            #     month = period.date_start.strftime('%m')
+            #     year = period.date_start.strftime('%Y')
+            #     supplier_ref = supplier.ref if supplier.ref else supplier.name
+            #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
+            if values.get('date_start'):
+                date_obj = fields.Date.from_string(values['date_start'])
+                month = date_obj.strftime('%m')
+                year = date_obj.strftime('%Y')
                 supplier_ref = supplier.ref if supplier.ref else supplier.name
                 values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
             else:
@@ -436,11 +441,19 @@ class lhm_contractor(models.Model):
 
     def write(self, values):
         supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id', self.supplier_id.id))])
-        period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
-        if period_id:
-            month           = period_id.date_start.strftime('%m')
-            year            = period_id.date_start.strftime('%Y')
-            values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
+        # period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
+        # if period_id:
+        #     month           = period_id.date_start.strftime('%m')
+        #     year            = period_id.date_start.strftime('%Y')
+        #     values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
+        # Menggunakan date baru jika diubah, atau tetap pakai yang lama jika tidak ada perubahan
+        date_value = values.get('date', self.date)
+        if date_value:
+            date_obj = fields.Date.from_string(date_value)
+            month = date_obj.strftime('%m')
+            year = date_obj.strftime('%Y')
+            values['name'] = f"{supplier_id.code or ''}/{year}-{month}"
+
         return super(lhm_contractor, self).write(values)
 
     def get_material(self):
