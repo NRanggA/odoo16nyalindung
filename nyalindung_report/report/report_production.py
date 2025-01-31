@@ -488,7 +488,7 @@ class ReportProduction(models.AbstractModel):
                 FROM lhm_transaction_line ltl 
                     inner join hr_employee he ON he.id=ltl.employee_id
                     inner join lhm_transaction lt ON lt.id=ltl.lhm_id
-                    inner join lhm_transaction_nap_line ltnl ON ltnl.id=ltl.lhm_transaction_line_id
+                    inner join lhm_transaction_nap_line ltnl ON ltnl.lhm_transaction_line_id=ltl.id
                 WHERE ltl.date between %s and %s
                     and lt.kemandoran_id = %s"""
 
