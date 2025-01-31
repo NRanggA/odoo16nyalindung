@@ -481,7 +481,7 @@ class ReportProduction(models.AbstractModel):
             """
             query = """SELECT 
                     ltl.employee_id,
-                    ltl.name,
+                    he.no_induk,
                     lt.kemandoran_id,
                     he.name,
                     ltl.location_id
