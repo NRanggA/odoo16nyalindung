@@ -579,7 +579,7 @@ class ReportProduction(models.AbstractModel):
                     #     cell_format = wbf['total_float']
 
                     # sheet.write(row, col_index, hasil_nap_lateks, cell_format)
-                    total_hasil_baris_lateks += float(hasil_nap_lateks)
+                    total_hasil_baris_lateks += float(nap_line.hasil_1_nap)
                     sheet.write(row, col_index, nap_line.hasil_1_nap, wbf['total_float'])
                     
                 # if total_hasil_baris_lateks == 0:
@@ -616,7 +616,7 @@ class ReportProduction(models.AbstractModel):
                     # if hasil_nap_lump == 0:
                     #     hasil_nap_lump = '-'
                     # sheet.write(row, col_index, hasil_nap_lump, cell_format)
-                    total_hasil_baris_lump += float(hasil_nap_lump)
+                    total_hasil_baris_lump += float(nap_line.hasil_2_nap)
                     sheet.write(row, col_index, nap_line.hasil_2_nap, wbf['total_float'])
                 # if total_hasil_baris_lump == 0:
                 #     total_hasil_baris_lump = '-'
@@ -694,7 +694,7 @@ class ReportProduction(models.AbstractModel):
                     #     cell_format = wbf['total_float']
 
                     # sheet.write(row, col_index, konversi_nap_lateks, cell_format)
-                    total_hasil_konversi_lateks += float(konversi_nap_lateks)
+                    total_hasil_konversi_lateks += float(nap_line.hasil_convert_latex)
                     sheet.write(row, col_index, nap_line.hasil_convert_latex, wbf['total_float'])
                 # if total_hasil_konversi_lateks == 0:
                 #     total_hasil_konversi_lateks = '-'
@@ -730,7 +730,7 @@ class ReportProduction(models.AbstractModel):
                     # if konversi_nap_lump == 0:
                     #     konversi_nap_lump = '-'
                     # sheet.write(row, col_index, konversi_nap_lump, cell_format)
-                    total_hasil_konversi_lump += float(konversi_nap_lump)
+                    total_hasil_konversi_lump += float(nap_line.hasil_convert_lump)
                     sheet.write(row, col_index, nap_line.hasil_convert_lump, wbf['total_float'])
                 # if total_hasil_konversi_lump == 0:
                 #     total_hasil_konversi_lump = '-'
@@ -1539,7 +1539,7 @@ class ReportProduction(models.AbstractModel):
                     #     cell_format = wbf['total_float']
 
                     # sheet2.write(row2, col_index, hasil_nap_lateks, cell_format)
-                    total_hasil_baris_lateks += float(hasil_nap_lateks)
+                    total_hasil_baris_lateks += float(nap_line.hasil_1_nap)
                     sheet2.write(row2, col_index, nap_line.hasil_1_nap, wbf['total_float'])
                 # if total_hasil_baris_lateks == 0:
                 #     total_hasil_baris_lateks = '-'
@@ -1574,7 +1574,7 @@ class ReportProduction(models.AbstractModel):
                     # if hasil_nap_lump == 0:
                     #     hasil_nap_lump = '-'
                     # sheet2.write(row2, col_index, hasil_nap_lump, cell_format)
-                    total_hasil_baris_lump += float(hasil_nap_lump)
+                    total_hasil_baris_lump += float(nap_line.hasil_2_nap)
                     sheet2.write(row2, col_index, nap_line.hasil_2_nap, wbf['total_float'])
                 # if total_hasil_baris_lump == 0:
                 #     total_hasil_baris_lump = '-'
@@ -1608,8 +1608,8 @@ class ReportProduction(models.AbstractModel):
                     #     cell_format = wbf['total_float']
 
                     # sheet2.write(row2, col_index, konversi_nap_lateks, cell_format)
-                    total_hasil_konversi_lateks += float(konversi_nap_lateks)
-                    sheet2.write(row2, col_index, konversi_nap_lateks, wbf['total_float'])
+                    total_hasil_konversi_lateks += float(nap_line.hasil_convert_latex)
+                    sheet2.write(row2, col_index, nap_line.hasil_convert_latex, wbf['total_float'])
                 # if total_hasil_konversi_lateks == 0:
                 #     total_hasil_konversi_lateks = '-'
 
@@ -1643,7 +1643,7 @@ class ReportProduction(models.AbstractModel):
                     # if konversi_nap_lump == 0:
                     #     konversi_nap_lump = '-'
                     # sheet2.write(row2, col_index, konversi_nap_lump, cell_format)
-                    total_hasil_konversi_lump += float(konversi_nap_lump)
+                    total_hasil_konversi_lump += float(nap_line.hasil_convert_lump)
                     sheet2.write(row2, col_index, nap_line.hasil_convert_lump, wbf['total_float'])
                 # if total_hasil_konversi_lump == 0:
                 #     total_hasil_konversi_lump = '-'
