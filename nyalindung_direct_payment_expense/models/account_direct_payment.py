@@ -167,28 +167,41 @@ class DirectPayment(models.Model):
             
             if not payment.account_move_id:
                 payment.action_create_move()
+            else:
+                payment.account_move_id.line_ids.unlink()
+                move_lines = [l._prepare_move_line() for l in payment.line_ids]
+                total = sum([ml['debit'] - ml['credit'] for ml in move_lines])
+                if total:
+                    payable_move_lines = self._prepare_payable_move_line(-1*total)
+                    if not float_is_zero(total + payable_move_lines['debit'] - payable_move_lines['credit'], 
+                                    precision_digits=self.company_id.currency_id.decimal_places):
+                        rounding_move_lines = self._prepare_rounding_move_line(total + payable_move_lines['debit'] - payable_move_lines['credit'])
+                        move_lines.append(rounding_move_lines)
+                    move_lines.append(payable_move_lines)
+                payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
 
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
 
-            if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
-                sequence = None
-                if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
-                    sequence = payment.journal_id.sequence_id
-                elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
-                    sequence = payment.journal_id.sequence_out_id
+            if not payment.account_move_id:
+                if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
+                    sequence = None
+                    if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
+                        sequence = payment.journal_id.sequence_id
+                    elif payment.direct_state == 'send' and payment.journal_id.sequence_out_id:
+                        sequence = payment.journal_id.sequence_out_id
 
-                if not sequence:
-                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+                    if not sequence:
+                        raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-                payment_date = payment.date or datetime.now().date()
-                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+                    payment_date = payment.date or datetime.now().date()
+                    sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
 
-                if not sequence_number:
-                    raise ValidationError("Gagal mendapatkan nomor sequence.")
+                    if not sequence_number:
+                        raise ValidationError("Gagal mendapatkan nomor sequence.")
 
-                payment.name = sequence_number
-                payment.account_move_id.name = payment.name
+                    payment.name = sequence_number
+                    payment.account_move_id.name = payment.name
             payment.state="posted"
 
     # @api.model
