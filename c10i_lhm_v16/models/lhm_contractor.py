@@ -413,14 +413,14 @@ class lhm_contractor(models.Model):
                     'amount'            : -1*total_lines,
                     'plantation_src_journal_id': journal_id.id,
                     })))
-            move = AccountMove.create({
+            move = AccountMove.sudo().create({
                 'journal_id'    : journal_id.id,
                 'date'          : buku_kontraktor.date_end,
                 'line_ids'      : move_lines,
                 'ref'           : buku_kontraktor.name,
                 })
-            move.action_post()
-            buku_kontraktor.write({'move_id': move.id})
+            move.sudo().action_post()
+            buku_kontraktor.sudo().write({'move_id': move.id})
 
     def _prepare_move_line_entry(self, line):
         # convert amount
