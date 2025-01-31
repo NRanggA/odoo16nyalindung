@@ -418,9 +418,6 @@ class HrEmployeeExpense(models.Model):
                                 if settle_id.state not in ('done'):
                                     raise ValidationError('Cash advance number %s has not been settled yet. Please finalize the settlement before continuing'%(advanced_id.name))
 
-
-
-
     def get_advance_move_line(self):
         move_lines = []
         partner =  self.partner_id or self.requested_by.partner_id or False
