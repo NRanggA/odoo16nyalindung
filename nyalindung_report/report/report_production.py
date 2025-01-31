@@ -112,7 +112,8 @@ class ReportProduction(models.AbstractModel):
         self.wbf['content_float'] = workbook.add_format({
             'align': 'right',
             'valign': 'vcenter',
-            'num_format': '#,##0.00'
+            # 'num_format': '#,##0.00'
+            'num_format': '#,##0.00;-#,##0.00;-',
         })
         self.wbf['content_float'].set_border()
 
@@ -150,7 +151,7 @@ class ReportProduction(models.AbstractModel):
         self.wbf['total_float'] = workbook.add_format({
             'align': 'center',
             'valign': 'vcenter',
-            'num_format': '#,##0.00',
+            'num_format': '#,##0.00;-#,##0.00;-',
             'font_color': '#000000',
             'border': 1,
             'font_size' : 8
@@ -163,7 +164,7 @@ class ReportProduction(models.AbstractModel):
             'align': 'right',
             'valign': 'vcenter',
             'bg_color': '#FFFFDB',
-            'num_format': '#,##0.00',
+            'num_format': '#,##0.00;-#,##0.00;-',
             'font_color': '#000000'
         })
         self.wbf['total_float_kuning'].set_border()
@@ -428,56 +429,67 @@ class ReportProduction(models.AbstractModel):
             sheet.write(clump_row_start, clump_col_start, 'LUMP (Kg)', wbf['header'])
 
             # Bagian Isi Data
-            query = """
-                WITH employee_data AS (
-                    SELECT 
-                        emp.id AS emp_id,
-                        emp.name AS employee_name,
-                        emp.kemandoran_id AS kemandoran_emp,
-                        emp.no_induk as no_induk
-                    FROM 
-                        hr_employee emp
-                    WHERE 
-                        emp.kemandoran_id = %s
-                ),
-                trans_data AS (
-                    SELECT 
-                        trans_nap_line.hasil_1_nap,
-                        trans_nap_line.hasil_2_nap,
-                        trans_nap_line.hasil_convert_latex,
-                        trans_nap_line.hasil_convert_lump,  
-                        trans.date, 
-                        trans_line.employee_id,
-                        trans_line.location_id
-                    FROM 
-                        lhm_transaction_nap_line trans_nap_line
-                    JOIN 
-                        lhm_transaction_line trans_line ON trans_line.id = trans_nap_line.lhm_transaction_line_id
-                    JOIN 
-                        lhm_transaction trans ON trans.id = trans_line.lhm_id
-                    WHERE 
-                        trans.date BETWEEN %s AND %s
-                )
-                SELECT 
-                    employee_data.emp_id,
-                    employee_data.no_induk,
-                    employee_data.employee_name,
-                    employee_data.kemandoran_emp,
-                    trans_data.location_id
-                FROM 
-                    employee_data
-                LEFT JOIN 
-                    trans_data ON employee_data.emp_id = trans_data.employee_id
-                GROUP BY 
-                    employee_data.emp_id,
-                    employee_data.no_induk,
-                    employee_data.kemandoran_emp, 
-                    employee_data.employee_name,
-                    trans_data.location_id
-                ORDER BY 
-                    employee_data.employee_name ASC,
-                    trans_data.location_id ASC;
-            """
+            # queryx = """
+            #     WITH employee_data AS (
+            #         SELECT 
+            #             emp.id AS emp_id,
+            #             emp.name AS employee_name,
+            #             emp.kemandoran_id AS kemandoran_emp,
+            #             emp.no_induk as no_induk
+            #         FROM 
+            #             hr_employee emp
+            #         WHERE 
+            #             emp.kemandoran_id = %s
+            #     ),
+            #     trans_data AS (
+            #         SELECT 
+            #             trans_nap_line.hasil_1_nap,
+            #             trans_nap_line.hasil_2_nap,
+            #             trans_nap_line.hasil_convert_latex,
+            #             trans_nap_line.hasil_convert_lump,  
+            #             trans.date, 
+            #             trans_line.employee_id,
+            #             trans_line.location_id
+            #         FROM 
+            #             lhm_transaction_nap_line trans_nap_line
+            #         JOIN 
+            #             lhm_transaction_line trans_line ON trans_line.id = trans_nap_line.lhm_transaction_line_id
+            #         JOIN 
+            #             lhm_transaction trans ON trans.id = trans_line.lhm_id
+            #         WHERE 
+            #             trans.date BETWEEN %s AND %s
+            #     )
+            #     SELECT 
+            #         employee_data.emp_id,
+            #         employee_data.no_induk,
+            #         employee_data.employee_name,
+            #         employee_data.kemandoran_emp,
+            #         trans_data.location_id
+            #     FROM 
+            #         employee_data
+            #     LEFT JOIN 
+            #         trans_data ON employee_data.emp_id = trans_data.employee_id
+            #     GROUP BY 
+            #         employee_data.emp_id,
+            #         employee_data.no_induk,
+            #         employee_data.kemandoran_emp, 
+            #         employee_data.employee_name,
+            #         trans_data.location_id
+            #     ORDER BY 
+            #         employee_data.employee_name ASC,
+            #         trans_data.location_id ASC;
+            # """
+            query = """SELECT 
+                    ltl.employee_id,
+                    he.no_induk,
+                    he.name,
+                    lt.kemandoran_id,
+                    ltl.location_id
+                FROM lhm_transaction_line ltl 
+                    inner join hr_employee he ON he.id=ltl.employee_id
+                    inner join lhm_transaction lt ON lt.id=ltl.lhm_id
+                    inner join lhm_transaction_nap_line ltnl ON ltnl.lhm_transaction_line_id=ltl.id
+                WHERE lt.kemandoran_id = %s and ltl.date between %s and %s"""
 
             self.env.cr.execute(query, (kemandoran.id, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
@@ -510,14 +522,21 @@ class ReportProduction(models.AbstractModel):
                 m_count = 0
 
                 for i in range(delta.days + 1):
-                    attendance = self.env['lhm.transaction.line'].search([
+                    # attendance = self.env['lhm.transaction.line'].search([
+                    #     ('employee_id', '=', emp_id),
+                    #     ('date', '=', from_date + timedelta(days=i)),
+                    #     ('state', '=', 'done'),
+                    #     ('location_id', '=', location_id)
+                    # ], limit=1)
+                    attendance = self.env['lhm.transaction.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('date', '=', from_date + timedelta(days=i)),
                         ('state', '=', 'done'),
                         ('location_id', '=', location_id)
-                    ], limit=1)
+                    ], fields=['attendance_id'], limit=1)
 
-                    type_code = attendance.attendance_id.code if attendance else '-'
+                    # type_code = attendance.attendance_id.code if attendance else '-'
+                    type_code = attendance[0]['attendance_id'][1] if attendance else '-'
                     sheet.write(row, current_col, type_code, wbf['data_center'])
 
                     if type_code in ['KJ', 'KJI', 'KJO']:
@@ -559,28 +578,42 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = second_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    # nap_line = self.env['lhm.transaction.nap.line'].search([
+                    #     ('employee_id', '=', emp_id),
+                    #     ('lhm_transaction_line_id.date', '=', current_date),
+                    #     ('lhm_transaction_line_id.state', '=', 'done'),
+                    #     ('lhm_transaction_line_id.location_id', '=', location_id)
+                    # ], limit=1)
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_1_nap'], limit=1) # [{'id': 1111, 'hasil_1_nap': 123123}] >> nap_line[0]['hasil_1_nap]
 
-                    hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
+                    # hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
 
-                    if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            total_hasil_baris_lateks += float(hasil_nap_lateks)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_baris_lateks += 0
-                            cell_format = wbf['total_float']
+                    # if hasil_nap_lateks and hasil_nap_lateks != '-':
+                    #     try:
+                    #         total_hasil_baris_lateks += float(hasil_nap_lateks)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_baris_lateks += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
+
+                    # sheet.write(row, col_index, hasil_nap_lateks, cell_format)
+                    # total_hasil_baris_lateks += float(nap_line.hasil_1_nap)
+                    # sheet.write(row, col_index, nap_line.hasil_1_nap, wbf['total_float'])
+                    if nap_line:
+                        total_hasil_baris_lateks += float(nap_line[0]['hasil_1_nap'])
+                        sheet.write(row, col_index, nap_line[0]['hasil_1_nap'], wbf['total_float'])
                     else:
-                        cell_format = wbf['total_float']
-
-                    sheet.write(row, col_index, hasil_nap_lateks, cell_format)
-                if total_hasil_baris_lateks == 0:
-                    total_hasil_baris_lateks = '-'
+                        sheet.write(row, col_index, 0, wbf['total_float'])
+                    
+                # if total_hasil_baris_lateks == 0:
+                #     total_hasil_baris_lateks = '-'
 
                 total_column_index = second_date_start + (to_date - from_date).days + 1
                 sheet.write(row, total_column_index, total_hasil_baris_lateks, wbf['total_float'])
@@ -592,29 +625,39 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = third_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    # nap_line = self.env['lhm.transaction.nap.line'].search([
+                    #     ('employee_id', '=', emp_id),
+                    #     ('lhm_transaction_line_id.date', '=', current_date),
+                    #     ('lhm_transaction_line_id.state', '=', 'done'),
+                    #     ('lhm_transaction_line_id.location_id', '=', location_id)
+                    # ], limit=1)
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_2_nap'], limit=1)
 
-                    hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
+                    # hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
 
-                    if hasil_nap_lump and hasil_nap_lump != '-':
-                        try:
-                            total_hasil_baris_lump += float(hasil_nap_lump)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_baris_lump += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
-                    if hasil_nap_lump == 0:
-                        hasil_nap_lump = '-'
-                    sheet.write(row, col_index, hasil_nap_lump, cell_format)
-                if total_hasil_baris_lump == 0:
-                    total_hasil_baris_lump = '-'
+                    # if hasil_nap_lump and hasil_nap_lump != '-':
+                    #     try:
+                    #         total_hasil_baris_lump += float(hasil_nap_lump)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_baris_lump += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
+                    # if hasil_nap_lump == 0:
+                    #     hasil_nap_lump = '-'
+                    # sheet.write(row, col_index, hasil_nap_lump, cell_format)
+                    # total_hasil_baris_lump += float(nap_line.hasil_2_nap)
+                    # sheet.write(row, col_index, nap_line.hasil_2_nap, wbf['total_float'])
+                    total_hasil_baris_lump += float(nap_line[0]['hasil_2_nap'])
+                    sheet.write(row, col_index, nap_line[0]['hasil_2_nap'], wbf['total_float'])
+                # if total_hasil_baris_lump == 0:
+                #     total_hasil_baris_lump = '-'
 
                 total_column_index = third_date_start + (to_date - from_date).days + 1
                 sheet.write(row, total_column_index, total_hasil_baris_lump, wbf['total_float'])
@@ -676,21 +719,23 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.location_id', '=', location_id)
                     ], limit=1)
 
-                    konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
+                    # konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
 
-                    if konversi_nap_lateks and konversi_nap_lateks != '-':
-                        try:
-                            total_hasil_konversi_lateks += float(konversi_nap_lateks)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_konversi_lateks += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
+                    # if konversi_nap_lateks and konversi_nap_lateks != '-':
+                    #     try:
+                    #         total_hasil_konversi_lateks += float(konversi_nap_lateks)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_konversi_lateks += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
 
-                    sheet.write(row, col_index, konversi_nap_lateks, cell_format)
-                if total_hasil_konversi_lateks == 0:
-                    total_hasil_konversi_lateks = '-'
+                    # sheet.write(row, col_index, konversi_nap_lateks, cell_format)
+                    total_hasil_konversi_lateks += float(nap_line.hasil_convert_latex)
+                    sheet.write(row, col_index, nap_line.hasil_convert_latex, wbf['total_float'])
+                # if total_hasil_konversi_lateks == 0:
+                #     total_hasil_konversi_lateks = '-'
 
                 total_column_index = sixth_date_start + (to_date - from_date).days + 1
                 sheet.write(row, total_column_index, total_hasil_konversi_lateks, wbf['total_float'])
@@ -709,22 +754,24 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.location_id', '=', location_id)
                     ], limit=1)
 
-                    konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
+                    # konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
 
-                    if konversi_nap_lump and konversi_nap_lump != '-':
-                        try:
-                            total_hasil_konversi_lump += float(konversi_nap_lump)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_konversi_lump += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
-                    if konversi_nap_lump == 0:
-                        konversi_nap_lump = '-'
-                    sheet.write(row, col_index, konversi_nap_lump, cell_format)
-                if total_hasil_konversi_lump == 0:
-                    total_hasil_konversi_lump = '-'
+                    # if konversi_nap_lump and konversi_nap_lump != '-':
+                    #     try:
+                    #         total_hasil_konversi_lump += float(konversi_nap_lump)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_konversi_lump += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
+                    # if konversi_nap_lump == 0:
+                    #     konversi_nap_lump = '-'
+                    # sheet.write(row, col_index, konversi_nap_lump, cell_format)
+                    total_hasil_konversi_lump += float(nap_line.hasil_convert_lump)
+                    sheet.write(row, col_index, nap_line.hasil_convert_lump, wbf['total_float'])
+                # if total_hasil_konversi_lump == 0:
+                #     total_hasil_konversi_lump = '-'
 
                 total_column_index = seventh_date_start + (to_date - from_date).days + 1
                 sheet.write(row, total_column_index, total_hasil_konversi_lump, wbf['total_float'])
@@ -1517,21 +1564,23 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.state', '=', 'done'),
                     ], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
+                    # hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
 
-                    if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            total_hasil_baris_lateks += float(hasil_nap_lateks)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_baris_lateks += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
+                    # if hasil_nap_lateks and hasil_nap_lateks != '-':
+                    #     try:
+                    #         total_hasil_baris_lateks += float(hasil_nap_lateks)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_baris_lateks += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
 
-                    sheet2.write(row2, col_index, hasil_nap_lateks, cell_format)
-                if total_hasil_baris_lateks == 0:
-                    total_hasil_baris_lateks = '-'
+                    # sheet2.write(row2, col_index, hasil_nap_lateks, cell_format)
+                    total_hasil_baris_lateks += float(nap_line.hasil_1_nap)
+                    sheet2.write(row2, col_index, nap_line.hasil_1_nap, wbf['total_float'])
+                # if total_hasil_baris_lateks == 0:
+                #     total_hasil_baris_lateks = '-'
 
                 total_column_index = second_date_start + (to_date - from_date).days + 1
                 sheet2.write(row2, total_column_index, total_hasil_baris_lateks, wbf['total_float'])
@@ -1549,22 +1598,24 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.state', '=', 'done'),
                     ], limit=1)
 
-                    hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
+                    # hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
 
-                    if hasil_nap_lump and hasil_nap_lump != '-':
-                        try:
-                            total_hasil_baris_lump += float(hasil_nap_lump)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_baris_lump += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
-                    if hasil_nap_lump == 0:
-                        hasil_nap_lump = '-'
-                    sheet2.write(row2, col_index, hasil_nap_lump, cell_format)
-                if total_hasil_baris_lump == 0:
-                    total_hasil_baris_lump = '-'
+                    # if hasil_nap_lump and hasil_nap_lump != '-':
+                    #     try:
+                    #         total_hasil_baris_lump += float(hasil_nap_lump)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_baris_lump += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
+                    # if hasil_nap_lump == 0:
+                    #     hasil_nap_lump = '-'
+                    # sheet2.write(row2, col_index, hasil_nap_lump, cell_format)
+                    total_hasil_baris_lump += float(nap_line.hasil_2_nap)
+                    sheet2.write(row2, col_index, nap_line.hasil_2_nap, wbf['total_float'])
+                # if total_hasil_baris_lump == 0:
+                #     total_hasil_baris_lump = '-'
 
                 total_column_index = third_date_start + (to_date - from_date).days + 1
                 sheet2.write(row2, total_column_index, total_hasil_baris_lump, wbf['total_float'])
@@ -1582,21 +1633,23 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.state', '=', 'done'),
                     ], limit=1)
 
-                    konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
+                    # konversi_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
 
-                    if konversi_nap_lateks and konversi_nap_lateks != '-':
-                        try:
-                            total_hasil_konversi_lateks += float(konversi_nap_lateks)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_konversi_lateks += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
+                    # if konversi_nap_lateks and konversi_nap_lateks != '-':
+                    #     try:
+                    #         total_hasil_konversi_lateks += float(konversi_nap_lateks)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_konversi_lateks += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
 
-                    sheet2.write(row2, col_index, konversi_nap_lateks, cell_format)
-                if total_hasil_konversi_lateks == 0:
-                    total_hasil_konversi_lateks = '-'
+                    # sheet2.write(row2, col_index, konversi_nap_lateks, cell_format)
+                    total_hasil_konversi_lateks += float(nap_line.hasil_convert_latex)
+                    sheet2.write(row2, col_index, nap_line.hasil_convert_latex, wbf['total_float'])
+                # if total_hasil_konversi_lateks == 0:
+                #     total_hasil_konversi_lateks = '-'
 
                 total_column_index = sixth_date_start + (to_date - from_date).days + 1
                 sheet2.write(row2, total_column_index, total_hasil_konversi_lateks, wbf['total_float'])
@@ -1614,22 +1667,24 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.state', '=', 'done')
                     ], limit=1)
 
-                    konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
+                    # konversi_nap_lump = nap_line.hasil_convert_lump if nap_line else '-'
 
-                    if konversi_nap_lump and konversi_nap_lump != '-':
-                        try:
-                            total_hasil_konversi_lump += float(konversi_nap_lump)
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            total_hasil_konversi_lump += 0
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
-                    if konversi_nap_lump == 0:
-                        konversi_nap_lump = '-'
-                    sheet2.write(row2, col_index, konversi_nap_lump, cell_format)
-                if total_hasil_konversi_lump == 0:
-                    total_hasil_konversi_lump = '-'
+                    # if konversi_nap_lump and konversi_nap_lump != '-':
+                    #     try:
+                    #         total_hasil_konversi_lump += float(konversi_nap_lump)
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         total_hasil_konversi_lump += 0
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
+                    # if konversi_nap_lump == 0:
+                    #     konversi_nap_lump = '-'
+                    # sheet2.write(row2, col_index, konversi_nap_lump, cell_format)
+                    total_hasil_konversi_lump += float(nap_line.hasil_convert_lump)
+                    sheet2.write(row2, col_index, nap_line.hasil_convert_lump, wbf['total_float'])
+                # if total_hasil_konversi_lump == 0:
+                #     total_hasil_konversi_lump = '-'
 
                 total_column_index = seventh_date_start + (to_date - from_date).days + 1
                 sheet2.write(row2, total_column_index, total_hasil_konversi_lump, wbf['total_float'])
@@ -2279,16 +2334,18 @@ class ReportProduction(models.AbstractModel):
 
                     hasil_nap_lateks = sum(float(line.hasil_1_nap) for line in nap_lines if line.hasil_1_nap) if nap_lines else 0
 
-                    if hasil_nap_lateks > 0:
-                        total_hasil_baris_lateks += hasil_nap_lateks
-                        cell_format = wbf['total_float']
-                    else:
-                        hasil_nap_lateks = '-'
-                        cell_format = wbf['total_float']
+                    # if hasil_nap_lateks > 0:
+                    #     total_hasil_baris_lateks += hasil_nap_lateks
+                    #     cell_format = wbf['total_float']
+                    # else:
+                    #     hasil_nap_lateks = '-'
+                    #     cell_format = wbf['total_float']
 
-                    sheet3.write(row3, col_index, hasil_nap_lateks, cell_format)
+                    # sheet3.write(row3, col_index, hasil_nap_lateks, cell_format)
+                    total_hasil_baris_lateks += hasil_nap_lateks
+                    sheet3.write(row3, col_index, hasil_nap_lateks, wbf['total_float'])
 
-                total_hasil_baris_lateks = total_hasil_baris_lateks if total_hasil_baris_lateks > 0 else '-'
+                # total_hasil_baris_lateks = total_hasil_baris_lateks if total_hasil_baris_lateks > 0 else '-'
 
                 total_column_index = second_date_start + (to_date - from_date).days + 1
                 sheet3.write(row3, total_column_index, total_hasil_baris_lateks, wbf['total_float'])
@@ -2308,16 +2365,18 @@ class ReportProduction(models.AbstractModel):
 
                     hasil_nap_lump = sum(float(line.hasil_2_nap) for line in nap_lines if line.hasil_2_nap) if nap_lines else 0
 
-                    if hasil_nap_lump > 0:
-                        total_hasil_baris_lump += hasil_nap_lump
-                        cell_format = wbf['total_float']
-                    else:
-                        hasil_nap_lump = '-'
-                        cell_format = wbf['total_float']
+                    # if hasil_nap_lump > 0:
+                    #     total_hasil_baris_lump += hasil_nap_lump
+                    #     cell_format = wbf['total_float']
+                    # else:
+                    #     hasil_nap_lump = '-'
+                    #     cell_format = wbf['total_float']
 
-                    sheet3.write(row3, col_index, hasil_nap_lump, cell_format)
+                    # sheet3.write(row3, col_index, hasil_nap_lump, cell_format)
+                    total_hasil_baris_lump += hasil_nap_lump
+                    sheet3.write(row3, col_index, hasil_nap_lump, wbf['total_float'])
 
-                total_hasil_baris_lump = total_hasil_baris_lump if total_hasil_baris_lump > 0 else '-'
+                # total_hasil_baris_lump = total_hasil_baris_lump if total_hasil_baris_lump > 0 else '-'
 
                 total_column_index = third_date_start + (to_date - from_date).days + 1
                 sheet3.write(row3, total_column_index, total_hasil_baris_lump, wbf['total_float'])
@@ -2337,22 +2396,25 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.state', '=', 'done')
                     ], limit=1)
 
-                    a_drc_lateks = nap_line.drc_latex_nap if nap_line else '-'
+                    # a_drc_lateks = nap_line.drc_latex_nap if nap_line else '-'
 
-                    if a_drc_lateks and a_drc_lateks != '-':
-                        try:
-                            total_a_drc_lateks += float(a_drc_lateks)
-                            count_a_drc_lateks += 1
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
+                    # if a_drc_lateks and a_drc_lateks != '-':
+                    #     try:
+                    #         total_a_drc_lateks += float(a_drc_lateks)
+                    #         count_a_drc_lateks += 1
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
 
-                    sheet3.write(row3, col_index, a_drc_lateks, cell_format)
+                    # sheet3.write(row3, col_index, a_drc_lateks, cell_format)
+                    total_a_drc_lateks += float(nap_line.drc_latex_nap)
+                    count_a_drc_lateks += 1 if nap_line.drc_latex_nap else 0
+                    sheet3.write(row3, col_index, nap_line.drc_latex_nap, wbf['total_float'])
 
                 # Hitung rata-rata DRC Lateks
-                shi_average_drc_lateks = total_a_drc_lateks / count_a_drc_lateks if count_a_drc_lateks > 0 else '-'
+                shi_average_drc_lateks = total_a_drc_lateks / count_a_drc_lateks if count_a_drc_lateks > 0 else 0.0
                 sheet3.write(row3, fourth_date_start + (to_date - from_date).days + 1, shi_average_drc_lateks, wbf['total_float'])
 
                 # Isi Data DRC Lump (Kg) dan Hitung Rata-rata
@@ -2369,22 +2431,25 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.state', '=', 'done')
                     ], limit=1)
 
-                    a_drc_lump = nap_line.drc_lump_nap if nap_line else '-'
+                    # a_drc_lump = nap_line.drc_lump_nap if nap_line else '-'
 
-                    if a_drc_lump and a_drc_lump != '-':
-                        try:
-                            total_a_drc_lump += float(a_drc_lump)
-                            count_a_drc_lump += 1
-                            cell_format = wbf['total_float']
-                        except ValueError:
-                            cell_format = wbf['total_float']
-                    else:
-                        cell_format = wbf['total_float']
+                    # if a_drc_lump and a_drc_lump != '-':
+                    #     try:
+                    #         total_a_drc_lump += float(a_drc_lump)
+                    #         count_a_drc_lump += 1
+                    #         cell_format = wbf['total_float']
+                    #     except ValueError:
+                    #         cell_format = wbf['total_float']
+                    # else:
+                    #     cell_format = wbf['total_float']
 
-                    sheet3.write(row3, col_index, a_drc_lump, cell_format)
+                    # sheet3.write(row3, col_index, a_drc_lump, cell_format)
+                    total_a_drc_lump += float(nap_line.drc_lump_nap)
+                    count_a_drc_lump += 1 if nap_line.drc_lump_nap else 0
+                    sheet3.write(row3, col_index, nap_line.drc_lump_nap, wbf['total_float'])
 
                 # Hitung rata-rata DRC Lump
-                shi_average_drc_lump = total_a_drc_lump / count_a_drc_lump if count_a_drc_lump > 0 else '-'
+                shi_average_drc_lump = total_a_drc_lump / count_a_drc_lump if count_a_drc_lump > 0 else 0.0
                 sheet3.write(row3, fifth_date_start + (to_date - from_date).days + 1, shi_average_drc_lump, wbf['total_float'])
 
 
@@ -2403,16 +2468,18 @@ class ReportProduction(models.AbstractModel):
 
                     konversi_nap_lateks = sum(float(line.hasil_convert_latex) for line in nap_lines if line.hasil_convert_latex) if nap_lines else 0
 
-                    if konversi_nap_lateks > 0:
-                        total_hasil_konversi_lateks += konversi_nap_lateks
-                        cell_format = wbf['total_float']
-                    else:
-                        konversi_nap_lateks = '-'
-                        cell_format = wbf['total_float']
+                    # if konversi_nap_lateks > 0:
+                    #     total_hasil_konversi_lateks += konversi_nap_lateks
+                    #     cell_format = wbf['total_float']
+                    # else:
+                    #     konversi_nap_lateks = '-'
+                    #     cell_format = wbf['total_float']
 
-                    sheet3.write(row3, col_index, konversi_nap_lateks, cell_format)
+                    # sheet3.write(row3, col_index, konversi_nap_lateks, cell_format)
+                    total_hasil_konversi_lateks += konversi_nap_lateks
+                    sheet3.write(row3, col_index, konversi_nap_lateks, wbf['total_float'])
 
-                total_hasil_konversi_lateks = total_hasil_konversi_lateks if total_hasil_konversi_lateks > 0 else '-'
+                # total_hasil_konversi_lateks = total_hasil_konversi_lateks if total_hasil_konversi_lateks > 0 else '-'
 
                 total_column_index = sixth_date_start + (to_date - from_date).days + 1
                 sheet3.write(row3, total_column_index, total_hasil_konversi_lateks, wbf['total_float'])
@@ -2432,16 +2499,18 @@ class ReportProduction(models.AbstractModel):
 
                     konversi_nap_lump = sum(float(line.hasil_convert_lump) for line in nap_lines if line.hasil_convert_lump) if nap_lines else 0
 
-                    if konversi_nap_lump > 0:
-                        total_hasil_konversi_lump += konversi_nap_lump
-                        cell_format = wbf['total_float']
-                    else:
-                        konversi_nap_lump = '-'
-                        cell_format = wbf['total_float']
+                    # if konversi_nap_lump > 0:
+                    #     total_hasil_konversi_lump += konversi_nap_lump
+                    #     cell_format = wbf['total_float']
+                    # else:
+                    #     konversi_nap_lump = '-'
+                    #     cell_format = wbf['total_float']
 
-                    sheet3.write(row3, col_index, konversi_nap_lump, cell_format)
+                    # sheet3.write(row3, col_index, konversi_nap_lump, cell_format)
+                    total_hasil_konversi_lump += konversi_nap_lump
+                    sheet3.write(row3, col_index, konversi_nap_lump, wbf['total_float'])
 
-                total_hasil_konversi_lump = total_hasil_konversi_lump if total_hasil_konversi_lump > 0 else '-'
+                # total_hasil_konversi_lump = total_hasil_konversi_lump if total_hasil_konversi_lump > 0 else '-'
 
                 total_column_index = seventh_date_start + (to_date - from_date).days + 1
                 sheet3.write(row3, total_column_index, total_hasil_konversi_lump, wbf['total_float'])

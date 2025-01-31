@@ -69,4 +69,3 @@ class AttendanceSheet(models.Model):
             if check_in and check_out:
                 type_id = self.env['hr.attendance.type'].search([('code', '=', 'KJ')], limit=1).id
                 self.type_id = type_id
-        check_out
