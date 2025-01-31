@@ -482,8 +482,8 @@ class ReportProduction(models.AbstractModel):
             query = """SELECT 
                     ltl.employee_id,
                     he.no_induk,
-                    lt.kemandoran_id,
                     he.name,
+                    lt.kemandoran_id,
                     ltl.location_id
                 FROM lhm_transaction_line ltl 
                     inner join hr_employee he ON he.id=ltl.employee_id
