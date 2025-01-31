@@ -700,12 +700,14 @@ class lhm_contractor_line(models.Model):
         if self.location_id:
             self.activity_id = False
 
-    @api.depends('unit_price', 'nilai', 'line_nap_ids.hasil_convert_latex', 'line_nap_ids.hasil_convert_lump')
+    @api.depends('unit_price', 'nilai', 'product_id', 'product_id_2', 'line_nap_ids.hasil_convert_latex', 'line_nap_ids.hasil_convert_lump')
     def _compute_harga_satuan(self):
         for line in self:
-            if line.line_nap_ids:
-                line.total = line.unit_price * sum(line.line_nap_ids.mapped('hasil_convert_latex'))
-                line.total += line.unit_price_2 * sum(line.line_nap_ids.mapped('hasil_convert_lump'))
+            total_latex = sum(line.line_nap_ids.filtered(lambda l: l.product_id.name == "Lateks").mapped('hasil_convert_latex'))
+            total_lump = sum(line.line_nap_ids.filtered(lambda l: l.product_id_2.name == "Lump").mapped('hasil_convert_lump'))
+            
+            if line.product_id.name == "Lateks" or line.product_id_2.name == "Lump":
+                line.total = (line.unit_price * total_latex) + (line.unit_price_2 * total_lump)
             else:
                 line.total = (line.unit_price * line.nilai) + (line.unit_price_2 * line.nilai2)
     
