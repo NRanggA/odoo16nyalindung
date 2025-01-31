@@ -11,6 +11,7 @@ from . import lhm_transaction_material_line
 from . import lhm_transaction
 from . import lhm_activity
 from . import lhm_contractor
+from . import lhm_machine
 
 from . import res
 from . import hr

@@ -25,19 +25,21 @@ class lhm_nap(models.Model):
                 total_janjang = total_janjang + line_nap.qty_nap
             self.janjang_jml = total_janjang
 
-    @api.depends('date_nap', 'state')
-    def _compute_account_period_id(self):
-        for plantation_nap in self:
-            if plantation_nap.date_nap:
-                period_id = self.env['account.period'].search([('date_start', '<=', plantation_nap.date_nap), ('date_stop', '>=', plantation_nap.date_nap), ('special', '=', False)])
-                if period_id:
-                    plantation_nap.account_period_id = period_id
+    # @api.depends('date_nap', 'state')
+    # def _compute_account_period_id(self):
+    #     for plantation_nap in self:
+    #         if plantation_nap.date_nap:
+    #             period_id = self.env['account.period'].search([('date_start', '<=', plantation_nap.date_nap), ('date_stop', '>=', plantation_nap.date_nap), ('special', '=', False)])
+    #             if period_id:
+    #                 plantation_nap.account_period_id = period_id
 
     name                = fields.Char('No. Register', required=False)
     date_nap            = fields.Date("Tanggal", readonly=True, states={'draft': [('readonly',False)]}, default=fields.Date.context_today)
-    account_period_id   = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', store=True)
-    date_start          = fields.Date(related="account_period_id.date_start", string="Range Start Date", readonly=1)
-    date_stop           = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
+    
+    # account_period_id   = fields.Many2one("account.period", string="Accounting Periode", ondelete="restrict", compute='_compute_account_period_id', store=True)
+    # date_start          = fields.Date(related="account_period_id.date_start", string="Range Start Date", readonly=1)
+    # date_stop           = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
+    
     no_nap              = fields.Char('No. NAP Manual', readonly=True, states={'draft': [('readonly',False)]})
     afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
     driver              = fields.Char('Nama Supir', readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})

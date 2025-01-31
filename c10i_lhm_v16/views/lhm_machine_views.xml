@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>  
+    
+        <!-- Transaksi Buku Mesin -->
+        <record id="view_lhm_machine_form" model="ir.ui.view">
+            <field name="name">view.lhm.machine.form</field>
+            <field name="model">lhm.machine</field>
+            <field name="arch" type="xml">
+                <form string="Buku Mesin">
+                    <header attrs="{'invisible': [('approval','!=',True)]}">
+                        <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
+                        <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
+                        <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
+                    </header>
+                    <field name="doc_type_id" invisible="1"/>
+                    <field name="approval" invisible="1"/>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1" force_save="1"/></h1>
+                        </div>
+                        <group name="lhm_machine">
+                            <group>
+                                <field name="machine_id" force_save="1" required="1" context="{'form_view_ref':'c10i_lhm_v16.view_lhm_utility_machine_form', 'default_type':'ma'}" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="account_period_id" force_save="1" required="1" attrs="{'readonly': [('line_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" domain="[('special','=',False),('state','=','draft')]"/>
+                                <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                            <group>
+                                <field name="uom_performance" force_save="1"/>
+                                <field name="machine_code" force_save="1"/>
+                                <field name="company_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="date_start" readonly="1" invisible="1"/>
+                                <field name="date_stop" readonly="1" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Detail Aktivitas">
+                                <field name="line_ids" nolabel="1" attrs="{'readonly': [('state','!=','draft'),('approval','=',True)]}" options='{"always_reload": True, "highlight_first_line": True, "reload_on_button": True}'>
+                                    <tree editable="bottom">
+                                        <field name="date" optional="show"/>
+                                        <field name="name" invisible="1"/>
+                                        <field name="location_type_id" 
+                                            domain="[('code','not in',['WS','VH','MA'])]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="varieties_validator" invisible="1"/>
+                                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                            attrs="{'readonly': [('varieties_validator','=',False)], 
+                                                    'required': [('varieties_validator','=',True)]}"/>
+                                        <field name="filtered_locations" invisible="1" />
+                                        <field name="location_id" 
+                                            domain="[('id','in',filtered_locations)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                        <field name="filtered_activities" invisible="1" />
+                                            <!-- domain="[('type_id','=',location_type_id),('id','in',doc_activity_ids)]"  -->
+                                        <field name="activity_id" 
+                                            domain="[('id','in',filtered_activities)]" 
+                                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+
+                                        <field name="use_value" optional="show"/>
+                                        <field name="use_hours" widget="float_time" optional="show"/>
+                                        <button name="copy_line" class="oe_stat_button" icon="fa-copy" string="copy" type="object"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <field name="note" placeholder="Tulis Catatan Disini..." nolabel="1" colspan="8"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lhm_machine_tree" model="ir.ui.view">
+            <field name="name">view.lhm.machine.tree</field>
+            <field name="model">lhm.machine</field>
+            <field name="arch" type="xml">
+                <tree string="Buku Mesin">
+                    <field name="name"/>
+                    <field name="machine_id"/>
+                    <field name="machine_code"/>
+                    <field name="uom_performance" />
+                    <field name="account_period_id"/>
+                    <field name="date_start" invisible="1"/>
+                    <field name="date_stop" invisible="1"/>
+                    <field name="company_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lhm_machine_filter" model="ir.ui.view">
+            <field name="name">view.lhm.machine.filter</field>
+            <field name="model">lhm.machine</field>
+            <field name="arch" type="xml">
+                <search string="Buku Mesin">
+                    <field name="name" string="Nama Buku Mesin"/>
+                    <field name="machine_id" string="Nama Mesin" filter_domain="['|',('machine_code','ilike',self),('machine_id','ilike',self)]"/>
+                    <separator/>
+                    <filter name="date_monthly" string="Monthly" domain="['&amp;', ('date_stop', '&gt;=', (context_today()-datetime.timedelta(days=5)).strftime('%Y-%m-%d')), ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Mesin" name="machine_id" context="{'group_by':'machine_id'}"/>
+                        <filter string="Periode" name="account_period_id" context="{'group_by':'account_period_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_lhm_machine" model="ir.actions.act_window">
+            <field name="name">Buku Mesin</field>
+            <field name="res_model">lhm.machine</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_machine_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'readonly_by_pass': ['machine_id'], 'search_default_date_monthly':1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Buku Mesin.
+              </p>
+            </field>
+        </record>
+        <record id="action_lhm_machine_all" model="ir.actions.act_window">
+            <field name="name">Buku Mesin</field>
+            <field name="res_model">lhm.machine</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lhm_machine_filter"/>
+            <field name="domain">[]</field>
+            <field name="context">{'readonly_by_pass': ['machine_id']}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Klik untuk menambahkan Buku Mesin.
+              </p>
+            </field>
+        </record>
+        <!-- <menuitem id="submenu_lhm_machine" action="action_lhm_machine" parent="menu_plantation_transaction" sequence="20"/> -->
+        <!-- End of Transaksi Buku Mesin -->
+
+        <!-- LHM Machine Line-->
+        <record id="view_lhm_machine_line_form" model="ir.ui.view">
+            <field name="name">view.lhm.machine.line.form</field>
+            <field name="model">lhm.machine.line</field>
+            <field name="arch" type="xml">
+                <form string="Daftar Aktivitas">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Nama" class="oe_edit_only"/>
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group name="lhm_transaction">
+                            <group string="Informasi Umum">
+                                <field name="date"/>
+                                <field name="use_value"/>
+                                <field name="use_hours"/>
+                            </group>
+                            <group string="Location &amp; Activity">
+                                <field name="location_type_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="location_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="activity_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!-- End Of LHM Machine Line -->
+
+    
+    </data>
+    
+
+</odoo>

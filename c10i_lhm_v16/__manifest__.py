@@ -59,6 +59,8 @@
         'views/lhm_activity_views.xml',
         # LHM Contractor
         'views/lhm_contractor_views.xml',
+        # LHM Mesin
+        'views/lhm_machine_views.xml',
 
         'views/lhm_views.xml',
         'wizard/lhm_nap_wizard_views.xml',
