@@ -321,25 +321,6 @@ class ReportSummaryAttendance(models.AbstractModel):
                         hr_employee emp
                     WHERE emp.kemandoran_id = %s
                 ),
-                nap_data AS (
-                    SELECT 
-                        nap_line.qty_nap, 
-                        nap.date_nap, 
-                        nap_line.employee_id
-                    FROM 
-                        lhm_nap_line nap_line
-                    JOIN 
-                        lhm_nap nap ON nap.id = nap_line.lhm_nap_id
-                    WHERE 
-                        nap.date_nap BETWEEN %s AND %s
-                        AND nap.state = 'done'
-                        AND nap_line.product_id IN (
-                            SELECT id FROM product_product 
-                            WHERE product_tmpl_id IN (
-                                SELECT id FROM product_template WHERE name = '{"en_US": "Latex"}'
-                            )
-                        )
-                ),
                 trans_data AS (
                     SELECT 
                         trans_nap_line.hasil_convert_latex,
@@ -364,8 +345,6 @@ class ReportSummaryAttendance(models.AbstractModel):
                 FROM 
                     employee_data
                 LEFT JOIN 
-                    nap_data ON employee_data.emp_id = nap_data.employee_id
-                LEFT JOIN 
                     trans_data ON employee_data.emp_id = trans_data.employee_id
                 GROUP BY 
                     employee_data.emp_id, 
@@ -375,7 +354,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     employee_data.employee_name ASC;
             """
 
-            self.env.cr.execute(query, (kemandoran.id, from_date, to_date, from_date, to_date))
+            self.env.cr.execute(query, (kemandoran.id, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
 
             row += 4
@@ -847,19 +826,23 @@ class ReportSummaryAttendance(models.AbstractModel):
             if from_date and to_date:
                 delta = to_date - from_date
                 date_columns = []
+                holiday_dates = []
                 for i in range(delta.days + 1):
                     current_date = from_date + timedelta(days=i)
                     attendance = self.env['hr.attendance.sheet'].search([
+                        ('employee_id', '=', emp_id),
                         ('date', '=', current_date),
                         ('is_holiday', '=', True)
                     ], limit=1)
                     if attendance:
                         date_columns.append(current_date.strftime('%d'))
-
+                        holiday_dates.append(current_date)
+            
+            if date_columns:
                 start_col = 12
                 end_col = start_col + len(date_columns) - 1
                 
-                sheet2.merge_range(row2, start_col, row2 + 1, end_col, 'HOLIDAY', wbf['header'])
+                sheet2.merge_range(row2, start_col, row2 + 1, end_col, 'TANGGAL', wbf['header'])
                 for i, date in enumerate(date_columns):
                     sheet2.write(row2 + 2, start_col + i, date, wbf['header'])
                     sheet2.set_column(start_col + i, start_col + i, 5)
@@ -903,24 +886,8 @@ class ReportSummaryAttendance(models.AbstractModel):
                         hr_employee emp
                     WHERE emp.kemandoran_id = %s
                 ),
-                nap_data AS (
-                    SELECT 
-                        nap_line.qty_nap, 
-                        nap.date_nap, 
-                        nap_line.employee_id
-                    FROM 
-                        lhm_nap_line nap_line
-                    JOIN 
-                        lhm_nap nap ON nap.id = nap_line.lhm_nap_id
-                    WHERE 
-                        nap.date_nap BETWEEN %s AND %s
-                        AND nap.state = 'done'
-                        AND nap_line.product_id IN (
-                            SELECT id FROM product_product 
-                            WHERE product_tmpl_id IN (
-                                SELECT id FROM product_template WHERE name = '{"en_US": "Latex"}'
-                            )
-                        )
+                holidays AS (
+                    SELECT date FROM hr_attendance_sheet WHERE is_holiday = TRUE
                 ),
                 trans_data AS (
                     SELECT 
@@ -936,6 +903,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                         lhm_transaction trans ON trans.id = trans_line.lhm_id
                     WHERE 
                         trans.date BETWEEN %s AND %s
+                        AND trans.date IN (SELECT date FROM holidays)
                 )
                 SELECT 
                     employee_data.emp_id,
@@ -946,8 +914,6 @@ class ReportSummaryAttendance(models.AbstractModel):
                 FROM 
                     employee_data
                 LEFT JOIN 
-                    nap_data ON employee_data.emp_id = nap_data.employee_id
-                LEFT JOIN 
                     trans_data ON employee_data.emp_id = trans_data.employee_id
                 GROUP BY 
                     employee_data.emp_id, 
@@ -957,7 +923,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     employee_data.employee_name ASC;
             """
 
-            self.env.cr.execute(query, (kemandoran.id, from_date, to_date, from_date, to_date))
+            self.env.cr.execute(query, (kemandoran.id, from_date, to_date))
             karyawan_data = self.env.cr.fetchall()
 
             row2 += 4
@@ -977,7 +943,6 @@ class ReportSummaryAttendance(models.AbstractModel):
                 sheet2.write(row2, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
                 sheet2.write(row2, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
 
-                current_col = 12
                 hko_count = 0
                 l_count = 0
                 s_count = 0
@@ -985,12 +950,16 @@ class ReportSummaryAttendance(models.AbstractModel):
                 ct_count = 0
                 m_count = 0
 
-                for i in range(len(date_columns)):
+                current_col = start_col
+                for current_date in holiday_dates:
                     attendance = self.env['hr.attendance.sheet'].search([
                         ('employee_id', '=', emp_id),
-                        ('date', '=', from_date + timedelta(days=i)),
+                        ('date', '=', current_date),
                         ('is_holiday', '=', True)
                     ], limit=1)
+                    
+                    if not attendance:
+                        continue
 
                     type_code = attendance.type_id.code if attendance else '-'
                     sheet2.write(row2, current_col, type_code, wbf['data_center'])
@@ -1039,6 +1008,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet2.write(row2, 3, 0, wbf['content_number'])
             sheet2.write(row2, 4, 0, wbf['content_number'])
 
+            current_col = start_col
             mandor_hko_count = 0
             mandor_l_count = 0
             mandor_s_count = 0
@@ -1047,36 +1017,38 @@ class ReportSummaryAttendance(models.AbstractModel):
             mandor_m_count = 0
 
             mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
+            if mandor_employee:
+                for i, current_date in enumerate(holiday_dates):
+                    attendance = self.env['hr.attendance.sheet'].search([
+                        ('employee_id', '=', mandor_employee.name),
+                        ('employee_id.sub_department_id.name', '=', "Mandor Besar"),
+                        ('date', '=', current_date),
+                        ('is_holiday', '=', True)
+                    ], limit=1)
 
-            for i in range(len(date_columns)):
-                attendance = self.env['hr.attendance.sheet'].search([
-                    ('employee_id', '=', mandor_employee.name),
-                    ('employee_id.sub_department_id', '=', "Mandor Besar"),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('is_holiday', '=', True)
-                ], limit=1)
+                    type_code = attendance.type_id.code if attendance else '-'
+                    sheet2.write(row2, current_col, type_code, wbf['data_center'])
 
-                type_code = attendance.type_id.code if attendance else '-'
-                sheet2.write(row2, 12 + i, type_code, wbf['data_center'])
+                    if type_code in ['KJ', 'KJI', 'KJO']:
+                        sheet2.write(row2, current_col, type_code, wbf['hijau_muda'])
+                        mandor_hko_count += 1
+                    elif type_code == 'L':
+                        sheet2.write(row2, current_col, type_code, wbf['hijau_tua'])
+                        mandor_l_count += 1
+                    elif type_code == 'S1':
+                        sheet2.write(row2, current_col, type_code, wbf['kuning'])
+                        mandor_s_count += 1
+                    elif type_code == 'P1':
+                        sheet2.write(row2, current_col, type_code, wbf['biru_tua'])
+                        mandor_p_count += 1
+                    elif type_code == 'CT':
+                        sheet2.write(row2, current_col, type_code, wbf['biru_muda'])
+                        mandor_ct_count += 1
+                    elif type_code == 'M':
+                        sheet2.write(row2, current_col, type_code, wbf['merah'])
+                        mandor_m_count += 1
 
-                if type_code in ['KJ', 'KJI', 'KJO']:
-                    sheet2.write(row2, 12 + i, type_code, wbf['hijau_muda'])
-                    mandor_hko_count += 1
-                elif type_code == 'L':
-                    sheet2.write(row2, 12 + i, type_code, wbf['hijau_tua'])
-                    mandor_l_count += 1
-                elif type_code == 'S1':
-                    sheet2.write(row2, 12 + i, type_code, wbf['kuning'])
-                    mandor_s_count += 1
-                elif type_code == 'P1':
-                    sheet2.write(row2, 12 + i, type_code, wbf['biru_tua'])
-                    mandor_p_count += 1
-                elif type_code == 'CT':
-                    sheet2.write(row2, 12 + i, type_code, wbf['biru_muda'])
-                    mandor_ct_count += 1
-                elif type_code == 'M':
-                    sheet2.write(row2, 12 + i, type_code, wbf['merah'])
-                    mandor_m_count += 1
+                    current_col += 1
 
             sheet2.write(row2, hko_start, mandor_hko_count, wbf['biru_muda'])
             sheet2.write(row2, hko_start + 1, mandor_l_count, wbf['data_center'])
@@ -1084,12 +1056,8 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet2.write(row2, hko_start + 3, mandor_p_count, wbf['data_center'])
             sheet2.write(row2, hko_start + 4, mandor_ct_count, wbf['data_center'])
             sheet2.write(row2, hko_start + 5, mandor_m_count, wbf['data_center'])
-
-            # sheet2.write(row2, tunjangan_start, '-', wbf['data_center'])
-            # sheet2.write(row2, tunjangan_start + 1, '-', wbf['data_center'])
-            # sheet2.write(row2, tunjangan_start + 2, '-', wbf['data_center'])
-            # sheet2.write(row2, tunjangan_start + 3, '-', wbf['data_center'])
             sheet2.write(row2, total_hk_start, sum([mandor_hko_count, mandor_l_count, mandor_s_count, mandor_p_count, mandor_ct_count, mandor_m_count]), wbf['data_center'])
+
 
             # Logika untuk Asisten Mandor
             row2 += 1
@@ -1099,6 +1067,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet2.write(row2, 3, 0, wbf['content_number'])
             sheet2.write(row2, 4, 0, wbf['content_number'])
 
+            current_col = start_col
             asisten_hko_count = 0
             asisten_l_count = 0
             asisten_s_count = 0
@@ -1107,44 +1076,46 @@ class ReportSummaryAttendance(models.AbstractModel):
             asisten_m_count = 0
 
             asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
+            if asisten_employee:
+                for i, current_date in enumerate(holiday_dates):
+                    attendance = self.env['hr.attendance.sheet'].search([
+                        ('employee_id', '=', asisten_employee.name),
+                        ('employee_id.job_id', '=', "Mandor"),
+                        ('date', '=', current_date),
+                        ('is_holiday', '=', True)
+                    ], limit=1)
 
-            for i in range(len(date_columns)):
-                attendance = self.env['hr.attendance.sheet'].search([
-                    ('employee_id', '=', asisten_employee.name),
-                    ('employee_id.job_id', '=', "Mandor"),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('is_holiday', '=', True)
-                ], limit=1)
+                    type_code = attendance.type_id.code if attendance else '-'
+                    sheet2.write(row2, current_col, type_code, wbf['data_center'])
 
-                type_code = attendance.type_id.code if attendance else '-'
-                sheet2.write(row2, 12 + i, type_code, wbf['data_center'])
+                    if type_code in ['KJ', 'KJI', 'KJO']:
+                        sheet2.write(row2, current_col, type_code, wbf['hijau_muda'])
+                        asisten_hko_count += 1
+                    elif type_code == 'L':
+                        sheet2.write(row2, current_col, type_code, wbf['hijau_tua'])
+                        asisten_l_count += 1
+                    elif type_code == 'S1':
+                        sheet2.write(row2, current_col, type_code, wbf['kuning'])
+                        asisten_s_count += 1
+                    elif type_code == 'P1':
+                        sheet2.write(row2, current_col, type_code, wbf['biru_tua'])
+                        asisten_p_count += 1
+                    elif type_code == 'CT':
+                        sheet2.write(row2, current_col, type_code, wbf['biru_muda'])
+                        asisten_ct_count += 1
+                    elif type_code == 'M':
+                        sheet2.write(row2, current_col, type_code, wbf['merah'])
+                        asisten_m_count += 1
+                    
+                    current_col += 1
 
-                if type_code in ['KJ', 'KJI', 'KJO']:
-                    sheet2.write(row2, 12 + i, type_code, wbf['hijau_muda'])
-                    asisten_hko_count += 1
-                elif type_code == 'L':
-                    sheet2.write(row2, 12 + i, type_code, wbf['hijau_tua'])
-                    asisten_l_count += 1
-                elif type_code == 'S1':
-                    sheet2.write(row2, 12 + i, type_code, wbf['kuning'])
-                    asisten_s_count += 1
-                elif type_code == 'P1':
-                    sheet2.write(row2, 12 + i, type_code, wbf['biru_tua'])
-                    asisten_p_count += 1
-                elif type_code == 'CT':
-                    sheet2.write(row2, 12 + i, type_code, wbf['biru_muda'])
-                    asisten_ct_count += 1
-                elif type_code == 'M':
-                    sheet2.write(row2, 12 + i, type_code, wbf['merah'])
-                    asisten_m_count += 1
-
-            sheet2.write(row2, hko_start, asisten_hko_count, wbf['biru_muda'])
-            sheet2.write(row2, hko_start + 1, asisten_l_count, wbf['data_center'])
-            sheet2.write(row2, hko_start + 2, asisten_s_count, wbf['data_center'])
-            sheet2.write(row2, hko_start + 3, asisten_p_count, wbf['data_center'])
-            sheet2.write(row2, hko_start + 4, asisten_ct_count, wbf['data_center'])
-            sheet2.write(row2, hko_start + 5, asisten_m_count, wbf['data_center'])
-            sheet2.write(row2, total_hk_start, sum([asisten_hko_count, asisten_l_count, asisten_s_count, asisten_p_count, asisten_ct_count, asisten_m_count]), wbf['data_center'])
+                sheet2.write(row2, hko_start, asisten_hko_count, wbf['biru_muda'])
+                sheet2.write(row2, hko_start + 1, asisten_l_count, wbf['data_center'])
+                sheet2.write(row2, hko_start + 2, asisten_s_count, wbf['data_center'])
+                sheet2.write(row2, hko_start + 3, asisten_p_count, wbf['data_center'])
+                sheet2.write(row2, hko_start + 4, asisten_ct_count, wbf['data_center'])
+                sheet2.write(row2, hko_start + 5, asisten_m_count, wbf['data_center'])
+                sheet2.write(row2, total_hk_start, sum([asisten_hko_count, asisten_l_count, asisten_s_count, asisten_p_count, asisten_ct_count, asisten_m_count]), wbf['data_center'])
 
             # Logika untuk Kerani
             row2 += 1
@@ -1208,38 +1179,48 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_hko_per_tanggal = [0] * len(date_columns)
 
             for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
-                current_col = 12
-                for i in range(len(date_columns)):
-                    attendance = self.env['hr.attendance.sheet'].search([
+                for i, current_date in enumerate(holiday_dates):
+                    attendances = self.env['hr.attendance.sheet'].search([
                         ('employee_id', '=', emp_id),
-                        ('date', '=', from_date + timedelta(days=i)),
+                        ('date', '=', current_date),
                         ('is_holiday', '=', True)
-                    ], limit=1)
+                    ])
+                    for attendance in attendances:
+                        type_code = attendance.type_id.code if attendance.type_id else '-'
+                        if type_code in ['KJ', 'KJI', 'KJO']:
+                            total_hko_per_tanggal[i] += 1
 
-                    type_code = attendance.type_id.code if attendance else '-'
-                    if type_code in ['KJ', 'KJI', 'KJO']:
+            for i, current_date in enumerate(holiday_dates):
+                attendances = self.env['hr.attendance.sheet'].search([
+                    ('employee_id', '=', mandor_employee.name),
+                    ('employee_id.sub_department_id.name', '=', "Mandor Besar"),
+                    ('date', '=', current_date),
+                    ('is_holiday', '=', True)
+                ])
+                for attendance in attendances:
+                    if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
                         total_hko_per_tanggal[i] += 1
 
-            for i in range(len(date_columns)):
-                mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
-                attendance = self.env['hr.attendance.sheet'].search([
-                    ('employee_id', '=', mandor_employee.name),
-                    ('employee_id.sub_department_id', '=', "Mandor Besar"),
-                    ('date', '=', from_date + timedelta(days=i)),
-                    ('is_holiday', '=', True)
-                ], limit=1)
-                if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
-                    total_hko_per_tanggal[i] += 1
-
-                asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
-                attendance = self.env['hr.attendance.sheet'].search([
+            for i, current_date in enumerate(holiday_dates):
+                attendances = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', asisten_employee.name),
-                    ('employee_id.job_id', '=', "Mandor"),
-                    ('date', '=', from_date + timedelta(days=i)),
+                    ('employee_id.sub_department_id.name', '=', "Mandor"),
+                    ('date', '=', current_date),
                     ('is_holiday', '=', True)
-                ], limit=1)
-                if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
-                    total_hko_per_tanggal[i] += 1
+                ])
+                for attendance in attendances:
+                    if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
+                        total_hko_per_tanggal[i] += 1
+
+                # asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
+                # attendance = self.env['hr.attendance.sheet'].search([
+                #     ('employee_id', '=', asisten_employee.name),
+                #     ('employee_id.job_id', '=', "Mandor"),
+                #     ('date', '=', from_date + timedelta(days=i)),
+                #     ('is_holiday', '=', True)
+                # ], limit=1)
+                # if attendance.type_id.code in ['KJ', 'KJI', 'KJO']:
+                #     total_hko_per_tanggal[i] += 1
 
                 kerani_employee = self.env['hr.employee'].search([('name', '=', kerani_name)], limit=1)
                 attendance = self.env['hr.attendance.sheet'].search([
@@ -1286,10 +1267,10 @@ class ReportSummaryAttendance(models.AbstractModel):
                 total_bsh += total_hasil_convert_lump_bagi_2
                 total_krg += total_hasil_convert_latex_bagi_2
                 current_col = 12
-                for i in range(len(date_columns)):
+                for i, current_date in enumerate(holiday_dates):
                     attendance = self.env['hr.attendance.sheet'].search([
                         ('employee_id', '=', emp_id),
-                        ('date', '=', from_date + timedelta(days=i)),
+                        ('date', '=', current_date),
                         ('is_holiday', '=', True)
                     ], limit=1)
 
@@ -1307,12 +1288,11 @@ class ReportSummaryAttendance(models.AbstractModel):
                     elif type_code == 'M':
                         total_m_per_tanggal[i] += 1
 
-            for i in range(len(date_columns)):
-                mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
+            for i, current_date in enumerate(holiday_dates):
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', mandor_employee.name),
                     ('employee_id.sub_department_id', '=', "Mandor Besar"),
-                    ('date', '=', from_date + timedelta(days=i)),
+                    ('date', '=', current_date),
                     ('is_holiday', '=', True)
                 ], limit=1)
                 if attendance.type_id.code == 'KJ':
@@ -1328,11 +1308,11 @@ class ReportSummaryAttendance(models.AbstractModel):
                 elif attendance.type_id.code == 'M':
                     total_m_per_tanggal[i] += 1
 
-                asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
+            for i, current_date in enumerate(holiday_dates):
                 attendance = self.env['hr.attendance.sheet'].search([
                     ('employee_id', '=', asisten_employee.name),
                     ('employee_id.job_id', '=', "Mandor"),
-                    ('date', '=', from_date + timedelta(days=i)),
+                    ('date', '=', current_date),
                     ('is_holiday', '=', True)
                 ], limit=1)
                 if attendance.type_id.code == 'KJ':
