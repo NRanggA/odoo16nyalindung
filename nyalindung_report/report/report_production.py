@@ -429,56 +429,56 @@ class ReportProduction(models.AbstractModel):
             sheet.write(clump_row_start, clump_col_start, 'LUMP (Kg)', wbf['header'])
 
             # Bagian Isi Data
-            queryx = """
-                WITH employee_data AS (
-                    SELECT 
-                        emp.id AS emp_id,
-                        emp.name AS employee_name,
-                        emp.kemandoran_id AS kemandoran_emp,
-                        emp.no_induk as no_induk
-                    FROM 
-                        hr_employee emp
-                    WHERE 
-                        emp.kemandoran_id = %s
-                ),
-                trans_data AS (
-                    SELECT 
-                        trans_nap_line.hasil_1_nap,
-                        trans_nap_line.hasil_2_nap,
-                        trans_nap_line.hasil_convert_latex,
-                        trans_nap_line.hasil_convert_lump,  
-                        trans.date, 
-                        trans_line.employee_id,
-                        trans_line.location_id
-                    FROM 
-                        lhm_transaction_nap_line trans_nap_line
-                    JOIN 
-                        lhm_transaction_line trans_line ON trans_line.id = trans_nap_line.lhm_transaction_line_id
-                    JOIN 
-                        lhm_transaction trans ON trans.id = trans_line.lhm_id
-                    WHERE 
-                        trans.date BETWEEN %s AND %s
-                )
-                SELECT 
-                    employee_data.emp_id,
-                    employee_data.no_induk,
-                    employee_data.employee_name,
-                    employee_data.kemandoran_emp,
-                    trans_data.location_id
-                FROM 
-                    employee_data
-                LEFT JOIN 
-                    trans_data ON employee_data.emp_id = trans_data.employee_id
-                GROUP BY 
-                    employee_data.emp_id,
-                    employee_data.no_induk,
-                    employee_data.kemandoran_emp, 
-                    employee_data.employee_name,
-                    trans_data.location_id
-                ORDER BY 
-                    employee_data.employee_name ASC,
-                    trans_data.location_id ASC;
-            """
+            # queryx = """
+            #     WITH employee_data AS (
+            #         SELECT 
+            #             emp.id AS emp_id,
+            #             emp.name AS employee_name,
+            #             emp.kemandoran_id AS kemandoran_emp,
+            #             emp.no_induk as no_induk
+            #         FROM 
+            #             hr_employee emp
+            #         WHERE 
+            #             emp.kemandoran_id = %s
+            #     ),
+            #     trans_data AS (
+            #         SELECT 
+            #             trans_nap_line.hasil_1_nap,
+            #             trans_nap_line.hasil_2_nap,
+            #             trans_nap_line.hasil_convert_latex,
+            #             trans_nap_line.hasil_convert_lump,  
+            #             trans.date, 
+            #             trans_line.employee_id,
+            #             trans_line.location_id
+            #         FROM 
+            #             lhm_transaction_nap_line trans_nap_line
+            #         JOIN 
+            #             lhm_transaction_line trans_line ON trans_line.id = trans_nap_line.lhm_transaction_line_id
+            #         JOIN 
+            #             lhm_transaction trans ON trans.id = trans_line.lhm_id
+            #         WHERE 
+            #             trans.date BETWEEN %s AND %s
+            #     )
+            #     SELECT 
+            #         employee_data.emp_id,
+            #         employee_data.no_induk,
+            #         employee_data.employee_name,
+            #         employee_data.kemandoran_emp,
+            #         trans_data.location_id
+            #     FROM 
+            #         employee_data
+            #     LEFT JOIN 
+            #         trans_data ON employee_data.emp_id = trans_data.employee_id
+            #     GROUP BY 
+            #         employee_data.emp_id,
+            #         employee_data.no_induk,
+            #         employee_data.kemandoran_emp, 
+            #         employee_data.employee_name,
+            #         trans_data.location_id
+            #     ORDER BY 
+            #         employee_data.employee_name ASC,
+            #         trans_data.location_id ASC;
+            # """
             query = """SELECT 
                     ltl.employee_id,
                     he.no_induk,
@@ -589,7 +589,7 @@ class ReportProduction(models.AbstractModel):
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], ['hasil_1_nap'], limit=1)
+                    ], ['hasil_1_nap'], limit=1) # [{'id': 1111, 'hasil_1_nap': 123123}] >> nap_line[0]['hasil_1_nap]
 
                     # hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
 
@@ -625,12 +625,18 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = third_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    # nap_line = self.env['lhm.transaction.nap.line'].search([
+                    #     ('employee_id', '=', emp_id),
+                    #     ('lhm_transaction_line_id.date', '=', current_date),
+                    #     ('lhm_transaction_line_id.state', '=', 'done'),
+                    #     ('lhm_transaction_line_id.location_id', '=', location_id)
+                    # ], limit=1)
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_2_nap'], limit=1)
 
                     # hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
 
@@ -646,8 +652,10 @@ class ReportProduction(models.AbstractModel):
                     # if hasil_nap_lump == 0:
                     #     hasil_nap_lump = '-'
                     # sheet.write(row, col_index, hasil_nap_lump, cell_format)
-                    total_hasil_baris_lump += float(nap_line.hasil_2_nap)
-                    sheet.write(row, col_index, nap_line.hasil_2_nap, wbf['total_float'])
+                    # total_hasil_baris_lump += float(nap_line.hasil_2_nap)
+                    # sheet.write(row, col_index, nap_line.hasil_2_nap, wbf['total_float'])
+                    total_hasil_baris_lump += float(nap_line[0]['hasil_2_nap'])
+                    sheet.write(row, col_index, nap_line[0]['hasil_2_nap'], wbf['total_float'])
                 # if total_hasil_baris_lump == 0:
                 #     total_hasil_baris_lump = '-'
 
