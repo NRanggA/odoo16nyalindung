@@ -266,6 +266,7 @@ class lhm_contractor(models.Model):
             # if not contractor_line.date:
             #     contractor_line.date = self.date
             nap_line_data = {
+                'date': self.date,
                 'location_id': contractor_line.location_id.id,
                 'activity_id': contractor_line.activity_id.id,
                 'product_id': contractor_line.product_id.id,
@@ -741,7 +742,8 @@ class lhm_contractor_line(models.Model):
     @api.constrains('date', 'location_id', 'activity_id')
     def _check_date_unique(self):
         for rec in self:
-            rec._check_date_line()
+            if not rec.date:
+                rec._check_date_line()
 
     def _check_date_line(self):
         if self.skip_constraint:

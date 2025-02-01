@@ -12,7 +12,7 @@ class LhmContractorBill(models.TransientModel):
 
     contractor_id       = fields.Many2one("res.partner", "Kontraktor", ondelete="restrict", required=True)
     date_invoice        = fields.Date('Invoice Date', required=True)
-    start_period_id     = fields.Many2one('account.period', 'Account Period', required=True, ondelete="restrict", copy=True)
+    # start_period_id     = fields.Many2one('account.period', 'Account Period', required=True, ondelete="restrict", copy=True)
     contractor_vehicle  = fields.Boolean(string="Vehicle")
     company_id          = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
 
@@ -49,17 +49,19 @@ class LhmContractorBill(models.TransientModel):
             for line in self.invoice_lines:
                 line.unlink()
 
-        date_from   = self.start_period_id.date_start
-        date_to     = self.start_period_id.date_stop
+        # date_from   = self.start_period_id.date_start
+        # date_to     = self.start_period_id.date_stop
 
 
         if self.lhm_contractor_ids:
             buku_kontraktor_datas = self.lhm_contractor_ids
         else:
-            buku_kontraktor_datas = self.env['lhm.contractor'].search([('date_start', '>=', date_from),
-                                                  ('date_end', '<=', date_to), ('invoice_id','=',False),
-                                                  ('supplier_id', '=', self.contractor_id.id), 
-                                                  ('state', '=', 'confirmed')],  order='name', )
+            buku_kontraktor_datas = self.env['lhm.contractor'].search([
+                                                # ('date_start', '>=', date_from),
+                                                # ('date_end', '<=', date_to), ('invoice_id','=',False),
+                                                ('supplier_id', '=', self.contractor_id.id), 
+                                                ('invoice_id', '=', False), 
+                                                ('state', '=', 'confirmed')],  order='name', )
         to_write = {}
         if buku_kontraktor_datas:
             grouped_lines = {}
@@ -77,6 +79,7 @@ class LhmContractorBill(models.TransientModel):
                         if key not in grouped_lines.keys():
                             grouped_lines.update({key: {
                                 'location_type_id'  : line.location_type_id and line.location_type_id.id or False,
+                                'varieties_id'       : line.varieties_id and line.varieties_id.id or False,
                                 'location_id'       : line.location_id and line.location_id.id or False,
                                 'activity_id'       : line.activity_id and line.activity_id.id or False,
                                 'amount'            : 0.0,
@@ -93,6 +96,7 @@ class LhmContractorBill(models.TransientModel):
                         if key not in grouped_lines.keys():
                             grouped_lines.update({key: {
                                 'location_type_id'  : line.location_type_id and line.location_type_id.id or False,
+                                'varieties_id'       : line.varieties_id and line.varieties_id.id or False,
                                 'location_id'       : line.location_id and line.location_id.id or False,
                                 'activity_id'       : line.activity_id and line.activity_id.id or False,
                                 'amount'            : 0.0,
@@ -130,9 +134,10 @@ class LhmContractorBill(models.TransientModel):
             
             line_to_add.append((0,0,{
                 'name'                          : "Jasa Kontraktor: %s"%(line.activity_id.name),
-                # 'plantation_location_type_id'   : line.location_type_id.id if line.activity_id.is_nap else default_loc_type.id,
-                # 'plantation_location_id'        : line.location_id.id if line.activity_id.is_nap else False,
-                # 'plantation_activity_id'        : line.activity_id.id if line.activity_id.is_nap else False,
+                'plantation_location_type_id'   : line.location_type_id.id if line.location_type_id else False,
+                'plantation_varieties_id'       : line.varieties_id.id if line.varieties_id else False,
+                'plantation_location_id'        : line.location_id.id if line.location_id else False,
+                'plantation_activity_id'        : line.activity_id.id if line.activity_id else False,
                 'account_id'                    : self.account_payable_contractor_id.id,
                 'product_id'                    : False,
                 'product_uom_id'                : False,
@@ -182,6 +187,7 @@ class LhmContractorSummary(models.TransientModel):
 
     wizard_id           = fields.Many2one('lhm.contractor.bill.wizard', 'Wizard', required=True, ondelete="cascade", copy=False)
     location_type_id    = fields.Many2one("lhm.location.type", "Tipe", ondelete="restrict")
+    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     location_id         = fields.Many2one("lhm.location", "Lokasi", ondelete="restrict")
     activity_id         = fields.Many2one("lhm.activity", "Aktivitas", ondelete="restrict")
     amount              = fields.Float('Nilai')
