@@ -120,7 +120,7 @@ class NyPremiPenyadap(models.Model):
                 compute_leaves=True,
             )
             # base_libur = (self.date_to - self.date_from).days+1 - base_hk['days'] + n_sunday
-            base_libur = (self.date_to - self.date_from).days+1 - (self.add_base_libur + n_sunday)
+            base_libur = n_sunday + self.add_base_libur
             att_domain = [('employee_id','=',employee.id),('date','>=',self.date_from),('date','<=',self.date_to)]
             # act_hk = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','KJ')])
             act_libur = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','L')])
