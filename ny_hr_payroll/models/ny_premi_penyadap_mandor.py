@@ -15,7 +15,7 @@ class NyPremiPenyadapMandor(models.Model):
     # base qty
     total_karet_kering_qty = fields.Float("Total Produksi")
     target_qty = fields.Float("Target Produksi")
-    karet_kering_qty = fields.Float(compute='compute_qty', string='Produksi Karet Kering')
+    karet_kering_qty = fields.Float(compute='compute_qty', string='Pendapatan Karet Kering')
     lebih_target_qty = fields.Float(compute='compute_qty', string='Lebih Target')
     
     # base rate
@@ -36,8 +36,13 @@ class NyPremiPenyadapMandor(models.Model):
     @api.depends('total_karet_kering_qty','target_qty')
     def compute_qty(self):
         for line in self:
-            line.karet_kering_qty = line.total_karet_kering_qty if line.total_karet_kering_qty < line.target_qty else line.target_qty
-            line.lebih_target_qty = line.total_karet_kering_qty - line.target_qty if line.total_karet_kering_qty > line.target_qty else 0.0
+            # line.karet_kering_qty = line.total_karet_kering_qty if line.total_karet_kering_qty < line.target_qty else line.target_qty
+            if line.total_karet_kering_qty > line.target_qty:
+                line.karet_kering_qty = line.target_qty
+                line.lebih_target_qty = line.total_karet_kering_qty - line.target_qty
+            else:
+                line.karet_kering_qty = 0.0
+                line.lebih_target_qty = 0.0
 
     @api.depends('lebih_target_qty',
                  'position',
