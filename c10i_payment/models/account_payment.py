@@ -51,7 +51,7 @@ class AccountPayment(models.Model):
             
     def action_post(self):
         ''' draft -> posted '''        
-        if self.payment_type=='inbound' and self.payment_line_ids:
+        if self.payment_type=='inbound' and self.payment_line_ids and any([l.amount_to_pay>0 for l in self.payment_line_ids]):
             payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
             debit_tot = credit_tot = 0
             amount_total = 0.0
@@ -121,7 +121,7 @@ class AccountPayment(models.Model):
             for bill, payment_move_line in zip(self.payment_line_ids.move_id, self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')):
                 bill_line_dua = bill.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')
                 (bill_line_dua + payment_move_line).reconcile()
-        elif self.payment_type=='outbound' and self.payment_line_ids:
+        elif self.payment_type=='outbound' and self.payment_line_ids and any([l.amount_to_pay>0 for l in self.payment_line_ids]):
             payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
             debit_tot = credit_tot = 0
             amount_total = 0.0

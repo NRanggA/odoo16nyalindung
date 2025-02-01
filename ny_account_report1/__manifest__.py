@@ -18,7 +18,9 @@
 
         'views/financial_report.xml',
         'wizard/balance_sheet.xml',
+        'wizard/aged_partner.xml',
         'report/report_financial.xml',
+        'report/report_aged_partner.xml',
         
         # General Ledger Excell
         'wizard/wizard_general_ledger_xlsx.xml',
