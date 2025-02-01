@@ -7,6 +7,7 @@ import numpy as np
 import io
 import base64
 from datetime import datetime, time
+from dateutil.relativedelta import relativedelta
 
 class NyPremiPenyadap(models.Model):
     _name = 'ny.premi.penyadap'
@@ -95,6 +96,14 @@ class NyPremiPenyadap(models.Model):
                   '|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump')]
         result = self.env['lhm.transaction.nap.line'].search(domain)
         to_create = []
+        
+        n_sunday = 0
+        first_date = self.date_from
+        while first_date <= self.date_to:  # or use `<` if you don't want it inclusive
+            if first_date.weekday() == 6:
+                n_sunday += 1
+            first_date += relativedelta(days=1)
+        
         for employee in result.employee_id:
             karet_kering = sum(result.filtered(lambda n: n.employee_id.id==employee.id).mapped('hasil_convert_latex'))
             karet_kering += sum(result.filtered(lambda n: n.employee_id.id==employee.id).mapped('hasil_convert_lump'))
@@ -108,7 +117,7 @@ class NyPremiPenyadap(models.Model):
                 calendar=employee.contract_id.resource_calendar_id,
                 compute_leaves=True,
             )
-            base_libur = (self.date_to - self.date_from).days+1 - base_hk['days'] + 4
+            base_libur = (self.date_to - self.date_from).days+1 - base_hk['days'] + n_sunday
             att_domain = [('employee_id','=',employee.id),('date','>=',self.date_from),('date','<=',self.date_to)]
             # act_hk = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','KJ')])
             act_libur = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','L')])
