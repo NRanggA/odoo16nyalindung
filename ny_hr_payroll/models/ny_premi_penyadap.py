@@ -55,13 +55,13 @@ class NyPremiPenyadap(models.Model):
         
         data = base64.b64decode(self.file)
         excel_file = io.BytesIO(data)
-        df = pd.read_excel(excel_file, header=0)
+        df = pd.read_excel(excel_file, header=0, converters={'NIP':str,'NILAI':str})
         
         to_update   = []
         error_message_list = []
 
         for index, row in df.iterrows():
-            premi_produksi_line = self.env['ny.premi.penyadap.line'].search([('employee_id.no_induk', '=', cell_to_string(row.get('NIK', ''))), ('ref_id', '=', self.id)], limit=1)
+            premi_produksi_line = self.env['ny.premi.penyadap.line'].search([('employee_id.no_induk', '=', row.get('NIP', ''))), ('ref_id', '=', self.id)], limit=1)
             if not premi_produksi_line:
                 error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')}, tidak ditemukan pada line saat ini!")
 

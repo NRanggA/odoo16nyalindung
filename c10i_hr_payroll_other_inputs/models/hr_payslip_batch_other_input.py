@@ -41,28 +41,11 @@ class HrPayslipBatchOtherInput(models.Model):
         return True
 
     def consume_file_excel(self):
-        def cell_to_string(cell_value):
-            # print("..................str", cell_value, type(cell_value), isinstance(cell_value, (int, np.integer)))
-            if cell_value and (isinstance(cell_value, (float, np.floating)) or isinstance(cell_value, (int, np.integer))):
-                return str(cell_value) if not np.isnan(cell_value) else ''
-            else:
-                return cell_value.strip()
-        
-        def cell_to_int(cell_value):
-            # print("..................int", cell_value)
-            if cell_value and not isinstance(cell_value, (float, np.floating)) and not isinstance(cell_value, (int, np.integer)):
-                return int(cell_value)
-            else:
-                if isinstance(cell_value, (float, np.floating)):
-                    return int(cell_value) if not np.isnan(cell_value) else 0
-                else:
-                    return cell_value
-                
         if not self.uploaded_file:
             raise UserError(_("Upload File Terlebih Dahulu"))
         
         excel_file = io.BytesIO(base64.b64decode(self.uploaded_file))
-        df = pd.read_excel(excel_file, header=0)
+        df = pd.read_excel(excel_file, header=0, converters={'NIP':str,'AMOUNT':float})
 
         ######### Validation Column
         mandatory_column_to_check = ['NIP','AMOUNT']
@@ -83,15 +66,12 @@ class HrPayslipBatchOtherInput(models.Model):
         ######### Mapping Dict to Create
         to_create = []
         for index, row in df.iterrows():
-            # nip = row['NIP'].strip() if isinstance(row['NIP'],str) else str(row['NIP']).strip()    
-            nip = cell_to_string(row['NIP'])
-            
-            employee = self.env['hr.employee'].search([('no_induk', '=', nip)], limit=1)
+            employee = self.env['hr.employee'].search([('no_induk', '=', row['NIP'])], limit=1)
             if not employee:
                 error_msg_list.append(f"Karyawan dengan NIP {row['NIP']} tidak dapat ditemukan pada baris {index}")
             vals = {
                 'employee_id': employee.id,
-                'amount': cell_to_int(row['AMOUNT']),
+                'amount': row['AMOUNT'],
             }
             
             to_create.append(vals)
