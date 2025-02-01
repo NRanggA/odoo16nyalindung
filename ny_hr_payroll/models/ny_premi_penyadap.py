@@ -61,14 +61,15 @@ class NyPremiPenyadap(models.Model):
         error_message_list = []
 
         for index, row in df.iterrows():
+            # print(">>>>>>>>>>>>>>>>>>>", row.get('NIP'))
             premi_produksi_line = self.env['ny.premi.penyadap.line'].search([('employee_id.no_induk', '=', row.get('NIP', '')), ('ref_id', '=', self.id)], limit=1)
             if not premi_produksi_line:
-                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')}, tidak ditemukan pada line saat ini!")
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIP', '')}, tidak ditemukan pada line saat ini!")
 
             # Validasi nilai yang akan di import 
             grade = self.env['ny.premi.penyadap.grade'].search([('name', '=', row.get('NILAI', ''))], limit=1)
             if not grade:
-                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')}, Nilai tidak ditemukan !")
+                error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIP', '')}, Nilai tidak ditemukan !")
 
             to_update.append((1, premi_produksi_line.id, {
                 'grade_id' : grade.id,
