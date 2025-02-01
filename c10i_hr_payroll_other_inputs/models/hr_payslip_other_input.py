@@ -2,7 +2,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
-class HrPayslipOtherInputType(models.Model):
+class HrPayslipOtherInput(models.Model):
     _name = 'hr.payslip.other.input'
     _description = 'Payroll Other Input'
 
