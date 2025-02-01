@@ -61,7 +61,7 @@ class NyPremiPenyadap(models.Model):
         error_message_list = []
 
         for index, row in df.iterrows():
-            premi_produksi_line = self.env['ny.premi.penyadap.line'].search([('employee_id.no_induk', '=', row.get('NIP', ''))), ('ref_id', '=', self.id)], limit=1)
+            premi_produksi_line = self.env['ny.premi.penyadap.line'].search([('employee_id.no_induk', '=', row.get('NIP', '')), ('ref_id', '=', self.id)], limit=1)
             if not premi_produksi_line:
                 error_message_list.append(f"Baris ke- {index + 2} karyawan dengan nip {row.get('NIK', '')}, tidak ditemukan pada line saat ini!")
 
