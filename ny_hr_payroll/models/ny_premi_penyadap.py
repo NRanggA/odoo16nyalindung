@@ -29,6 +29,8 @@ class NyPremiPenyadap(models.Model):
         ('confirm', 'Confirm')
     ], default='draft', string='Status')
 
+    add_base_libur = fields.Integer("Tambahan Hari Libur (Selain Minggu)")
+
     base_premi_rate_assisten = fields.Float("Basis Produksi Asisten")
     base_premi_rate_mandor = fields.Float("Basis Produksi Mandor")
     base_premi_rate_kepala_mandor = fields.Float("Basis Produksi Kepala mandor")
@@ -117,7 +119,8 @@ class NyPremiPenyadap(models.Model):
                 calendar=employee.contract_id.resource_calendar_id,
                 compute_leaves=True,
             )
-            base_libur = (self.date_to - self.date_from).days+1 - base_hk['days'] + n_sunday
+            # base_libur = (self.date_to - self.date_from).days+1 - base_hk['days'] + n_sunday
+            base_libur = (self.date_to - self.date_from).days+1 - (self.add_base_libur + n_sunday)
             att_domain = [('employee_id','=',employee.id),('date','>=',self.date_from),('date','<=',self.date_to)]
             # act_hk = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','KJ')])
             act_libur = self.env['hr.attendance.sheet'].search_count(att_domain + [('type_id.code','=','L')])
@@ -147,6 +150,43 @@ class NyPremiPenyadap(models.Model):
         # kemandorans = self.env['hr.foreman'].search([('blok_tanam_id.varieties_id.name','=','Karet')])
         kemandorans = self.env['hr.foreman'].search([])
         varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
+        for asisten in kemandorans.assisten_id:
+            domain = [('lhm_id.state','=','done'), \
+                    ('lhm_transaction_line_id.date','>=',self.date_from), \
+                    ('lhm_transaction_line_id.date','<=',self.date_to)]
+            # varieties = kemandorans.filtered(lambda x: x.assisten_id.id==asisten.id).mapped('blok_tanam_id.varieties_id')
+            # if len(varieties)>1:
+            if len(varieties.harvest_activity_ids)>1:
+                domain.append(('lhm_transaction_line_id.activity_id','in',varieties.harvest_activity_ids.ids))
+            else:
+                domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_ids.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.activity_id','=',varieties.harvest_activity_id.id))
+            # blok_tanams = kemandorans.filtered(lambda x: x.assisten_id.id==asisten.id).blok_tanam_id
+            # locations = blok_tanams.location_id
+            # if len(locations)==1:
+            #     domain.append(('lhm_transaction_line_id.location_id','=',locations.id))
+            # else:
+            #     domain.append(('lhm_transaction_line_id.location_id','in',locations.ids))
+            kemandoranx = kemandorans.filtered(lambda x: x.assisten_id.id==asisten.id)
+            if len(kemandoranx)==1:
+                domain.append(('lhm_id.kemandoran_id','=',kemandoranx.id))
+            else:
+                domain.append(('lhm_id.kemandoran_id','in',kemandoranx.ids))
+            domain.extend(['|',('product_id.name','=','Lateks'),('product_id_2.name','=','Lump'),('lhm_transaction_line_id.is_borong','=',False)])
+            lhm_found = self.env['lhm.transaction.nap.line'].search(domain)
+            
+            karet_kering = sum(lhm_found.mapped('hasil_convert_latex'))
+            karet_kering += sum(lhm_found.mapped('hasil_convert_lump'))
+            to_create.append((0,0,{
+                'employee_id': asisten.id,
+                'position': 'asisten',
+                'kemandoran_id': False,
+                'block_tanam_id': False,
+                'total_karet_kering_qty': karet_kering,
+                # 'target_qty': sum(blok_tanams.mapped('production_daily_target_mandor')),
+                'target_qty': sum(kemandorans.filtered(lambda x: x.assisten_id.id==asisten.id).mapped('production_daily_target_mandor')),
+            }))
         for kepala_mandor in kemandorans.kepala_mandor_id:
             domain = [('lhm_id.state','=','done'), \
                     ('lhm_transaction_line_id.date','>=',self.date_from), \

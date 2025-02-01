@@ -24,6 +24,7 @@
                                 -
                                 <field name="date_to" class="oe_inline" attrs="{'readonly': [('state','!=','draft')]}"/>
                             </div>
+                            <field name="add_base_libur"/>
                         </group>
                         <group>
                             <field name="other_input_type_id" options="{'no_create':True, 'no_edit': True, 'no_open': True}" attrs="{'readonly': [('state','!=','draft')]}"/>
