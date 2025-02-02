@@ -400,7 +400,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     elif type_code == 'S1':
                         sheet.write(row, current_col, type_code, wbf['kuning'])
                         s_count += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         sheet.write(row, current_col, type_code, wbf['biru_tua'])
                         p_count += 1
                     elif type_code == 'CT':
@@ -463,7 +463,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 elif type_code == 'S1':
                     sheet.write(row, 12 + i, type_code, wbf['kuning'])
                     mandor_s_count += 1
-                elif type_code == 'P1':
+                elif type_code == 'P':
                     sheet.write(row, 12 + i, type_code, wbf['biru_tua'])
                     mandor_p_count += 1
                 elif type_code == 'CT':
@@ -522,7 +522,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 elif type_code == 'S1':
                     sheet.write(row, 12 + i, type_code, wbf['kuning'])
                     asisten_s_count += 1
-                elif type_code == 'P1':
+                elif type_code == 'P':
                     sheet.write(row, 12 + i, type_code, wbf['biru_tua'])
                     asisten_p_count += 1
                 elif type_code == 'CT':
@@ -575,7 +575,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 elif type_code == 'S1':
                     sheet.write(row, 12 + i, type_code, wbf['kuning'])
                     kerani_s_count += 1
-                elif type_code == 'P1':
+                elif type_code == 'P':
                     sheet.write(row, 12 + i, type_code, wbf['biru_tua'])
                     kerani_p_count += 1
                 elif type_code == 'CT':
@@ -688,7 +688,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                         total_l_per_tanggal[i] += 1
                     elif type_code == 'S1':
                         total_s_per_tanggal[i] += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         total_p_per_tanggal[i] += 1
                     elif type_code == 'CT':
                         total_ct_per_tanggal[i] += 1
@@ -708,7 +708,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     total_l_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'S1':
                     total_s_per_tanggal[i] += 1
-                elif attendance.type_id.code == 'P1':
+                elif attendance.type_id.code == 'P':
                     total_p_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'CT':
                     total_ct_per_tanggal[i] += 1
@@ -727,7 +727,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     total_l_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'S1':
                     total_s_per_tanggal[i] += 1
-                elif attendance.type_id.code == 'P1':
+                elif attendance.type_id.code == 'P':
                     total_p_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'CT':
                     total_ct_per_tanggal[i] += 1
@@ -745,7 +745,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     total_l_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'S1':
                     total_s_per_tanggal[i] += 1
-                elif attendance.type_id.code == 'P1':
+                elif attendance.type_id.code == 'P':
                     total_p_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'CT':
                     total_ct_per_tanggal[i] += 1
@@ -973,7 +973,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     elif type_code == 'S1':
                         sheet2.write(row2, current_col, type_code, wbf['kuning'])
                         s_count += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         sheet2.write(row2, current_col, type_code, wbf['biru_tua'])
                         p_count += 1
                     elif type_code == 'CT':
@@ -1038,7 +1038,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     elif type_code == 'S1':
                         sheet2.write(row2, current_col, type_code, wbf['kuning'])
                         mandor_s_count += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         sheet2.write(row2, current_col, type_code, wbf['biru_tua'])
                         mandor_p_count += 1
                     elif type_code == 'CT':
@@ -1097,7 +1097,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     elif type_code == 'S1':
                         sheet2.write(row2, current_col, type_code, wbf['kuning'])
                         asisten_s_count += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         sheet2.write(row2, current_col, type_code, wbf['biru_tua'])
                         asisten_p_count += 1
                     elif type_code == 'CT':
@@ -1153,7 +1153,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 elif type_code == 'S1':
                     sheet2.write(row2, 12 + i, type_code, wbf['kuning'])
                     kerani_s_count += 1
-                elif type_code == 'P1':
+                elif type_code == 'P':
                     sheet2.write(row2, 12 + i, type_code, wbf['biru_tua'])
                     kerani_p_count += 1
                 elif type_code == 'CT':
@@ -1281,7 +1281,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                         total_l_per_tanggal[i] += 1
                     elif type_code == 'S1':
                         total_s_per_tanggal[i] += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         total_p_per_tanggal[i] += 1
                     elif type_code == 'CT':
                         total_ct_per_tanggal[i] += 1
@@ -1301,7 +1301,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     total_l_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'S1':
                     total_s_per_tanggal[i] += 1
-                elif attendance.type_id.code == 'P1':
+                elif attendance.type_id.code == 'P':
                     total_p_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'CT':
                     total_ct_per_tanggal[i] += 1
@@ -1321,7 +1321,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     total_l_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'S1':
                     total_s_per_tanggal[i] += 1
-                elif attendance.type_id.code == 'P1':
+                elif attendance.type_id.code == 'P':
                     total_p_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'CT':
                     total_ct_per_tanggal[i] += 1
@@ -1340,7 +1340,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                     total_l_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'S1':
                     total_s_per_tanggal[i] += 1
-                elif attendance.type_id.code == 'P1':
+                elif attendance.type_id.code == 'P':
                     total_p_per_tanggal[i] += 1
                 elif attendance.type_id.code == 'CT':
                     total_ct_per_tanggal[i] += 1
