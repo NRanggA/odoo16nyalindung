@@ -75,7 +75,7 @@ class HrPayslip(models.Model):
 
             # Sakit
             sakit_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
-                            ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
+                            ('date','>=',date_from),('date','<=',date_to),
                             ('type_id.code','=','S1')])
             sakit_attendance = {
                 'name': 'Sakit',
@@ -89,7 +89,7 @@ class HrPayslip(models.Model):
 
             # Cuti
             cuti_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
-                            ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
+                            ('date','>=',date_from),('date','<=',date_to),
                             ('type_id.code','=','CT')])
             cuti_attendance = {
                 'name': 'Cuti',
