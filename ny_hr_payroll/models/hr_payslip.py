@@ -78,7 +78,7 @@ class HrPayslip(models.Model):
                             ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
                             ('type_id.code','=','S1')])
             sakit_attendance = {
-                'name': 'Absensi dari MyDaya',
+                'name': 'Sakit',
                 'sequence': 200,
                 'code': 'S1',
                 'number_of_days': sakit_days,
@@ -92,7 +92,7 @@ class HrPayslip(models.Model):
                             ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
                             ('type_id.code','=','CT')])
             cuti_attendance = {
-                'name': 'Absensi dari MyDaya',
+                'name': 'Cuti',
                 'sequence': 200,
                 'code': 'CT',
                 'number_of_days': cuti_days,
