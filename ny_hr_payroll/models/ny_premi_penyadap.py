@@ -180,7 +180,7 @@ class NyPremiPenyadap(models.Model):
             karet_kering += sum(lhm_found.mapped('hasil_convert_lump'))
             to_create.append((0,0,{
                 'employee_id': asisten.id,
-                'position': 'asisten',
+                'position': 'assisten',
                 'kemandoran_id': False,
                 'block_tanam_id': False,
                 'total_karet_kering_qty': karet_kering,
@@ -332,21 +332,27 @@ class NyPremiPenyadap(models.Model):
                         'other_input_id': new_oth_input_line.id
                     })
                 else:
-                    line.other_input_id.amount = line.premi_amount
+                    line.other_input_id.write({
+                        'employee_id': line.employee_id.id,
+                        'amount': line.premi_amount
+                    })
             
             for mline in rec.mandor_line_ids:
                 if not mline.other_input_id and mline.premi_amount:
-                    line_values = {
+                    mline_values = {
                         'batch_id': new_batch_oth_input.id,
                         'employee_id': mline.employee_id.id,
                         'amount': mline.premi_amount
                     }
-                    new_oth_input_line = self.env['hr.payslip.other.input'].create(line_values)
-                    line.write({
+                    new_oth_input_line = self.env['hr.payslip.other.input'].create(mline_values)
+                    mline.write({
                         'other_input_id': new_oth_input_line.id
                     })
                 else:
-                    line.other_input_id.amount = mline.premi_amount
+                    mline.other_input_id.write({
+                        'employee_id': mline.employee_id.id,
+                        'amount': mline.premi_amount
+                    })
 
             rec.write({
                 'batch_other_input_id': new_batch_oth_input.id,
