@@ -626,6 +626,30 @@ class lhm_contractor_line(models.Model):
     hasil_convert_latex = fields.Float(string="Hasil Convert Latex",  digits=(16, 2))
     hasil_convert_lump  = fields.Float(string="Hasil Convert Lump",  digits=(16, 2))
 
+    state               = fields.Selection(related='contractor_id.state', readonly=True, store=True)
+
+    hasil_1_nap = fields.Float(
+        string="Hasil 1 NAP", 
+        related='line_nap_ids.nilai', 
+        readonly=True
+    )
+    hasil_2_nap = fields.Float(
+        string="Hasil 2 NAP", 
+        related='line_nap_ids.nilai2', 
+        readonly=True
+    )
+    hasil_convert_latex = fields.Float(
+        string="Hasil Convert Latex", 
+        related='line_nap_ids.hasil_convert_latex', 
+        readonly=True
+    )
+    hasil_convert_lump = fields.Float(
+        string="Hasil Convert Lump", 
+        related='line_nap_ids.hasil_convert_lump', 
+        readonly=True
+    )
+
+
     @api.depends('varieties_id','location_type_id', 'contractor_id.state')
     def _filter_locations(self):
         # biar tidak di run setiap saat
