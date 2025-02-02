@@ -15,13 +15,15 @@ class HrPayslip(models.Model):
         res = []
         query_att = """SELECT hat.code, hat.name, count(has.id) as num_of_days FROM hr_attendance_sheet has, hr_employee he,hr_attendance_type hat  
             WHERE has.employee_id=he.id and has.type_id=hat.id 
-                and has.check_in between '%(date_from)s' and '%(date_to)s'
+                and has.date between '%(date_from)s' and '%(date_to)s'
                 and he.id=%(employee_id)s
             GROUP BY hat.code, hat.name"""
         
         self.env.cr.execute(query_att%({
-            'date_from': datetime.combine(fields.Date.from_string(date_from), time.min), 
-            'date_to': datetime.combine(fields.Date.from_string(date_to), time.max),
+            # 'date_from': datetime.combine(fields.Date.from_string(date_from), time.min), 
+            'date_from': date_from, 
+            # 'date_to': datetime.combine(fields.Date.from_string(date_to), time.max),
+            'date_to': date_to,
             'employee_id': employee_id,
         }))
         for contract in contracts:
