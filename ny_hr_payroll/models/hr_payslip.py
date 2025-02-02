@@ -72,6 +72,34 @@ class HrPayslip(models.Model):
                 'contract_id': contract.id,
             }
             res.append(my_daya_attendance)
+
+            # Sakit
+            sakit_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
+                            ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
+                            ('type_id.code','=','S1')])
+            sakit_attendance = {
+                'name': 'Absensi dari MyDaya',
+                'sequence': 200,
+                'code': 'S1',
+                'number_of_days': sakit_days,
+                'number_of_hours': 0.0,
+                'contract_id': contract.id,
+            }
+            res.append(sakit_attendance)
+
+            # Cuti
+            cuti_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
+                            ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
+                            ('type_id.code','=','CT')])
+            cuti_attendance = {
+                'name': 'Absensi dari MyDaya',
+                'sequence': 200,
+                'code': 'CT',
+                'number_of_days': cuti_days,
+                'number_of_hours': 0.0,
+                'contract_id': contract.id,
+            }
+            res.append(cuti_attendance)
         return res
 
     def action_print_report(self):
