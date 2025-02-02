@@ -14,7 +14,7 @@
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_block" type="object" class="oe_stat_button" icon="fa-search" string="Blok Tanam"/>
-                        <button name="action_view_foreman" type="object" class="oe_stat_button" icon="fa-users" string="Kemandoran"/>
+                        <!-- <button name="action_view_foreman" type="object" class="oe_stat_button" icon="fa-users" string="Kemandoran"/> -->
                     </div>
                     <group>
                         <group>
