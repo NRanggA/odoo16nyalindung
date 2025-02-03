@@ -91,19 +91,25 @@ class NyOngkosPikul(models.Model):
             else:
                 new_batch_oth_input = rec.batch_other_input_id
             
-            for line in rec.line_ids:
-                if not line.other_input_id and line.amount:
+            for employee in rec.line_ids.employee_id:
+                lines = rec.line_ids.filtered(lambda x: x.employee_id.id==employee.id)
+                existing_other_input = lines.other_input_id
+                amount = sum(existing_other_input.mapped('amount'))
+                if not existing_other_input and amount:
                     line_values = {
                         'batch_id': new_batch_oth_input.id,
-                        'employee_id': line.employee_id.id,
-                        'amount': line.amount
+                        'employee_id': employee.id,
+                        'amount': amount
                     }
                     new_oth_input_line = self.env['hr.payslip.other.input'].create(line_values)
-                    line.write({
+                    lines.write({
                         'other_input_id': new_oth_input_line.id
                     })
                 else:
-                    line.other_input_id.amount = line.premi_amount
+                    lines.other_input_id.write({
+                        'employee_id' : employee.id,
+                        'amount' : amount
+                    })
 
             rec.write({
                 'batch_other_input_id': new_batch_oth_input.id,
