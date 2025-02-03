@@ -7,6 +7,7 @@
         <field name="inherit_id" ref="c10i_attendance.attendance_sheet_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//sheet/group" position="inside">
+                <field name="is_diliburkan" readonly="1"/>
                 <field name="longitude_in" readonly="1"/>
                 <field name="latitude_in" readonly="1"/>
                 <field name="distance_in" />

@@ -6,6 +6,7 @@ class AttendanceSheet(models.Model):
     _inherit = 'hr.attendance.sheet'
 
     is_data_from_my_daya = fields.Boolean(compute='_compute_mydaya_att', store=True, string='Data From My Daya Apps')
+    is_diliburkan = fields.Boolean("Diliburkan")
     att_log_ids = fields.One2many('ny.attendance.log', 'attendance_sheet_id', string='MyDaya Attendance')
     longitude_in = fields.Float(digits=(10, 7))
     latitude_in = fields.Float(digits=(10, 7))

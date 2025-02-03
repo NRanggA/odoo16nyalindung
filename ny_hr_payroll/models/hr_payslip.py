@@ -4,6 +4,7 @@ from odoo import api, fields, models, tools, _
 from odoo.addons.c10i_plantation_payroll.models.browsable_object import Payslips3
 
 from datetime import date, datetime, time
+from dateutil.relativedelta import relativedelta
 
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
@@ -51,29 +52,29 @@ class HrPayslip(models.Model):
                 'contract_id': contract.id,
             }
             res.append(attendances_kjl)
-            should_worked_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
-                            ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False)])
-            currmonth_hke_total = {
-                'name': 'Hari Kerja Sebulan',
-                'sequence': 200,
-                'code': 'TOTALHK',
-                'number_of_days': should_worked_days,
-                'number_of_hours': 0.0,
-                'contract_id': contract.id,
-            }
-            res.append(currmonth_hke_total)
-            mydaya_worked_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
-                            ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
-                            ('type_id.code','=','KJ'),('is_data_from_my_daya','=',True)])
-            my_daya_attendance = {
-                'name': 'Absensi dari MyDaya',
-                'sequence': 200,
-                'code': 'KJMYDAYA',
-                'number_of_days': mydaya_worked_days,
-                'number_of_hours': 0.0,
-                'contract_id': contract.id,
-            }
-            res.append(my_daya_attendance)
+            # should_worked_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
+            #                 ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False)])
+            # currmonth_hke_total = {
+            #     'name': 'Hari Kerja Sebulan',
+            #     'sequence': 200,
+            #     'code': 'TOTALHK',
+            #     'number_of_days': should_worked_days,
+            #     'number_of_hours': 0.0,
+            #     'contract_id': contract.id,
+            # }
+            # res.append(currmonth_hke_total)
+            # mydaya_worked_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
+            #                 ('date','>=',date_from),('date','<=',date_to),('is_holiday','=',False),
+            #                 ('type_id.code','=','KJ'),('is_data_from_my_daya','=',True)])
+            # my_daya_attendance = {
+            #     'name': 'Absensi dari MyDaya',
+            #     'sequence': 200,
+            #     'code': 'KJMYDAYA',
+            #     'number_of_days': mydaya_worked_days,
+            #     'number_of_hours': 0.0,
+            #     'contract_id': contract.id,
+            # }
+            # res.append(my_daya_attendance)
 
             # Sakit
             sakit_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
@@ -102,6 +103,41 @@ class HrPayslip(models.Model):
                 'contract_id': contract.id,
             }
             res.append(cuti_attendance)
+
+            # Premi Kehadiran
+            hadir_tanpa_koreksi_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
+                            ('date','>=',date_from),('date','<=',date_to),()
+                            ('type_id.code','=','KJ'),('is_correction','=',False)])
+            # ('is_data_from_my_daya','=',True)
+            hadir_tanpa_koreksi_attendance = {
+                'name': 'Hadir Tanpa Koreksi',
+                'sequence': 200,
+                'code': 'KJTK',
+                'number_of_days': hadir_tanpa_koreksi_days,
+                'number_of_hours': 0.0,
+                'contract_id': contract.id,
+            }
+            res.append(hadir_tanpa_koreksi_attendance)
+
+            diliburkan_day = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
+                            ('date','>=',date_from),('date','<=',date_to),()
+                            ('type_id.code','!=','KJ'),('is_diliburkan','=',True)])
+            n_sunday = 0
+            first_date = datetime.strptime(date_from,'%Y-%m-%d')
+            date_to = datetime.strptime(date_to,'%Y-%m-%d')
+            while first_date <= date_to:  # or use `<` if you don't want it inclusive
+                if first_date.weekday() == 6:
+                    n_sunday += 1
+                first_date += relativedelta(days=1)
+            basis_premi_koreksi_attendance = {
+                'name': 'Basis Premi Kehadiran',
+                'sequence': 200,
+                'code': 'BPKJ',
+                'number_of_days': (date_to - first_date).days + 1 - (n_sunday + diliburkan_day),
+                'number_of_hours': 0.0,
+                'contract_id': contract.id,
+            }
+            res.append(basis_premi_koreksi_attendance)
         return res
 
     def action_print_report(self):
