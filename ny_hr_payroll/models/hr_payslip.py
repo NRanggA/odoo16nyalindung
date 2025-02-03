@@ -123,8 +123,9 @@ class HrPayslip(models.Model):
                             ('date','>=',date_from),('date','<=',date_to),
                             ('type_id.code','!=','KJ'),('is_diliburkan','=',True)])
             n_sunday = 0
-            first_date = datetime.strptime(date_from,'%Y-%m-%d')
-            date_to = datetime.strptime(date_to,'%Y-%m-%d')
+            # first_date = datetime.strptime(date_from,'%Y-%m-%d')
+            first_date = date_from
+            # date_to = datetime.strptime(date_to,'%Y-%m-%d')
             while first_date <= date_to:  # or use `<` if you don't want it inclusive
                 if first_date.weekday() == 6:
                     n_sunday += 1
