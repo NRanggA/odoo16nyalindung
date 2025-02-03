@@ -1446,6 +1446,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             sheet3.merge_range(row3, 0, row3 + 1, 2, kemandoran.name or '', wbf['kemandoran'])
             sheet3.merge_range(row3, 3, row3 + 1, 4, 'JUMLAH', wbf['header'])
 
+
             if from_date and to_date:
                 delta = to_date - from_date
                 date_column_correction = []
@@ -1458,10 +1459,10 @@ class ReportSummaryAttendance(models.AbstractModel):
                         ('date', '=', current_date),
                         ('is_correction', '=', True)
                     ], limit=1)
-
-                    if attendance:
-                        date_column_correction.append(current_date.strftime('%d'))
-                        correction_dates.append(current_date)
+                    
+                    # if attendance:
+                    date_column_correction.append(current_date.strftime('%d'))
+                    correction_dates.append(current_date)
 
                     
             if date_column_correction:
@@ -1502,18 +1503,67 @@ class ReportSummaryAttendance(models.AbstractModel):
             #     sheet3.write(5, tunjangan_start + i, header, tunjangan_formats[i])
 
             # Bagian Isi Data
+            # query = """
+            #     WITH employee_data AS (
+            #         SELECT 
+            #             emp.id AS emp_id,
+            #             emp.name AS employee_name,
+            #             emp.no_induk as no_induk
+            #         FROM 
+            #             hr_employee emp
+            #         WHERE emp.kemandoran_id = %s
+            #     ),
+            #     corrections AS (
+            #         SELECT date FROM hr_attendance_sheet WHERE is_correction = TRUE
+            #     ),
+            #     trans_data AS (
+            #         SELECT 
+            #             trans_nap_line.hasil_convert_latex,
+            #             trans_nap_line.hasil_convert_lump,  
+            #             trans.date, 
+            #             trans_line.employee_id
+            #         FROM 
+            #             lhm_transaction_nap_line trans_nap_line
+            #         JOIN 
+            #             lhm_transaction_line trans_line ON trans_line.id = trans_nap_line.lhm_transaction_line_id
+            #         JOIN 
+            #             lhm_transaction trans ON trans.id = trans_line.lhm_id
+            #         WHERE 
+            #             trans.date BETWEEN %s AND %s
+            #             AND trans.date IN (SELECT date FROM corrections)
+            #     )
+            #     SELECT 
+            #         employee_data.emp_id,
+            #         employee_data.employee_name,
+            #         employee_data.no_induk,
+            #         SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex_bagi_2,
+            #         SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
+            #     FROM 
+            #         employee_data
+            #     LEFT JOIN 
+            #         trans_data ON employee_data.emp_id = trans_data.employee_id
+            #     GROUP BY 
+            #         employee_data.emp_id, 
+            #         employee_data.no_induk,
+            #         employee_data.employee_name
+            #     ORDER BY
+            #         employee_data.employee_name ASC;
+            # """
+
             query = """
                 WITH employee_data AS (
                     SELECT 
                         emp.id AS emp_id,
                         emp.name AS employee_name,
-                        emp.no_induk as no_induk
+                        emp.no_induk AS no_induk
                     FROM 
                         hr_employee emp
                     WHERE emp.kemandoran_id = %s
                 ),
                 corrections AS (
-                    SELECT date FROM hr_attendance_sheet WHERE is_correction = TRUE
+                    SELECT DISTINCT date, employee_id 
+                    FROM hr_attendance_sheet 
+                    WHERE is_correction = TRUE
                 ),
                 trans_data AS (
                     SELECT 
@@ -1529,7 +1579,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                         lhm_transaction trans ON trans.id = trans_line.lhm_id
                     WHERE 
                         trans.date BETWEEN %s AND %s
-                        AND trans.date IN (SELECT date FROM corrections)
+                        AND (trans.date, trans_line.employee_id) IN (SELECT date, employee_id FROM corrections)
                 )
                 SELECT 
                     employee_data.emp_id,
@@ -1539,6 +1589,8 @@ class ReportSummaryAttendance(models.AbstractModel):
                     SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
                 FROM 
                     employee_data
+                JOIN 
+                    corrections ON employee_data.emp_id = corrections.employee_id -- Hanya yang ada koreksi
                 LEFT JOIN 
                     trans_data ON employee_data.emp_id = trans_data.employee_id
                 GROUP BY 
@@ -1549,8 +1601,9 @@ class ReportSummaryAttendance(models.AbstractModel):
                     employee_data.employee_name ASC;
             """
 
+
             self.env.cr.execute(query, (kemandoran.id, from_date, to_date))
-            karyawan_data = self.env.cr.fetchall()
+            karyawan_data_correction = self.env.cr.fetchall()
 
             row3 += 4
             nomor = 1
@@ -1562,7 +1615,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
             kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data_correction:
                 sheet3.write(row3, 0, nomor, wbf['data_center'])
                 sheet3.write(row3, 1, no_induk, wbf['data'])
                 sheet3.write(row3, 2, employee_name, wbf['data'])
@@ -1809,7 +1862,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_hko_per_tanggal = [0] * len(date_column_correction)
 
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data_correction:
                 for i, current_date in enumerate(correction_dates):
                     attendances = self.env['hr.attendance.sheet'].search([
                         ('employee_id', '=', emp_id),
@@ -1899,7 +1952,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_column_correction)
             total_m_per_tanggal = [0] * len(date_column_correction)
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data_correction:
                 total_bsh += total_hasil_convert_lump_bagi_2
                 total_krg += total_hasil_convert_latex_bagi_2
                 current_col = 12
