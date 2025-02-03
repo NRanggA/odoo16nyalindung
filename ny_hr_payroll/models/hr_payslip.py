@@ -134,7 +134,7 @@ class HrPayslip(models.Model):
                 'name': 'Basis Premi Kehadiran',
                 'sequence': 200,
                 'code': 'BPKJ',
-                'number_of_days': (date_to - first_date).days + 1 - (n_sunday + diliburkan_day),
+                'number_of_days': (date_to - date_from).days + 1 - (n_sunday + diliburkan_day),
                 'number_of_hours': 0.0,
                 'contract_id': contract.id,
             }
