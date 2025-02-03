@@ -1212,7 +1212,8 @@ class lhm_transaction_line(models.Model):
 
                 values = {
                     'contract_id'           : contract and contract.id or False,
-                    'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                    # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
+                    'contract_wage_value'   : (contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day) * record.work_day,
                 }
                 record.write(values)
 
