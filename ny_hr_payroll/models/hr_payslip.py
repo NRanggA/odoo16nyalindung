@@ -106,7 +106,7 @@ class HrPayslip(models.Model):
 
             # Premi Kehadiran
             hadir_tanpa_koreksi_days = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
-                            ('date','>=',date_from),('date','<=',date_to),()
+                            ('date','>=',date_from),('date','<=',date_to),
                             ('type_id.code','=','KJ'),('is_correction','=',False)])
             # ('is_data_from_my_daya','=',True)
             hadir_tanpa_koreksi_attendance = {
@@ -120,7 +120,7 @@ class HrPayslip(models.Model):
             res.append(hadir_tanpa_koreksi_attendance)
 
             diliburkan_day = self.env['hr.attendance.sheet'].search_count([('employee_id','=',employee_id),
-                            ('date','>=',date_from),('date','<=',date_to),()
+                            ('date','>=',date_from),('date','<=',date_to),
                             ('type_id.code','!=','KJ'),('is_diliburkan','=',True)])
             n_sunday = 0
             first_date = datetime.strptime(date_from,'%Y-%m-%d')
