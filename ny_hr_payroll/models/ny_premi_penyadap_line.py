@@ -61,7 +61,7 @@ class NyPremiPenyadapLine(models.Model):
     @api.depends('karet_kering_qty','target_qty')
     def compute_qty(self):
         for line in self:
-            line.lebih_target_qty = line.karet_kering_qty - line.target_qty if line.karet_kering_qty > line.target_qty else 0.0
+            line.lebih_target_qty = round(line.karet_kering_qty - line.target_qty if line.karet_kering_qty > line.target_qty else 0.0, 2)
 
     @api.depends('lebih_target_qty','rate')
     def compute_amount(self):
