@@ -94,7 +94,7 @@ class NyOngkosPikul(models.Model):
             for employee in rec.line_ids.employee_id:
                 lines = rec.line_ids.filtered(lambda x: x.employee_id.id==employee.id)
                 existing_other_input = lines.other_input_id
-                amount = sum(existing_other_input.mapped('amount'))
+                amount = sum(lines.mapped('amount'))
                 if not existing_other_input and amount:
                     line_values = {
                         'batch_id': new_batch_oth_input.id,
