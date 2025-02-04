@@ -183,7 +183,7 @@ class DirectPayment(models.Model):
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
 
-            if not payment.account_move_id:
+            if payment.name != payment.account_move_id.name:
                 if payment.journal_id.type in ['bank', 'cash'] and payment.direct_state in ['receive', 'send']:
                     sequence = None
                     if payment.direct_state == 'receive' and payment.journal_id.sequence_id:
