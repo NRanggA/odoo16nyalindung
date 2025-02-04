@@ -339,7 +339,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                     mapped_line.update({line.salary_rule_id.id: 0.0})
                 mapped_line[line.salary_rule_id.id] += line.total
 
-            l_cur_col = 9
+            l_cur_col = 3
             for rb in rules_basic2.sorted(key=lambda x: x.sequence):
                 worksheet2.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
                 l_cur_col += 1
