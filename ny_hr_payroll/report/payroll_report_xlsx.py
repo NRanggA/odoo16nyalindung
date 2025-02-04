@@ -218,9 +218,9 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             total_potongan = 0.0
             for rd in rules_deduction.sorted(key=lambda x: x.sequence):
                 worksheet.write(next_row, l_cur_col, mapped_line.get(rd.id, 0.0), wbf['content_float'])
-                total_potongan = mapped_line.get(rd.id, 0.0)
+                total_potongan += mapped_line.get(rd.id, 0.0)
                 l_cur_col += 1
-            
+
             worksheet.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
             l_cur_col += 1
             
@@ -359,7 +359,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 total_potongan += mapped_line.get(rd.id, 0.0)
                 l_cur_col += 1
             
-            worksheet.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
+            worksheet2.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
             l_cur_col += 1
             
             worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_net2.id, 0.0), wbf['content_float'])
