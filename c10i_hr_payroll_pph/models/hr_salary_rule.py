@@ -16,7 +16,7 @@ class HrSalaryRule(models.Model):
     def _hook_localdict(self, localdict, res_rule_amount, previous_amount):
         localdict = super(HrSalaryRule, self)._hook_localdict(localdict, res_rule_amount, previous_amount)
         if self.pph_mark_type == 'base_amount':
-            if self.category_id.code in ('BASIC','ALW','GROSS'):
+            if self.category_id.code in ('BASIC','BPJS','ALW','GROSS'):
                 localdict = self._sum_salary_rule_base_pph(localdict, 'BASEPPH', res_rule_amount - previous_amount)
             elif self.category_id.code=='DED':
                 localdict = self._sum_salary_rule_base_pph(localdict, 'BASEPPH', (-1*res_rule_amount) - previous_amount)
