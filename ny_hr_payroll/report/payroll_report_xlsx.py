@@ -229,3 +229,130 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.set_print_scale(50)
 
         # worksheet2 = workbook.add_worksheet("Rekap")
+        ########################################################### SHEET 2
+        # HEADER
+        # header employee
+        worksheet2 = workbook.add_worksheet("Rekap Gaji")
+        
+        next_row = 1
+        worksheet2.merge_range(next_row, 1, next_row+1, 1, 'No.' , wbf['header'])
+        worksheet2.set_column(1,1,3)
+        # worksheet2.merge_range(next_row, 2, next_row, 7, 'Karyawan' , wbf['header'])
+        worksheet2.write(next_row+1, 2, "Kemandoran", wbf['header'])
+        worksheet2.set_column(2,2,25)
+        
+        rules_basic = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='BASIC')
+        rules_allowance = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' not in r.name)
+        rules_gross = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='GROSS')
+        rules_premi = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' in r.name)
+        rules_deduction = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='DED')
+        rules_net = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='NET')
+        cur_col = 3
+        if rules_basic:
+            if len(rules_basic.ids)>1:
+                worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_basic.ids)-1, "Gaji Pokok", wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                for rb in rules_basic.sorted(key=lambda x: x.sequence):
+                    worksheet2.set_column(cur_col,cur_col,12)
+                    worksheet2.write(next_row+1, cur_col, rb.name, wbf['header'])
+                    cur_col += 1
+            else:
+                worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_basic.name, wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                cur_col += 1
+        if rules_allowance:
+            if len(rules_allowance.ids)>1:
+                worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_allowance.ids)-1, "Tunjangan", wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                for ra in rules_allowance.sorted(key=lambda x: x.sequence):
+                    worksheet2.write(next_row+1, cur_col, ra.name, wbf['header'])
+                    worksheet2.set_column(cur_col,cur_col,12)
+                    cur_col += 1
+            else:
+                worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_allowance.name, wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                cur_col += 1
+        
+        if rules_premi:
+            if len(rules_premi.ids)>1:
+                worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_premi.ids)-1, "Premi", wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                for rp in rules_premi.sorted(key=lambda x: x.sequence):
+                    worksheet2.write(next_row+1, cur_col, rp.name, wbf['header'])
+                    worksheet2.set_column(cur_col,cur_col,12)
+                    cur_col += 1
+            else:
+                worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_premi.name, wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                cur_col += 1
+        
+        worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, 'Total Pendapatan\n(Gross)', wbf['header'])
+        worksheet2.set_column(cur_col,cur_col,15)
+        cur_col += 1
+        
+        if rules_deduction:
+            if len(rules_deduction.ids)>1:
+                worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_deduction.ids)-1, "Potongan", wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                for rd in rules_deduction.sorted(key=lambda x: x.sequence):
+                    worksheet2.write(next_row+1, cur_col, rd.name, wbf['header'])
+                    worksheet2.set_column(cur_col,cur_col,12)
+                    cur_col += 1
+            else:
+                worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_deduction.name, wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                cur_col += 1
+        
+        worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, 'Dibayarkan (Net)', wbf['header'])
+        worksheet2.set_column(cur_col,cur_col,12)
+        cur_col += 1
+        next_row += 2
+
+        for c in range(1,cur_col):
+            worksheet2.write(next_row, c, c, wbf['header_no'])
+        next_row += 1
+
+        # Freeze
+        worksheet2.freeze_panes(next_row, 4)
+        indx = 1
+        for kemandoran in obj.employee_id.kemandoran_id:
+            worksheet2.write(next_row, 1, indx, wbf['content'])
+            indx += 1
+            worksheet2.write(next_row, 2, kemandoran.name or '', wbf['content'])
+            payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id==kemandoran.id)
+            mapped_line = {}
+            for line in payslips.line_ids:
+                if line.salary_rule_id.id not in mapped_line.keys():
+                    mapped_line.update({line.salary_rule_id.id: 0.0})
+                mapped_line[line.salary_rule_id.id] += line.total
+
+            l_cur_col = 9
+            for rb in rules_basic.sorted(key=lambda x: x.sequence):
+                worksheet2.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
+                l_cur_col += 1
+            for ra in rules_allowance.sorted(key=lambda x: x.sequence):
+                worksheet2.write(next_row, l_cur_col, mapped_line.get(ra.id, 0.0), wbf['content_float'])
+                l_cur_col += 1
+            for rp in rules_premi.sorted(key=lambda x: x.sequence):
+                worksheet2.write(next_row, l_cur_col, mapped_line.get(rp.id, 0.0), wbf['content_float'])
+                l_cur_col += 1
+            
+            worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_gross.id, 0.0), wbf['content_float'])
+            l_cur_col += 1
+            
+            for rd in rules_deduction.sorted(key=lambda x: x.sequence):
+                worksheet2.write(next_row, l_cur_col, mapped_line.get(rd.id, 0.0), wbf['content_float'])
+                l_cur_col += 1
+            
+            worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_net.id, 0.0), wbf['content_float'])
+            l_cur_col += 1
+            
+            next_row+=1
+
+        # Page Layout
+        worksheet2.set_landscape()
+        worksheet2.set_paper(9) # A4
+        # worksheet2.set_header()
+        worksheet2.repeat_rows(1, 2) #Repeat column header
+        worksheet2.print_area(0, 0, next_row, cur_col)
+        worksheet2.set_print_scale(50)
