@@ -21,6 +21,11 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         self.wbf['header'].set_text_wrap()
         self.wbf['header'].set_align('vcenter')
 
+        self.wbf['header_mandor'] = workbook.add_format({'bold': 1,'align': 'left','bg_color': '#FFFFDB','font_color': '#000000'})
+        self.wbf['header_mandor'].set_border()
+        self.wbf['header_mandor'].set_text_wrap()
+        self.wbf['header_mandor'].set_align('vcenter')
+
         self.wbf['header_no'] = workbook.add_format({'bold': 1,'align': 'center','bg_color': '#FFFFDB','font_color': '#000000'})
         self.wbf['header_no'].set_border()
         self.wbf['header_no'].set_font_size(8)
@@ -47,6 +52,11 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         self.wbf['content'].set_left()
         self.wbf['content'].set_right() 
         self.wbf['content'].set_text_wrap()
+        
+        self.wbf['footer_total'] = workbook.add_format({'bold':1,'bg_color': '#FFFFDB','align': 'right','num_format': '#,##0.00'})
+        self.wbf['footer_total'].set_border()
+        self.wbf['footer_total'].set_right() 
+        self.wbf['footer_total'].set_left()
         
         self.wbf['content_float'] = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
         self.wbf['content_float'].set_right() 
@@ -82,6 +92,299 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         
         return workbook
  
+    # def generate_xlsx_report(self, workbook, data, obj):
+    #     # heading_format = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'bold': True, 'size': 14})
+    #     workbook = self.add_workbook_format(workbook)
+    #     wbf=self.wbf
+
+    #     # HEADER
+    #     # header employee
+    #     worksheet = workbook.add_worksheet("Payroll")
+        
+    #     next_row = 1
+    #     worksheet.merge_range(next_row, 1, next_row+1, 1, 'No.' , wbf['header'])
+    #     worksheet.set_column(1,1,3)
+    #     worksheet.merge_range(next_row, 2, next_row, 7, 'Karyawan' , wbf['header'])
+    #     worksheet.write(next_row+1, 2, "NIP", wbf['header'])
+    #     worksheet.set_column(2,2,15)
+    #     worksheet.write(next_row+1, 3, "Nama", wbf['header'])
+    #     worksheet.set_column(3,3,15)
+    #     worksheet.write(next_row+1, 4, "Kemandoran", wbf['header'])
+    #     worksheet.set_column(4,4,25)
+    #     worksheet.write(next_row+1, 5, "NPWP", wbf['header'])
+    #     worksheet.set_column(5,5,25)
+    #     worksheet.write(next_row+1, 6, "KTP", wbf['header'])
+    #     worksheet.set_column(6,6,26)
+    #     worksheet.write(next_row+1, 7, "Jabatan", wbf['header'])
+    #     worksheet.set_column(7,7,15)
+    #     worksheet.write(next_row+1, 8, "Tgl. Masuk", wbf['header'])
+    #     worksheet.set_column(8,8,10)
+
+    #     rules_basic = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='BASIC')
+    #     rules_allowance = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' not in r.name)
+    #     rules_gross = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='GROSS')
+    #     rules_premi = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' in r.name)
+    #     rules_deduction = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='DED')
+    #     rules_net = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='NET')
+    #     cur_col = 9
+    #     if rules_basic:
+    #         if len(rules_basic.ids)>1:
+    #             worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_basic.ids)-1, "Gaji Pokok", wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             for rb in rules_basic.sorted(key=lambda x: x.sequence):
+    #                 worksheet.set_column(cur_col,cur_col,12)
+    #                 worksheet.write(next_row+1, cur_col, rb.name, wbf['header'])
+    #                 cur_col += 1
+    #         else:
+    #             worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, rules_basic.name, wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+    #     if rules_allowance:
+    #         if len(rules_allowance.ids)>1:
+    #             worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_allowance.ids)-1, "Tunjangan", wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             for ra in rules_allowance.sorted(key=lambda x: x.sequence):
+    #                 worksheet.write(next_row+1, cur_col, ra.name, wbf['header'])
+    #                 worksheet.set_column(cur_col,cur_col,12)
+    #                 cur_col += 1
+    #         else:
+    #             worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, rules_allowance.name, wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+        
+    #     if rules_premi:
+    #         if len(rules_premi.ids)>1:
+    #             worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_premi.ids)-1, "Premi", wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             for rp in rules_premi.sorted(key=lambda x: x.sequence):
+    #                 worksheet.write(next_row+1, cur_col, rp.name, wbf['header'])
+    #                 worksheet.set_column(cur_col,cur_col,12)
+    #                 cur_col += 1
+    #         else:
+    #             worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, rules_premi.name, wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+        
+    #     worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Total Pendapatan\n(Gross)', wbf['header'])
+    #     worksheet.set_column(cur_col,cur_col,15)
+    #     cur_col += 1
+        
+    #     if rules_deduction:
+    #         if len(rules_deduction.ids)>1:
+    #             worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_deduction.ids)-1, "Potongan", wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             for rd in rules_deduction.sorted(key=lambda x: x.sequence):
+    #                 worksheet.write(next_row+1, cur_col, rd.name, wbf['header'])
+    #                 worksheet.set_column(cur_col,cur_col,12)
+    #                 cur_col += 1
+    #         else:
+    #             worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, rules_deduction.name, wbf['header'])
+    #             worksheet.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+            
+    #         worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Total Potongan', wbf['header'])
+    #         worksheet.set_column(cur_col,cur_col,12)
+    #         cur_col += 1
+        
+    #     worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Dibayarkan (Net)', wbf['header'])
+    #     worksheet.set_column(cur_col,cur_col,12)
+    #     cur_col += 1
+    #     next_row += 2
+
+    #     for c in range(1,cur_col):
+    #         worksheet.write(next_row, c, c, wbf['header_no'])
+    #     next_row += 1
+
+    #     # Freeze
+    #     worksheet.freeze_panes(next_row, 4)
+    #     indx = 1
+    #     for payslip in obj:
+    #         worksheet.write(next_row, 1, indx, wbf['content'])
+    #         indx += 1
+    #         worksheet.write(next_row, 2, payslip.employee_id.no_induk or '', wbf['content'])
+    #         worksheet.write(next_row, 3, payslip.employee_id.name or '', wbf['content'])
+    #         worksheet.write(next_row, 4, payslip.employee_id.kemandoran_id.name or '', wbf['content'])
+    #         worksheet.write(next_row, 5, payslip.employee_id.npwp or '', wbf['content'])
+    #         worksheet.write(next_row, 6, payslip.employee_id.identification_id or '', wbf['content'])
+    #         worksheet.write(next_row, 7, payslip.employee_id.job_id.name if payslip.employee_id.job_id else '', wbf['content'])
+    #         worksheet.write(next_row, 8, payslip.employee_id.work_start_date or '', wbf['content_date'])
+            
+    #         mapped_line = dict(map(lambda l: (l.salary_rule_id.id, l.total), payslip.line_ids))
+
+    #         l_cur_col = 9
+    #         for rb in rules_basic.sorted(key=lambda x: x.sequence):
+    #             worksheet.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
+    #             l_cur_col += 1
+    #         for ra in rules_allowance.sorted(key=lambda x: x.sequence):
+    #             worksheet.write(next_row, l_cur_col, mapped_line.get(ra.id, 0.0), wbf['content_float'])
+    #             l_cur_col += 1
+    #         for rp in rules_premi.sorted(key=lambda x: x.sequence):
+    #             worksheet.write(next_row, l_cur_col, mapped_line.get(rp.id, 0.0), wbf['content_float'])
+    #             l_cur_col += 1
+            
+    #         worksheet.write(next_row, l_cur_col, mapped_line.get(rules_gross.id, 0.0), wbf['content_float'])
+    #         l_cur_col += 1
+            
+    #         total_potongan = 0.0
+    #         for rd in rules_deduction.sorted(key=lambda x: x.sequence):
+    #             worksheet.write(next_row, l_cur_col, mapped_line.get(rd.id, 0.0), wbf['content_float'])
+    #             total_potongan += mapped_line.get(rd.id, 0.0)
+    #             l_cur_col += 1
+
+    #         worksheet.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
+    #         l_cur_col += 1
+            
+    #         worksheet.write(next_row, l_cur_col, mapped_line.get(rules_net.id, 0.0), wbf['content_float'])
+    #         l_cur_col += 1
+            
+    #         next_row+=1
+
+    #     # Page Layout
+    #     worksheet.set_landscape()
+    #     worksheet.set_paper(9) # A4
+    #     # worksheet.set_header()
+    #     worksheet.repeat_rows(1, 2) #Repeat column header
+    #     worksheet.print_area(0, 0, next_row, cur_col)
+    #     worksheet.set_print_scale(50)
+
+    #     # worksheet2 = workbook.add_worksheet("Rekap")
+    #     ########################################################### SHEET 2
+    #     # HEADER
+    #     # header employee
+    #     worksheet2 = workbook.add_worksheet("Rekap Gaji")
+        
+    #     next_row = 1
+    #     worksheet2.merge_range(next_row, 1, next_row+1, 1, 'No.' , wbf['header'])
+    #     worksheet2.set_column(1,1,3)
+    #     worksheet2.merge_range(next_row, 2, next_row+1, 2, 'Kemandoran' , wbf['header'])
+    #     # worksheet2.write(next_row+1, 2, "Kemandoran", wbf['header'])
+    #     worksheet2.set_column(2,2,25)
+        
+    #     rules_basic2 = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='BASIC')
+    #     rules_allowance2 = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' not in r.name)
+    #     rules_gross2 = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='GROSS')
+    #     rules_premi2 = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' in r.name)
+    #     rules_deduction2 = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='DED')
+    #     rules_net2 = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='NET')
+    #     cur_col = 3
+    #     if rules_basic2:
+    #         if len(rules_basic2.ids)>1:
+    #             worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_basic2.ids)-1, "Gaji Pokok", wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             for rb in rules_basic2.sorted(key=lambda x: x.sequence):
+    #                 worksheet2.set_column(cur_col,cur_col,12)
+    #                 worksheet2.write(next_row+1, cur_col, rb.name, wbf['header'])
+    #                 cur_col += 1
+    #         else:
+    #             worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_basic2.name, wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+    #     if rules_allowance2:
+    #         if len(rules_allowance2.ids)>1:
+    #             worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_allowance2.ids)-1, "Tunjangan", wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             for ra in rules_allowance2.sorted(key=lambda x: x.sequence):
+    #                 worksheet2.write(next_row+1, cur_col, ra.name, wbf['header'])
+    #                 worksheet2.set_column(cur_col,cur_col,12)
+    #                 cur_col += 1
+    #         else:
+    #             worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_allowance2.name, wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+        
+    #     if rules_premi2:
+    #         if len(rules_premi2.ids)>1:
+    #             worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_premi2.ids)-1, "Premi", wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             for rp in rules_premi2.sorted(key=lambda x: x.sequence):
+    #                 worksheet2.write(next_row+1, cur_col, rp.name, wbf['header'])
+    #                 worksheet2.set_column(cur_col,cur_col,12)
+    #                 cur_col += 1
+    #         else:
+    #             worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_premi2.name, wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+        
+    #     worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, 'Total Pendapatan\n(Gross)', wbf['header'])
+    #     worksheet2.set_column(cur_col,cur_col,15)
+    #     cur_col += 1
+        
+    #     if rules_deduction2:
+    #         if len(rules_deduction2.ids)>1:
+    #             worksheet2.merge_range(next_row, cur_col, next_row, cur_col+len(rules_deduction2.ids)-1, "Potongan", wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             for rd in rules_deduction2.sorted(key=lambda x: x.sequence):
+    #                 worksheet2.write(next_row+1, cur_col, rd.name, wbf['header'])
+    #                 worksheet2.set_column(cur_col,cur_col,12)
+    #                 cur_col += 1
+    #         else:
+    #             worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_deduction2.name, wbf['header'])
+    #             worksheet2.set_column(cur_col,cur_col,12)
+    #             cur_col += 1
+            
+    #         worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, 'Total Potongan', wbf['header'])
+    #         worksheet2.set_column(cur_col,cur_col,12)
+    #         cur_col += 1
+        
+    #     worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, 'Dibayarkan (Net)', wbf['header'])
+    #     worksheet2.set_column(cur_col,cur_col,12)
+    #     cur_col += 1
+    #     next_row += 2
+
+    #     for c in range(1,cur_col):
+    #         worksheet2.write(next_row, c, c, wbf['header_no'])
+    #     next_row += 1
+
+    #     # Freeze
+    #     worksheet2.freeze_panes(next_row, 4)
+    #     indx = 1
+    #     for kemandoran in obj.employee_id.kemandoran_id:
+    #         worksheet2.write(next_row, 1, indx, wbf['content'])
+    #         indx += 1
+    #         worksheet2.write(next_row, 2, kemandoran.name or '', wbf['content'])
+    #         payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id==kemandoran.id)
+    #         mapped_line = {}
+    #         for line in payslips.line_ids:
+    #             if line.salary_rule_id.id not in mapped_line.keys():
+    #                 mapped_line.update({line.salary_rule_id.id: 0.0})
+    #             mapped_line[line.salary_rule_id.id] += line.total
+
+    #         l_cur_col = 3
+    #         for rb in rules_basic2.sorted(key=lambda x: x.sequence):
+    #             worksheet2.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
+    #             l_cur_col += 1
+    #         for ra in rules_allowance2.sorted(key=lambda x: x.sequence):
+    #             worksheet2.write(next_row, l_cur_col, mapped_line.get(ra.id, 0.0), wbf['content_float'])
+    #             l_cur_col += 1
+    #         for rp in rules_premi2.sorted(key=lambda x: x.sequence):
+    #             worksheet2.write(next_row, l_cur_col, mapped_line.get(rp.id, 0.0), wbf['content_float'])
+    #             l_cur_col += 1
+            
+    #         worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_gross2.id, 0.0), wbf['content_float'])
+    #         l_cur_col += 1
+            
+    #         total_potongan = 0.0
+    #         for rd in rules_deduction2.sorted(key=lambda x: x.sequence):
+    #             worksheet2.write(next_row, l_cur_col, mapped_line.get(rd.id, 0.0), wbf['content_float'])
+    #             total_potongan += mapped_line.get(rd.id, 0.0)
+    #             l_cur_col += 1
+            
+    #         worksheet2.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
+    #         l_cur_col += 1
+            
+    #         worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_net2.id, 0.0), wbf['content_float'])
+    #         l_cur_col += 1
+            
+    #         next_row+=1
+
+    #     # Page Layout
+    #     worksheet2.set_landscape()
+    #     worksheet2.set_paper(9) # A4
+    #     # worksheet2.set_header()
+    #     worksheet2.repeat_rows(1, 2) #Repeat column header
+    #     worksheet2.print_area(0, 0, next_row, cur_col)
+    #     worksheet2.set_print_scale(50)
+   
     def generate_xlsx_report(self, workbook, data, obj):
         # heading_format = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'bold': True, 'size': 14})
         workbook = self.add_workbook_format(workbook)
@@ -94,9 +397,9 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         next_row = 1
         worksheet.merge_range(next_row, 1, next_row+1, 1, 'No.' , wbf['header'])
         worksheet.set_column(1,1,3)
-        worksheet.merge_range(next_row, 2, next_row, 7, 'Karyawan' , wbf['header'])
+        worksheet.merge_range(next_row, 2, next_row, 8, 'Karyawan' , wbf['header'])
         worksheet.write(next_row+1, 2, "NIP", wbf['header'])
-        worksheet.set_column(2,2,15)
+        worksheet.set_column(2,2,25)
         worksheet.write(next_row+1, 3, "Nama", wbf['header'])
         worksheet.set_column(3,3,15)
         worksheet.write(next_row+1, 4, "Kemandoran", wbf['header'])
@@ -183,59 +486,147 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
 
         for c in range(1,cur_col):
             worksheet.write(next_row, c, c, wbf['header_no'])
-        next_row += 1
+        # next_row += 1
 
-        # Freeze
-        worksheet.freeze_panes(next_row, 4)
-        indx = 1
+        # Mengelompokkan berdasarkan kemandoran
+        payslip_grouped = {}
         for payslip in obj:
-            worksheet.write(next_row, 1, indx, wbf['content'])
-            indx += 1
-            worksheet.write(next_row, 2, payslip.employee_id.no_induk or '', wbf['content'])
-            worksheet.write(next_row, 3, payslip.employee_id.name or '', wbf['content'])
-            worksheet.write(next_row, 4, payslip.employee_id.kemandoran_id.name or '', wbf['content'])
-            worksheet.write(next_row, 5, payslip.employee_id.npwp or '', wbf['content'])
-            worksheet.write(next_row, 6, payslip.employee_id.identification_id or '', wbf['content'])
-            worksheet.write(next_row, 7, payslip.employee_id.job_id.name if payslip.employee_id.job_id else '', wbf['content'])
-            worksheet.write(next_row, 8, payslip.employee_id.work_start_date or '', wbf['content_date'])
-            
-            mapped_line = dict(map(lambda l: (l.salary_rule_id.id, l.total), payslip.line_ids))
+            kemandoran = payslip.employee_id.kemandoran_id
+            if kemandoran not in payslip_grouped:
+                payslip_grouped[kemandoran] = []
+            payslip_grouped[kemandoran].append(payslip)
 
-            l_cur_col = 9
+        next_row += 1 
+        indx = 1
+
+        for kemandoran, payslips in payslip_grouped.items():
+            for col in range(1, cur_col):  
+                value = f"{kemandoran.name}" if col == 2 else "" 
+                worksheet.write(next_row, col, value, wbf['header_mandor'])
+
+            next_row += 1
+
+            # Inisialisasi subtotal
+            # subtotal_basic = 0.0  
+            # Inisialisasi subtotal untuk setiap kategori
+            subtotal_basic = {}
+            subtotal_allowance = {}
+            subtotal_premi = {}
+            subtotal_gross = 0.0
+            subtotal_deduction = {}
+            subtotal_net = 0.0
+
+            for payslip in payslips:
+                worksheet.write(next_row, 1, indx, wbf['content'])
+                indx += 1
+                worksheet.write(next_row, 2, payslip.employee_id.no_induk or '', wbf['content'])
+                worksheet.write(next_row, 3, payslip.employee_id.name or '', wbf['content'])
+                worksheet.write(next_row, 4, kemandoran.name, wbf['content'])
+                worksheet.write(next_row, 5, payslip.employee_id.npwp or '', wbf['content'])
+                worksheet.write(next_row, 6, payslip.employee_id.identification_id or '', wbf['content'])
+                worksheet.write(next_row, 7, payslip.employee_id.job_id.name if payslip.employee_id.job_id else '', wbf['content'])
+                worksheet.write(next_row, 8, payslip.employee_id.work_start_date or '', wbf['content_date'])
+
+                mapped_line = dict(map(lambda l: (l.salary_rule_id.id, l.total), payslip.line_ids))
+
+                l_cur_col = 9
+
+                # Basic
+                for rb in rules_basic.sorted(key=lambda x: x.sequence):
+                    value = mapped_line.get(rb.id, 0.0)
+                    worksheet.write(next_row, l_cur_col, value, wbf['content_float'])
+                    subtotal_basic[rb.id] = subtotal_basic.get(rb.id, 0.0) + value
+                    l_cur_col += 1
+
+                # Allowance
+                for ra in rules_allowance.sorted(key=lambda x: x.sequence):
+                    value = mapped_line.get(ra.id, 0.0)
+                    worksheet.write(next_row, l_cur_col, value, wbf['content_float'])
+                    subtotal_allowance[ra.id] = subtotal_allowance.get(ra.id, 0.0) + value
+                    l_cur_col += 1
+
+                # Premi
+                for rp in rules_premi.sorted(key=lambda x: x.sequence):
+                    value = mapped_line.get(rp.id, 0.0)
+                    worksheet.write(next_row, l_cur_col, value, wbf['content_float'])
+                    subtotal_premi[rp.id] = subtotal_premi.get(rp.id, 0.0) + value
+                    l_cur_col += 1
+
+                # Gross
+                gross_value = mapped_line.get(rules_gross.id, 0.0)
+                worksheet.write(next_row, l_cur_col, gross_value, wbf['content_float'])
+                subtotal_gross += gross_value
+                l_cur_col += 1
+
+                #Deduction
+                total_potongan = 0.0
+                for rd in rules_deduction.sorted(key=lambda x: x.sequence):
+                    value = mapped_line.get(rd.id, 0.0)
+                    worksheet.write(next_row, l_cur_col, value, wbf['content_float'])
+                    total_potongan += value
+                    subtotal_deduction[rd.id] = subtotal_deduction.get(rd.id, 0.0) + value
+                    l_cur_col += 1
+
+                worksheet.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
+                l_cur_col += 1
+
+                # Net
+                net_value = mapped_line.get(rules_net.id, 0.0)
+                worksheet.write(next_row, l_cur_col, net_value, wbf['content_float'])
+                subtotal_net += net_value
+                l_cur_col += 1
+
+                next_row += 1
+
+            # Header Subtotal
+            # worksheet.merge_range(next_row, 1, next_row, 8, f"Subtotal {kemandoran}", wbf['header_mandor'])
+            for col in range(1, 9):  # Looping dari kolom 1 sampai 8
+                value = f"Subtotal: {kemandoran.name}" if col == 2 else "" 
+                worksheet.write(next_row, col, value, wbf['header_mandor'])
+            
+            col_subtotal = 9
+
+            # subtotal basic
             for rb in rules_basic.sorted(key=lambda x: x.sequence):
-                worksheet.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
-                l_cur_col += 1
+                worksheet.write(next_row, col_subtotal, subtotal_basic.get(rb.id, 0.0), wbf['footer_total'])
+                col_subtotal += 1
+
+            # subtotal allowance
             for ra in rules_allowance.sorted(key=lambda x: x.sequence):
-                worksheet.write(next_row, l_cur_col, mapped_line.get(ra.id, 0.0), wbf['content_float'])
-                l_cur_col += 1
+                worksheet.write(next_row, col_subtotal, subtotal_allowance.get(ra.id, 0.0), wbf['footer_total'])
+                col_subtotal += 1
+
+            # subtotal premi
             for rp in rules_premi.sorted(key=lambda x: x.sequence):
-                worksheet.write(next_row, l_cur_col, mapped_line.get(rp.id, 0.0), wbf['content_float'])
-                l_cur_col += 1
-            
-            worksheet.write(next_row, l_cur_col, mapped_line.get(rules_gross.id, 0.0), wbf['content_float'])
-            l_cur_col += 1
-            
-            total_potongan = 0.0
+                worksheet.write(next_row, col_subtotal, subtotal_premi.get(rp.id, 0.0), wbf['footer_total'])
+                col_subtotal += 1
+
+            # subtotal gross
+            worksheet.write(next_row, col_subtotal, subtotal_gross, wbf['footer_total'])
+            col_subtotal += 1
+
+            # subtotal deduction
+            total_subtotal_deduction = 0.0
             for rd in rules_deduction.sorted(key=lambda x: x.sequence):
-                worksheet.write(next_row, l_cur_col, mapped_line.get(rd.id, 0.0), wbf['content_float'])
-                total_potongan += mapped_line.get(rd.id, 0.0)
-                l_cur_col += 1
+                subtotal_value = subtotal_deduction.get(rd.id, 0.0)
+                worksheet.write(next_row, col_subtotal, subtotal_value, wbf['footer_total'])
+                total_subtotal_deduction += subtotal_value
+                col_subtotal += 1
 
-            worksheet.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
-            l_cur_col += 1
-            
-            worksheet.write(next_row, l_cur_col, mapped_line.get(rules_net.id, 0.0), wbf['content_float'])
-            l_cur_col += 1
-            
-            next_row+=1
+            worksheet.write(next_row, col_subtotal, total_subtotal_deduction, wbf['footer_total'])
+            col_subtotal += 1
 
-        # Page Layout
+            # subtotal net
+            worksheet.write(next_row, col_subtotal, subtotal_net, wbf['footer_total'])
+
+            next_row += 1
+
         worksheet.set_landscape()
-        worksheet.set_paper(9) # A4
-        # worksheet.set_header()
-        worksheet.repeat_rows(1, 2) #Repeat column header
+        worksheet.set_paper(9)
+        worksheet.repeat_rows(1, 2) 
         worksheet.print_area(0, 0, next_row, cur_col)
         worksheet.set_print_scale(50)
+
 
         # worksheet2 = workbook.add_worksheet("Rekap")
         ########################################################### SHEET 2
@@ -327,45 +718,76 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
 
         # Freeze
         worksheet2.freeze_panes(next_row, 4)
+
+        # Inisialisasi subtotal untuk setiap kolom
+        subtotal_values = {}
+
         indx = 1
         for kemandoran in obj.employee_id.kemandoran_id:
             worksheet2.write(next_row, 1, indx, wbf['content'])
             indx += 1
             worksheet2.write(next_row, 2, kemandoran.name or '', wbf['content'])
-            payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id==kemandoran.id)
+            
+            payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id == kemandoran.id)
             mapped_line = {}
+
             for line in payslips.line_ids:
-                if line.salary_rule_id.id not in mapped_line.keys():
-                    mapped_line.update({line.salary_rule_id.id: 0.0})
+                if line.salary_rule_id.id not in mapped_line:
+                    mapped_line[line.salary_rule_id.id] = 0.0
                 mapped_line[line.salary_rule_id.id] += line.total
 
             l_cur_col = 3
             for rb in rules_basic2.sorted(key=lambda x: x.sequence):
-                worksheet2.write(next_row, l_cur_col, mapped_line.get(rb.id, 0.0), wbf['content_float'])
+                value = mapped_line.get(rb.id, 0.0)
+                worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
+                subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value  
                 l_cur_col += 1
+
             for ra in rules_allowance2.sorted(key=lambda x: x.sequence):
-                worksheet2.write(next_row, l_cur_col, mapped_line.get(ra.id, 0.0), wbf['content_float'])
+                value = mapped_line.get(ra.id, 0.0)
+                worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
+                subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value
                 l_cur_col += 1
+
             for rp in rules_premi2.sorted(key=lambda x: x.sequence):
-                worksheet2.write(next_row, l_cur_col, mapped_line.get(rp.id, 0.0), wbf['content_float'])
+                value = mapped_line.get(rp.id, 0.0)
+                worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
+                subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value
                 l_cur_col += 1
-            
-            worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_gross2.id, 0.0), wbf['content_float'])
+
+            # Subtotal Gross
+            value = mapped_line.get(rules_gross2.id, 0.0)
+            worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
+            subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value
             l_cur_col += 1
-            
+
+            # subtotal- potongan (deduction)
             total_potongan = 0.0
             for rd in rules_deduction2.sorted(key=lambda x: x.sequence):
-                worksheet2.write(next_row, l_cur_col, mapped_line.get(rd.id, 0.0), wbf['content_float'])
-                total_potongan += mapped_line.get(rd.id, 0.0)
+                value = mapped_line.get(rd.id, 0.0)
+                worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
+                total_potongan += value
+                subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value
                 l_cur_col += 1
-            
+
             worksheet2.write(next_row, l_cur_col, total_potongan, wbf['content_float'])
+            subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + total_potongan
             l_cur_col += 1
-            
-            worksheet2.write(next_row, l_cur_col, mapped_line.get(rules_net2.id, 0.0), wbf['content_float'])
+
+            # Subtotal Net
+            value = mapped_line.get(rules_net2.id, 0.0)
+            worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
+            subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value
             l_cur_col += 1
-            
-            next_row+=1
+
+            next_row += 1  
+
+        # tulis subtotal di baris terakhir
+        worksheet2.write(next_row, 1, "", wbf['header_mandor']) 
+        worksheet2.write(next_row, 2, "Subtotal", wbf['header_mandor'])  
+
+        for col, total in subtotal_values.items():
+            worksheet2.write(next_row, col, total, wbf['footer_total'])     
 
         # Page Layout
         worksheet2.set_landscape()
