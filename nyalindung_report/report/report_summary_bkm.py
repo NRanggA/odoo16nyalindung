@@ -272,7 +272,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     date_columns.append(current_date.strftime('%d'))
 
-                start_col = 3
+                start_col = 10
                 end_col = start_col + len(date_columns) - 1
                 
                 sheet.merge_range(row, start_col, row + 1, end_col, 'TANGGAL', wbf['header'])
@@ -280,7 +280,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     sheet.write(row + 2, start_col + i, date, wbf['header'])
                     sheet.set_column(start_col + i, start_col + i, 5)
 
-            hko_start = end_col + 1
+            hko_start = 3
             sheet.merge_range(row, hko_start, row + 1, hko_start + 5, 'JUMLAH HKO', wbf['header'])
 
             total_hk_start = hko_start + 6
@@ -292,6 +292,8 @@ class ReportSummaryBkm(models.AbstractModel):
             sheet.set_column(5, 1, 13)
             sheet.write(row + 2, 2, 'NAMA', wbf['header'])
             sheet.set_column(5, 2, 22)
+            for total_hko in range(3, 9):
+                sheet.set_column(5, total_hko, 7)
 
             hko_headers = ['HKO', 'L', 'S', 'P', 'CT', 'M']
             hko_formats = [self.wbf['biru_muda'], self.wbf['hijau_tua'], self.wbf['kuning'], self.wbf['biru_tua'], self.wbf['biru_muda'], self.wbf['merah']]
@@ -309,6 +311,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     FROM 
                         hr_employee emp
                     WHERE emp.kemandoran_id = %s
+                    AND emp.active = TRUE
                 ),
                 nap_data AS (
                     SELECT 
@@ -383,7 +386,7 @@ class ReportSummaryBkm(models.AbstractModel):
                 sheet.write(row, 1, no_induk, wbf['data'])
                 sheet.write(row, 2, employee_name, wbf['data'])
 
-                current_col = 3
+                current_col = 10
                 hko_count = 0
                 l_count = 0
                 s_count = 0
@@ -404,13 +407,13 @@ class ReportSummaryBkm(models.AbstractModel):
                     if type_code in ['KJ', 'KJI', 'KJO']:
                         sheet.write(row, current_col, type_code, wbf['hijau_muda'])
                         hko_count += 1
-                    elif type_code == 'NA':
+                    elif type_code == 'L':
                         sheet.write(row, current_col, type_code, wbf['hijau_tua'])
                         l_count += 1
                     elif type_code == 'S1':
                         sheet.write(row, current_col, type_code, wbf['kuning'])
                         s_count += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         sheet.write(row, current_col, type_code, wbf['biru_tua'])
                         p_count += 1
                     elif type_code == 'CT':
@@ -451,7 +454,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     ('state', '=', 'done'),
                 ], limit=1)
 
-                sheet.write(row, 3 + i, "-", wbf['data_center'])
+                sheet.write(row, 10 + i, "-", wbf['data_center'])
 
             sheet.write(row, hko_start, "-", wbf['biru_muda'])
             sheet.write(row, hko_start + 1, "-", wbf['data_center'])
@@ -476,7 +479,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     ('state', '=', 'done'),
                 ], limit=1)
 
-                sheet.write(row, 3 + i, "-", wbf['data_center'])
+                sheet.write(row, 10 + i, "-", wbf['data_center'])
 
             sheet.write(row, hko_start, "-", wbf['biru_muda'])
             sheet.write(row, hko_start + 1, "-", wbf['data_center'])
@@ -501,7 +504,7 @@ class ReportSummaryBkm(models.AbstractModel):
                     ('state', '=', 'done'),
                 ], limit=1)
 
-                sheet.write(row, 3 + i, "-", wbf['data_center'])
+                sheet.write(row, 10 + i, "-", wbf['data_center'])
 
             sheet.write(row, hko_start, "-", wbf['biru_muda'])
             sheet.write(row, hko_start + 1, "-", wbf['data_center'])
@@ -519,7 +522,7 @@ class ReportSummaryBkm(models.AbstractModel):
             total_hko_per_tanggal = [0] * len(date_columns)
 
             for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
-                current_col = 5
+                current_col = 10
                 for i in range(len(date_columns)):
                     attendance = self.env['lhm.transaction.line'].search([
                         ('employee_id', '=', emp_id),
@@ -537,13 +540,16 @@ class ReportSummaryBkm(models.AbstractModel):
             sheet.write(row, 3, '-', wbf['data_center'])
             sheet.write(row, 4, '-', wbf['data_center'])
             sheet.write(row, 5, '-', wbf['data_center'])
+            sheet.write(row, 6, '-', wbf['data_center'])
+            sheet.write(row, 7, '-', wbf['data_center'])
+            sheet.write(row, 8, '-', wbf['data_center'])
 
             for i in range(len(date_columns)):
-                sheet.write(row, 3 + i, total_hko_per_tanggal[i], wbf['data_center'])
+                sheet.write(row, 10 + i, total_hko_per_tanggal[i], wbf['data_center'])
             
-            start_col = 3 + len(date_columns)
-            for i in range(6):
-                sheet.write(row, start_col + i, '-', wbf['data_center'])
+            # start_col = 2 + len(date_columns)
+            # for i in range(6):
+            #     sheet.write(row, start_col + i, '-', wbf['data_center'])
 
             sheet.write(row, total_hk_start, '-', wbf['data_center'])
 
@@ -559,7 +565,7 @@ class ReportSummaryBkm(models.AbstractModel):
             total_m_per_tanggal = [0] * len(date_columns)
 
             for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
-                current_col = 5
+                current_col = 10
                 for i in range(len(date_columns)):
                     attendance = self.env['lhm.transaction.line'].search([
                         ('employee_id', '=', emp_id),
@@ -570,11 +576,11 @@ class ReportSummaryBkm(models.AbstractModel):
                     type_code = attendance.attendance_id.code if attendance else '-'
                     if type_code == 'KJ':
                         total_hko_per_tanggal[i] += 1
-                    elif type_code == 'NA':
+                    elif type_code == 'L':
                         total_l_per_tanggal[i] += 1
                     elif type_code == 'S1':
                         total_s_per_tanggal[i] += 1
-                    elif type_code == 'P1':
+                    elif type_code == 'P':
                         total_p_per_tanggal[i] += 1
                     elif type_code == 'CT':
                         total_ct_per_tanggal[i] += 1
@@ -585,7 +591,7 @@ class ReportSummaryBkm(models.AbstractModel):
             sheet.merge_range(row, 0, row, 2, "JUMLAH TOTAL", wbf['jumlah_total'])
 
             for i in range(len(date_columns)):
-                sheet.write(row, 3 + i, '', wbf['kuning'])
+                sheet.write(row, 10 + i, '', wbf['kuning'])
 
             sheet.write(row, hko_start, sum(total_hko_per_tanggal), wbf['hijau_tua'])
             sheet.write(row, hko_start + 1, sum(total_l_per_tanggal), wbf['hijau_tua'])
@@ -605,33 +611,33 @@ class ReportSummaryBkm(models.AbstractModel):
                 sheet.write(row, 5 + i, '', wbf['content_center'])
 
             current_date = datetime.now().strftime("%d-%m-%Y")
-            start_col = 7 + len(date_columns)
+            start_col = 6 + len(date_columns)
             sheet.merge_range(row, start_col, row, start_col + 3, f'Nyalindung, {current_date}', wbf['content_center'])
             
             # TTD 2 ganteng
             row += 1
-            sheet.merge_range(row, 0, row, 4, 'Mengetahui,', wbf['content_center'])
-            sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Menyetujui,', wbf['content_center'])
+            sheet.merge_range(row, 0, row, 3, 'Mengetahui,', wbf['content_center'])
+            sheet.merge_range(row, 5, row, 5 + len(date_columns), 'Menyetujui,', wbf['content_center'])
 
 
             current_date = datetime.now().strftime("%d-%m-%Y")
-            start_col = 7 + len(date_columns)
+            start_col = 6 + len(date_columns)
             sheet.merge_range(row, start_col, row, start_col + 3, 'Dibuat Oleh', wbf['content_center'])
             
             # TTD 3
             row += 6
             sheet.merge_range(row, 0, row, 1, 'Hendra', wbf['center_bold'])
-            sheet.merge_range(row, 3, row, 5, 'Ilmiano Swara', wbf['center_bold'])
-            sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Wahyu Widiyanto', wbf['center_bold'])
+            sheet.merge_range(row, 3, row, 4, 'Ilmiano Swara', wbf['center_bold'])
+            sheet.merge_range(row, 5, row, 5 + len(date_columns), 'Wahyu Widiyanto', wbf['center_bold'])
 
             current_date = datetime.now().strftime("%d-%m-%Y")
-            start_col = 7 + len(date_columns)
+            start_col = 6 + len(date_columns)
             sheet.merge_range(row, start_col, row, start_col + 3, 'Hani Andriani', wbf['center_bold'])
             
             # TTD 4
             row += 1
             sheet.merge_range(row, 0, row, 1, 'Mandor Besar Karet', wbf['content_center'])
-            sheet.merge_range(row, 3, row, 5, 'Asisten Kebun', wbf['content_center'])
-            sheet.merge_range(row, 6, row, 6 + len(date_columns), 'Manager Kebun', wbf['content_center'])
+            sheet.merge_range(row, 3, row, 4, 'Asisten Kebun', wbf['content_center'])
+            sheet.merge_range(row, 5, row, 5 + len(date_columns), 'Manager Kebun', wbf['content_center'])
 
             row += 4
