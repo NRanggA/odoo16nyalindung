@@ -24,6 +24,7 @@
                 <field name="hasil_2_nap" />
                 <field name="hasil_convert_latex" />
                 <field name="hasil_convert_lump" />
+                <field name="contract_wage_value" groups="c10i_hr_payroll.group_hr_payroll_user" sum="1"/>
             </tree>
         </field>
     </record>
