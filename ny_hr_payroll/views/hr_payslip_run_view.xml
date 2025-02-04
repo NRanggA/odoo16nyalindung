@@ -19,7 +19,7 @@
         <field name="arch" type="xml">
             <xpath expr="//tree" position="inside">
                 <header>
-                    <button string="Print Report" name="action_print_report" type="object" class="btn-secondary" attrs="{'invisible': [('slip_ids','=',[])]}"/>
+                    <button string="Print Report" name="action_print_report" type="object" class="btn-secondary" />
                 </header>
             </xpath>
         </field>
