@@ -438,6 +438,7 @@ class ReportProduction(models.AbstractModel):
                         hr_employee emp
                     WHERE 
                         emp.kemandoran_id = %s
+                        AND emp.active = TRUE
                 ),
                 trans_data AS (
                     SELECT 
@@ -1359,6 +1360,7 @@ class ReportProduction(models.AbstractModel):
                         hr_employee emp
                     WHERE 
                         emp.kemandoran_id = %s
+                        AND emp.active = TRUE
                 ),
                 trans_data AS (
                     SELECT 
@@ -2111,6 +2113,7 @@ class ReportProduction(models.AbstractModel):
                         hr_employee emp
                     WHERE 
                         emp.kemandoran_id = %s
+                        AND emp.active = TRUE
                 ),
                 trans_data AS (
                     SELECT 

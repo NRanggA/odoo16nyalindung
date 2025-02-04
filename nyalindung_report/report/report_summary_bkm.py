@@ -310,8 +310,9 @@ class ReportSummaryBkm(models.AbstractModel):
                         emp.no_induk as no_induk
                     FROM 
                         hr_employee emp
-                    WHERE emp.kemandoran_id = %s
-                    AND emp.active = TRUE
+                    WHERE 
+                        emp.kemandoran_id = %s
+                        AND emp.active = TRUE
                 ),
                 nap_data AS (
                     SELECT 
