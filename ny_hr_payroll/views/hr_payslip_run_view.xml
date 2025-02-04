@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <button name="close_payslip_run" position="after">
                 <button string="Print Report" name="action_print_report" type="object" class="btn-secondary" attrs="{'invisible': [('slip_ids','=',[])]}"/>
+                <button string="Print Report Detail" name="action_print_report_detail" type="object" class="btn-secondary" attrs="{'invisible': [('slip_ids','=',[])]}"/>
             </button>
         </field>
     </record>
@@ -20,6 +21,7 @@
             <xpath expr="//tree" position="inside">
                 <header>
                     <button string="Print Report" name="action_print_report" type="object" class="btn-secondary" />
+                    <button string="Print Report detail" name="action_print_report_detail" type="object" class="btn-secondary" />
                 </header>
             </xpath>
         </field>

@@ -46,6 +46,7 @@
 
         'report/report_action.xml',
         'wizard/payroll_report_wizard_view.xml',
+        'wizard/payroll_report_detail_wizard_view.xml',
         'report/live_report_gaji_view.xml'
     ],
     # only loaded in demonstration mode
