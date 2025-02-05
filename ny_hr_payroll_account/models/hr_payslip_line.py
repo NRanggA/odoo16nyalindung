@@ -65,7 +65,6 @@ class HrPayslipLine(models.Model):
                     'credit_amount': cr_amount,
                     'slip_id': self.slip_id.id,
                     'payslip_run_id': self.slip_id.payslip_run_id.id,
-                    'lhm_line_id': lhm_line.id,
                 })
         return mappings
     
