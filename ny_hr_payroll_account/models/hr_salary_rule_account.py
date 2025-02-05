@@ -8,6 +8,7 @@ class HrSalaryRuleAccount(models.Model):
 
     rule_id = fields.Many2one('hr.salary.rule', string='Salary Rule', ondelete='restrict')
     is_map_from_lhm = fields.Boolean('Based on LHM Activity')
+    lhm_type = fields.Selection([('gaji', 'Gaji Harian'),('upah_borong', 'Upah Borongan')], string='LHM Type')
     is_general_charge = fields.Boolean('Is General Charge')
     is_bpjs_tk = fields.Boolean('BPJS TK')
     is_bpjs_kes = fields.Boolean('BPJS KES')

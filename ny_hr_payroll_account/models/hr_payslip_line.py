@@ -44,7 +44,13 @@ class HrPayslipLine(models.Model):
                 raise ValidationError(f"Karyawan {self.slip_id.employee_id.name} belum memiliki Setting GC (Aktifitas dan Akun). Silahkan di seting terlebih dahulu di Kemandoran {self.slip_id.employee_id.kemandoran_id.name} atau Karyawan")
             mappings.append(vals1)
         else:
-            for lhm_line in self.slip_id.lhm_line_ids:
+            lhm_lines = []
+            if config.lhm_type=='upah_borong':
+                lhm_lines = self.slip_id.lhm_line_ids.filtered(lambda l: l.is_borong)
+            elif config.lhm_type=='gaji':
+                lhm_lines = self.slip_id.lhm_line_ids.filtered(lambda l: not l.is_borong)
+            
+            for lhm_line in lhm_lines:
                 dr_amount = cr_amount = 0.0
                 dr_amount = lhm_line.contract_wage_value
                 mappings.append({
@@ -59,6 +65,7 @@ class HrPayslipLine(models.Model):
                     'credit_amount': cr_amount,
                     'slip_id': self.slip_id.id,
                     'payslip_run_id': self.slip_id.payslip_run_id.id,
+                    'lhm_line_id': lhm_line.id,
                 })
         return mappings
     
