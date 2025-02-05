@@ -60,6 +60,9 @@
         'wizard/wizard_action_confirm_payment.xml',
         'wizard/wizard_action_confirm_invoice.xml',
 
+        # No Create & No Edit
+        'views/accounting_nocreate_noedit.xml',
+
         # payment sequence
         # 'data/payment_sequence_data.xml',
 

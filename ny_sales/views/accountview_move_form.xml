@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='invoice_date']" position="after">
-                <field name="pricelist_id" domain="[('is_grade','=',True),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund'])]}"/>
+                <field name="pricelist_id" options="{'no_create': True, 'no_edit': True}" domain="[('is_grade','=',True),'|',('partner_id','=',False),('partner_id','=',partner_id)]" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund'])]}"/>
             </xpath>
         </field>
     </record>

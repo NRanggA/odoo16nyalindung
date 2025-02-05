@@ -29,7 +29,7 @@
                         options="{'no_edit':True, 'no_create':True, 'no_open': True}"
                         attrs="{'readonly': [('plantation_validator','=',True)], 
                             'required': [('plantation_validator','=',False)]}"/>
-                    <field name="plantation_src_journal_id" groups="base.group_no_one"/>
+                    <field name="plantation_src_journal_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" groups="base.group_no_one"/>
                 </xpath>
             </field>
         </record>
@@ -62,7 +62,7 @@
                         options="{'no_edit':True, 'no_create':True, 'no_open': True}"
                         attrs="{'readonly': [('plantation_validator','=',True)], 
                             'required': [('plantation_validator','=',False)]}"/>
-                    <field name="plantation_src_journal_id" groups="base.group_no_one"/>
+                    <field name="plantation_src_journal_id" groups="base.group_no_one" options="{'no_edit':True, 'no_create':True, 'no_open': True}"/>
                 </field>
             </field>
         </record>
@@ -94,7 +94,7 @@
                         options="{'no_edit':True, 'no_create':True, 'no_open': True}"
                         attrs="{'readonly': [('plantation_validator','=',True)], 
                             'required': [('plantation_validator','=',False)]}"/>
-                    <field name="plantation_src_journal_id" groups="base.group_no_one"/>
+                    <field name="plantation_src_journal_id" options="{'no_edit':True, 'no_create':True, 'no_open': True}" groups="base.group_no_one"/>
                 </xpath>
             </field>
         </record>
