@@ -50,13 +50,13 @@ class AccountCostMapPayroll(models.Model):
         if not self.payslip_run_ids.cost_map_ids:
             raise ValidationError(_("Please click Cost Mapping before creating the journal"))
         if len(self.payslip_run_ids)>1:
-            query_partner = f"SELECT partner_id FROM hr_payslip_cost_map WHERE payslip_run_id=any({str(self.payslip_run_ids.ids)}) GROUP BY partner_id"
+            query_partner = f"SELECT partner_id FROM hr_payslip_cost_map WHERE payslip_run_id=any(array{str(self.payslip_run_ids.ids)}) and type='reclass' GROUP BY partner_id"
         else:
-            query_partner = f"SELECT partner_id FROM hr_payslip_cost_map WHERE payslip_run_id={self.payslip_run_ids.id} GROUP BY partner_id"
+            query_partner = f"SELECT partner_id FROM hr_payslip_cost_map WHERE payslip_run_id={self.payslip_run_ids.id} and type='reclass' GROUP BY partner_id"
         self.env.cr.execute(query_partner)
         
-        partner_map = dict(map(lambda p: (p, [])), [result[0] for result in self.env.cr.fetchall()])
-        rule_map = dict(map(lambda r: (r.id, r), self.payslip_run_ids.cost_map_ids.rule_ids))
+        partner_map = dict(map(lambda p: (p, []), [result[0] for result in self.env.cr.fetchall()]))
+        rule_map = dict(map(lambda r: (r.id, r), self.payslip_run_ids.cost_map_ids.rule_id))
         
         for batch in self.payslip_run_ids:
             for partner in self.env['res.partner'].browse(partner_map.keys()):
@@ -67,10 +67,11 @@ class AccountCostMapPayroll(models.Model):
                         plantation_location_id,
                         plantation_activity_id,
                         account_id,
-                        sum(debit_amount-credit_amount) as price_unit,
+                        sum(debit_amount) as debit,
+                        sum(credit_amount) as credit,
                         partner_id
                     FROM hr_payslip_cost_map
-                    WHERE payslip_run_id=%s and partner_id=%s and gc_distribution='false'
+                    WHERE payslip_run_id=%s and partner_id=%s and gc_distribution='false' and type='reclass'
                     GROUP BY partner_id, rule_id, account_id, plantation_varieties_id, 
                         plantation_location_type_id, plantation_location_id, 
                         plantation_activity_id 
@@ -90,17 +91,23 @@ class AccountCostMapPayroll(models.Model):
                 
 
         cost_move_to_create = []
-        account = self.env.company.payroll_bill_account_id.id
+        account = self.env.company.payroll_bill_account_id
         for partner_id, move_lines in partner_map.items():
-            amount = sum([ml['credit'] for ml in move_lines]) - sum([ml['debit'] for ml in move_lines])
+            amount = sum([ml[2]['credit'] for ml in move_lines]) - sum([ml[2]['debit'] for ml in move_lines])
             reclass_move_vals = {
                 'name': f'Reclass {account.name}',
                 'account_id': account.id,
-                'debit': abs(amount) if amount < 0 else 0,
-                'credit': amount if amount > 0 else 0,
+                'debit': amount if amount > 0 else 0,
+                'credit': abs(amount) if amount < 0 else 0,
                 'quantity': 1.0,
                 'tax_ids': False,
             }
+            balance = 0.0
+            for a,b,ml in move_lines:
+                balance += ml['debit'] - ml['credit']
+            
+            balance += reclass_move_vals['debit'] - reclass_move_vals['credit']
+
             cost_move_to_create.append({
                 # 'date': self.payslip_run_ids[0].date_end,
                 'date': self.date,
@@ -109,7 +116,7 @@ class AccountCostMapPayroll(models.Model):
                 'move_type': 'entry',
                 'line_ids': move_lines + [(0,0,reclass_move_vals)],
             })
-            
+        
         cost_moves = self.env['account.move'].create(cost_move_to_create)
         self.write({
             'move_ids': list(map(lambda x2: Command.link(x2.id), cost_moves))
@@ -121,7 +128,7 @@ class AccountCostMapPayroll(models.Model):
 
         if not self.payslip_run_ids.cost_map_ids:
             raise ValidationError(_("Please click Cost Mapping before creating the journal"))
-        rule_map = dict(map(lambda r: (r.id, r), self.payslip_run_ids.cost_map_ids.rule_ids))
+        rule_map = dict(map(lambda r: (r.id, r), self.payslip_run_ids.cost_map_ids.rule_id))
         move_lines = []
         for batch in self:
             query = """(SELECT 
@@ -132,7 +139,7 @@ class AccountCostMapPayroll(models.Model):
                     account_id,
                     sum(debit_amount-credit_amount) as balance
                 FROM hr_payslip_cost_map
-                WHERE payslip_run_id=%s and gc_distribution='true'
+                WHERE payslip_run_id=%s and gc_distribution='true' and type='reclass'
                 GROUP BY account_id, plantation_varieties_id, plantation_location_type_id,
                     plantation_location_id, plantation_activity_id)
                 UNION ALL
@@ -186,7 +193,7 @@ class AccountCostMapPayroll(models.Model):
         pass
 
     def action_view_moves(self):
-        action = self.env["ir.actions.actions"]._for_xml_id("account.action_move_entry_type")
+        action = self.env["ir.actions.actions"]._for_xml_id("account.action_move_journal_line")
         if len(self.move_ids) > 1:
             action['domain'] = [('id', 'in', self.move_ids.ids)]
         elif self.move_ids:
