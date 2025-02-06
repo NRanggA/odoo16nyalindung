@@ -251,7 +251,7 @@ class lhm_contractor(models.Model):
         for contractor_nap in self.line_nap_ids:
             # if not contractor_nap.nilai and not contractor_nap.nilai2:
             #     raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" belum memiliki nilai. Silahkan isi melalui Dokumen NAP'))
-            if not contractor_nap.hasil_convert_latex or not contractor_nap.hasil_convert_lump:
+            if not contractor_nap.hasil_convert_latex and not contractor_nap.hasil_convert_lump:
                 raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai. Silahkan isi melalui Dokumen NAP'))
         self.state = 'confirmed'
 
