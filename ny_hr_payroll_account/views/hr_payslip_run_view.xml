@@ -18,7 +18,7 @@
                     <!-- <button name="action_edit_payroll_gc_distribution" type="object" class="oe_stat_button" string="Set GC Blok Tanam"/> -->
                     <button string="Bills" name="action_view_bill_moves" type="object" class="oe_stat_button" icon="fa-dollar" groups="base.group_no_one" attrs="{'invisible': [('bill_move_ids','=',[])]}">
                         <field name="bill_move_ids" invisible="1"/>
-                    </field>
+                    </button>
                 </div>
             </xpath>
         </field>
