@@ -90,7 +90,7 @@ class AccountCostMapPayroll(models.Model):
                 
 
         cost_move_to_create = []
-        account = self.env.company.default_payroll_bill_account_id.id
+        account = self.env.company.payroll_bill_account_id.id
         for partner_id, move_lines in partner_map.items():
             amount = sum([ml['credit'] for ml in move_lines]) - sum([ml['debit'] for ml in move_lines])
             reclass_move_vals = {
