@@ -20,7 +20,7 @@
                     <div class="oe_button_box" name="button_box">
                         <button string="Cost Mapping" name="action_view_cost_map" type="object" class="oe_stat_button" icon="fa-search" />
                         <button string="GC Distribution" name="action_view_gc_distribution" type="object" class="oe_stat_button" icon="fa-search" />
-                        <button string="Journals" name="action_view_moves" type="object" class="oe_stat_button" icon="fa-dollar" states="done"/>
+                        <button string="Journals" name="action_view_moves" type="object" class="oe_stat_button" icon="fa-dollar" states="mapped,done"/>
                     </div>
                     <group>
                         <group>
