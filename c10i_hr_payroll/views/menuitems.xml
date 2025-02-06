@@ -44,7 +44,12 @@
             name="Configuration" parent="menu_hr_payroll_root"
             sequence="100"
             groups="c10i_hr_payroll.group_hr_payroll_manager"/>
-    
+            <menuitem 
+                id="menu_payroll_general_settings" 
+                name="Settings" 
+                parent="menu_hr_payroll_configuration"
+                sequence="0" action="action_payroll_config_settings" 
+                groups="base.group_system"/>
             <menuitem
                 id="menu_hr_payroll_structure_view"
                 action="action_view_hr_payroll_structure_list_form"
@@ -70,5 +75,4 @@
                 action="hr_contract_advantage_template_action"
                 parent="menu_hr_payroll_configuration"
                 sequence="50"/>
-    
 </odoo>

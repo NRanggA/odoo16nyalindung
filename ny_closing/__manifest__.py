@@ -11,6 +11,7 @@
     'depends': [
         'c10i_lhm_v16',
         'ny_plantation',
+        'ny_hr_payroll_account',
         'account',
         'c10i_plantation_seed',
         'c10i_plantation_lab'

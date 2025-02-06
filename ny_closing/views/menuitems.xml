@@ -9,16 +9,15 @@
 
     <menuitem
         id="menu_closing_process"
-        parent="c10i_lhm_v16.menu_lhm_running"
+        parent="ny_hr_payroll_account.menu_account_closing"
         action="ny_closing.closing_process_action"
-        sequence="5"
-        groups="base.group_no_one"/>
+        sequence="5"/>
     
     <menuitem
         id="menu_detail_closing_process"
         name="Detail Process"
         groups="base.group_no_one"
-        parent="c10i_lhm_v16.menu_lhm_running"
+        parent="ny_hr_payroll_account.menu_account_closing"
         sequence="10"/>
 
         <menuitem

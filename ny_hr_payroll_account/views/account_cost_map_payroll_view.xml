@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_cost_map_payroll_view_form" model="ir.ui.view">
+        <field name="name">account.cost.map.payroll.view.form</field>
+        <field name="model">account.cost.map.payroll</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Map Payroll Cost" name="action_map_cost" type="object" class="oe_highlight" states="draft" />
+                    <button string="Re-map Payroll Cost" name="action_map_cost" type="object" states="mapped" />
+                    <button string="Create Reclass Journal" name="create_account_move" type="object" class="oe_highlight" states="mapped" />
+                    <button string="Create Reclass GC Journal" name="create_account_move_general_charge" type="object" class="oe_highlight" states="mapped" />
+                    <button string="Post" name="action_post" type="object" states="mapped" />
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,mapped,done"/>
+                </header>
+                <sheet>
+                    <field name="move_ids" invisible="1" />
+                    <div class="oe_button_box" name="button_box">
+                        <button string="Cost Mapping" name="action_view_cost_map" type="object" class="oe_stat_button" icon="fa-search" />
+                        <button string="GC Distribution" name="action_view_gc_distribution" type="object" class="oe_stat_button" icon="fa-search" />
+                        <button string="Journals" name="action_view_moves" type="object" class="oe_stat_button" icon="fa-dollar" states="done"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date" />
+                        </group>
+                    </group>
+                    <field name="payslip_run_ids" required="1" attrs="{'readonly': [('state','=','done')]}" />
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_cost_map_payroll_view_tree" model="ir.ui.view">
+        <field name="name">account.cost.map.payroll.view.tree</field>
+        <field name="model">account.cost.map.payroll</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date" />
+                <field name="state" widget="badge" decoration-success="state=='done'"
+                    decoration-warning="state!='done'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_account_cost_map_payroll" model="ir.actions.act_window">
+        <field name="name">Payroll Cost Mapping</field>
+        <field name="res_model">account.cost.map.payroll</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+    <menuitem
+        id="menu_account_closing"
+        name="Closing"
+        groups="account.group_account_user"
+        parent="account.menu_finance"
+        sequence="5"/>
+    
+    <menuitem
+        id="menu_account_cost_map_payroll"
+        action="action_account_cost_map_payroll"
+        parent="menu_account_closing"
+        sequence="10"/>
+</odoo>

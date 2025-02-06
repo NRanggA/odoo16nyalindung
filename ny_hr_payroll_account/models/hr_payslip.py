@@ -6,8 +6,14 @@ class HrPayslip(models.Model):
 
     cost_map_ids = fields.One2many('hr.payslip.cost.map', 'slip_id', string='Cost Mapping')
 
-    def action_map_cost(self):
+    def action_map_cost_bill(self):
         for slip in self:
             # if slip.cost_map_ids:
             #     slip.cost_map_ids.unlink()
-            slip.line_ids._create_cost_map()
+            slip.line_ids._create_cost_map('bill')
+    
+    def action_map_cost_reclass(self):
+        for slip in self:
+            # if slip.cost_map_ids:
+            #     slip.cost_map_ids.unlink()
+            slip.line_ids._create_cost_map('reclass')

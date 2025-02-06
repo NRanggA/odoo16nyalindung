@@ -7,7 +7,7 @@
             <form create="0" edit="0" delete="0">
                 <sheet>
                     <h2>
-                        <field name="slip_id"/>
+                        <field name="slip_id" groups="c10i_hr_payroll.group_hr_payroll_user"/>
                     </h2>
                     <group>
                         <group>
@@ -48,16 +48,16 @@
         <field name="model">hr.payslip.cost.map</field>
         <field name="arch" type="xml">
             <search>
-                <field name="slip_id" />
+                <field name="slip_id" groups="c10i_hr_payroll.group_hr_payroll_user" />
                 <field name="rule_id" />
                 <field name="partner_id" />
 
                 <filter name="groupby_rule" string="Salary Rule" context="{'group_by': 'rule_id'}" />
                 <filter name="groupby_partner" string="Partner" context="{'group_by': 'partner_id'}" />
-                <filter name="groupby_slip" string="Payslip" context="{'group_by': 'slip_id'}" />
             </search>
         </field>
     </record>
+    <!-- <filter name="groupby_slip" string="Payslip" context="{'group_by': 'slip_id'}" /> -->
 
     <record id="hr_payslip_cost_map_action" model="ir.actions.act_window">
         <field name="name">Payslip Cost Mapping</field>

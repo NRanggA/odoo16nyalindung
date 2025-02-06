@@ -32,6 +32,7 @@
         'views/report_payslip_details_templates.xml',
         'views/hr_contract_history_views.xml',
         'views/hr_leave_type_view.xml',
+        'views/res_config_settings_view.xml',
         'views/menuitems.xml',
         'data/mail_template.xml',
     ],

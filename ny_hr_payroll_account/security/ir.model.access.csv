@@ -1,3 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_payslip_cost_map,hr.payslip.cost.map,model_hr_payslip_cost_map,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
-access_hr_salary_rule_account,hr.salary.rule.account,model_hr_salary_rule_account,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_payslip_cost_map,hr.payslip.cost.map,model_hr_payslip_cost_map,c10i_hr_payroll.group_hr_payroll_user,1,0,0,0
+access_hr_payslip_cost_map_account,hr.payslip.cost.map accounting,model_hr_payslip_cost_map,account.group_account_user,1,1,1,1
+access_hr_salary_rule_account,hr.salary.rule.accounting,model_hr_salary_rule_account,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_salary_rule_account_account,hr.salary.rule.account account,model_hr_salary_rule_account,account.group_account_user,1,1,1,1
+access_hr_salary_rule_account,hr.salary.rule accounting,c10i_hr_payroll.model_hr_salary_rule,account.group_account_user,1,0,0,0
+access_hr_payslip_run_account,hr.payslip.run accounting,c10i_hr_payroll.model_hr_payslip_run,account.group_account_user,1,0,0,0
+access_account_cost_map_payroll_account,account.cost.map.payroll accounting,model_account_cost_map_payroll,account.group_account_user,1,1,1,1
