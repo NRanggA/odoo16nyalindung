@@ -63,5 +63,5 @@
         id="menu_account_cost_map_payroll"
         action="action_account_cost_map_payroll"
         parent="menu_account_closing"
-        sequence="10"/>
+        sequence="1"/>
 </odoo>

@@ -20,11 +20,12 @@ class AccountCostMapPayroll(models.Model):
     def action_map_cost(self):
         for batch in self.payslip_run_ids:
             batch.sudo().action_map_cost_reclass()
+        self.state = 'mapped'
     
     def action_view_cost_map(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
         if self.payslip_run_ids:
-            if len(self.payslip_run_ids)>1:
+            if len(self.payslip_run_ids.ids)>1:
                 action['domain'] = [('payslip_run_id','in',self.ids),('gc_distribution','=',False),('type','=','reclass')]
             else:
                 action['domain'] = [('payslip_run_id','=',self.id),('gc_distribution','=',False),('type','=','reclass')]
@@ -35,7 +36,7 @@ class AccountCostMapPayroll(models.Model):
     def action_view_gc_distribution(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
         if self.payslip_run_ids:
-            if len(self.payslip_run_ids)>1:
+            if len(self.payslip_run_ids.ids)>1:
                 action['domain'] = [('payslip_run_id','in',self.ids),'|',('gc_distributed','=',True),('gc_distribution','=',True),('type','=','reclass')]
             else:
                 action['domain'] = [('payslip_run_id','=',self.id),'|',('gc_distributed','=',True),('gc_distribution','=',True),('type','=','reclass')]

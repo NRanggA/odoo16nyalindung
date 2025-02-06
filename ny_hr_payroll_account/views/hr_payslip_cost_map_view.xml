@@ -63,5 +63,6 @@
         <field name="name">Payslip Cost Mapping</field>
         <field name="res_model">hr.payslip.cost.map</field>
         <field name="view_mode">tree,form</field>
+        <field name="domain">[('id','=',0)]</field>
     </record>
 </odoo>

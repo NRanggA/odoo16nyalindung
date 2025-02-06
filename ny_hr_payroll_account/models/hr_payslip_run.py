@@ -20,6 +20,7 @@ class HrPayslipRun(models.Model):
                 and llt.general_charge='true'
                 and cm.payslip_run_id={self.id} 
                 and cm.debit_amount>0 
+                and cm.type='reclass'
             GROUP BY cm.partner_id,cm.plantation_varieties_id,cm.plantation_location_type_id,
                 cm.plantation_location_id"""
         self.env.cr.execute(query_get_gc)
@@ -60,6 +61,7 @@ class HrPayslipRun(models.Model):
                         'slip_id': False,
                         'payslip_run_id': self.id,
                         'gc_distribution': True,
+                        'type': 'reclass',
                     })
                 n_block -= 1
                 remaining_cost -= round((pct_cost/100.0)*debit_amt,0)
@@ -78,13 +80,13 @@ class HrPayslipRun(models.Model):
 
             
     def action_map_cost_reclass(self):
-        self.cost_map_ids.unlink()
+        self.cost_map_ids.filtered(lambda x: x.type=='reclass').unlink()
         self.slip_ids.action_map_cost_reclass()
         for batch in self:
             batch.action_gc_distribution()
     
     def action_map_cost_bill(self):
-        self.cost_map_ids.unlink()
+        self.cost_map_ids.filtered(lambda x: x.type=='reclass').unlink()
         self.slip_ids.action_map_cost_bill()
     
     def action_view_cost_map(self):
