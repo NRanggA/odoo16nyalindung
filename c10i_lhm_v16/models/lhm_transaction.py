@@ -932,7 +932,7 @@ class lhm_transaction_line(models.Model):
     #         if not line.doc_activity_ids:
     #             line.doc_activity_ids = [(6, 0, [])]
 
-    name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True)
+    name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True, store=True)
     date                = fields.Date("Date")
     sequence            = fields.Integer()
     work_day            = fields.Float("HK")
@@ -1012,7 +1012,8 @@ class lhm_transaction_line(models.Model):
     kemandoran_id = fields.Many2one(
         string="Kemandoran", 
         related='lhm_id.kemandoran_id', 
-        readonly=True
+        readonly=True,
+        store=True
     )
 
 
