@@ -208,9 +208,9 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
                     END
                 ) AS outstanding_amount
             FROM account_move ai
-            JOIN account_move_line ail ON ai.id = ail.move_id
-            JOIN product_product pp ON ail.product_id = pp.id
-            JOIN product_template pt ON pp.product_tmpl_id = pt.id
+            LEFT JOIN account_move_line ail ON ai.id = ail.move_id
+            LEFT JOIN product_product pp ON ail.product_id = pp.id
+            LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
             LEFT JOIN down_payments dp ON ai.id = dp.invoice_id
             WHERE ai.move_type = 'out_invoice'
             AND ai.invoice_date BETWEEN %s AND %s
