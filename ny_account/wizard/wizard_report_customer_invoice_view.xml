@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_report_customer_invoice_xlsx_view_form" model="ir.ui.view">
+        <field name="name">wizard.report.customer.invoice.xlsx.view.form</field>
+        <field name="model">wizard.report.customer.invoice.xlsx</field>
+        <field name="arch" type="xml">
+            <form string="Report Customer Invoice XLSX">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="from_date" />
+                            <field name="to_date" />
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="print" type="object" name="create_report" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_report_customer_invoice_xlsx_action" model="ir.actions.act_window">
+        <field name="name">Report Customer Invoice XLSX</field>
+        <field name="res_model">wizard.report.customer.invoice.xlsx</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="wizard_report_customer_invoice_xlsx_menu"
+        name="Report Customer Invoice XLSX"
+        action="wizard_report_customer_invoice_xlsx_action"
+        parent	= "account.menu_finance_reports"
+        sequence="163"/>
+
+</odoo>
