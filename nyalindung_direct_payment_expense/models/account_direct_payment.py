@@ -204,6 +204,16 @@ class DirectPayment(models.Model):
                     payment.account_move_id.name = payment.name
             payment.state="posted"
 
+    def unlink(self):
+        for payment in self:
+            if payment.employee_expense_id:
+                if payment.employee_expense_id.state != 'draft':
+                    if payment.employee_expense_id.expense_report:
+                        raise UserError(_('Kamu tidak bisa mendelete dokument ini karena status dokumen My Reports tidak diposisi draft!'))
+                    else: 
+                        raise UserError(_('Kamu tidak bisa mendelete dokument ini karena status dokumen My Advance tidak diposisi draft!'))
+        return super(DirectPayment, self).unlink()
+
     # @api.model
     # def create(self, vals):
     #     payment = super(DirectPayment, self).create(vals)
