@@ -175,6 +175,11 @@ class ClosingLaboratory(models.Model):
     def create_account_move(self):
         lab_journal = self.env.ref('ny_closing.plantation_closing_laboratory_journal')
         for closing in self:
+            if not closing.lab_product_id.account_id:
+                raise ValidationError(f"Inventory Account pada Lab Product Kosong. Silahkan diisi terlebih dahulu pada Lab Product {closing.lab_product_id.product_id.name}")
+            if not closing.lab_product_id.location_id.type_id.account_id:
+                raise ValidationError(f"Default Counterpart Account pada Tipe Lokasi Kosong. Silahkan diisi terlebih dahulu pada Tipe Lokasi {closing.lab_product_id.location_id.type_id.code}")
+            
             if closing.closing_move_id:
                 if closing.closing_move_id.state=='posted':
                     closing.closing_move_id.button_draft()
@@ -201,6 +206,16 @@ class ClosingLaboratory(models.Model):
             # Create Jurnal Consumption
             if closing.outgoing_stock_move_ids:
                 for move in closing.outgoing_stock_move_ids:
+                    account_out = False
+                    # if not move.plantation_activity_id:
+                    #     raise ValidationError(f"Aktifitas pada Material Request Kosong. Silahkan diisi terlebih dahulu pada MR no {move.sudo().mr_line_id.mr_id.name}")
+                    # if not move.plantation_activity_id.cost_account_id:
+                    #     raise ValidationError(f"Plantation Cost Account pada Aktifitas Kosong. Silahkan diisi terlebih dahulu pada Aktifitas {move.plantation_activity_id.code} {move.plantation_activity_id.name}")
+                    account_out = move.plantation_activity_id.cost_account_id
+                    if not account_out:
+                        account_out = closing.lab_product_id.location_id.type_id.account_id # Sementara buat testing
+                        print(">>>>>>>>>>>>>>>> INI", closing.lab_product_id.product_id.name)
+                        print(">>>>>>>>>>>>>>>> INI", account_out.name)
                     vals_dest2 = {
                         'name': move.product_id.name,
                         'plantation_varieties_id': move.plantation_varieties_id.id,
@@ -208,7 +223,7 @@ class ClosingLaboratory(models.Model):
                         'plantation_location_id': move.plantation_location_id.id,
                         'plantation_activity_id': move.plantation_activity_id.id,
                         # 'plantation_src_journal_id': False,
-                        'account_id': move.plantation_activity_id.cost_account_id.id,
+                        'account_id': account_out.id,
                         'debit': move.product_qty * closing.new_fg_cost_price,
                         'credit': 0.0,
                     }
@@ -221,6 +236,9 @@ class ClosingLaboratory(models.Model):
                     })
                     move_lines.append((0,0,vals_src2))
 
+            if not move_lines:
+                continue
+            
             move_values1 = {
                 'date': closing.date_to,
                 'journal_id': lab_journal.id,

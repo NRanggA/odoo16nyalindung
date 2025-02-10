@@ -57,7 +57,7 @@
                                     <tr>
                                         <td style="font-weight: bold;">Plantation Cost
                                             <button name="action_compute_plant_cost" type="object" icon="fa-refresh"/>
-                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags"/>
+                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
                                         </td>
                                         <td style="text-align: right;"></td>
                                         <td></td>
@@ -321,7 +321,7 @@
                                         <td rowspan="2" style="font-weight: bold;">Plantation Cost
                                             <button name="action_compute_plant_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
                                             <br/>
-                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" />
+                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
                                         </td>
                                         <td colspan="8" class="text-center"><field name="plantation_cost" /></td>
                                     </tr>
@@ -390,7 +390,7 @@
                                         <td style="padding-left: 20px;" rowspan="10">Manufacturing Cost
                                             <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
                                             <br/>
-                                            <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
+                                            <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
                                         </td>
                                         <td colspan="8" class="text-center">
                                             <field name="manufacturing_cost" />
@@ -399,11 +399,11 @@
                                     <tr>
                                         <td>Cost Account for Sheet</td>
                                         <td></td>
-                                        <td><field name="mrp_sheet_cost_account_ids" widget="many2many_tags" /></td>
+                                        <td><field name="mrp_sheet_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/></td>
                                         <td></td>
                                         <td>Cost Account for Compo</td>
                                         <td></td>
-                                        <td><field name="mrp_compound_cost_account_ids" widget="many2many_tags" /></td>
+                                        <td><field name="mrp_compound_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/></td>
                                         <td></td>
                                     </tr>
                                     <tr>
@@ -604,9 +604,9 @@
                                 </group>
                                 <group>
                                     <field name="plantation_cost" />
-                                    <label for="manufacturing_cost_account_ids"/>
+                                    <label for="manufacturing_cost_account_ids" groups="ny_closing.plantation_closing_config"/>
                                     <div>
-                                        <field name="manufacturing_cost_account_ids" widget="many2many_tags" />
+                                        <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
                                         <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
                                     </div>
                                     <field name="pisang_ripening_cost" />

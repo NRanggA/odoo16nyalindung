@@ -14,3 +14,5 @@ access_lab_product_itsupport,lab.product itsupport,model_lab_product,c10i_lhm_v1
 access_lab_product_manager,lab.product manager,model_lab_product,c10i_lhm_v16.plantation_manager,1,0,0,0
 access_lab_production_order_itsupport,lab.production.order itsupport,model_lab_production_order,c10i_lhm_v16.plantation_itsupport_user,1,0,0,0
 access_lab_production_order_manager,lab.production.order mangaer,model_lab_production_order,c10i_lhm_v16.plantation_manager,1,0,0,0
+access_lab_product_accountant,lab.product accountant,model_lab_product,account.group_account_user,1,0,0,0
+access_lab_production_order_accountant,lab.production.order accountant,model_lab_production_order,account.group_account_user,1,0,0,0

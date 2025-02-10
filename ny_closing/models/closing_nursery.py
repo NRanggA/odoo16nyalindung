@@ -92,10 +92,10 @@ class ClosingNursery(models.Model):
                             ('mutation_type_id.type','in',['outgoing','adj_out','transfer']),
                             ('date','<',closing.date_from)])
             closing.opening_qty = closing.nursery_id.qty + (sum(all_in_moves.mapped('qty')) if all_in_moves else 0.0) - (sum(all_out_moves.mapped('qty')) if all_out_moves else 0.0)
-            domain_op = [('plantation_location_id','=',self.nursery_id.location_id.id),
+            domain_op = [('plantation_location_id','=',closing.nursery_id.location_id.id),
                 ('parent_state','=','posted'),
                 ('account_id','=',closing.dest_account_id.id),
-                ('date','<',self.date_from)]
+                ('date','<',closing.date_from)]
             op_move_lines = self.env['account.move.line'].search(domain_op)
             closing.opening_value = sum(op_move_lines.mapped('balance')) if op_move_lines else 0.0
             # TODO: belom ada statusnya, perlu diupdate kalo sdh ada
@@ -116,7 +116,7 @@ class ClosingNursery(models.Model):
                             ('date','>=',closing.date_from),('date','<=',closing.date_to)])
             closing.adjustment_qty = (sum(adj_in_moves.mapped('qty')) if adj_in_moves else 0.0) - sum(adj_out_moves.mapped('qty')) if adj_out_moves else 0.0
             # Summerize Cost 
-            source_moves = self.env['account.move.line'].search(self._get_domain_source_move_lines())
+            source_moves = self.env['account.move.line'].search(closing._get_domain_source_move_lines())
             closing.total_cost = sum(source_moves.mapped('balance')) if source_moves else 0.0
 
             # Find outgoing

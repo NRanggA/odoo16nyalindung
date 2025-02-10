@@ -54,7 +54,7 @@ class ClosingProjectPlantLine(models.Model):
     _name = 'closing.project.plant.line' 
     _description = 'Closing Project - Plantation Current Cost'
 
-    closing_id = fields.Many2one('closing.plantation', string='Closing Plantation')
+    closing_id = fields.Many2one('closing.project', string='Closing Plantation')
     date_from = fields.Date()
     date_to = fields.Date()
     plantation_location_type_id = fields.Many2one('lhm.location.type', string='Tipe Lokasi', ondelete='restrict')
@@ -323,7 +323,9 @@ class ClosingProject(models.Model):
 
     def summarize_move_line(self):
         for closing in self:
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Summerize Project Cost", closing.id)
             if closing.project_id.project_tanaman and closing.project_id.plant_block_id:
+                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Tanaman")
                 closing.cost_line_ids.unlink()
                 closing.deferred_cost_line_ids.unlink()
                 if closing.project_id.harvest_date_schedule <= closing.date_from:
@@ -332,6 +334,7 @@ class ClosingProject(models.Model):
                     date_to = closing.project_id.date_finished.strftime('%Y-%m-%d') if closing.project_id.date_finished<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
                     self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
                 elif closing.project_id.harvest_date_schedule > closing.date_to:
+                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> lebih besar", closing.id)
                     # Only Cost to be Accrued
                     date_from = closing.date_from.strftime('%Y-%m-%d')
                     date_to = closing.date_to.strftime('%Y-%m-%d')
@@ -347,7 +350,9 @@ class ClosingProject(models.Model):
                     self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from2}','YYYY-MM-DD'), to_date('{date_to2}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
 
                 self.env.cr.execute(f"select procedure_summerize_project_deferred_cost({closing.id}, {closing.project_id.id}, {self.env.user.id}, {self.env.company.id})")
+                closing.total_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
             else:
+                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Aja")
                 source_moves = self.env['account.move.line'].search(self._get_domain_source_move_lines())
                 closing.total_cost = sum(source_moves.mapped('balance')) if source_moves else 0.0
 

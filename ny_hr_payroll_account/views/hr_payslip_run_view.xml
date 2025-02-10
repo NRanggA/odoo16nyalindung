@@ -18,7 +18,7 @@
                 <div class="oe_button_box" name="button_box">
                     <button string="Cost Map" name="action_view_cost_map" type="object" class="oe_stat_button" icon="fa-search" groups="base.group_no_one"/>
                     <!-- <button string="GC Distribution" name="action_view_accrued_moves" type="object" class="oe_stat_button" icon="fa-dollar" groups="base.group_no_one"/> -->
-                    <!-- <button name="action_edit_payroll_gc_distribution" type="object" class="oe_stat_button" string="Set GC Blok Tanam"/> -->
+                    <button name="action_edit_payroll_gc_distribution" type="object" class="oe_stat_button" string="Set GC Blok Tanam"/>
                     <button string="Bills" name="action_view_bill_moves" type="object" class="oe_stat_button" icon="fa-dollar" groups="base.group_no_one" attrs="{'invisible': [('bill_move_ids','=',[])]}"/>
                 </div>
             </xpath>

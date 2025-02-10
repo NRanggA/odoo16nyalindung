@@ -450,11 +450,21 @@ class ClosingPlantation(models.Model):
                 # Jika masih fase TBM, maka Cost akan diakumulasikan ke Aset
                 # Jika sudah TM, maka Cost akan didistribusikan ke Akun Masing2
                 self.env.cr.execute(f"select procedure_summerize_cost({closing.id}, {closing.plant_block_id.id}, to_date('{closing.date_from.strftime('%Y-%m-%d')}','YYYY-MM-DD'), to_date('{closing.date_to.strftime('%Y-%m-%d')}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
+            closing.current_period_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
 
     def _prepare_move_lines_for_shorterm_block(self):
         self.ensure_one()
         move_lines = []
         for line1 in self.cost_line_ids:
+            if line1.to_be_deferred and not self.deferred_account_id:
+                raise ValidationError(f"Akun Deferred pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+            else:
+                if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
+                    raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                elif not line1.plantation_activity_id:
+                    raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
+                elif not line1.plantation_activity_id.cost_account_id:
+                    raise ValidationError(f"Plantation Cost pada Aktifitas {line1.plantation_activity_id.code} {line1.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
             dest_vals1 = {
                 'name': 'Move Cost Driver to Cost Account',
                 'plantation_varieties_id': self.plant_block_id.varieties_id.id,
@@ -466,6 +476,7 @@ class ClosingPlantation(models.Model):
                 'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
                 'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
             }
+            
             move_lines.append([0,0,dest_vals1])
             src_vals1 = {
                 'name': 'Close the Cost Driver Account',
@@ -481,6 +492,15 @@ class ClosingPlantation(models.Model):
             move_lines.append([0,0,src_vals1])
         
         for line2 in self.deferred_cost_line_ids:
+            if line2.to_be_deferred and not self.deferred_account_id:
+                raise ValidationError(f"Akun Deferred pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+            else:
+                if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
+                    raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                elif not line2.plantation_activity_id:
+                    raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
+                elif not line2.plantation_activity_id.cost_account_id:
+                    raise ValidationError(f"Plantation Cost pada Aktifitas {line2.plantation_activity_id.code} {line2.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
             if line2.cost_to_post:
                 dest_vals2 = {
                     'name': 'Move Deferred Cost to Cost Account',
@@ -514,6 +534,8 @@ class ClosingPlantation(models.Model):
         move_lines = []
         for line1 in self.cost_line_ids:
             if self.status=='tbm':
+                if not self.tbm_account_id:
+                    raise ValidationError(f"Akun TBM pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 dest_vals1 = {
                     'name': 'Move Cost Driver to Asset',
                     'plantation_varieties_id': self.plant_block_id.varieties_id.id,
@@ -527,6 +549,15 @@ class ClosingPlantation(models.Model):
                 }
                 move_lines.append([0,0,dest_vals1])
             else:
+                if line1.to_be_deferred and not self.deferred_account_id:
+                    raise ValidationError(f"Akun Deferred pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                else:
+                    if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
+                        raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                    elif not line1.plantation_activity_id:
+                        raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
+                    elif not line1.plantation_activity_id.cost_account_id:
+                        raise ValidationError(f"Plantation Cost pada Aktifitas {line1.plantation_activity_id.code} {line1.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 dest_vals1 = {
                     'name': 'Move Cost Driver to Cost Account',
                     'plantation_varieties_id': self.plant_block_id.varieties_id.id,
@@ -554,6 +585,15 @@ class ClosingPlantation(models.Model):
         
         if self.status=='tm' and self.deferred_cost_line_ids:
             for line2 in self.deferred_cost_line_ids:
+                if not self.deferred_account_id:
+                    raise ValidationError(f"Akun Deferred pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                else:
+                    if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
+                        raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                    elif not line2.plantation_activity_id:
+                        raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
+                    elif not line2.plantation_activity_id.cost_account_id:
+                        raise ValidationError(f"Plantation Cost pada Aktifitas {line2.plantation_activity_id.code} {line2.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 if line2.cost_to_post:
                     dest_vals2 = {
                         'name': 'Move Deferred Cost to Cost Account',
@@ -587,6 +627,8 @@ class ClosingPlantation(models.Model):
         move_lines = []
         for line1 in self.cost_line_ids:
             if self.status=='tbm':
+                if not self.tbm_account_id:
+                    raise ValidationError(f"Akun TBM pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 dest_vals1 = {
                     'name': 'Move Cost Driver to Asset',
                     'plantation_varieties_id': self.plant_block_id.varieties_id.id,
@@ -600,6 +642,12 @@ class ClosingPlantation(models.Model):
                 }
                 move_lines.append([0,0,dest_vals1])
             else:
+                if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
+                    raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                elif not line1.plantation_activity_id:
+                    raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
+                elif not line1.plantation_activity_id.cost_account_id:
+                    raise ValidationError(f"Plantation Cost pada Aktifitas {line1.plantation_activity_id.code} {line1.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 dest_vals1 = {
                     'name': 'Move Cost Driver to Account Cost / Plasma',
                     'plantation_varieties_id': self.plant_block_id.varieties_id.id,
