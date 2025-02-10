@@ -87,6 +87,23 @@ class lhm_activity(models.Model):
                 existing_code = self.search([('code', '=', record.code), ('id', '!=', record.id)], limit=1)
                 if existing_code:
                     raise ValidationError(f"Code '{record.code}' sudah digunakan oleh Aktivitas '{existing_code.name}', silahkan masukkan kode lain !")
+    
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        default = dict(default or {})
+        if default.get('code', False):
+            return super(lhm_activity, self).copy(default)
+        try:
+            default['code'] = (str(int(self.code) + 10) or '').zfill(len(self.code))
+            default.setdefault('name', _("%s (copy)") % (self.name or ''))
+            while self.env['lhm.activity'].search([('code', '=', default['code']),
+                                                      ('company_id', '=', default.get('company_id', False) or self.company_id.id)], limit=1):
+                default['code'] = (str(int(default['code']) + 10) or '')
+                default['name'] = _("%s (copy)") % (self.name or '')
+        except ValueError:
+            default['code'] = _("%s.copy") % (self.code or '')
+            default['name'] = self.name
+        return super(lhm_activity, self).copy(default)
 
     def get_price_borongan(self, drc=None, product=None):
         price = 0
