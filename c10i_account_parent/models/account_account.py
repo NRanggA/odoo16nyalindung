@@ -36,7 +36,7 @@ class AccountAccount(models.Model):
         return super(AccountAccount, self)._search(new_args, offset=offset, limit=limit, order=order,
 												   count=count, access_rights_uid=access_rights_uid)
 
-
+    active = fields.Boolean('active', default=True)
     account_type = fields.Selection(selection_add=[('view', 'View')], ondelete={'view': 'cascade'})
     move_line_ids = fields.One2many('account.move.line', 'account_id', 'Journal Entry Lines')
     balance = fields.Float(compute="compute_values", digits=(16, 4), string='Balance')
