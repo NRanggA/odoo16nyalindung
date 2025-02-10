@@ -67,7 +67,7 @@ class lhm_plant_block(models.Model):
             
     name                = fields.Char("Deskripsi")
     code                = fields.Char("Kode")
-    varieties_id        = fields.Many2one('plant.varieties', string='Varietas')
+    varieties_id        = fields.Many2one('plant.varieties', string='ORG')
     land_block_id       = fields.Many2one("lhm.land.block", string="Blok Tanah", ondelete="restrict")
     afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict")
     owner_type          = fields.Selection([('inti','Inti'),('plasma','Plasma')], 'Tipe Kepemilikan', default='inti')
@@ -163,6 +163,13 @@ class lhm_plant_block(models.Model):
 
 
     def write(self, values):
+        
+        # if values.get('active') == False:
+        # if 'active' in values and not values.get('active'):
+            # if self.plant_block_ids:
+            # self.with_context(active_test=False).mapped('product_variant_ids').write({'active': values.get('active')})
+            # raise ValidationError(_("ORG tidak bisa di non-aktifkan karena masih terdapat blok yang terhubung dengan ORG ini."))
+
         opening             = values.get('opening', False)
         if opening:
             sph_awal = self.sph_move_ids.filtered(lambda x: x.type == 'awal')

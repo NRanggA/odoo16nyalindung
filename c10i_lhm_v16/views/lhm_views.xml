@@ -1177,6 +1177,7 @@
                     <group expand="0" string="Group By">
                         <filter string="Afdeling" name="afdeling_id" context="{'group_by':'afdeling_id'}"/>
                         <filter string="Company" name="company_id" context="{'group_by':'company_id'}"/>
+                        <filter string="ORG" name="varieties_id" context="{'group_by':'varieties_id'}"/>
                     </group>
                 </search>
             </field>

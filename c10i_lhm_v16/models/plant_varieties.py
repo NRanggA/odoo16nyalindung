@@ -35,7 +35,11 @@ class PlantVarieties(models.Model):
         # location_to_unlink = self.env['lhm.location']
         # location_to_link = self.env['lhm.location']
         check = {}
-        
+
+        if update_vals.get('active') == False:
+            if self.plant_block_ids:
+                raise ValidationError(_("ORG tidak bisa di non-aktifkan karena masih terdapat blok yang terhubung dengan ORG ini."))
+            
         for rec in self:
             if rec.id not in check:
                 check.update({rec.id: {
