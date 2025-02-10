@@ -14,3 +14,4 @@ from . import aged_partner
 # from . import account_journal_audit
 
 from . import wizard_general_ledger_xlsx
+from . import wizard_report_asset

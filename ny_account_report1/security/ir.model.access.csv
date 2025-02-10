@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wizard_general_ledger_xlsx,ny_account_report1.access_wizard_general_ledger_xlsx,ny_account_report1.model_wizard_general_ledger_xlsx,base.group_user,1,1,1,1
+access_wizard_report_asset,ny_account_report1.access_wizard_report_asset,ny_account_report1.model_wizard_report_asset,base.group_user,1,1,1,1

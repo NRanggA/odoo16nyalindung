@@ -1,5 +1,6 @@
 from . import report_financial
 from . import report_financial_xlsx
 from . import report_general_ledger_xlsx
+from . import report_asset
 from . import report_aged_partner
 from . import report_aged_partner_xlsx
