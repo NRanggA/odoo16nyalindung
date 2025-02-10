@@ -1054,8 +1054,8 @@ class lhm_vehicle_line(models.Model):
         for line in self:
             validator = False
             if line.location_type_id:
-                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS'
+                # Plantation FC, GC, IDC, PJ => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC','PJ')
             line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_vh_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
@@ -1080,15 +1080,14 @@ class lhm_vehicle_line(models.Model):
             if line.lhm_vehicle_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('MA','GC','MC','LB'):
+                if line.location_type_id.code in ('MA','LB','NS','GC','MC'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # PLANTATION, PJ, NS
+                else: # PLANTATION FC, PJ, IDC
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
     @api.depends('varieties_id','location_type_id', 'location_id', 'lhm_vehicle_id.state')
     def _filter_activities(self):
-        # biar tidak di run setiap saat
         for line in self:
             if line.lhm_vehicle_id.state!='draft':
                 line.filtered_activities = []
@@ -1108,9 +1107,9 @@ class lhm_vehicle_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
+                    if line.location_type_id.code in ('WS','VH','MA','LB','NS'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
-                    else: # GC, IDC, PLANTATION
+                    else: # GC, IDC, PLANTATION FC
                         if line.varieties_id:
                             if line.location_type_id.general_charge:
                                 activities = line.varieties_id.general_charges_activity_ids
@@ -1374,8 +1373,8 @@ class lhm_workshop_line(models.Model):
         for line in self:
             validator = False
             if line.location_type_id:
-                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') #'NS'
+                # Plantation FC, GC, IDC, PJ => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC','PJ')
             line.varieties_validator = validator
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_ws_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     location_id         = fields.Many2one("lhm.location", string="Lokasi", ondelete="restrict")
@@ -1392,9 +1391,9 @@ class lhm_workshop_line(models.Model):
             if line.lhm_workshop_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('VH','MA','GC','MC','LB'):
+                if line.location_type_id.code in ('VH','MA','LB','NS','GC','MC'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # PLANTATION, PJ, NS
+                else: # PLANTATION FC, PJ, IDC
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -1420,9 +1419,9 @@ class lhm_workshop_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
+                    if line.location_type_id.code in ('WS','VH','MA','LB','NS'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
-                    else: # GC, IDC, PLANTATION
+                    else: # GC, IDC, PLANTATION FC
                         if line.varieties_id:
                             if line.location_type_id.general_charge:
                                 activities = line.varieties_id.general_charges_activity_ids

@@ -256,8 +256,8 @@ class DirectPaymentLine(models.Model):
         for line in self:
             validator = False
             if line.plantation_location_type_id:
-                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
-                validator = line.plantation_location_type_id.code in ('FC','GC','IDC', 'PJ') #, 'NS'
+                # Plantation FC, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.plantation_location_type_id.code in ('FC','GC','IDC','PJ')
             line.varieties_validator = validator
     has_plantation = fields.Boolean('Has Plantation')
 
@@ -268,9 +268,9 @@ class DirectPaymentLine(models.Model):
             if line.payment_id.state!='draft' or not line.plantation_location_type_id:
                 line.filtered_locations = []
             else:
-                if line.plantation_location_type_id.code in ('WS','VH','MA','GC','MC','LB'):
+                if line.plantation_location_type_id.code in ('WS','VH','MA','LB','NS','GC','MC'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.plantation_location_type_id.id)])
-                else: # PLANTATION, PJ, NS
+                else: # PLANTATION, PJ, IDC
                     locations = self.env['lhm.location'].search([('type_id','=',line.plantation_location_type_id.id),('varieties_id','=',line.plantation_varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -296,9 +296,9 @@ class DirectPaymentLine(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.plantation_location_type_id.code in ('WS','VH','MA','NS','LB'):
+                    if line.plantation_location_type_id.code in ('WS','VH','MA','LB','NS'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
-                    else: # GC, IDC, PLANTATION
+                    else: # GC, IDC, PLANTATION FC
                         if line.plantation_varieties_id:
                             if line.plantation_location_type_id.general_charge:
                                 activities = line.plantation_varieties_id.general_charges_activity_ids
