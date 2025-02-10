@@ -62,6 +62,8 @@
 
         # No Create & No Edit
         'views/accounting_nocreate_noedit.xml',
+        'report/report_customer_excel_action.xml',
+        'wizard/wizard_report_customer_invoice_view.xml',
 
         # payment sequence
         # 'data/payment_sequence_data.xml',

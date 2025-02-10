@@ -41,7 +41,7 @@ class lhm_nap(models.Model):
     # date_stop           = fields.Date(related="account_period_id.date_stop", string="Range End Date", readonly=1)
     
     no_nap              = fields.Char('No. NAP Manual', readonly=True, states={'draft': [('readonly',False)]})
-    afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", ondelete="restrict", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
+    afdeling_id         = fields.Many2one("res.afdeling", string="Afdeling", required=True, ondelete="restrict", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
     driver              = fields.Char('Nama Supir', readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
     vehicle_id          = fields.Many2one("lhm.utility", string="Kendaraan", ondelete="restrict", domain="[('type','=', 'vh')]", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})
     vehicle_subtitute_id= fields.Many2one("lhm.utility", "Kendaraan Pengganti", ondelete="restrict", domain="[('type','=', 'vh')]", readonly=True, states={'draft': [('readonly',False)], 'revision': [('readonly',False)]})

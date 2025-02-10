@@ -334,16 +334,17 @@ class HrEmployeeExpense(models.Model):
                 move_id = payment.account_move_id.id
                 if move_id:
                     payment.account_move_id.button_draft()
-                    payment.account_move_id = False
-                    self.env['account.move'].browse(move_id).unlink()
+                    # payment.account_move_id = False
+                    # self.env['account.move'].browse(move_id).unlink()
                 # raise ValidationError(_('You cannot set Cancel payment that is already create a journal entry'))
+            
             # Hapus direct payment yang sudah dibuat
             if payment.account_direct_payment_id:
                 direct_payment_id = payment.account_direct_payment_id.id
                 if direct_payment_id:
                     payment.account_direct_payment_id.action_cancel()
-                    payment.account_direct_payment_id = False
-                    self.env['account.direct.payment'].browse(direct_payment_id).unlink()
+                    # payment.account_direct_payment_id = False
+                    # self.env['account.direct.payment'].browse(direct_payment_id).unlink()
 
             payment.state="cancel"
 
@@ -455,11 +456,55 @@ class HrEmployeeExpense(models.Model):
                 })
             payment.validation_setteled()
             payment.action_confirm()
-            payment.action_create_move()
+            
+            # Fungsi create journal entry
+            if not payment.account_move_id:
+                payment.action_create_move()
+            else:
+                payment.account_move_id.line_ids.unlink()
+                move_lines = [l._prepare_move_line() for l in payment.line_ids]
+                total = sum([ml['debit'] - ml['credit'] for ml in move_lines])
+                if total:
+                    payable_move_lines = self._prepare_payable_move_line(-1*total)
+                    if not float_is_zero(total + payable_move_lines['debit'] - payable_move_lines['credit'], 
+                                    precision_digits=self.company_id.currency_id.decimal_places):
+                        rounding_move_lines = self._prepare_rounding_move_line(total + payable_move_lines['debit'] - payable_move_lines['credit'])
+                        move_lines.append(rounding_move_lines)
+                    move_lines.append(payable_move_lines)
+                payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
+                # payment.account_move_id._post()
+                payment.account_move_id.action_post()
+
+
             this_um = abs(self.advance_amount_settle)
             this_settelement = self.amount_total
+
+            # fungsi untuk membuat direct payment
             if (payment.is_advance and not payment.expense_report) or payment.expense_report and (this_um > this_settelement or this_um < this_settelement):
-                payment.action_create_direct_payment()
+                if not payment.account_direct_payment_id:
+                    payment.action_create_direct_payment()
+                else:
+                    payment.account_direct_payment_id.action_draft()
+                    payment.account_direct_payment_id.line_ids.unlink()
+                    if payment.expense_report:
+                        payment.account_direct_payment_id.write({
+                                'line_ids' : [Command.create({
+                                    'product_id' : line.product_id.id,
+                                    'name' : line.name,
+                                    'account_id' : payment.contra_account_for_advance.id,
+                                    'amount' : abs(payment.amount_total2),
+                                }) for line in payment.line_ids[0]]
+                        })
+                    else:
+                        payment.account_direct_payment_id.write({
+                                'line_ids' : [Command.create({
+                                    'product_id' : line.product_id.id,
+                                    'name' : line.name,
+                                    'account_id' : payment.contra_account_for_advance.id,
+                                    'amount' : line.amount if (payment.is_advance and not payment.expense_report) else payment.amount_total2,
+                                }) for line in payment.line_ids]
+                        })
+
 
     def employee_reject(self):
         for payment in self:

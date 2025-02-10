@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="purchase_request.view_purchase_request_line_make_purchase_order"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='supplier_id']" position="replace">
-                <field name="supplier_ids" widget="many2many_tags" domain="[('supplier_rank', '>', 0)]"/>
+                <field name="supplier_ids" widget="many2many_tags" domain="[('vendor_category', '!=', False)]" options="{'no_create': True, 'no_edit': True}"/>
             </xpath>
             <xpath expr="//field[@name='purchase_order_id']" position="attributes">
                 <attribute name="domain">[('partner_id', 'in', supplier_ids)]</attribute>

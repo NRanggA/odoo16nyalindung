@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_customer_invoice_xlsx" model="ir.actions.report">
+        <field name="name">Report Customer Invoice XLSX</field>
+        <field name="model">wizard.report.customer.invoice.xlsx</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_account.report_customer_invoice_xlsx</field>
+        <field name="report_file">ny_account.report_customer_invoice_xlsx</field>
+        <field name="print_report_name">'(Report Customer Invoice XLSX)'</field>
+        <field name="binding_model_id" ref="ny_account.model_wizard_report_customer_invoice_xlsx"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

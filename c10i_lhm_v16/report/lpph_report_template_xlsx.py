@@ -630,6 +630,7 @@ class ReportLpphExcel(models.AbstractModel):
 
             stock_move_ids = self.env['stock.move'].search([
                                 ('picking_type_id.code', '=', 'issue'),
+                                # ('allocation_residual_qty', '>', 0),
                                 ('pending_material_allocation', '>', 0),
                                 ('state','=','done')
                             ],order="date desc, plantation_activity_id asc")

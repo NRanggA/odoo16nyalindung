@@ -193,7 +193,7 @@ class ReportStockMutation(models.AbstractModel):
 
         sheet = workbook.add_worksheet("General Ledger")
         sheet.set_column('A:A', 15)
-        sheet.set_column('B:B', 25)
+        sheet.set_column('B:B', 35)
         sheet.set_column('C:C', 10)
         sheet.set_column('D:D', 40)
         sheet.set_column('E:E', 20)
@@ -273,7 +273,14 @@ class ReportStockMutation(models.AbstractModel):
                 ('date', '<=', obj.to_date),
                 ('move_id.state', '=', 'posted')
             ]
-            account_move_lines = self.env['account.move.line'].search(domain, order='date asc')
+
+            account_type = account.account_type
+            if account_type in ['bank', 'cash']:
+                order = 'date asc, debit desc, credit desc'
+            else:
+                order = 'date asc, name asc'
+
+            account_move_lines = self.env['account.move.line'].search(domain, order=order)
 
             # balance = 0
             for move_line in account_move_lines:

@@ -81,7 +81,7 @@
             <tree string="Equipment Register">
                 <field name="name" />
                 <field name="date" />
-                <field name="state" />
+                <field name="state" widget="badge" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'" />
             </tree>
         </field>
     </record>

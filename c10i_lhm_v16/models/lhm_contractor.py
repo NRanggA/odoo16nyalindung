@@ -253,6 +253,7 @@ class lhm_contractor(models.Model):
             #     raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" belum memiliki nilai. Silahkan isi melalui Dokumen NAP'))
             if not contractor_nap.hasil_convert_latex and not contractor_nap.hasil_convert_lump:
                 raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai. Silahkan isi melalui Dokumen NAP'))
+        move = self._account_move_entry()
         self.state = 'confirmed'
 
     def button_process(self):
@@ -377,7 +378,7 @@ class lhm_contractor(models.Model):
                         'account_id'        : acc_src.id,
                         'journal_id'        : journal_id.id,
                         'partner_id'        : buku_kontraktor.supplier_id.id,
-                        'date'              : buku_kontraktor.date_end,
+                        'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
                         'amount'            : 0.0,
                         }})
                 grouped_lines[key]['amount'] += line.total
@@ -397,7 +398,7 @@ class lhm_contractor(models.Model):
                         'account_id'        : acc_src.id,
                         'journal_id'        : journal_id.id,
                         'partner_id'        : buku_kontraktor.supplier_id.id,
-                        'date'              : buku_kontraktor.date_end,
+                        'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
                         'amount'            : 0.0,
                         'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
                         }})
@@ -412,13 +413,13 @@ class lhm_contractor(models.Model):
                     'account_id'        : acc_dest.id,
                     'journal_id'        : journal_id.id,
                     'partner_id'        : buku_kontraktor.supplier_id.id,
-                    'date'              : buku_kontraktor.date_end,
+                    'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
                     'amount'            : -1*total_lines,
                     'plantation_src_journal_id': journal_id.id,
                     })))
             move = AccountMove.sudo().create({
                 'journal_id'    : journal_id.id,
-                'date'          : buku_kontraktor.date_end,
+                'date'          : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
                 'line_ids'      : move_lines,
                 'ref'           : buku_kontraktor.name,
                 })
