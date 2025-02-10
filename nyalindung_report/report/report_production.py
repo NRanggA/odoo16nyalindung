@@ -1403,12 +1403,12 @@ class ReportProduction(models.AbstractModel):
             row2 += 4
             nomor = 1
 
-            mandor_name = kemandoran.kepala_mandor_id.name if kemandoran.kepala_mandor_id else ''
-            mandor_nik = kemandoran.kepala_mandor_id.no_induk if kemandoran.kepala_mandor_id else ''
-            asisten_mandor_name = kemandoran.mandor_id.name if kemandoran.mandor_id else ''
-            asisten_mandor_nik = kemandoran.mandor_id.no_induk if kemandoran.mandor_id else ''
-            kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
-            kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
+            mandor_name = kemandoran.kepala_mandor_id.sudo().name if kemandoran.kepala_mandor_id else ''
+            mandor_nik = kemandoran.kepala_mandor_id.sudo().no_induk if kemandoran.kepala_mandor_id else ''
+            asisten_mandor_name = kemandoran.mandor_id.sudo().name if kemandoran.mandor_id else ''
+            asisten_mandor_nik = kemandoran.mandor_id.sudo().no_induk if kemandoran.mandor_id else ''
+            kerani_name = kemandoran.assisten_id.sudo().name if kemandoran.assisten_id else ''
+            kerani_nik = kemandoran.assisten_id.sudo().no_induk if kemandoran.assisten_id else ''
 
             for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
                 sheet2.write(row2, 0, nomor, wbf['data_center'])
