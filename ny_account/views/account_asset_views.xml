@@ -22,9 +22,29 @@
             <xpath expr="//notebook" position="inside">
                 <page name="charge_to_activity" string="Charge To Activity" attrs="{'invisible': [('charge_to_activity', '=', False)]}">
                     <group string="Plantation">
-                        <field name="location_type_id" />
+                        <!-- <field name="location_type_id" />
+                        <field name="varieties_id" domain="[('type_id', '=', location_type_id)]"/>
                         <field name="location_id" domain="[('type_id', '=', location_type_id)]"/>
-                        <field name="activity_id" domain="[('type_id', '=', location_type_id)]"/>
+                        <field name="activity_id" domain="[('type_id', '=', location_type_id)]"/> -->
+                        
+                        
+                        <field name="location_type_id" domain="[('no_line','=',False)]" 
+                                options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                optional="show"/>
+                        <field name="varieties_validator" invisible="1"/>
+                        <field name="varieties_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" 
+                                attrs="{'readonly': [('varieties_validator','=',False)], 
+                                        'required': [('varieties_validator','=',True)]}"/>
+                        <field name="filtered_locations" invisible="1" />
+                        <field name="location_id" 
+                                domain="[('id','in',filtered_locations)]" 
+                                options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                        <field name="filtered_activities" invisible="1" />
+                        <field name="activity_id" 
+                            domain="[('id','in',filtered_activities)]" 
+                            options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+
+
                     </group>
                 </page>
             </xpath>
