@@ -497,12 +497,12 @@ class ReportProduction(models.AbstractModel):
             row += 4
             nomor = 1
 
-            mandor_name = kemandoran.kepala_mandor_id.name if kemandoran.kepala_mandor_id else ''
-            mandor_nik = kemandoran.kepala_mandor_id.no_induk if kemandoran.kepala_mandor_id else ''
-            asisten_mandor_name = kemandoran.mandor_id.name if kemandoran.mandor_id else ''
-            asisten_mandor_nik = kemandoran.mandor_id.no_induk if kemandoran.mandor_id else ''
-            kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
-            kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
+            mandor_name = kemandoran.kepala_mandor_id.sudo().name if kemandoran.kepala_mandor_id else ''
+            mandor_nik = kemandoran.kepala_mandor_id.sudo().no_induk if kemandoran.kepala_mandor_id else ''
+            asisten_mandor_name = kemandoran.mandor_id.sudo().name if kemandoran.mandor_id else ''
+            asisten_mandor_nik = kemandoran.mandor_id.sudo().no_induk if kemandoran.mandor_id else ''
+            kerani_name = kemandoran.assisten_id.sudo().name if kemandoran.assisten_id else ''
+            kerani_nik = kemandoran.assisten_id.sudo().no_induk if kemandoran.assisten_id else ''
 
             for emp_id, no_induk, employee_name, kemandoran_emp, location_id in karyawan_data:
                 sheet.write(row, 0, nomor, wbf['data_center'])
@@ -710,7 +710,7 @@ class ReportProduction(models.AbstractModel):
             sheet.write(row, 3, kemandoran_name, wbf['data'])
             sheet.write(row, 4, "-", wbf['data'])
 
-            mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
+            mandor_employee = self.env['hr.employee'].sudo().search([('name', '=', mandor_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
@@ -796,7 +796,7 @@ class ReportProduction(models.AbstractModel):
             sheet.write(row, 3, kemandoran_name, wbf['data'])
             sheet.write(row, 4, "-", wbf['data'])
 
-            asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
+            asisten_employee = self.env['hr.employee'].sudo().search([('name', '=', asisten_mandor_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
@@ -911,7 +911,7 @@ class ReportProduction(models.AbstractModel):
             sheet.write(row, 3, kemandoran_name, wbf['data'])
             sheet.write(row, 4, "-", wbf['data'])
 
-            kerani_employee = self.env['hr.employee'].search([('name', '=', kerani_name)], limit=1)
+            kerani_employee = self.env['hr.employee'].sudo().search([('name', '=', kerani_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
@@ -1565,7 +1565,7 @@ class ReportProduction(models.AbstractModel):
             sheet2.write(row2, 2, mandor_name, wbf['data'])
             sheet2.write(row2, 3, kemandoran_name, wbf['data'])
 
-            mandor_employee = self.env['hr.employee'].search([('name', '=', mandor_name)], limit=1)
+            mandor_employee = self.env['hr.employee'].sudo().search([('name', '=', mandor_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
@@ -1635,7 +1635,7 @@ class ReportProduction(models.AbstractModel):
             sheet2.write(row2, 2, asisten_mandor_name, wbf['data'])
             sheet2.write(row2, 3, kemandoran_name, wbf['data'])
 
-            asisten_employee = self.env['hr.employee'].search([('name', '=', asisten_mandor_name)], limit=1)
+            asisten_employee = self.env['hr.employee'].sudo().search([('name', '=', asisten_mandor_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
@@ -1705,7 +1705,7 @@ class ReportProduction(models.AbstractModel):
             sheet2.write(row2, 2, kerani_name, wbf['data'])
             sheet2.write(row2, 3, kemandoran_name, wbf['data'])
 
-            kerani_employee = self.env['hr.employee'].search([('name', '=', kerani_name)], limit=1)
+            kerani_employee = self.env['hr.employee'].sudo().search([('name', '=', kerani_name)], limit=1)
 
             for i in range(len(date_columns)):
                 attendance = self.env['lhm.transaction.line'].search([
