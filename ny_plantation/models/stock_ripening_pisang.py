@@ -172,6 +172,19 @@ class StockRipeningPisang(models.Model):
 
     def action_validate(self):
         for rec in self:
+            
+            error_message_list = []
+            for line in rec.line_ids:
+                product_qty_available = line.product_id.with_context(location= self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id).qty_available
+
+                total_qty_out = line.out_product_qty + line.out_product_scrap_qty
+
+                if product_qty_available < total_qty_out:
+                    error_message_list.append(
+                        f"Stok tidak mencukupi untuk produk {line.product_id.name} di lokasi {self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').name}! "
+                        f"Stok tersedia: {product_qty_available}, yang dibutuhkan: {total_qty_out}"
+                    )
+
             # Create Internal Transfer
             picking_type = self.env.ref('ny_plantation.picking_type_ripening_1')
             move_lines = rec._prepare_move_lines()
@@ -196,7 +209,12 @@ class StockRipeningPisang(models.Model):
             rec.state = 'done'
             rec.date_done = picking.date_done
             rec.name = picking.name
-    
+
+        if error_message_list:
+            error_message = '\n'.join(error_message_list)
+            raise ValidationError(_("Pesan Error :\n%s") % error_message)
+        
+        
     def action_view_pickings(self):
         # stock_picking_action_picking_type
         # action_picking_form
