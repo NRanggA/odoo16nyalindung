@@ -1088,6 +1088,9 @@ class lhm_vehicle_line(models.Model):
 
     @api.depends('varieties_id','location_type_id', 'location_id', 'lhm_vehicle_id.state')
     def _filter_activities(self):
+        query_parents = """SELECT parent_id FROM lhm_activity"""
+        self.env.cr.execute(query_parents)
+        parent_activity_ids = [x[0] for x in self.env.cr.fetchall()]
         for line in self:
             if line.lhm_vehicle_id.state!='draft':
                 line.filtered_activities = []
@@ -1100,7 +1103,7 @@ class lhm_vehicle_line(models.Model):
                         # if doc_form:
                         #     project_activity_ids += [x.activity_id.id for x in project.line_ids if doc_form.id in x.doc_ids.ids]
                         # else:
-                            project_activity_ids += [x.activity_id.id for x in project.line_ids]
+                            project_activity_ids += [x.activity_id.id for x in project.line_ids if x.activity_id.id not in parent_activity_ids]
 
                     if project_activity_ids:
                         line.filtered_activities = [(6, 0, project_activity_ids)]
@@ -1108,19 +1111,22 @@ class lhm_vehicle_line(models.Model):
                         line.filtered_activities = []
                 else:
                     if line.location_type_id.code in ('WS','VH','MA','LB','NS'):
-                        activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                        domain = [('type_id','=',line.location_type_id.id)]
+                        if parent_activity_ids:
+                            domain.append(('id','not in',parent_activity_ids))
+                        activities = self.env['lhm.activity'].search(domain)
                     else: # GC, IDC, PLANTATION FC
                         if line.varieties_id:
                             if line.location_type_id.general_charge:
-                                activities = line.varieties_id.general_charges_activity_ids
+                                activities = line.varieties_id.general_charges_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
                             elif line.location_type_id.indirect:
-                                activities = line.varieties_id.indirect_cost_activity_ids
+                                activities = [x for x in line.varieties_id.indirect_cost_activity_ids if x.id not in parent_activity_ids]
                             # menambahkan tipe lokasi mills 
                             elif line.location_type_id.mills:
-                                activities = line.varieties_id.mill_costs_ids
+                                activities = [x for x in line.varieties_id.mill_costs_ids if x.id not in parent_activity_ids]
                             else:
-                                activities = line.varieties_id.harvest_activity_ids
-                                activities |= line.varieties_id.upkeep_activity_ids
+                                activities = [x for x in line.varieties_id.harvest_activity_ids if x.id not in parent_activity_ids]
+                                activities |= [x for x in line.varieties_id.upkeep_activity_ids if x.id not in parent_activity_ids]
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                             activities = []
@@ -1399,7 +1405,9 @@ class lhm_workshop_line(models.Model):
 
     @api.depends('varieties_id','location_type_id', 'location_id', 'lhm_workshop_id.state')
     def _filter_activities(self):
-        # biar tidak di run setiap saat
+        query_parents = """SELECT parent_id FROM lhm_activity"""
+        self.env.cr.execute(query_parents)
+        parent_activity_ids = [x[0] for x in self.env.cr.fetchall()]
         for line in self:
             if line.lhm_workshop_id.state!='draft':
                 line.filtered_activities = []
@@ -1412,7 +1420,7 @@ class lhm_workshop_line(models.Model):
                         # if doc_form:
                         #     project_activity_ids += [x.activity_id.id for x in project.line_ids if doc_form.id in x.doc_ids.ids]
                         # else:
-                            project_activity_ids += [x.activity_id.id for x in project.line_ids]
+                            project_activity_ids += [x.activity_id.id for x in project.line_ids if x.activity_id.id not in parent_activity_ids]
 
                     if project_activity_ids:
                         line.filtered_activities = [(6, 0, project_activity_ids)]
@@ -1420,18 +1428,21 @@ class lhm_workshop_line(models.Model):
                         line.filtered_activities = []
                 else:
                     if line.location_type_id.code in ('WS','VH','MA','LB','NS'):
-                        activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
+                        domain = [('type_id','=',line.location_type_id.id)]
+                        if parent_activity_ids:
+                            domain.append(('id','not in',parent_activity_ids))
+                        activities = self.env['lhm.activity'].search(domain)
                     else: # GC, IDC, PLANTATION FC
                         if line.varieties_id:
                             if line.location_type_id.general_charge:
-                                activities = line.varieties_id.general_charges_activity_ids
+                                activities = line.varieties_id.general_charges_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
                             elif line.location_type_id.indirect:
-                                activities = line.varieties_id.indirect_cost_activity_ids
+                                activities = [x for x in line.varieties_id.indirect_cost_activity_ids if x.id not in parent_activity_ids]
                             elif line.location_type_id.mills:
-                                activities = line.varieties_id.mill_costs_ids
+                                activities = [x for x in line.varieties_id.mill_costs_ids if x.id not in parent_activity_ids]
                             else:
-                                activities = line.varieties_id.harvest_activity_ids
-                                activities |= line.varieties_id.upkeep_activity_ids
+                                activities = [x for x in line.varieties_id.harvest_activity_ids if x.id not in parent_activity_ids]
+                                activities |= [x for x in line.varieties_id.upkeep_activity_ids if x.id not in parent_activity_ids]
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                             activities = []

@@ -276,7 +276,9 @@ class DirectPaymentLine(models.Model):
 
     @api.depends('plantation_varieties_id','plantation_location_type_id', 'plantation_location_id', 'payment_id.state')
     def _filter_activities(self):
-        # biar tidak di run setiap saat
+        query_parents = """SELECT parent_id FROM lhm_activity"""
+        self.env.cr.execute(query_parents)
+        parent_activity_ids = [x[0] for x in self.env.cr.fetchall()]
         for line in self:
             if line.payment_id.state!='draft' or not line.plantation_location_type_id:
                 line.filtered_activities = []
@@ -289,7 +291,7 @@ class DirectPaymentLine(models.Model):
                         # if doc_form:
                         #     project_activity_ids += [x.activity_id.id for x in project.line_ids if doc_form.id in x.doc_ids.ids]
                         # else:
-                            project_activity_ids += [x.activity_id.id for x in project.line_ids]
+                            project_activity_ids += [x.activity_id.id for x in project.line_ids if x.activity_id.id not in parent_activity_ids]
 
                     if project_activity_ids:
                         line.filtered_activities = [(6, 0, project_activity_ids)]
@@ -297,19 +299,22 @@ class DirectPaymentLine(models.Model):
                         line.filtered_activities = []
                 else:
                     if line.plantation_location_type_id.code in ('WS','VH','MA','LB','NS'):
-                        activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
+                        domain = [('type_id','=',line.plantation_location_type_id.id)]
+                        if parent_activity_ids:
+                            domain.append(('id','not in',parent_activity_ids))
+                        activities = self.env['lhm.activity'].search(domain)
                     else: # GC, IDC, PLANTATION FC
                         if line.plantation_varieties_id:
                             if line.plantation_location_type_id.general_charge:
-                                activities = line.plantation_varieties_id.general_charges_activity_ids
+                                activities = line.plantation_varieties_id.general_charges_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
                             elif line.plantation_location_type_id.indirect:
-                                activities = line.plantation_varieties_id.indirect_cost_activity_ids
+                                activities = [x for x in line.plantation_varieties_id.indirect_cost_activity_ids if x.id not in parent_activity_ids]
                             # Menambahkan tipe lokasi Mills (MC)
                             elif line.plantation_location_type_id.mills:
-                                activities = line.plantation_varieties_id.mill_costs_ids
+                                activities = [x for x in line.plantation_varieties_id.mill_costs_ids if x.id not in parent_activity_ids]
                             else:
-                                activities = line.plantation_varieties_id.harvest_activity_ids
-                                activities |= line.plantation_varieties_id.upkeep_activity_ids
+                                activities = [x for x in line.plantation_varieties_id.harvest_activity_ids if x.id not in parent_activity_ids]
+                                activities |= [x for x in line.plantation_varieties_id.upkeep_activity_ids if x.id not in parent_activity_ids]
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
                             activities = []
