@@ -13,7 +13,9 @@ class WizardReportNotaAngkutPanen(models.TransientModel):
 
     date_start = fields.Date('Date Start',required=True)
     date_end = fields.Date('Date End',required=True)
-    product_id = fields.Many2one('product.product', string='Product',required=True)
+    # product_id = fields.Many2one('product.product', string='Product',required=True)
+
+    product_ids = fields.Many2many('product.product', string='Product')
 
 
 
