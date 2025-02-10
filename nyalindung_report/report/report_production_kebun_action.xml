@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action Report EXCEL Production Kebun -->
+    <record id="action_production_report_kebun_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Produksi Karet Per Kebun</field>
+        <field name="model">wizard.report.production.kebun</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">nyalindung_report.production_kebun_xlsx</field>
+        <field name="report_file">nyalindung_report.production_kebun_xlsx</field>
+        <field name="print_report_name">'(LAPORAN PRODUKSI KARET PER KEBUN)'</field>
+        <field name="binding_model_id" ref="nyalindung_report.model_wizard_report_production_kebun"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

@@ -28,7 +28,7 @@
     </record>
 
     <record id="wizard_report_production_action" model="ir.actions.act_window">
-        <field name="name">Report Production</field>
+        <field name="name">Report Produksi Karet Detail</field>
         <field name="res_model">wizard.report.production</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
@@ -36,7 +36,7 @@
 
     <menuitem
         id="wizard_report_production_menu"
-        name="Report Production"
+        name="Report Produksi Karet Detail"
         action="wizard_report_production_action"
         parent="c10i_lhm_v16.menu_plantation_report"
         sequence="99"/>
