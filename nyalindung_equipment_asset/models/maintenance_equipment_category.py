@@ -68,8 +68,10 @@ class MaintenanceEquipmentCategory(models.Model):
             if not seq_id:
                 seq_id = self.env['ir.sequence'].create(self._prepare_seq_vals())
                 val['sequence_id'] = seq_id.id
-            else:
-                val['sequence_id'] = seq_id.id
+            # else:
+            #     # val['sequence_id'] = seq_id.id
+            #     # val['sequence_id'] = vals.get('sequence_id')
+            #     val['sequence_id'] = self._name,code
             if 'prefix_seq' in val and val.get('prefix_seq') and self.sequence_id:
                 code = self.sequence_id.code
                 code_split = code.split('/')[0]
