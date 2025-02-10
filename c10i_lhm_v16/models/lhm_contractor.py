@@ -334,12 +334,12 @@ class lhm_contractor(models.Model):
                 date = fields.Date.from_string(date_str)
                 year = date.strftime("%Y")
                 month = date.strftime("%m")
-                day = date.strftime("%d")
+                # day = date.strftime("%d")
 
                 supplier = self.env['res.partner'].browse(values.get('supplier_id'))
                 supplier_name = supplier.name.upper().replace(" ", "_")
 
-                values['name'] = f"BKH/{supplier_name}/{year}/{month}/{day}"
+                values['name'] = f"BKH/{supplier_name}/{year}/{month}"
         else:
             # if period:
             #     month = period.date_start.strftime('%m')
