@@ -472,19 +472,19 @@ class lhm_contractor(models.Model):
         }
 
     def write(self, values):
-        supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id', self.supplier_id.id))])
-        # period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
-        # if period_id:
-        #     month           = period_id.date_start.strftime('%m')
-        #     year            = period_id.date_start.strftime('%Y')
-        #     values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
-        # Menggunakan date baru jika diubah, atau tetap pakai yang lama jika tidak ada perubahan
-        date_value = values.get('date', self.date)
-        if date_value:
-            date_obj = fields.Date.from_string(date_value)
-            month = date_obj.strftime('%m')
-            year = date_obj.strftime('%Y')
-            values['name'] = f"{supplier_id.code or ''}/{year}-{month}"
+        # supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id', self.supplier_id.id))])
+        # # period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
+        # # if period_id:
+        # #     month           = period_id.date_start.strftime('%m')
+        # #     year            = period_id.date_start.strftime('%Y')
+        # #     values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
+        # # Menggunakan date baru jika diubah, atau tetap pakai yang lama jika tidak ada perubahan
+        # date_value = values.get('date', self.date)
+        # if date_value:
+        #     date_obj = fields.Date.from_string(date_value)
+        #     month = date_obj.strftime('%m')
+        #     year = date_obj.strftime('%Y')
+        #     values['name'] = f"{supplier_id.code or ''}/{year}-{month}"
 
         return super(lhm_contractor, self).write(values)
 
@@ -625,8 +625,8 @@ class lhm_contractor_line(models.Model):
         for line in self:
             validator = False
             if line.location_type_id:
-                # Plantation FC, GC, IDC, PJ => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC','PJ')
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS
             line.varieties_validator = validator
     varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
@@ -688,9 +688,9 @@ class lhm_contractor_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','LB','NS','GC','MC'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # PLANTATION FC, PJ, IDC
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
@@ -716,7 +716,7 @@ class lhm_contractor_line(models.Model):
                     else:
                         line.filtered_activities = []
                 else:
-                    if line.location_type_id.code in ('WS','VH','MA','LB','NS'):
+                    if line.location_type_id.code in ('WS','VH','MA','NS','LB'):
                         activities = self.env['lhm.activity'].search([('type_id','=',line.location_type_id.id)])
                     else: # GC, IDC, PLANTATION
                         if line.varieties_id:
@@ -897,8 +897,8 @@ class lhm_contractor_nap_line(models.Model):
         for line in self:
             validator = False
             if line.location_type_id:
-                # Plantation FC, GC, IDC, PJ => True (artinya wajib diisi)
-                validator = line.location_type_id.code in ('FC','GC','IDC','PJ')
+                # Plantation, GC, IDC, PJ, NS => True (artinya wajib diisi)
+                validator = line.location_type_id.code in ('FC','GC','IDC', 'PJ') # 'NS
             line.varieties_validator = validator
     varieties_id        = fields.Many2one('plant.varieties', string="Varietas", ondelete='restrict')
     filtered_locations  = fields.Many2many('lhm.location', 'lhm_cont_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
@@ -954,9 +954,9 @@ class lhm_contractor_nap_line(models.Model):
             if line.contractor_id.state!='draft':
                 line.filtered_locations = []
             else:
-                if line.location_type_id.code in ('WS','VH','MA','LB','NS','GC','MC'):
+                if line.location_type_id.code in ('WS','VH','MA','GC','MC','LB'):
                     locations = self.env['lhm.location'].sudo().search([('type_id','=',line.location_type_id.id)])
-                else: # PLANTATION FC, PJ, IDC
+                else: # PLANTATION, PJ, NS
                     locations = self.env['lhm.location'].search([('type_id','=',line.location_type_id.id),('varieties_id','=',line.varieties_id.id)])
                 line.filtered_locations = [(6,0,locations.ids)] if locations else []
 
