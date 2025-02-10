@@ -77,7 +77,7 @@ class lhm_contractor(models.Model):
     name                          = fields.Char('Nama', required=False)
     date                          = fields.Date("Tanggal")
     type                          = fields.Selection([('vehicle','Alat'),('vendor','Vendor')], string='Type', index=False, readonly=True)
-    supplier_id                   = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict")
+    supplier_id                   = fields.Many2one("res.partner", string="Kontraktor", ondelete="restrict", required=True)
     supplier_code                 = fields.Char('Kode', readonly=True, related="supplier_id.ref")
     doc_type_id                   = fields.Many2one("res.doc.type", string="Document Type", ondelete="restrict", tracking=True, default=_default_doc_id)
     approval                      = fields.Boolean(string="Approval", related="doc_type_id.approval", readonly=True)
@@ -320,28 +320,56 @@ class lhm_contractor(models.Model):
         period = self.env['account.period'].browse(values.get('account_period_id'))
 
         if self.env.context.get('is_harian'):
-            if values.get('date'):
-                date_str = fields.Date.from_string(values['date']).strftime('%Y-%m-%d')
-                supplier_ref = supplier.ref if supplier.ref else supplier.name
-                values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{date_str}"
-            else:
-                values['name'] = supplier.ref or supplier.name or 'Harian'
+            # if values.get('date'):
+            #     date_str = fields.Date.from_string(values['date']).strftime('%Y-%m-%d')
+            #     supplier_ref = supplier.ref if supplier.ref else supplier.name
+            #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{date_str}"
+            # else:
+            #     values['name'] = supplier.ref or supplier.name or 'Harian'
+            if not values.get('name') or values.get('name') == "New":
+                date_str = values.get('date')
+                if not date_str:
+                    raise ValidationError("Field 'Date' wajib diisi untuk menentukan tahun dan bulan untuk sequence.")
+
+                date = fields.Date.from_string(date_str)
+                year = date.strftime("%Y")
+                month = date.strftime("%m")
+                day = date.strftime("%d")
+
+                supplier = self.env['res.partner'].browse(values.get('supplier_id'))
+                supplier_name = supplier.name.upper().replace(" ", "_")
+
+                values['name'] = f"BKH/{supplier_name}/{year}/{month}/{day}"
         else:
             # if period:
             #     month = period.date_start.strftime('%m')
             #     year = period.date_start.strftime('%Y')
             #     supplier_ref = supplier.ref if supplier.ref else supplier.name
             #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
-            if values.get('date_start'):
-                date_obj = fields.Date.from_string(values['date_start'])
-                month = date_obj.strftime('%m')
-                year = date_obj.strftime('%Y')
-                supplier_ref = supplier.ref if supplier.ref else supplier.name
-                values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
-            else:
-                values['name'] = supplier.ref or supplier.name or 'Bulanan'
+            # if values.get('date_start'):
+            #     date_obj = fields.Date.from_string(values['date_start'])
+            #     month = date_obj.strftime('%m')
+            #     year = date_obj.strftime('%Y')
+            #     supplier_ref = supplier.ref if supplier.ref else supplier.name
+            #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
+            # else:
+            #     values['name'] = supplier.ref or supplier.name or 'Bulanan'
+            if not values.get('name') or values.get('name') == "New":
+                date_start_str = values.get('date_start')
+                if not date_start_str:
+                    raise ValidationError("Field 'from_date' wajib diisi untuk menentukan tahun dan bulan untuk sequence.")
+
+                date_start = fields.Date.from_string(date_start_str)
+                year = date_start.strftime("%Y")
+                month = date_start.strftime("%m")
+
+                supplier = self.env['res.partner'].browse(values.get('supplier_id'))
+                supplier_name = supplier.name.upper().replace(" ", "_")
+
+                values['name'] = f"BKB/{supplier_name}/{year}/{month}"
 
         return super(lhm_contractor, self).create(values)
+    
     def unlink(self):
         for record in self:
             if record.state == 'confirmed':
