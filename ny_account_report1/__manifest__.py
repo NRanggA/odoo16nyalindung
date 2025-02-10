@@ -25,5 +25,9 @@
         # General Ledger Excell
         'wizard/wizard_general_ledger_xlsx.xml',
         'report/report_general_ledger_xlsx_action.xml',
+
+        # Report Asset
+        'wizard/wizard_report_asset_views.xml',
+        'report/report_asset_action.xml',
     ],
 }

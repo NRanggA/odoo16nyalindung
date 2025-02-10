@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action Report Account Asset -->
+    <record id="action_report_asset" model="ir.actions.report">
+        <field name="name">Laporan Account Asset</field>
+        <field name="model">wizard.report.asset</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_account_report1.report_asset_xlsx</field>
+        <field name="report_file">ny_account_report1.report_asset_xlsx</field>
+        <field name="print_report_name">'(Laporan Asset Excell)'</field>
+        <field name="binding_model_id" ref="ny_account_report1.model_wizard_report_asset"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

@@ -1083,7 +1083,7 @@
                             <group>
                                 <field name="code" string="Kode" required="1"/>
                                 <field name='owner_type' required="1"/>
-                                <field name="varieties_id" string="Varietas" required="1"/>
+                                <field name="varieties_id" string="ORG" required="1"/>
                                 <field name="location_type_id" required="1" domain="[('plantation','=',True)]" options="{'no_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="afdeling_id" required="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="land_block_id" required="1"/>
@@ -1177,6 +1177,7 @@
                     <group expand="0" string="Group By">
                         <filter string="Afdeling" name="afdeling_id" context="{'group_by':'afdeling_id'}"/>
                         <filter string="Company" name="company_id" context="{'group_by':'company_id'}"/>
+                        <filter string="ORG" name="varieties_id" context="{'group_by':'varieties_id'}"/>
                     </group>
                 </search>
             </field>
