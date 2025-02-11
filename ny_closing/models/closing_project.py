@@ -416,6 +416,7 @@ class ClosingProject(models.Model):
         return move_lines
     
     def create_account_move(self):
+        project_journal = self.env.ref('ny_closing.plantation_closing_project_journal')
         for closing in self:
             if closing.closing_move_id:
                 if closing.closing_move_id.state=='posted':
@@ -447,7 +448,7 @@ class ClosingProject(models.Model):
             
             values = {
                 'date': closing.date_to,
-                'journal_id': self.env['account.journal'].search([('type','=','general')], limit=1).id,
+                'journal_id': project_journal.id,
                 'move_type': 'entry',
                 'line_ids': move_lines,
             }
