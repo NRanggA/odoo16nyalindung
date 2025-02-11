@@ -100,13 +100,13 @@ class AccountMoveLine(models.Model):
                             if line.plantation_location_type_id.general_charge:
                                 activities = line.plantation_varieties_id.general_charges_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
                             elif line.plantation_location_type_id.indirect:
-                                activities = [x for x in line.plantation_varieties_id.indirect_cost_activity_ids if x.id not in parent_activity_ids]
+                                activities = line.plantation_varieties_id.indirect_cost_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
                             # menambahkan tipe lokasi mills 
                             elif line.plantation_location_type_id.mills:
-                                activities = [x for x in line.plantation_varieties_id.mill_costs_ids if x.id not in parent_activity_ids]
+                                activities = line.plantation_varieties_id.mill_costs_ids.filtered(lambda x: x.id not in parent_activity_ids)
                             else:
-                                activities = [x for x in line.plantation_varieties_id.harvest_activity_ids if x.id not in parent_activity_ids]
-                                activities |= [x for x in line.plantation_varieties_id.upkeep_activity_ids if x.id not in parent_activity_ids]
+                                activities = line.plantation_varieties_id.harvest_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
+                                activities |= line.plantation_varieties_id.upkeep_activity_ids.filtered(lambda x: x.id not in parent_activity_ids)
                         else:
                             # activities = self.env['lhm.activity'].search([('type_id','=',line.plantation_location_type_id.id)])
                             activities = []
