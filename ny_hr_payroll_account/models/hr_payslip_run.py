@@ -32,11 +32,16 @@ class HrPayslipRun(models.Model):
             afdeling_found = self.env['res.afdeling'].search([('location_id','=',location_id)], limit=1)
             cost_center_found = self.env['account.cost.center'].search([('location_id','=',location_id)], limit=1)
             if afdeling_found:
-                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('afdeling_id','=',afdeling_found.id)])
+                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('afdeling_id','=',afdeling_found.id),('planted','>',0)])
             elif cost_center_found:
-                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id)])
+                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('planted','>',0)])
             else:
-                continue
+                if varieties_id:
+                    orgx = self.env['plant.varieties'].browse(varieties_id)
+                    raise ValidationError(_(f"Tidak ditemukan Blok Tanam atas untuk ORG {orgx.name} dari proses distribusi GC dengan kode {cost_center_found.code}"))
+                else:
+                    raise ValidationError(_(f"Tidak ditemukan Blok Tanam atas dari proses distribusi GC dengan kode {cost_center_found.code}"))
+
             total_planted = sum(block_tanams.mapped('planted'))
             total_planted = total_planted if total_planted else 1
             n_block = len(block_tanams.ids)
