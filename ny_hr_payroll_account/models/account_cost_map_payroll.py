@@ -174,7 +174,7 @@ class AccountCostMapPayroll(models.Model):
             
         reclass_gc_vals = {
             'date': self.date,
-            'journal_id': self.env['account.journal'].search([('type','=','general')], limit=1).id,
+            'journal_id': lhm_journal.id,
             'move_type': 'entry',
             'line_ids': move_lines,
         }
