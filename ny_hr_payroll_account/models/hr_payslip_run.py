@@ -27,6 +27,7 @@ class HrPayslipRun(models.Model):
         gc_lines = self.env.cr.fetchall()
         cost_map_to_add = []
         field_cost_type = self.env['lhm.location.type'].search([('plantation','=',True)], limit=1)
+        project_cost_type = self.env['lhm.location.type'].search([('project','=',True)], limit=1)
         for partner_id, varieties_id, type_id, location_id, debit_amt in gc_lines:
             afdeling_found = self.env['res.afdeling'].search([('location_id','=',location_id)], limit=1)
             cost_center_found = self.env['account.cost.center'].search([('location_id','=',location_id)], limit=1)
@@ -47,12 +48,14 @@ class HrPayslipRun(models.Model):
                 if n_block==1:
                     dr_amount = remaining_cost
                 else:
-                    dr_amount = round((pct_cost/100.0)*debit_amt, 0)
+                    dr_amount = round(pct_cost*debit_amt, 0)
+                    
                 cost_map_to_add.append({
                         'payslip_line_id': False,
                         'partner_id': partner_id,
                         'plantation_varieties_id': varieties_id,
-                        'plantation_location_type_id': field_cost_type.id,
+                        # 'plantation_location_type_id': field_cost_type.id,
+                        'plantation_location_type_id': block_tanam.location_type_id.id,
                         'plantation_location_id': block_tanam.location_id.id,
                         'plantation_activity_id': block_tanam.payroll_gc_dest_activity_id.id,
                         'account_id': block_tanam.payroll_gc_dest_activity_id.account_id.id,
@@ -64,7 +67,7 @@ class HrPayslipRun(models.Model):
                         'type': 'reclass',
                     })
                 n_block -= 1
-                remaining_cost -= round((pct_cost/100.0)*debit_amt,0)
+                remaining_cost -= round(pct_cost*debit_amt,0)
             
             query_update_gc = f"""UPDATE hr_payslip_cost_map SET gc_distributed='true' 
                     WHERE plantation_varieties_id={varieties_id}
