@@ -583,9 +583,6 @@ class lhm_nap(models.Model):
                 ('activity_id.is_contractor_day', '=', True),
             ])
 
-            # print(">>>>>>>>>>>>>>>>",transaction_lines)
-            # print(">>>>>>>>>>>>>>>>",contractor_day_lines)
-
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
             kebun_data = {}
             for line in kebun_lines:
@@ -607,6 +604,7 @@ class lhm_nap(models.Model):
                 if transaction_key not in transaction_data:
                     transaction_data[transaction_key] = 0
                 transaction_data[transaction_key] += line.hasil_1
+
             # Mengelompokkan data transaksi Contractor Harian berdasarkan location_id dan tanggal
             contractor_day_data = {}
             for line in contractor_day_lines:
@@ -621,7 +619,7 @@ class lhm_nap(models.Model):
                     contractor_day_data[contractor_day_key] = 0
                 contractor_day_data[contractor_day_key] += line.nilai
 
-            # Validasi kesesuaian total hasil
+        # Validasi kesesuaian total hasil
         if transaction_data:
             for key, transaction_total in transaction_data.items():
                 # Cari apakah lokasi pada transaksi ada di data kebun
@@ -631,7 +629,7 @@ class lhm_nap(models.Model):
                     raise UserError(f"Data tidak ditemukan di Timbangan Kebun untuk lokasi {location_name} dan tanggal {key[1]}.")
                 
                 # Jumlahkan total data kebun untuk lokasi dan tanggal yang sesuai
-                kebun_total = sum(kebun_data[k] for k in corresponding_kebun_keys)
+                kebun_total = round(sum(kebun_data[k] for k in corresponding_kebun_keys), 2)
                 if transaction_total != kebun_total:
                     raise UserError(
                         f"Jumlah hasil tidak sesuai untuk lokasi {location_name} dan tanggal {key[1]}. "
