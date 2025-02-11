@@ -61,7 +61,7 @@ class hr_employee(models.Model):
     def name_get(self):
         result = []        
         for rec in self:
-            if rec.no_induk:
+            if rec.sudo().no_induk:
                 result.append((rec.id, '%s - %s' % (rec.name,rec.no_induk)))
             else:
                 result.append((rec.id, rec.name))
