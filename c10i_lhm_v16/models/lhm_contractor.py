@@ -400,6 +400,7 @@ class lhm_contractor(models.Model):
                             (line.activity_id.code,line.activity_id.name))
                     # untuk sisi debit
                     grouped_lines.update({key: {
+                        'varieties_id'      : line.varieties_id,
                         'location_type'     : line.location_type_id,
                         'location'          : line.location_id,
                         'activity'          : line.activity_id,
@@ -459,6 +460,7 @@ class lhm_contractor(models.Model):
         amount = line.get('amount', 0.0)
         return {
             'name'                          : line.get('activity', False) and line['activity'].name or '/',
+            'plantation_varieties_id'       : line.get('varieties_id', False) and line['varieties_id'].id or False,
             'plantation_location_type_id'   : line.get('location_type', False) and line['location_type'].id or False,
             'plantation_location_id'        : line.get('location', False) and line['location'].id or False,
             'plantation_activity_id'        : line.get('activity', False) and line['activity'].id or False,
@@ -643,7 +645,7 @@ class lhm_contractor_line(models.Model):
     unit_price_2        = fields.Float('Tarif Satuan 2')
     total               = fields.Float('Nilai', compute='_compute_harga_satuan', store=True, readonly=True)
     type                = fields.Selection([('vehicle', 'Alat'), ('vendor', 'Vendor')], string='Type', related="contractor_id.type", readonly=True)
-    supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True)
+    supplier_id         = fields.Many2one("res.partner", related="contractor_id.supplier_id", readonly=True, store=True)
     contractor_vehicle  = fields.Boolean(string="Vehicle", related="contractor_id.contractor_vehicle", readonly=True)
     contractor_id       = fields.Many2one("lhm.contractor", string="Contractor", ondelete="cascade")
     line_nap_ids        = fields.One2many('lhm.contractor.nap.line', 'contractor_line_id', string="NAP Lines")
