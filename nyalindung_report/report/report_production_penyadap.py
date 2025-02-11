@@ -357,6 +357,19 @@ class ReportProductionPenyadap(models.AbstractModel):
                     sheet2.write(row2 + 2, col_index, date, wbf['header'])
                     sheet2.set_column(col_index, col_index, 5)
 
+            if from_date and to_date:
+                jumlah_total_konversi = seventh_date_end + 2
+                sheet2.merge_range(row2, jumlah_total_konversi, row2 + 1, jumlah_total_konversi, 'TOTAL HASIL KONVERSI', wbf['header'])
+                
+                eighth_date_start = jumlah_total_konversi + 1
+                eighth_date_end = eighth_date_start + len(date_columns) - 1
+                sheet2.merge_range(row2, eighth_date_start, row2 + 1, eighth_date_end, 'TANGGAL', wbf['header'])
+                
+                for i, date in enumerate(date_columns):
+                    col_index = eighth_date_start + i
+                    sheet2.write(row2 + 2, col_index, date, wbf['header'])
+                    sheet2.set_column(col_index, col_index, 5)
+
             # Header 2
             sheet2.write(row2 + 2, 0, 'NO.', wbf['header'])
             sheet2.set_column(5, 0, 7)
@@ -383,11 +396,15 @@ class ReportProductionPenyadap(models.AbstractModel):
 
             clateks_row2_start = row2 + 2
             clateks_col_start = jumlah_hasil_konversi_lateks
-            sheet2.write(clateks_row2_start, clateks_col_start, 'LATEKS (L)', wbf['header'])
+            sheet2.write(clateks_row2_start, clateks_col_start, 'LATEKS (Kg)', wbf['header'])
 
             clump_row2_start = row2 + 2
             clump_col_start = jumlah_hasil_konversi_lump
             sheet2.write(clump_row2_start, clump_col_start, 'LUMP (Kg)', wbf['header'])
+
+            tkonversi_row2_start = row2 + 2
+            tkonversi_col_start = jumlah_total_konversi
+            sheet2.write(tkonversi_row2_start, tkonversi_col_start, 'KARET (Kg)', wbf['header'])
 
             # Bagian Isi Data
             query = """
@@ -596,6 +613,32 @@ class ReportProductionPenyadap(models.AbstractModel):
                 total_column_index = jumlah_hasil_konversi_lump
                 sheet2.write(row2, total_column_index, total_hasil_konversi_lump, wbf['total_float'])
 
+                # Jumlahkan hasil konversi Lateks + Lump
+                total_konversi_lateks_lump = 0
+
+                for i in range((to_date - from_date).days + 1):
+                    current_date = from_date + timedelta(days=i)
+                    col_index = eighth_date_start + i
+
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
+                        ('employee_id', '=', emp_id),
+                        ('lhm_transaction_line_id.date', '=', current_date),
+                        ('lhm_transaction_line_id.state', '=', 'done')
+                    ], ['hasil_convert_latex', 'hasil_convert_lump'], limit=1)
+
+                    if nap_line:
+                        hasil_lateks = float(nap_line[0].get('hasil_convert_latex', 0))
+                        hasil_lump = float(nap_line[0].get('hasil_convert_lump', 0))
+                        total_hasil = hasil_lateks + hasil_lump
+
+                        total_konversi_lateks_lump += total_hasil
+                        sheet2.write(row2, col_index, total_hasil, wbf['total_float'])
+                    else:
+                        sheet2.write(row2, col_index, 0, wbf['total_float'])
+
+                total_column_index = jumlah_total_konversi
+                sheet2.write(row2, total_column_index, total_konversi_lateks_lump, wbf['total_float'])
+ 
                 row2 += 1
                 nomor += 1
 
@@ -626,7 +669,6 @@ class ReportProductionPenyadap(models.AbstractModel):
             sheet2.write(row2, total_hk_start, "-", wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lateks (L)
-
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = second_date_start + i
@@ -637,7 +679,6 @@ class ReportProductionPenyadap(models.AbstractModel):
             sheet2.write(row2, total_column_index, "-", wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lump (Kg)
-
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = third_date_start + i
@@ -648,7 +689,6 @@ class ReportProductionPenyadap(models.AbstractModel):
             sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lateks (L)
-
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = sixth_date_start + i
@@ -659,7 +699,6 @@ class ReportProductionPenyadap(models.AbstractModel):
             sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Isi Jumlah Hasil Konversi Lump (Kg)
-
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = seventh_date_start + i
@@ -667,6 +706,16 @@ class ReportProductionPenyadap(models.AbstractModel):
                 sheet2.write(row2, col_index, '-', wbf['data_center'])
 
             total_column_index = jumlah_hasil_konversi_lump
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
+
+            # Jumlahkan hasil konversi Lateks + Lump
+            for i in range((to_date - from_date).days + 1):
+                current_date = from_date + timedelta(days=i)
+                col_index = eighth_date_start + i
+
+                sheet2.write(row2, col_index, '-', wbf['data_center'])
+
+            total_column_index = jumlah_total_konversi
             sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             # Logika untuk Asisten Mandor
@@ -739,6 +788,16 @@ class ReportProductionPenyadap(models.AbstractModel):
             total_column_index = jumlah_hasil_konversi_lump
             sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
+            # Jumlahkan hasil konversi Lateks + Lump
+            for i in range((to_date - from_date).days + 1):
+                current_date = from_date + timedelta(days=i)
+                col_index = eighth_date_start + i
+
+                sheet2.write(row2, col_index, '-', wbf['data_center'])
+
+            total_column_index = jumlah_total_konversi
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
+
             # Logika untuk Kerani
             row2 += 1
             sheet2.write(row2, 0, "M-3", wbf['data_center'])
@@ -807,6 +866,16 @@ class ReportProductionPenyadap(models.AbstractModel):
                 sheet2.write(row2, col_index, '-', wbf['data_center'])
 
             total_column_index = jumlah_hasil_konversi_lump
+            sheet2.write(row2, total_column_index, '-', wbf['data_center'])
+
+            # Jumlahkan hasil konversi Lateks + Lump
+            for i in range((to_date - from_date).days + 1):
+                current_date = from_date + timedelta(days=i)
+                col_index = eighth_date_start + i
+
+                sheet2.write(row2, col_index, '-', wbf['data_center'])
+
+            total_column_index = jumlah_total_konversi
             sheet2.write(row2, total_column_index, '-', wbf['data_center'])
 
             row2 += 1
@@ -944,73 +1013,81 @@ class ReportProductionPenyadap(models.AbstractModel):
             #7
             total_keseluruhan_konversi_lateks = 0
             total_per_tanggal_konversi_lateks = {}
+
             for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
-                current_col = 4
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
                     col_index = sixth_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done')
-                    ], limit=1)
+                    ], ['hasil_convert_latex'], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
+                    hasil_nap_lateks = float(nap_line[0].get('hasil_convert_latex', 0)) if nap_line else 0
 
-                    if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            hasil_nap_lateks_float = float(hasil_nap_lateks)
-                            total_keseluruhan_konversi_lateks += hasil_nap_lateks_float
-                            total_per_tanggal_konversi_lateks[current_date] = total_per_tanggal_konversi_lateks.get(current_date, 0) + hasil_nap_lateks_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lateks_float = 0
-                            total_per_tanggal_konversi_lateks[current_date] = total_per_tanggal_konversi_lateks.get(current_date, 0) + 0
-                            cell_format = wbf['kuning']
-                    else:
-                        hasil_nap_lateks_float = '-'
-                        cell_format = wbf['kuning']
+                    total_keseluruhan_konversi_lateks += hasil_nap_lateks
+                    total_per_tanggal_konversi_lateks[current_date] = total_per_tanggal_konversi_lateks.get(current_date, 0) + hasil_nap_lateks
 
-                    sheet2.write(row2, col_index, total_per_tanggal_konversi_lateks.get(current_date, 0), cell_format)
+                    cell_format = wbf['kuning'] if hasil_nap_lateks > 0 else wbf['kuning']
+                    sheet2.write(row2, col_index, total_per_tanggal_konversi_lateks[current_date], cell_format)
 
-                total_column_index = jumlah_hasil_konversi_lateks
-                sheet2.write(row2, total_column_index, total_keseluruhan_konversi_lateks if total_keseluruhan_konversi_lateks > 0 else '-', wbf['hijau_tua'])
+            total_column_index = jumlah_hasil_konversi_lateks
+            sheet2.write(row2, total_column_index, total_keseluruhan_konversi_lateks if total_keseluruhan_konversi_lateks > 0 else '-', wbf['hijau_tua'])
 
             #8
             total_keseluruhan_konversi_lump = 0
             total_per_tanggal_konversi_lump = {}
+
             for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
-                current_col = 4
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
                     col_index = seventh_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done')
-                    ], limit=1)
+                    ], ['hasil_convert_lump'], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_convert_lump if nap_line else '-'
+                    hasil_nap_lump = float(nap_line[0].get('hasil_convert_lump', 0)) if nap_line else 0
 
-                    if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            hasil_nap_lateks_float = float(hasil_nap_lateks)
-                            total_keseluruhan_konversi_lump += hasil_nap_lateks_float
-                            total_per_tanggal_konversi_lump[current_date] = total_per_tanggal_konversi_lump.get(current_date, 0) + hasil_nap_lateks_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lateks_float = 0
-                            total_per_tanggal_konversi_lump[current_date] = total_per_tanggal_konversi_lump.get(current_date, 0) + 0
-                            cell_format = wbf['kuning']
-                    else:
-                        hasil_nap_lateks_float = '-'
-                        cell_format = wbf['kuning']
+                    total_keseluruhan_konversi_lump += hasil_nap_lump
+                    total_per_tanggal_konversi_lump[current_date] = total_per_tanggal_konversi_lump.get(current_date, 0) + hasil_nap_lump
 
-                    sheet2.write(row2, col_index, total_per_tanggal_konversi_lump.get(current_date, 0), cell_format)
+                    cell_format = wbf['kuning'] if hasil_nap_lump > 0 else wbf['kuning']
+                    sheet2.write(row2, col_index, total_per_tanggal_konversi_lump[current_date], cell_format)
 
-                total_column_index = jumlah_hasil_konversi_lump
-                sheet2.write(row2, total_column_index, total_keseluruhan_konversi_lump if total_keseluruhan_konversi_lump > 0 else '-', wbf['hijau_tua'])
+            total_column_index = jumlah_hasil_konversi_lump
+            sheet2.write(row2, total_column_index, total_keseluruhan_konversi_lump if total_keseluruhan_konversi_lump > 0 else '-', wbf['hijau_tua'])
+
+            #9
+            total_keseluruhan_konversi_total = 0
+            total_per_tanggal_konversi_total = {}
+
+            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+                for i in range((to_date - from_date).days + 1):
+                    current_date = from_date + timedelta(days=i)
+                    col_index = eighth_date_start + i
+
+                    nap_line = self.env['lhm.transaction.nap.line'].search_read([
+                        ('employee_id', '=', emp_id),
+                        ('lhm_transaction_line_id.date', '=', current_date),
+                        ('lhm_transaction_line_id.state', '=', 'done')
+                    ], ['hasil_convert_latex', 'hasil_convert_lump'], limit=1)
+
+                    hasil_nap_lateks = float(nap_line[0].get('hasil_convert_latex', 0)) if nap_line else 0
+                    hasil_nap_lump = float(nap_line[0].get('hasil_convert_lump', 0)) if nap_line else 0
+
+                    total_hasil = hasil_nap_lateks + hasil_nap_lump
+                    total_keseluruhan_konversi_total += total_hasil
+                    total_per_tanggal_konversi_total[current_date] = total_per_tanggal_konversi_total.get(current_date, 0) + total_hasil
+
+                    cell_format = wbf['kuning'] if total_hasil > 0 else wbf['kuning']
+                    sheet2.write(row2, col_index, total_per_tanggal_konversi_total[current_date], cell_format)
+
+            total_column_index = jumlah_total_konversi
+            sheet2.write(row2, total_column_index, total_keseluruhan_konversi_total if total_keseluruhan_konversi_total > 0 else '-', wbf['hijau_tua'])
 
             row2 += 4
