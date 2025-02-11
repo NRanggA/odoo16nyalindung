@@ -434,7 +434,7 @@ class ReportProduction(models.AbstractModel):
 
             clateks_row_start = row + 2
             clateks_col_start = jumlah_hasil_konversi_lateks
-            sheet.write(clateks_row_start, clateks_col_start, 'LATEKS (L)', wbf['header'])
+            sheet.write(clateks_row_start, clateks_col_start, 'LATEKS (Kg)', wbf['header'])
 
             clump_row_start = row + 2
             clump_col_start = jumlah_hasil_konversi_lump

@@ -413,7 +413,7 @@ class ReportProductionKebun(models.AbstractModel):
 
             clateks_row3_start = row3 + 2
             clateks_col_start = jumlah_hasil_konversi_lateks
-            sheet3.write(clateks_row3_start, clateks_col_start, 'LATEKS (L)', wbf['header'])
+            sheet3.write(clateks_row3_start, clateks_col_start, 'LATEKS (Kg)', wbf['header'])
 
             clump_row3_start = row3 + 2
             clump_col_start = jumlah_hasil_konversi_lump
