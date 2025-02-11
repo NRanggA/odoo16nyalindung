@@ -78,7 +78,8 @@ class ReportStockMutation(models.AbstractModel):
             'align': 'left',
             'valign': 'vcenter',
             'font_color':'green',
-            'num_format': '#,##0'
+            # 'num_format': '#,##0'
+            'num_format': '#,##0.0'
         })
         self.wbf['positive'].set_border()
         
@@ -86,7 +87,8 @@ class ReportStockMutation(models.AbstractModel):
             'align': 'left',
             'valign': 'vcenter',
             'font_color':'red',
-            'num_format': '#,##0'
+            # 'num_format': '#,##0'
+            'num_format': '#,##0.0'
         })
         self.wbf['negative'].set_border()
 
@@ -117,8 +119,8 @@ class ReportStockMutation(models.AbstractModel):
             'bold': False,
             'align': 'center',
             'valign': 'vcenter',
-            # 'num_format': '#,##0.00',
-            'num_format': '#,##0'
+            # 'num_format': '#,##0'
+            'num_format': '#,##0.0'
         })
         self.wbf['total_float'].set_border()
 
