@@ -211,7 +211,8 @@ class ClosingLaboratory(models.Model):
                     #     raise ValidationError(f"Aktifitas pada Material Request Kosong. Silahkan diisi terlebih dahulu pada MR no {move.sudo().mr_line_id.mr_id.name}")
                     # if not move.plantation_activity_id.cost_account_id:
                     #     raise ValidationError(f"Plantation Cost Account pada Aktifitas Kosong. Silahkan diisi terlebih dahulu pada Aktifitas {move.plantation_activity_id.code} {move.plantation_activity_id.name}")
-                    account_out = move.plantation_activity_id.cost_account_id
+                    # account_out = move.plantation_activity_id.cost_account_id
+                    account_out = move.plantation_activity_id.account_id
                     if not account_out:
                         account_out = closing.lab_product_id.location_id.type_id.account_id # Sementara buat testing
                         print(">>>>>>>>>>>>>>>> INI", closing.lab_product_id.product_id.name)

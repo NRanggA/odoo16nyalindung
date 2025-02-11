@@ -130,7 +130,7 @@ class AccountCostMapPayroll(models.Model):
             raise ValidationError(_("Please click Cost Mapping before creating the journal"))
         rule_map = dict(map(lambda r: (r.id, r), self.payslip_run_ids.cost_map_ids.rule_id))
         move_lines = []
-        for batch in self:
+        for batch in self.payslip_run_ids:
             query = """(SELECT 
                     plantation_varieties_id,
                     plantation_location_type_id,
@@ -155,7 +155,7 @@ class AccountCostMapPayroll(models.Model):
                 GROUP BY account_id, plantation_varieties_id, plantation_location_type_id,
                     plantation_location_id, plantation_activity_id)
             """
-            self.env.cr.execute(query%(batch.id,self.id))
+            self.env.cr.execute(query%(batch.id,batch.id))
             
             for vals in self.env.cr.dictfetchall():
                 dr_amt = cr_amt = 0.0
@@ -174,7 +174,7 @@ class AccountCostMapPayroll(models.Model):
             
         reclass_gc_vals = {
             'date': self.date,
-            'journal_id': self.env['account.journal'].search([('type','=','general')], limit=1).id,
+            'journal_id': lhm_journal.id,
             'move_type': 'entry',
             'line_ids': move_lines,
         }
