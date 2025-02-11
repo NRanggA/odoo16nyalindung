@@ -130,7 +130,7 @@ class AccountCostMapPayroll(models.Model):
             raise ValidationError(_("Please click Cost Mapping before creating the journal"))
         rule_map = dict(map(lambda r: (r.id, r), self.payslip_run_ids.cost_map_ids.rule_id))
         move_lines = []
-        for batch in self:
+        for batch in self.payslip_run_ids:
             query = """(SELECT 
                     plantation_varieties_id,
                     plantation_location_type_id,
