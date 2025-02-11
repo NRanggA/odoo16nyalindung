@@ -116,7 +116,7 @@ class AccountAssetDepreciationLine(models.Model):
         
         if asset_id.charge_to_activity:
             move_line_2                 = move_vals['line_ids'][1][2]
-            move_line_2['account_id']   = asset_id.activity_id.account_id.id
+            move_line_2['account_id']   = asset_id.activity_id.account_id.id if asset_id.activity_id and asset_id.activity_id.account_id else move_line_2['account_id']
             
             move_line_2['plantation_location_type_id']  = asset_id.location_type_id.id
             move_line_2['plantation_location_id']       = asset_id.location_id.id
