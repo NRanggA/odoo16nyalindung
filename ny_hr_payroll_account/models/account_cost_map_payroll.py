@@ -155,7 +155,7 @@ class AccountCostMapPayroll(models.Model):
                 GROUP BY account_id, plantation_varieties_id, plantation_location_type_id,
                     plantation_location_id, plantation_activity_id)
             """
-            self.env.cr.execute(query%(batch.id,self.id))
+            self.env.cr.execute(query%(batch.id,batch.id))
             
             for vals in self.env.cr.dictfetchall():
                 dr_amt = cr_amt = 0.0
