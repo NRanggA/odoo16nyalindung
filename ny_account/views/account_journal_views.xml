@@ -13,7 +13,8 @@
                 </xpath>
                 <!-- Penambahan ORG setelah field type -->
                 <xpath expr="//field[@name='type']" position="after">
-                    <field name="varieties_id" attrs="{'invisible': [('type', '!=', 'sale')]}"/>
+                    <field name="is_org" attrs="{'invisible': [('type', '!=', 'sale')]}"/>
+                    <field name="varieties_id" attrs="{'invisible': [('is_org', '=', False)]}"/>
                 </xpath>
             </field>
         </record>

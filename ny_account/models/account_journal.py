@@ -9,7 +9,9 @@ class AccountJournal(models.Model):
 
     sequence_id = fields.Many2one('ir.sequence', string='Reference Sequence')   
     sequence_out_id = fields.Many2one('ir.sequence', string='Reference Sequence OUT')
-    varieties_id        = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
+    
+    is_org          = fields.Boolean('Use ORG ?', default=False)
+    varieties_id    = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
 
     def create_sequence(self):
         for journal in self:

@@ -46,10 +46,11 @@ class AccountMove(models.Model):
                         },
                     }
                 
-                if not self.journal_id.varieties_id:
-                    raise ValidationError(f"Journal yang anda pilih [{self.journal_id.name}] tidak memiliki ORG, silahkan isi terlebih dahulu!.")
-                
-                for line in rec.invoice_line_ids:
-                    line.plantation_varieties_id = self.journal_id.varieties_id.id
+                if self.journal_id.is_org:    
+                    if not self.journal_id.varieties_id:
+                        raise ValidationError(f"Journal yang anda pilih [{self.journal_id.name}] tidak memiliki ORG, silahkan isi terlebih dahulu!.")
+                    
+                    for line in rec.invoice_line_ids:
+                        line.plantation_varieties_id = self.journal_id.varieties_id.id
 
         return super(AccountMove, self).action_post()
