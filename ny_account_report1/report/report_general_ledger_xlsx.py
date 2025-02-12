@@ -324,7 +324,9 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write(row, 12, '', wbf['account'])
             sheet.write(row, 13, '', wbf['account'])
 
-            sheet.write_formula(row, 14, f'=SUM(O{row - len(account_move_lines)}:O{last_balance_row})', wbf['opening_balance'])
+            # sheet.write_formula(row, 14, f'=SUM(O{row - len(account_move_lines)}:O{last_balance_row})', wbf['opening_balance'])
+            sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['opening_balance'])
+            sheet.write(row, 15, '', wbf['account'])
             sheet.write(row, 15, '', wbf['account'])
             row += 1
         
