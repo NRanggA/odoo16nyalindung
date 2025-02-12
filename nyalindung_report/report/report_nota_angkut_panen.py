@@ -441,9 +441,10 @@ class ReportProduction(models.AbstractModel):
             datas = self._cr.dictfetchall()
 
             for data in datas:
-                utc_time = data['tanggal']  
+                utc_time = data['tanggal']
                 jakarta_tz = timezone('Asia/Jakarta')
-                utc_time = datetime.combine(utc_time, datetime.min.time())
+                # utc_time = datetime.combine(utc_time, datetime.min.time())
+                utc_time = datetime.combine(utc_time or datetime.today().date(), datetime.min.time())
                 utc_time = utc_time.replace(tzinfo=UTC)
                 local_time = utc_time.astimezone(jakarta_tz)
 
