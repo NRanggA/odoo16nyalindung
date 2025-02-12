@@ -676,10 +676,10 @@ class ClosingProduction(models.Model):
                  'lump_wip_outgoing_qty', 'lump_wip_cost_price', 'lump_wip_onhand_qty')
     def _compute_closing_wip_value_rm(self):
         for closing in self:
-            closing.latex_wip_outgoing_value = closing.latex_wip_outgoing_qty * closing.latex_wip_cost_price
+            closing.latex_wip_outgoing_value = round(closing.latex_wip_outgoing_qty * closing.latex_wip_cost_price, 2)
             closing.latex_wip_qty = closing.latex_wip_onhand_qty - closing.latex_wip_outgoing_qty
             closing.latex_wip_value = closing.latex_wip_onhand_value - closing.latex_wip_outgoing_value
-            closing.lump_wip_outgoing_value = closing.lump_wip_outgoing_qty * closing.lump_wip_cost_price
+            closing.lump_wip_outgoing_value = round(closing.lump_wip_outgoing_qty * closing.lump_wip_cost_price, 2)
             closing.lump_wip_qty = closing.lump_wip_onhand_qty - closing.lump_wip_outgoing_qty
             closing.lump_wip_value = closing.lump_wip_onhand_value - closing.lump_wip_outgoing_value
 
@@ -689,26 +689,26 @@ class ClosingProduction(models.Model):
             )
     def _compute_outgoing_value_latex_lump(self):
         for closing in self:
-            closing.latex_delivered_value = closing.latex_delivered_qty * closing.latex_new_cost_price
-            closing.lump_delivered_value = closing.lump_delivered_qty * closing.lump_new_cost_price
-            closing.latex_adjustment_value = closing.latex_adjustment_qty * closing.latex_new_cost_price
-            closing.lump_adjustment_value = closing.lump_adjustment_qty * closing.lump_new_cost_price
+            closing.latex_delivered_value = round(closing.latex_delivered_qty * closing.latex_new_cost_price, 2)
+            closing.lump_delivered_value = round(closing.lump_delivered_qty * closing.lump_new_cost_price, 2)
+            closing.latex_adjustment_value = round(closing.latex_adjustment_qty * closing.latex_new_cost_price, 2)
+            closing.lump_adjustment_value = round(closing.lump_adjustment_qty * closing.lump_new_cost_price, 2)
 
     @api.depends('latex_onhand_qty', 'latex_onhand_value', 
             'latex_wip_incoming_qty', 'latex_wip_incoming_value',
             'lump_onhand_qty', 'lump_onhand_value', 
             'lump_wip_incoming_qty', 'lump_wip_incoming_value', 
-            'latex_delivered_value','lump_delivered_value',
-            'latex_adjustment_value','lump_adjustment_value',
             'latex_delivered_qty','lump_delivered_qty',
             'latex_adjustment_qty','lump_adjustment_qty',
+            'latex_delivered_value','lump_delivered_value',
+            'latex_adjustment_value','lump_adjustment_value',
             )
     def _compute_closing_rm(self):
         for closing in self:
-            closing.latex_closing_qty = closing.latex_onhand_qty - closing.latex_wip_incoming_qty - closing.latex_delivered_qty - closing.latex_adjustment_qty
-            closing.latex_closing_value = closing.latex_onhand_value - closing.latex_wip_incoming_value - closing.latex_delivered_value - closing.latex_adjustment_value
-            closing.lump_closing_qty = closing.lump_onhand_qty - closing.lump_wip_incoming_qty - closing.lump_delivered_qty - closing.lump_adjustment_qty
-            closing.lump_closing_value = closing.lump_onhand_value - closing.lump_wip_incoming_value - closing.lump_delivered_value - closing.lump_adjustment_value
+            closing.latex_closing_qty = closing.latex_onhand_qty - closing.latex_wip_incoming_qty - closing.latex_delivered_qty + closing.latex_adjustment_qty
+            closing.latex_closing_value = closing.latex_onhand_value - closing.latex_wip_incoming_value - closing.latex_delivered_value + closing.latex_adjustment_value
+            closing.lump_closing_qty = closing.lump_onhand_qty - closing.lump_wip_incoming_qty - closing.lump_delivered_qty + closing.lump_adjustment_qty
+            closing.lump_closing_value = closing.lump_onhand_value - closing.lump_wip_incoming_value - closing.lump_delivered_value + closing.lump_adjustment_value
 
     # PISANG
     @api.depends('varieties_type','fg2_valuation_ids.incoming_qty', 'fg2_valuation_ids.ripening_incoming_qty')
