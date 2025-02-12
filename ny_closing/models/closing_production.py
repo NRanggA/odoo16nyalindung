@@ -749,6 +749,7 @@ class ClosingProduction(models.Model):
         if self.plantation_other_cost_account_ids:
             domain_plantation2 = [('parent_state','=','posted'),
                 ('date','>=',self.closing_process_id.date_from),('date','<=',self.closing_process_id.date_to),
+                ('plantation_varieties_id.name','=','Karet'),
                 # ('plantation_varieties_id','=',self.varieties_id.id),
                 # ('plantation_location_type_id.plantation','=',True),
                 # ('plantation_location_id','!=',False),
