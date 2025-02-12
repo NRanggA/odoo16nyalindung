@@ -1244,7 +1244,7 @@ class ClosingProduction(models.Model):
                                 ('lhm_nap_id.date_nap','>=',closing.date_from),
                                 ('lhm_nap_id.date_nap','<=',closing.date_to),
                                 ('lhm_nap_id.state','in',['confirmed','done'])])
-                incoming_qty = sum(pisang_in.mapped('product_qty')) if pisang_in else 0.0
+                incoming_qty = sum(pisang_in.mapped('qty_received')) if pisang_in else 0.0
                 total_produced += incoming_qty
 
                 ripening_location = self.env.ref('ny_plantation.loc_ripening_loc_1')
