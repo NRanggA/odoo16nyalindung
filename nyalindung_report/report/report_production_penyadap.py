@@ -949,25 +949,20 @@ class ReportProductionPenyadap(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = second_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_line_data = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done')
-                    ], limit=1)
+                    ], ['hasil_1_nap'], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
+                    hasil_nap_lateks = nap_line_data[0]['hasil_1_nap'] if nap_line_data else '-'
+                    hasil_nap_lateks_float = float(hasil_nap_lateks) if hasil_nap_lateks and hasil_nap_lateks != '-' else 0
 
-                    if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            hasil_nap_lateks_float = float(hasil_nap_lateks)
-                            total_keseluruhan_hasil_lateks += hasil_nap_lateks_float
-                            total_per_tanggal_lateks[current_date] = total_per_tanggal_lateks.get(current_date, 0) + hasil_nap_lateks_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lateks_float = 0
-                            cell_format = wbf['kuning']
+                    if hasil_nap_lateks_float:
+                        total_keseluruhan_hasil_lateks += hasil_nap_lateks_float
+                        total_per_tanggal_lateks[current_date] = total_per_tanggal_lateks.get(current_date, 0) + hasil_nap_lateks_float
+                        cell_format = wbf['kuning']
                     else:
-                        hasil_nap_lateks_float = 0
                         cell_format = wbf['kuning']
 
                     sheet2.write(row2, col_index, total_per_tanggal_lateks.get(current_date, 0), cell_format)
@@ -975,34 +970,31 @@ class ReportProductionPenyadap(models.AbstractModel):
                 total_column_index = jumlah_hasil_sadapan_lateks
                 sheet2.write(row2, total_column_index, total_keseluruhan_hasil_lateks if total_keseluruhan_hasil_lateks > 0 else '-', wbf['hijau_tua'])
 
+
             #4
             total_keseluruhan_hasil_lump = 0
             total_per_tanggal_lump = {}
+
             for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
                 current_col = 4
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
                     col_index = third_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_line_data = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done')
-                    ], limit=1)
+                    ], ['hasil_2_nap'], limit=1)
 
-                    hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
+                    hasil_nap_lump = nap_line_data[0]['hasil_2_nap'] if nap_line_data else '-'
+                    hasil_nap_lump_float = float(hasil_nap_lump) if hasil_nap_lump and hasil_nap_lump != '-' else 0
 
-                    if hasil_nap_lump and hasil_nap_lump != '-':
-                        try:
-                            hasil_nap_lump_float = float(hasil_nap_lump)
-                            total_keseluruhan_hasil_lump += hasil_nap_lump_float
-                            total_per_tanggal_lump[current_date] = total_per_tanggal_lump.get(current_date, 0) + hasil_nap_lump_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lump_float = 0
-                            cell_format = wbf['kuning']
+                    if hasil_nap_lump_float:
+                        total_keseluruhan_hasil_lump += hasil_nap_lump_float
+                        total_per_tanggal_lump[current_date] = total_per_tanggal_lump.get(current_date, 0) + hasil_nap_lump_float
+                        cell_format = wbf['kuning']
                     else:
-                        hasil_nap_lump_float = 0
                         cell_format = wbf['kuning']
 
                     sheet2.write(row2, col_index, total_per_tanggal_lump.get(current_date, 0), cell_format)

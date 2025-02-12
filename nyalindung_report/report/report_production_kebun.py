@@ -916,13 +916,13 @@ class ReportProductionKebun(models.AbstractModel):
                 for i, current_date in enumerate(total_per_tanggal_lateks.keys()):
                     col_index = second_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('lhm_transaction_line_id.location_id', '=', location_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    ], ['hasil_1_nap'])
 
-                    hasil_nap_lateks = sum(float(line.hasil_1_nap) for line in nap_lines if line.hasil_1_nap)
+                    hasil_nap_lateks = sum(float(line['hasil_1_nap']) for line in nap_lines if line.get('hasil_1_nap'))
 
                     total_keseluruhan_hasil_lateks += hasil_nap_lateks
                     total_per_tanggal_lateks[current_date] += hasil_nap_lateks
@@ -935,7 +935,6 @@ class ReportProductionKebun(models.AbstractModel):
 
             total_column_index = jumlah_hasil_sadapan_lateks
             sheet3.write(row3, total_column_index, total_keseluruhan_hasil_lateks if total_keseluruhan_hasil_lateks > 0 else '-', wbf['hijau_tua'])
-
 
             #4
             total_keseluruhan_hasil_lump = 0
@@ -968,7 +967,6 @@ class ReportProductionKebun(models.AbstractModel):
             total_column_index = jumlah_hasil_sadapan_lump
             sheet3.write(row3, total_column_index, total_keseluruhan_hasil_lump if total_keseluruhan_hasil_lump > 0 else '-', wbf['hijau_tua'])
 
-
             #7
             total_keseluruhan_konversi_lateks = 0
             total_per_tanggal_konversi_lateks = {current_date: 0 for current_date in [from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)]}
@@ -979,13 +977,13 @@ class ReportProductionKebun(models.AbstractModel):
                 for i, current_date in enumerate(total_per_tanggal_konversi_lateks.keys()):
                     col_index = sixth_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
-                        ('lhm_transaction_line_id.location_id', '=', location_id),
-                        ('lhm_transaction_line_id.date', '=', current_date),
-                        ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read(
+                        [('lhm_transaction_line_id.location_id', '=', location_id),
+                         ('lhm_transaction_line_id.date', '=', current_date),
+                         ('lhm_transaction_line_id.state', '=', 'done')],
+                        ['hasil_convert_latex'])
 
-                    hasil_konversi_lateks = sum(float(line.hasil_convert_latex) for line in nap_lines if line.hasil_convert_latex)
+                    hasil_konversi_lateks = sum(float(line['hasil_convert_latex']) for line in nap_lines if line.get('hasil_convert_latex'))
 
                     total_keseluruhan_konversi_lateks += hasil_konversi_lateks
                     total_per_tanggal_konversi_lateks[current_date] += hasil_konversi_lateks
@@ -1000,7 +998,6 @@ class ReportProductionKebun(models.AbstractModel):
             total_column_index = jumlah_hasil_konversi_lateks
             sheet3.write(row3, total_column_index, total_keseluruhan_konversi_lateks if total_keseluruhan_konversi_lateks > 0 else '-', wbf['hijau_tua'])
 
-
             #8
             total_keseluruhan_konversi_lump = 0
             total_per_tanggal_konversi_lump = {current_date: 0 for current_date in [from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)]}
@@ -1011,13 +1008,14 @@ class ReportProductionKebun(models.AbstractModel):
                 for i, current_date in enumerate(total_per_tanggal_konversi_lump.keys()):
                     col_index = seventh_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
-                        ('lhm_transaction_line_id.location_id', '=', location_id),
-                        ('lhm_transaction_line_id.date', '=', current_date),
-                        ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read(
+                        [('lhm_transaction_line_id.location_id', '=', location_id),
+                         ('lhm_transaction_line_id.date', '=', current_date),
+                         ('lhm_transaction_line_id.state', '=', 'done')],
+                        ['hasil_convert_lump']
+                    )
 
-                    hasil_konversi_lump = sum(float(line.hasil_convert_lump) for line in nap_lines if line.hasil_convert_lump)
+                    hasil_konversi_lump = sum(float(line['hasil_convert_lump']) for line in nap_lines if line.get('hasil_convert_lump'))
 
                     total_keseluruhan_konversi_lump += hasil_konversi_lump
                     total_per_tanggal_konversi_lump[current_date] += hasil_konversi_lump
@@ -1042,14 +1040,15 @@ class ReportProductionKebun(models.AbstractModel):
                 for i, current_date in enumerate(total_per_tanggal_konversi_total.keys()):
                     col_index = eighth_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
-                        ('lhm_transaction_line_id.location_id', '=', location_id),
-                        ('lhm_transaction_line_id.date', '=', current_date),
-                        ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read(
+                        [('lhm_transaction_line_id.location_id', '=', location_id),
+                         ('lhm_transaction_line_id.date', '=', current_date),
+                         ('lhm_transaction_line_id.state', '=', 'done')],
+                        ['hasil_convert_latex', 'hasil_convert_lump']
+                    )
 
-                    hasil_konversi_lateks = sum(float(line.hasil_convert_latex) for line in nap_lines if line.hasil_convert_latex)
-                    hasil_konversi_lump = sum(float(line.hasil_convert_lump) for line in nap_lines if line.hasil_convert_lump)
+                    hasil_konversi_lateks = sum(float(line['hasil_convert_latex']) for line in nap_lines if line.get('hasil_convert_latex'))
+                    hasil_konversi_lump = sum(float(line['hasil_convert_lump']) for line in nap_lines if line.get('hasil_convert_lump'))
 
                     hasil_konversi_total = hasil_konversi_lateks + hasil_konversi_lump
                     total_keseluruhan_konversi_total += hasil_konversi_total

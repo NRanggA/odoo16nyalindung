@@ -887,43 +887,14 @@ class ReportProduction(models.AbstractModel):
                 current_date = from_date + timedelta(days=i)
                 col_index = fourth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', asisten_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done'),
-                    ('lhm_transaction_line_id.location_id', '=', location_id)
-                ], limit=1)
-
-                drc_lateks = nap_line.drc_latex_nap if nap_line else '-'
-
-                if drc_lateks and drc_lateks != '-':
-                    cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet.write(row, col_index, drc_lateks, cell_format)
+                sheet.write(row, col_index, "-", cell_format)
 
             # Isi Data DRC Lump (Kg)
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = fifth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', asisten_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done'),
-                    ('lhm_transaction_line_id.location_id', '=', location_id)
-                ], limit=1)
-
-                drc_lump = nap_line.drc_lump_nap if nap_line else '-'
-                if drc_lump == 0:
-                    drc_lump = '-'
-                if drc_lump and drc_lump != '-':
-                    cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet.write(row, col_index, drc_lump, cell_format)
+                sheet.write(row, col_index, "-", cell_format)
 
             # Isi Jumlah Hasil Konversi Lateks (L)
 
@@ -1012,43 +983,14 @@ class ReportProduction(models.AbstractModel):
                 current_date = from_date + timedelta(days=i)
                 col_index = fourth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', kerani_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done'),
-                    ('lhm_transaction_line_id.location_id', '=', location_id)
-                ], limit=1)
-
-                drc_lateks = nap_line.drc_latex_nap if nap_line else '-'
-
-                if drc_lateks and drc_lateks != '-':
-                    cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet.write(row, col_index, drc_lateks, cell_format)
+                sheet.write(row, col_index, "-", cell_format)
 
             # Isi Data DRC Lump (Kg)
             for i in range((to_date - from_date).days + 1):
                 current_date = from_date + timedelta(days=i)
                 col_index = fifth_date_start + i
 
-                nap_line = self.env['lhm.transaction.nap.line'].search([
-                    ('employee_id', '=', kerani_employee.id),
-                    ('lhm_transaction_line_id.date', '=', current_date),
-                    ('lhm_transaction_line_id.state', '=', 'done'),
-                    ('lhm_transaction_line_id.location_id', '=', location_id)
-                ], limit=1)
-
-                drc_lump = nap_line.drc_lump_nap if nap_line else '-'
-                if drc_lump == 0:
-                    drc_lump = '-'
-                if drc_lump and drc_lump != '-':
-                    cell_format = wbf['data_center']
-                else:
-                    cell_format = wbf['data_center']
-
-                sheet.write(row, col_index, drc_lump, cell_format)
+                sheet.write(row, col_index, "-", cell_format)
 
             # Isi Jumlah Hasil Konversi Lateks (L)
 
@@ -1155,24 +1097,20 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = second_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_1_nap'], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_1_nap if nap_line else '-'
+                    hasil_nap_lateks = nap_lines[0]['hasil_1_nap'] if nap_lines else '-'
 
                     if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            hasil_nap_lateks_float = float(hasil_nap_lateks)
-                            total_keseluruhan_hasil_lateks += hasil_nap_lateks_float
-                            total_per_tanggal_lateks[current_date] = total_per_tanggal_lateks.get(current_date, 0) + hasil_nap_lateks_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lateks_float = 0
-                            cell_format = wbf['kuning']
+                        hasil_nap_lateks_float = float(hasil_nap_lateks)
+                        total_keseluruhan_hasil_lateks += hasil_nap_lateks_float
+                        total_per_tanggal_lateks[current_date] = total_per_tanggal_lateks.get(current_date, 0) + hasil_nap_lateks_float
+                        cell_format = wbf['kuning']
                     else:
                         hasil_nap_lateks_float = 0
                         cell_format = wbf['kuning']
@@ -1191,24 +1129,20 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = third_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_2_nap'], limit=1)
 
-                    hasil_nap_lump = nap_line.hasil_2_nap if nap_line else '-'
+                    hasil_nap_lump = nap_lines[0]['hasil_2_nap'] if nap_lines else '-'
 
                     if hasil_nap_lump and hasil_nap_lump != '-':
-                        try:
-                            hasil_nap_lump_float = float(hasil_nap_lump)
-                            total_keseluruhan_hasil_lump += hasil_nap_lump_float
-                            total_per_tanggal_lump[current_date] = total_per_tanggal_lump.get(current_date, 0) + hasil_nap_lump_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lump_float = 0
-                            cell_format = wbf['kuning']
+                        hasil_nap_lump_float = float(hasil_nap_lump)
+                        total_keseluruhan_hasil_lump += hasil_nap_lump_float
+                        total_per_tanggal_lump[current_date] = total_per_tanggal_lump.get(current_date, 0) + hasil_nap_lump_float
+                        cell_format = wbf['kuning']
                     else:
                         hasil_nap_lump_float = 0
                         cell_format = wbf['kuning']
@@ -1227,27 +1161,22 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = sixth_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_convert_latex'], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_convert_latex if nap_line else '-'
+                    hasil_nap_lateks = nap_lines[0]['hasil_convert_latex'] if nap_lines else '-'
 
                     if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            hasil_nap_lateks_float = float(hasil_nap_lateks)
-                            total_keseluruhan_konversi_lateks += hasil_nap_lateks_float
-                            total_per_tanggal_konversi_lateks[current_date] = total_per_tanggal_konversi_lateks.get(current_date, 0) + hasil_nap_lateks_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lateks_float = 0
-                            total_per_tanggal_konversi_lateks[current_date] = total_per_tanggal_konversi_lateks.get(current_date, 0) + 0
-                            cell_format = wbf['kuning']
+                        hasil_nap_lateks_float = float(hasil_nap_lateks)
+                        total_keseluruhan_konversi_lateks += hasil_nap_lateks_float
+                        total_per_tanggal_konversi_lateks[current_date] = total_per_tanggal_konversi_lateks.get(current_date, 0) + hasil_nap_lateks_float
+                        cell_format = wbf['kuning']
                     else:
-                        hasil_nap_lateks_float = '-'
+                        hasil_nap_lateks_float = 0
                         cell_format = wbf['kuning']
 
                     sheet.write(row, col_index, total_per_tanggal_konversi_lateks.get(current_date, 0), cell_format)
@@ -1264,27 +1193,22 @@ class ReportProduction(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = seventh_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('employee_id', '=', emp_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
                         ('lhm_transaction_line_id.location_id', '=', location_id)
-                    ], limit=1)
+                    ], ['hasil_convert_lump'], limit=1)
 
-                    hasil_nap_lateks = nap_line.hasil_convert_lump if nap_line else '-'
+                    hasil_nap_lateks = nap_lines[0]['hasil_convert_lump'] if nap_lines else '-'
 
                     if hasil_nap_lateks and hasil_nap_lateks != '-':
-                        try:
-                            hasil_nap_lateks_float = float(hasil_nap_lateks)
-                            total_keseluruhan_konversi_lump += hasil_nap_lateks_float
-                            total_per_tanggal_konversi_lump[current_date] = total_per_tanggal_konversi_lump.get(current_date, 0) + hasil_nap_lateks_float
-                            cell_format = wbf['kuning']
-                        except ValueError:
-                            hasil_nap_lateks_float = 0
-                            total_per_tanggal_konversi_lump[current_date] = total_per_tanggal_konversi_lump.get(current_date, 0) + 0
-                            cell_format = wbf['kuning']
+                        hasil_nap_lateks_float = float(hasil_nap_lateks)
+                        total_keseluruhan_konversi_lump += hasil_nap_lateks_float
+                        total_per_tanggal_konversi_lump[current_date] = total_per_tanggal_konversi_lump.get(current_date, 0) + hasil_nap_lateks_float
+                        cell_format = wbf['kuning']
                     else:
-                        hasil_nap_lateks_float = '-'
+                        hasil_nap_lateks_float = 0
                         cell_format = wbf['kuning']
 
                     sheet.write(row, col_index, total_per_tanggal_konversi_lump.get(current_date, 0), cell_format)
