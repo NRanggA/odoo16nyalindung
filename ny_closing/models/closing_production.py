@@ -1108,11 +1108,11 @@ class ClosingProduction(models.Model):
             
             # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
             # Get Receiving Asam Semut
-            receving_asam_semuts = self.env['stock.move'].search([('product_id.name','=','Asam Semut'),
+            receving_asam_semuts = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
             closing.sheet_rm_incoming_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
-            closing.sheet_rm_incoming_value = sum([x.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
+            closing.sheet_rm_incoming_value = sum([x.move_id.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
             # Get Consumed Asam Semut
             out_asam_semut = self.env['mrp.manual.consume'].search([('product_id.name','=','Asam Semut'),
                                     ('date','>=',closing.date_from),('date','<=',closing.date_to),
