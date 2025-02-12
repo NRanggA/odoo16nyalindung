@@ -626,14 +626,18 @@
                                 </group>
                                 <group>
                                     <field name="plantation_cost" />
-                                    <label for="manufacturing_cost_account_ids" groups="ny_closing.plantation_closing_config"/>
+                                    <label for="plantation_other_cost_account_ids" groups="ny_closing.plantation_closing_config"/>
+                                    <div>
+                                        <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
+                                    </div>
+                                    <label for="manufacturing_cost_account_ids" groups="ny_closing.plantation_closing_config" string="Ripening Cost Accounts"/>
                                     <div>
                                         <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
-                                        <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
+                                        <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation" groups="ny_closing.plantation_closing_config"/>
                                     </div>
-                                    <field name="pisang_ripening_cost" />
-                                    <field name="pisang_ripening_qty" groups="base.group_no_one"/>
-                                    <field name="pisang_incoming_qty" groups="base.group_no_one"/>
+                                    <field name="pisang_ripening_cost" groups="base.group_no_one" readonly="1"/>
+                                    <field name="pisang_ripening_qty" groups="base.group_no_one" readonly="1"/>
+                                    <field name="pisang_incoming_qty" groups="base.group_no_one" readonly="1"/>
                                 </group>
                             </group>
                             <label for="fg2_valuation_ids" string="Inventory Status"/>

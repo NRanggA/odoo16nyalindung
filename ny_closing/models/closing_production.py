@@ -269,10 +269,10 @@ class ClosingProductionFinishGood(models.Model):
                 ('journal_id','!=',closing_journal.id),
                 ]
             if len(self.plantation_other_cost_account_ids.ids)==1:
-                domain_plantation.append(('account_id','=',self.plantation_other_cost_account_ids.id))
+                domain_plantation2.append(('account_id','=',self.plantation_other_cost_account_ids.id))
             else:
-                domain_plantation.append(('account_id','in',self.plantation_other_cost_account_ids.ids))
-            plantation_cost2 = self.env['account.move.line'].search(domain_plantation)
+                domain_plantation2.append(('account_id','in',self.plantation_other_cost_account_ids.ids))
+            plantation_cost2 = self.env['account.move.line'].search(domain_plantation2)
             # Grouping by Loc Type, Loc, Activity, Src Journal
             plantation_cost_grouped2 = {}
             for aml in plantation_cost2:
@@ -846,7 +846,42 @@ class ClosingProduction(models.Model):
                     }
                 })
             plantation_cost_grouped[key]['total_cost'] += aml.balance
-        return sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
+        plantation_cost_amt = sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0
+        plantation_cost_ids = [(0,0,vals) for vals in plantation_cost_grouped.values()]
+        # Hitung Cost diluar Plantation Cost untuk spesific account tertentu
+        if self.plantation_other_cost_account_ids:
+            domain_plantation2 = [('parent_state','=','posted'),
+                ('date','>=',self.date_from),('date','<=',self.date_to),
+                ('plantation_varieties_id.name','=','Pisang'),
+                # ('plantation_varieties_id','=',self.varieties_id.id),
+                ('journal_id','!=',closing_journal.id),
+                ]
+            if len(self.plantation_other_cost_account_ids.ids)==1:
+                domain_plantation2.append(('account_id','=',self.plantation_other_cost_account_ids.id))
+            else:
+                domain_plantation2.append(('account_id','in',self.plantation_other_cost_account_ids.ids))
+            plantation_cost2 = self.env['account.move.line'].search(domain_plantation2)
+            # Grouping by Loc Type, Loc, Activity, Src Journal
+            plantation_cost_grouped2 = {}
+            for aml in plantation_cost2:
+                key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+                if key not in plantation_cost_grouped2.keys():
+                    plantation_cost_grouped2.update({key: {
+                            'plantation_location_type_id': aml.plantation_location_type_id.id,
+                            'plantation_location_id': aml.plantation_location_id.id,
+                            'plantation_activity_id': aml.plantation_activity_id.id,
+                            'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                            'account_id': aml.account_id.id,
+                            'total_cost': 0.0,
+                            'is_plantation_cost': True,
+                        }
+                    })
+                plantation_cost_grouped2[key]['total_cost'] += aml.balance
+                plantation_cost_amt += aml.balance
+            plantation_cost_ids.extend([(0,0,vals) for vals in plantation_cost_grouped2.values()])
+        
+        return plantation_cost_amt, plantation_cost_ids
+        # return sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
 
     def _compute_manufacturing_cost(self):
         closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
@@ -1178,11 +1213,8 @@ class ClosingProduction(models.Model):
     def compute_initial_and_cost_rm_pisang(self):
         for closing in self:
             plantation_cost, summerize_cost = closing._compute_plantation_cost_pisang()
-            # print(">>>>>>>>>>>>>>>>>>>>plantation_cost", closing.plantation_cost_ids)
             if closing.plantation_cost_ids:
                 closing.plantation_cost_ids.unlink()
-            # print(">>>>>>>>>>>>>>>>>>>>plantation_cost", plantation_cost)
-            # print(">>>>>>>>>>>>>>>>>>>>", summerize_cost)
             closing.plantation_cost = plantation_cost
             closing.plantation_cost_ids = summerize_cost
             
