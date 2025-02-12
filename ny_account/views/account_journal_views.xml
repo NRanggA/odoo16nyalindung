@@ -11,6 +11,10 @@
                     <field name="sequence_id" attrs="{'invisible': [('type', 'not in', ['bank', 'cash'])]}"/>
                     <field name="sequence_out_id" attrs="{'invisible': [('type', 'not in', ['bank', 'cash'])]}"/>
                 </xpath>
+                <!-- Penambahan ORG setelah field type -->
+                <xpath expr="//field[@name='type']" position="after">
+                    <field name="varieties_id" attrs="{'invisible': [('type', '!=', 'sale')]}"/>
+                </xpath>
             </field>
         </record>
     </data>
