@@ -184,6 +184,7 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
                 JOIN product_product pp ON ail.product_id = pp.id
                 JOIN product_template pt ON pp.product_tmpl_id = pt.id
                 WHERE ai.move_type = 'out_invoice'
+                AND ai.state = 'posted'
                 AND CAST(pt.name AS TEXT) ILIKE '%%down payment%%'
                 GROUP BY ai.id
             )
@@ -213,6 +214,7 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
             LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
             LEFT JOIN down_payments dp ON ai.id = dp.invoice_id
             WHERE ai.move_type = 'out_invoice'
+            AND ai.state = 'posted'
             AND ai.invoice_date BETWEEN %s AND %s
             AND ail.display_type IN ('product')
             ORDER BY ai.invoice_date, ai.name;
