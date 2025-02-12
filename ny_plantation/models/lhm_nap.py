@@ -4,6 +4,13 @@ class lhm_nap(models.Model):
     _inherit = 'lhm.nap'
 
     material_receipt_count = fields.Integer(compute='_compute_material_receipt_count', string='Material Receipt',)
+    materials = fields.Many2many('stock.picking', string="Material", compute="_compute_material", store=True)
+    
+    @api.depends('pabrik_line_ids.stock_move_ids.picking_id')
+    def _compute_material(self):
+        for record in self:
+            all_pickings = record.pabrik_line_ids.mapped('stock_move_ids.picking_id')
+            record.materials = all_pickings
 
     def _compute_material_receipt_count(self):
         for record in self:
