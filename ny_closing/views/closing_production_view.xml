@@ -197,16 +197,16 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="product_id" />
-                <field name="opening_qty" sum="closing_qty"/>
-                <field name="opening_value" sum="closing_qty" optional="hide" />
-                <field name="incoming_qty" sum="closing_qty" />
-                <field name="manufacturing_cost" sum="closing_qty" optional="hide" />
-                <field name="plantation_cost" sum="closing_qty" optional="hide" />
-                <field name="onhand_qty" sum="closing_qty" optional="hide" />
-                <field name="outgoing_qty" sum="closing_qty" />
-                <field name="outgoing_value" sum="closing_qty" optional="show"/>
+                <field name="opening_qty" sum="opening_qty"/>
+                <field name="opening_value" sum="opening_value" optional="hide" />
+                <field name="incoming_qty" sum="incoming_qty" />
+                <field name="manufacturing_cost" sum="manufacturing_cost" optional="hide" />
+                <field name="plantation_cost" sum="plantation_cost" optional="hide" />
+                <field name="onhand_qty" sum="onhand_qty" optional="hide" />
+                <field name="outgoing_qty" sum="outgoing_qty" />
+                <field name="outgoing_value" sum="outgoing_value" optional="show"/>
                 <field name="closing_qty" sum="closing_qty" />
-                <field name="closing_value" sum="closing_qty" optional="show"/>
+                <field name="closing_value" sum="closing_value" optional="show"/>
             </tree>
         </field>
     </record>
