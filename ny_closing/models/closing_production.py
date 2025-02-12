@@ -1024,14 +1024,21 @@ class ClosingProduction(models.Model):
             compound_product = self.env['product.product'].search([('name','=','Compo')], limit=1)
             closing.compound_product_id = compound_product.id
             
+            # Begining Balance Latex and Lump
+            # Saat ini tidak perlu nanti diinput manual dulu saja
+            # krn nanti harusnya Begining Balance adalah saldo Closing balance bulan sebelumnya
+            # if not closing.prev_closing_id:
+            #     closing.latex_opening_value = self.env['account.move.line'].search([('')])
+            #     closing.lump_opening_value = 
+
+            # Get Plantation Cost
             plantation_cost, summerize_cost = closing._compute_plantation_cost_karet()
-            # print(">>>>>>>>>>>>>>>>>>>>plantation_cost", closing.plantation_cost_ids)
             if closing.plantation_cost_ids:
                 closing.plantation_cost_ids.unlink()
-            # print(">>>>>>>>>>>>>>>>>>>>plantation_cost", plantation_cost)
-            # print(">>>>>>>>>>>>>>>>>>>>", summerize_cost)
             closing.plantation_cost = plantation_cost
             closing.plantation_cost_ids = summerize_cost
+            
+            # Get Manufacturing Cost
             mrp_cost, summerize_mrp_cost = closing._compute_manufacturing_cost()
             mrp_sheet_cost, summerize_mrp_cost1 = closing._compute_mrp_sheet_cost()
             mrp_compound_cost, summerize_mrp_cost2 = closing._compute_mrp_compound_cost()
@@ -1054,7 +1061,8 @@ class ClosingProduction(models.Model):
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            closing.latex_incoming_qty = sum(latex_in.mapped('product_qty')) if latex_in else 0.0
+            # closing.latex_incoming_qty = sum(latex_in.mapped('product_qty')) if latex_in else 0.0
+            closing.latex_incoming_qty = sum(latex_in.mapped('qty_received')) if latex_in else 0.0
             
             product_lump = self.env['product.product'].search([('name','=','Lump')], limit=1)
             closing.lump_product_id = product_lump.id
@@ -1062,9 +1070,13 @@ class ClosingProduction(models.Model):
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            closing.lump_incoming_qty = sum(compound_in.mapped('product_qty')) if compound_in else 0.0
+            # closing.lump_incoming_qty = sum(compound_in.mapped('product_qty')) if compound_in else 0.0
+            closing.lump_incoming_qty = sum(compound_in.mapped('qty_received')) if compound_in else 0.0
             
-            # GET PENDING MO PREV MONTH
+            # GET BEGINING WIP
+            # Saat ini tidak perlu nanti diinput manual dulu saja
+
+            # GET Work Inprogress MO PREV MONTH
             mrp_sheet_prev = closing._get_mrp_inprogress_prev_month(sheet_product)
             if mrp_sheet_prev:
                 rm_moves = mrp_sheet_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
@@ -1095,14 +1107,17 @@ class ClosingProduction(models.Model):
                 closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
             # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
-            # Get Incoming Asam Semut
-            # closing.sheet_rm_incoming_qty = 0.0
-            # closing.sheet_rm_incoming_value = 0.0
+            # Get Receiving Asam Semut
+            receving_asam_semuts = self.env['stock.move'].search([('product_id.name','=','Asam Semut'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.sheet_rm_incoming_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
+            closing.sheet_rm_incoming_value = sum([x.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
+            # Get Consumed Asam Semut
             out_asam_semut = self.env['mrp.manual.consume'].search([('product_id.name','=','Asam Semut'),
                                     ('date','>=',closing.date_from),('date','<=',closing.date_to),
                                     ('is_confirmed','=',True)])
             closing.sheet_rm_outgoing_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
-            # closing.sheet_rm_outgoing_value = 0.0
         return True
     
     def compute_initial_and_cost_rm_pisang(self):
