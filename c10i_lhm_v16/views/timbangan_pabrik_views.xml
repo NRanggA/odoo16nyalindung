@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree -->
+    <record id="timbangan_pabrik_view_tree" model="ir.ui.view">
+        <field name="name">timbangan.pabrik.view.tree</field>
+        <field name="model">timbangan.pabrik</field>
+        <field name="arch" type="xml">
+            <tree string="Timbangan Pabrik (NAP)">
+                <field name="date_nap" />
+                <field name="lhm_nap_id" />
+                <field name="afdeling_id" />
+                <field name="block_id" />
+                <field name="product_id" />
+                <field name="product_qty" />
+                <field name="uom_id" />
+                <!-- <field name="varieties_id" /> -->
+                <field name="tgl_terima" />
+                <field name="tgl_panen" />
+                <field name="quality_pabrik" />
+                <!-- <field name="hasil_1_nap" />
+                <field name="hasil_2_nap" />
+                <field name="hasil_convert_latex" />
+                <field name="hasil_convert_lump" /> -->
+                <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Graph -->
+    <record id="view_timbangan_pabrik_graph" model="ir.ui.view">
+        <field name="name">timbangan.pabrik.graph</field>
+        <field name="model">timbangan.pabrik</field>
+        <field name="arch" type="xml">
+            <graph>
+                <field name="afdeling_id" type="row"/>
+                <field name="block_id" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot -->
+    <record id="view_timbangan_pabrik_pivot" model="ir.ui.view">
+        <field name="name">timbangan.pabrik.pivot</field>
+        <field name="model">timbangan.pabrik</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="afdeling_id" type="row"/>
+                <field name="block_id" type="row"/>
+                <field name="product_id" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="timbangan_pabrik_search" model="ir.ui.view">
+        <field name="name">timbangan.pabrik.view.search</field>
+        <field name="model">timbangan.pabrik</field>
+        <field name="arch" type="xml">
+            <search string="Timbangan Pabrik (NAP)">
+                <field name="date_nap" string="Date NAP"/>
+                <field name="lhm_nap_id" string="LHM NAP"/>
+                <field name="block_id" string="Lokasi"/>
+                <field name="afdeling_id" string="Afdeling"/>
+                <field name="product_id" string="Product"/>
+                <!-- <field name="tgl_terima" string="Tanggal Terima"/>
+                <field name="tgl_panen" string="Tanggal Panen"/> -->
+                <separator/>
+                <filter string="Date Nap" name="date_nap" date="date_nap"/>
+                <separator/>
+                <filter name="draft" string="New" domain="[('state','=','draft')]"/>
+                <filter name="process" string="Progress" domain="[('state','=','process')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="cancel" string="Cancel" domain="[('state','=','cancel')]"/>
+                <filter name="done" string="Done" domain="[('state','=','done')]"/>
+                <filter name="revision" string="Revision" domain="[('state','=','revision')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <!-- <filter string="Date Nap" name="date_nap" context="{'group_by':'date_nap'}"/> -->
+                    <filter string="LHM NAP" name="lhm_nap_id" context="{'group_by':'lhm_nap_id'}"/>
+                    <filter string="Afdeling" name="afdeling_id" context="{'group_by':'afdeling_id'}"/>
+                    <filter string="Lokasi" name="block_id" context="{'group_by':'block_id'}"/>
+                    <filter string="Quality" name="quality_pabrik" context="{'group_by':'quality_pabrik'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="timbangan_pabrik_action" model="ir.actions.act_window">
+        <field name="name">Detail Timbangan Pabrik (NAP)</field>
+        <field name="res_model">timbangan.pabrik</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="search_view_id" ref="timbangan_pabrik_search"/>
+        <field name="context">
+        {
+            'create': False,
+            'search_default_done':1
+        }
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem
+        id="timbangan_pabrik_menu"
+        name="Detail Timbangan Pabrik (NAP)"
+        action="timbangan_pabrik_action"
+        parent="menu_plantation_report"
+        sequence="97"/>
+
+</odoo>

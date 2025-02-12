@@ -1160,7 +1160,6 @@ class TimbanganPabrik(models.Model):
     _description = 'Timbangan Pabrik'
 
     lhm_nab_id         = fields.Many2one('lhm.nab', string='LHM NAB')
-    lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
     product_id         = fields.Many2one('product.product', string='Product', readonly=True)
     product_qty        = fields.Float(string='Product Quantity')
     uom_id             = fields.Many2one('uom.uom', string='UoM', readonly=True)
@@ -1174,6 +1173,14 @@ class TimbanganPabrik(models.Model):
     timbangan_kebun_id = fields.Many2one('timbangan.kebun', string="Data Timbangan Kebun", ondelete='cascade')
     qty_received       = fields.Float(string='Quantity Received', compute='_compute_stock_move_qty')
     # drc_line_ids       = fields.One2many('lhm.drc.line', 'timbangan_pabrik_id', string="DRC Lines", ondelete="cascade")
+
+    lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
+
+    afdeling_id         = fields.Many2one(string="Afdeling", related='lhm_nap_id.afdeling_id', readonly=True, store=True)
+    state               =    fields.Selection(related='lhm_nap_id.state', readonly=True, store=True)
+    date_nap            =    fields.Date(related='lhm_nap_id.date_nap', readonly=True, store=True)
+
+
 
     @api.model
     def create(self, vals):
