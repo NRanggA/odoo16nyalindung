@@ -128,23 +128,40 @@ class LhmContractorBill(models.TransientModel):
             raise UserError(_('Please define an accounting purchase journal for this company.'))
         
         line_to_add = []
-        for line in self.invoice_lines:
-
+        # for line in self.invoice_lines:
             # default_loc_type = self.env['lhm.location.type'].search([('name', '=', '-')])
-            
-            line_to_add.append((0,0,{
-                'name'                          : "Jasa Kontraktor: %s"%(line.activity_id.name),
-                'plantation_location_type_id'   : line.location_type_id.id if line.location_type_id else False,
-                'plantation_varieties_id'       : line.varieties_id.id if line.varieties_id else False,
-                'plantation_location_id'        : line.location_id.id if line.location_id else False,
-                'plantation_activity_id'        : line.activity_id.id if line.activity_id else False,
-                'account_id'                    : self.account_payable_contractor_id.id,
-                'product_id'                    : False,
-                'product_uom_id'                : False,
-                'quantity'                      : 1,
-                'price_unit'                    : line.amount,
-                'tax_ids'                       : [(6,0,[x.id for x in self.taxes_id])],
-            }))
+            # PUNYA LAMA 
+            # line_to_add.append((0,0,{
+            #     'name'                          : "Jasa Kontraktor: %s"%(line.activity_id.name),
+            #     'plantation_location_type_id'   : line.location_type_id.id if line.location_type_id else False,
+            #     'plantation_varieties_id'       : line.varieties_id.id if line.varieties_id else False,
+            #     'plantation_location_id'        : line.location_id.id if line.location_id else False,
+            #     'plantation_activity_id'        : line.activity_id.id if line.activity_id else False,
+            #     'account_id'                    : self.account_payable_contractor_id.id,
+            #     'product_id'                    : False,
+            #     'product_uom_id'                : False,
+            #     'quantity'                      : 1,
+            #     'price_unit'                    : line.amount,
+            #     'tax_ids'                       : [(6,0,[x.id for x in self.taxes_id])],
+            # }))
+
+        total_amount = sum(line.amount for line in self.invoice_lines)
+        tipe_lokasi = self.env['lhm.location.type'].search([('code', '=', '-')], limit=1)
+
+        # TERBARU
+        line_to_add.append((0,0,{
+            'name'                          : "Jasa Kontraktor: %s"%(self.contractor_id.name),
+            'plantation_location_type_id'   : tipe_lokasi.id,
+            'plantation_varieties_id'       : '',
+            'plantation_location_id'        : '',
+            'plantation_activity_id'        : '',
+            'account_id'                    : self.account_payable_contractor_id.id,
+            'product_id'                    : False,
+            'product_uom_id'                : False,
+            'quantity'                      : 1,
+            'price_unit'                    : total_amount,
+            'tax_ids'                       : [(6,0,[x.id for x in self.taxes_id])],
+        }))
         
         invoice_vals = {
             'name'                  : '',
