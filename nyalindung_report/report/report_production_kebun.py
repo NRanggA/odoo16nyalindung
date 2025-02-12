@@ -541,18 +541,21 @@ class ReportProductionKebun(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = fourth_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('lhm_transaction_line_id.location_id', '=', location_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done')
-                    ], limit=1)
-                    total_a_drc_lateks += float(nap_line.drc_latex_nap)
-                    count_a_drc_lateks += 1 if nap_line.drc_latex_nap else 0
-                    sheet3.write(row3, col_index, nap_line.drc_latex_nap, wbf['total_float'])
+                    ], ['drc_latex_nap'], limit=1)
+
+                    drc_latex_nap = float(nap_lines[0]['drc_latex_nap']) if nap_lines and nap_lines[0]['drc_latex_nap'] else 0.0
+                    total_a_drc_lateks += drc_latex_nap
+                    count_a_drc_lateks += 1 if drc_latex_nap else 0
+                    sheet3.write(row3, col_index, drc_latex_nap, wbf['total_float'])
 
                 # Hitung rata-rata DRC Lateks
                 shi_average_drc_lateks = total_a_drc_lateks / count_a_drc_lateks if count_a_drc_lateks > 0 else 0.0
                 sheet3.write(row3, average_drc_lateks, shi_average_drc_lateks, wbf['total_float'])
+
 
                 # Isi Data DRC Lump (Kg) dan Hitung Rata-rata
                 total_a_drc_lump = 0
@@ -562,15 +565,16 @@ class ReportProductionKebun(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = fifth_date_start + i
 
-                    nap_line = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('lhm_transaction_line_id.location_id', '=', location_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done')
-                    ], limit=1)
+                    ], ['drc_lump_nap'], limit=1)
 
-                    total_a_drc_lump += float(nap_line.drc_lump_nap)
-                    count_a_drc_lump += 1 if nap_line.drc_lump_nap else 0
-                    sheet3.write(row3, col_index, nap_line.drc_lump_nap, wbf['total_float'])
+                    drc_lump_nap = float(nap_lines[0]['drc_lump_nap']) if nap_lines and nap_lines[0]['drc_lump_nap'] else 0.0
+                    total_a_drc_lump += drc_lump_nap
+                    count_a_drc_lump += 1 if drc_lump_nap else 0
+                    sheet3.write(row3, col_index, drc_lump_nap, wbf['total_float'])
 
                 # Hitung rata-rata DRC Lump
                 shi_average_drc_lump = total_a_drc_lump / count_a_drc_lump if count_a_drc_lump > 0 else 0.0
@@ -584,19 +588,20 @@ class ReportProductionKebun(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = sixth_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('lhm_transaction_line_id.location_id', '=', location_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    ], ['hasil_convert_latex'])
 
-                    konversi_nap_lateks = sum(float(line.hasil_convert_latex) for line in nap_lines if line.hasil_convert_latex) if nap_lines else 0
+                    konversi_nap_lateks = sum(float(line['hasil_convert_latex']) for line in nap_lines if line['hasil_convert_latex']) if nap_lines else 0
 
                     total_hasil_konversi_lateks += konversi_nap_lateks
                     sheet3.write(row3, col_index, konversi_nap_lateks, wbf['total_float'])
 
                 total_column_index = jumlah_hasil_konversi_lateks
                 sheet3.write(row3, total_column_index, total_hasil_konversi_lateks, wbf['total_float'])
+
 
                 # Isi Jumlah Hasil Konversi Lump (Kg)
                 total_hasil_konversi_lump = 0
@@ -605,19 +610,20 @@ class ReportProductionKebun(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = seventh_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('lhm_transaction_line_id.location_id', '=', location_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    ], ['hasil_convert_lump'])
 
-                    konversi_nap_lump = sum(float(line.hasil_convert_lump) for line in nap_lines if line.hasil_convert_lump) if nap_lines else 0
+                    konversi_nap_lump = sum(float(line['hasil_convert_lump']) for line in nap_lines if line['hasil_convert_lump']) if nap_lines else 0
 
                     total_hasil_konversi_lump += konversi_nap_lump
                     sheet3.write(row3, col_index, konversi_nap_lump, wbf['total_float'])
 
                 total_column_index = jumlah_hasil_konversi_lump
                 sheet3.write(row3, total_column_index, total_hasil_konversi_lump, wbf['total_float'])
+
 
                 # Jumlahkan hasil konversi Lateks + Lump
                 total_konversi_lateks_lump = 0
@@ -626,14 +632,14 @@ class ReportProductionKebun(models.AbstractModel):
                     current_date = from_date + timedelta(days=i)
                     col_index = eighth_date_start + i
 
-                    nap_lines = self.env['lhm.transaction.nap.line'].search([
+                    nap_lines = self.env['lhm.transaction.nap.line'].search_read([
                         ('lhm_transaction_line_id.location_id', '=', location_id),
                         ('lhm_transaction_line_id.date', '=', current_date),
                         ('lhm_transaction_line_id.state', '=', 'done'),
-                    ])
+                    ], ['hasil_convert_latex', 'hasil_convert_lump'])
 
-                    konversi_nap_lateks = sum(float(line.hasil_convert_latex) for line in nap_lines if line.hasil_convert_latex) if nap_lines else 0
-                    konversi_nap_lump = sum(float(line.hasil_convert_lump) for line in nap_lines if line.hasil_convert_lump) if nap_lines else 0
+                    konversi_nap_lateks = sum(float(line['hasil_convert_latex']) for line in nap_lines if line['hasil_convert_latex']) if nap_lines else 0
+                    konversi_nap_lump = sum(float(line['hasil_convert_lump']) for line in nap_lines if line['hasil_convert_lump']) if nap_lines else 0
 
                     total_hasil_konversi = konversi_nap_lateks + konversi_nap_lump
                     total_konversi_lateks_lump += total_hasil_konversi
@@ -643,7 +649,6 @@ class ReportProductionKebun(models.AbstractModel):
                 # Menulis total keseluruhan konversi Lateks + Lump ke dalam kolom yang sesuai
                 total_column_index = jumlah_total_konversi
                 sheet3.write(row3, total_column_index, total_konversi_lateks_lump, wbf['total_float'])
-
 
                 row3 += 1
                 nomor += 1
