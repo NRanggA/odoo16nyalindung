@@ -965,7 +965,7 @@ class ClosingProduction(models.Model):
     def _get_mrp_inprogress_this_month(self, product):
         self.ensure_one()
         mrp = self.env['mrp.production'].search([('product_id','=',product.id),('state','in',['progress','done']),
-                ('date_start','>=', self.date_from.strftime('%Y-%m-%d 00:00:00'))])
+                ('date_start','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),('date_start','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
         return mrp
 
     def _compute_rm_cost_sheet(self):
