@@ -827,6 +827,7 @@ class ClosingProduction(models.Model):
         return sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
 
     def _compute_manufacturing_cost(self):
+        closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
         self.ensure_one()
         # Get Manufacturing Cost
         manufacturing_cost = self.env['account.move.line'].search([('parent_state','=','posted'),
@@ -836,7 +837,7 @@ class ClosingProduction(models.Model):
             # ('plantation_location_id','!=',False),
             # ('plantation_activity_id','!=',False),
             ('account_id','in',self.manufacturing_cost_account_ids.ids),
-            # ('journal_id','!=',closing_journal.id)
+            ('journal_id','!=',closing_journal.id)
             ])
         # Grouping by Loc Type, Loc, Activity, Src Journal
         plantation_cost_grouped = {}
