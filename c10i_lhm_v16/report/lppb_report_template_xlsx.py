@@ -70,10 +70,12 @@ class ReportLpphExcel(models.AbstractModel):
             date = format_date(o.period_id.date_start, format='MMMM', locale='id')
 
             lhm_transaction = self.env['lhm.transaction'].search([
-                                ('account_period_id','=',o.period_id.id),
+                                # ('account_period_id','=',o.period_id.id),
+                                ('date', '>=', o.period_id.date_start),
+                                ('date', '<=', o.period_id.date_stop),
                                 ('state','=','done')
                             ])
-
+            
             shi_month = o.period_id.date_start.month
             shi_year = o.period_id.date_start.year
             shi_date_from = datetime(shi_year, shi_month, 1)
@@ -85,7 +87,9 @@ class ReportLpphExcel(models.AbstractModel):
             
 
             shi_lhm_transaction = self.env['lhm.transaction'].search([
-                                ('account_period_id','in',[period.id for period in periods]),
+                                # ('account_period_id','in',[period.id for period in periods]),
+                                ('date', '>=', min(period.date_start for period in periods)),
+                                ('date', '<=', max(period.date_stop for period in periods)),
                                 ('state','=','done')
                             ])
             
@@ -106,7 +110,7 @@ class ReportLpphExcel(models.AbstractModel):
             worksheet.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
             worksheet.write(row + 3, 1, ": %s" %("Bulanan").upper(), wbf['title'])
             worksheet.write(row + 4, 0, "BULAN", wbf['title'])
-            worksheet.write(row + 4, 1, ": %s" %(date).upper(), wbf['title'])
+            worksheet.write(row + 4, 1, ": %s" %(o.period_id.name).upper(), wbf['title'])
             worksheet.set_row(row, 18)
             worksheet.set_row(row + 1, 18)
             worksheet.set_row(row + 2, 18)
