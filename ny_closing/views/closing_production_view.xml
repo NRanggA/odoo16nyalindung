@@ -553,6 +553,28 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td style="font-weight: bold;">Sales/Delivery</td>
+                                        <td style="text-align: right;"><field name="latex_delivered_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_delivered_value" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_delivered_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_delivered_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Adjustment</td>
+                                        <td style="text-align: right;"><field name="latex_adjustment_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="latex_adjustment_value" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_adjustment_qty" /></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="lump_adjustment_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td style="font-weight: bold;">Ending</td>
                                         <td style="text-align: right;"><field name="latex_closing_qty" /></td>
                                         <td></td>

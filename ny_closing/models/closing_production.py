@@ -474,6 +474,10 @@ class ClosingProduction(models.Model):
 
     # latex_outgoing_qty = fields.Float(string='Consumed Qty of Lateks')
     # # latex_outgoing_value = fields.Float(compute='_compute_outgoing_value_rm', store=True, string='Consumed Value of Lateks')
+    latex_delivered_qty = fields.Float(string='Sales Delivered Qty of Lateks')
+    latex_adjustment_qty = fields.Float(string='Adjusted Qty of Lateks')
+    latex_delivered_value = fields.Float(compute='_compute_outgoing_value_latex_lump', store=True, string='Sales Delivered Value of Lateks')
+    latex_adjustment_value = fields.Float(compute='_compute_outgoing_value_latex_lump', store=True, string='Adjusted Value of Lateks')
     latex_closing_qty = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Qty of Lateks')
     latex_closing_value = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Value of Lateks')
     ##############################
@@ -520,7 +524,10 @@ class ClosingProduction(models.Model):
     
     # lump_outgoing_qty = fields.Float(string='Consumed Qty of Lump')
     # lump_outgoing_value = fields.Float(compute='_compute_outgoing_value_rm', store=True, string ='Consumed Value of Lump')
-    
+    lump_delivered_qty = fields.Float(string='Sales Delivered Qty of Lump')
+    lump_adjustment_qty = fields.Float(string='Adjusted Qty of Lump')
+    lump_delivered_value = fields.Float(compute='_compute_outgoing_value_latex_lump', store=True, string='Sales Delivered Value of Lump')
+    lump_adjustment_value = fields.Float(compute='_compute_outgoing_value_latex_lump', store=True, string='Adjusted Value of Lump')
     lump_closing_qty = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Qty of Lump')
     lump_closing_value = fields.Float(compute='_compute_closing_rm', store=True, string='Closing Value of Lump')
 
@@ -676,17 +683,32 @@ class ClosingProduction(models.Model):
             closing.lump_wip_qty = closing.lump_wip_onhand_qty - closing.lump_wip_outgoing_qty
             closing.lump_wip_value = closing.lump_wip_onhand_value - closing.lump_wip_outgoing_value
 
+    @api.depends('latex_delivered_qty', 'lump_delivered_qty', 
+            'latex_adjustment_qty', 'lump_adjustment_qty',
+            'latex_new_cost_price', 'lump_new_cost_price', 
+            )
+    def _compute_outgoing_value_latex_lump(self):
+        for closing in self:
+            closing.latex_delivered_value = closing.latex_delivered_qty * closing.latex_new_cost_price
+            closing.lump_delivered_value = closing.lump_delivered_qty * closing.lump_new_cost_price
+            closing.latex_adjustment_value = closing.latex_adjustment_qty * closing.latex_new_cost_price
+            closing.lump_adjustment_value = closing.lump_adjustment_qty * closing.lump_new_cost_price
+
     @api.depends('latex_onhand_qty', 'latex_onhand_value', 
             'latex_wip_incoming_qty', 'latex_wip_incoming_value',
             'lump_onhand_qty', 'lump_onhand_value', 
             'lump_wip_incoming_qty', 'lump_wip_incoming_value', 
+            'latex_delivered_value','lump_delivered_value',
+            'latex_adjustment_value','lump_adjustment_value',
+            'latex_delivered_qty','lump_delivered_qty',
+            'latex_adjustment_qty','lump_adjustment_qty',
             )
     def _compute_closing_rm(self):
         for closing in self:
-            closing.latex_closing_qty = closing.latex_onhand_qty - closing.latex_wip_incoming_qty
-            closing.latex_closing_value = closing.latex_onhand_value - closing.latex_wip_incoming_value
-            closing.lump_closing_qty = closing.lump_onhand_qty - closing.lump_wip_incoming_qty
-            closing.lump_closing_value = closing.lump_onhand_value - closing.lump_wip_incoming_value
+            closing.latex_closing_qty = closing.latex_onhand_qty - closing.latex_wip_incoming_qty - closing.latex_delivered_qty - closing.latex_adjustment_qty
+            closing.latex_closing_value = closing.latex_onhand_value - closing.latex_wip_incoming_value - closing.latex_delivered_value - closing.latex_adjustment_value
+            closing.lump_closing_qty = closing.lump_onhand_qty - closing.lump_wip_incoming_qty - closing.lump_delivered_qty - closing.lump_adjustment_qty
+            closing.lump_closing_value = closing.lump_onhand_value - closing.lump_wip_incoming_value - closing.lump_delivered_value - closing.lump_adjustment_value
 
     # PISANG
     @api.depends('varieties_type','fg2_valuation_ids.incoming_qty', 'fg2_valuation_ids.ripening_incoming_qty')
@@ -1109,6 +1131,7 @@ class ClosingProduction(models.Model):
             # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
             # Get Receiving Asam Semut
             receving_asam_semuts = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
+                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
             closing.sheet_rm_incoming_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
@@ -1118,6 +1141,38 @@ class ClosingProduction(models.Model):
                                     ('date','>=',closing.date_from),('date','<=',closing.date_to),
                                     ('is_confirmed','=',True)])
             closing.sheet_rm_outgoing_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
+
+            # Get Sales
+            latex_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.latex_delivered_qty = sum(latex_delivery_moves.mapped('qty_done')) if latex_delivery_moves else 0.0
+            lump_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lump'),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.lump_delivered_qty = sum(lump_delivery_moves.mapped('qty_done')) if lump_delivery_moves else 0.0
+
+            # Get Adjustment
+            latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+                                    ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.latex_adjustment_qty = (sum(latex_adjustment_in_moves.mapped('qty_done')) if latex_adjustment_in_moves else 0.0) - (sum(latex_adjustment_out_moves.mapped('qty_done')) if latex_adjustment_out_moves else 0.0)
+            lump_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Lump'),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            lump_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Lump'),
+                                    ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.lump_adjustment_qty = (sum(lump_adjustment_in_moves.mapped('qty_done')) if lump_adjustment_in_moves else 0.0) - (sum(lump_adjustment_out_moves.mapped('qty_done')) if lump_adjustment_out_moves else 0.0)
         return True
     
     def compute_initial_and_cost_rm_pisang(self):
