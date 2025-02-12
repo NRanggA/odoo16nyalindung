@@ -831,6 +831,7 @@ class ClosingProduction(models.Model):
         # Get Manufacturing Cost
         manufacturing_cost = self.env['account.move.line'].search([('parent_state','=','posted'),
             ('date','>=',self.date_from),('date','<=',self.date_to),
+            ('plantation_varieties_id.name','=','Karet'),
             # ('plantation_location_type_id.mill','=',True),
             # ('plantation_location_id','!=',False),
             # ('plantation_activity_id','!=',False),
