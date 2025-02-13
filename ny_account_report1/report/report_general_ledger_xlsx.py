@@ -236,6 +236,8 @@ class ReportStockMutation(models.AbstractModel):
             ]
             if obj.type_state == 'posted':
                 domain.append(('parent_state', '=', 'posted'))
+            elif obj.type_state == 'all_entries':
+                domain.append(('parent_state', '!=', 'cancel'))
 
             # kalau is_transaction aktif, cari ambil akun yang memiliki transaksi
             if obj.is_transaction:
