@@ -1,0 +1,59 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_lhm_transaction_monitoring_tree" model="ir.ui.view">
+        <field name="name">lhm.transaction.monitoring.tree</field>
+        <field name="model">lhm.transaction.monitoring</field>
+        <field name="arch" type="xml">
+            <tree>
+                <!-- <field name="date"/> -->
+                <field name="lhm_name"/>
+                <field name="location_type_id"/>
+                <field name="varieties_id"/>
+                <field name="location_id"/>
+                <field name="activity_id"/>
+                <field name="lhm_state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <!-- <record id="view_lhm_transaction_report_form" model="ir.ui.view">
+        <field name="name">lhm.transaction.monitoring.form</field>
+        <field name="model">lhm.transaction.monitoring</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="date"/>
+                        <field name="lhm_name"/>
+                        <field name="location_type_id"/>
+                        <field name="varieties_id"/>
+                        <field name="location_id"/>
+                        <field name="activity_id"/>
+                        <field name="lhm_state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record> -->
+
+    <!-- Action Window -->
+    <record id="action_lhm_transaction_monitoring" model="ir.actions.act_window">
+        <field name="name">Cek Detail Activity LHM</field>
+        <field name="res_model">lhm.transaction.monitoring</field>
+        <field name="view_mode">tree</field>
+        <field name="type">ir.actions.act_window</field>
+    </record>
+
+    <!-- Menu Induk -->
+    <menuitem id="menu_lhm_transaction_main"
+              name="Daily Transaction Monitoring"
+              parent="c10i_lhm_v16.menu_lhm_report"
+              sequence="200"/>
+
+    <!-- Submenu -->
+    <menuitem id="menu_lhm_transaction_report"
+              name="Cek Detail Activity LHM"
+              parent="menu_lhm_transaction_main"
+              action="action_lhm_transaction_monitoring"/>
+</odoo>

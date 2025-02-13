@@ -14,15 +14,18 @@
                 <field name="product_id" />
                 <field name="product_qty" />
                 <field name="uom_id" />
-                <!-- <field name="varieties_id" /> -->
+                <field name="qty_received" string="Qty Receive From MR"/>
                 <field name="tgl_terima" />
                 <field name="tgl_panen" />
                 <field name="quality_pabrik" />
-                <!-- <field name="hasil_1_nap" />
-                <field name="hasil_2_nap" />
-                <field name="hasil_convert_latex" />
-                <field name="hasil_convert_lump" /> -->
                 <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
+                <!-- <field name="material_receipt" /> -->
+                <!-- <field name="material_receipt_state" /> -->
+                <!-- <field name="material_receipt_ids" widget="many2many_tags" />
+                <field name="material_receipt_status" widget="badge" />
+                <field name="material_receipt_demand" widget="badge" /> -->
+                
+
             </tree>
         </field>
     </record>
@@ -75,6 +78,9 @@
                 <filter name="done" string="Done" domain="[('state','=','done')]"/>
                 <filter name="revision" string="Revision" domain="[('state','=','revision')]"/>
                 <separator/>
+                <filter name="qty_received_zero" string="Qty Receive = (0)" domain="[('qty_received', '=', 0)]"/>
+                <separator/>
+
                 <group expand="0" string="Group By">
                     <!-- <filter string="Date Nap" name="date_nap" context="{'group_by':'date_nap'}"/> -->
                     <filter string="LHM NAP" name="lhm_nap_id" context="{'group_by':'lhm_nap_id'}"/>
@@ -88,14 +94,15 @@
 
     <!-- Action -->
     <record id="timbangan_pabrik_action" model="ir.actions.act_window">
-        <field name="name">Detail Timbangan Pabrik (NAP)</field>
+        <field name="name">NAP vs Material Receipt</field>
         <field name="res_model">timbangan.pabrik</field>
         <field name="view_mode">tree,pivot,graph</field>
         <field name="search_view_id" ref="timbangan_pabrik_search"/>
         <field name="context">
         {
             'create': False,
-            'search_default_done':1
+            'search_default_done':1,
+            'search_default_qty_received_zero': 1
         }
         </field>
     </record>
@@ -103,9 +110,9 @@
     <!-- Menu -->
     <menuitem
         id="timbangan_pabrik_menu"
-        name="Detail Timbangan Pabrik (NAP)"
+        name="NAP vs Material Recipt"
         action="timbangan_pabrik_action"
-        parent="menu_plantation_report"
+        parent="menu_lhm_transaction_main"
         sequence="97"/>
 
 </odoo>
