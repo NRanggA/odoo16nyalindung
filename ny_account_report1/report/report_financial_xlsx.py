@@ -106,9 +106,11 @@ class ReportFinancialXlsx(models.Model):
         max_level = max([int(x.get('level',0)) for x in report_lines])
         if data['form']['debit_credit']:
             worksheet.write(next_row, 1, "Name", wbf['header'])
+            worksheet.set_column(1,1,60) # width number
             worksheet.write(next_row, 2, "Debit", wbf['header'])
             worksheet.write(next_row, 3, "Credit", wbf['header'])
             worksheet.write(next_row, 4, "Balance", wbf['header'])
+            worksheet.set_column(2,4,15) # width number
             next_row += 1
             for a in report_lines:
                 if int(a.get('level',0)) in (1,0):
@@ -160,8 +162,10 @@ class ReportFinancialXlsx(models.Model):
             worksheet.merge_range(next_row, 1, next_row, 2, "", wbf['total_float'])
         elif data['form']['enable_filter'] == 1 and not data['form']['debit_credit']:
             worksheet.write(next_row, 1, "Name", wbf['header'])
+            worksheet.set_column(1,1,60) # width number
             worksheet.write(next_row, 2, "Balance", wbf['header'])
             worksheet.write(next_row, 3, data['form']['label_filter'], wbf['header'])
+            worksheet.set_column(2,3,15) # width number
             next_row += 1
             # # Freeze
             # worksheet.freeze_panes(next_row, 1)
