@@ -1527,7 +1527,7 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': ll.plantation_src_journal_id.id,
                     'account_id': ll.account_id.id,
                     'debit': round(abs(ll.total_cost_latex) if ll.total_cost_latex<0 else 0.0, 2),
-                    'credit': round(ll.total_cost_latex if ll.total_cost_latex>0 else 0.2),
+                    'credit': round(ll.total_cost_latex if ll.total_cost_latex>0 else 0, 2),
                 }
                 move_lines_receiving.append((0,0,vals_src))
         
@@ -1964,7 +1964,7 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.cogs_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': round(line.outgoing_value if line.outgoing_value>0 else 0.0),
+                    'debit': round(line.outgoing_value if line.outgoing_value>0 else 0.0, 2),
                     'credit': round(abs(line.outgoing_value) if line.outgoing_value<0 else 0.0, 2),
                 }
                 vals_dest = vals_src.copy()
@@ -2042,8 +2042,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.inventory_ripening_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.ripening_value if line.ripening_value>0 else 0.0,
-                    'credit': abs(line.ripening_value) if line.ripening_value<0 else 0.0,
+                    'debit': round(line.ripening_value, 2) if line.ripening_value>0 else 0.0,
+                    'credit': round(abs(line.ripening_value), 2) if line.ripening_value<0 else 0.0,
                 }
                 move_lines_production2.append((0, 0, vals_ripening_tf))
                 vals_src2 = vals_ripening_tf.copy()
@@ -2065,8 +2065,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.cogs_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.outgoing_value if line.outgoing_value>0 else 0.0,
-                    'credit': abs(line.outgoing_value) if line.outgoing_value<0 else 0.0,
+                    'debit': round(line.outgoing_value, 2) if line.outgoing_value>0 else 0.0,
+                    'credit': round(abs(line.outgoing_value), 2) if line.outgoing_value<0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_cogs))
                 vals_src3 = vals_cogs.copy()
@@ -2089,8 +2089,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.scrap_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.scrap_value if line.scrap_value>0 else 0.0,
-                    'credit': abs(line.scrap_value) if line.scrap_value<0 else 0.0,
+                    'debit': round(line.scrap_value, 2) if line.scrap_value>0 else 0.0,
+                    'credit': round(abs(line.scrap_value), 2) if line.scrap_value<0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_cogs))
                 vals_src4 = vals_cogs.copy()
@@ -2110,8 +2110,8 @@ class ClosingProduction(models.Model):
                     'name': f"Ripening Cost to Inventory Ripening",
                     'plantation_varieties_id': varieties.id,
                     'account_id': line.inventory_ripening_account_id.id,
-                    'debit': round(line.ripening_cost,2) if line.ripening_cost>0 else 0.0,
-                    'credit': round(abs(line.ripening_cost),2) if line.ripening_cost<0 else 0.0,
+                    'debit': round(line.ripening_cost, 2) if line.ripening_cost>0 else 0.0,
+                    'credit': round(abs(line.ripening_cost), 2) if line.ripening_cost<0 else 0.0,
                 })
                 check_bal += vals_dest2['debit'] - vals_dest2['credit']
                 # print('................vals_dest2', line.product_id.name, vals_dest2['debit'], vals_dest2['credit'])
@@ -2128,8 +2128,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.cogs_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.ripening_outgoing_value if line.ripening_outgoing_value>0 else 0.0,
-                    'credit': abs(line.ripening_outgoing_value) if line.ripening_outgoing_value<0 else 0.0,
+                    'debit': round(line.ripening_outgoing_value, 2) if line.ripening_outgoing_value>0 else 0.0,
+                    'credit': round(abs(line.ripening_outgoing_value), 2) if line.ripening_outgoing_value<0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_cogs2))
                 vals_src5 = vals_cogs2.copy()
@@ -2152,8 +2152,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.adjustment_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': line.adjustment_value if line.adjustment_value>0 else 0.0,
-                    'credit': abs(line.adjustment_value) if line.adjustment_value<0 else 0.0,
+                    'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
+                    'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_adj))
                 vals_src5 = vals_adj.copy()
@@ -2174,8 +2174,8 @@ class ClosingProduction(models.Model):
                 'plantation_activity_id': plt_cost.plantation_activity_id.id if plt_cost.plantation_activity_id else False,
                 'plantation_src_journal_id': plt_cost.plantation_src_journal_id.id if plt_cost.plantation_src_journal_id else False,
                 'account_id': plt_cost.account_id.id,
-                'debit': abs(plt_cost.total_cost) if plt_cost.total_cost<0 else 0.0,
-                'credit': plt_cost.total_cost if plt_cost.total_cost>0 else 0.0,
+                'debit': round(abs(plt_cost.total_cost), 2) if plt_cost.total_cost<0 else 0.0,
+                'credit': round(plt_cost.total_cost, 2) if plt_cost.total_cost>0 else 0.0,
             }
             check_bal += vals_src['debit'] - vals_src['credit']
             # print('................vals_src', vals_src['debit'], vals_src['credit'])
@@ -2190,8 +2190,8 @@ class ClosingProduction(models.Model):
                 'plantation_activity_id': ripe_cost.plantation_activity_id.id if ripe_cost.plantation_activity_id else False,
                 'plantation_src_journal_id': ripe_cost.plantation_src_journal_id.id if ripe_cost.plantation_src_journal_id else False,
                 'account_id': ripe_cost.account_id.id,
-                'debit': abs(ripe_cost.total_cost) if ripe_cost.total_cost<0 else 0.0,
-                'credit': ripe_cost.total_cost if ripe_cost.total_cost>0 else 0.0,
+                'debit': round(abs(ripe_cost.total_cost), 2) if ripe_cost.total_cost<0 else 0.0,
+                'credit': round(ripe_cost.total_cost, 2) if ripe_cost.total_cost>0 else 0.0,
             }
             check_bal += vals_src2['debit'] - vals_src2['credit']
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
