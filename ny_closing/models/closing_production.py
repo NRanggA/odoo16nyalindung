@@ -455,6 +455,9 @@ class ClosingProduction(models.Model):
     sheet_production_cost = fields.Float(compute='_compute_mrp_cost_distribution', store=True, string='Production Cost of Sheet')
     
     # Asam Semut
+    sheet_rm_inventory_account_id = fields.Many2one('account.account', string='Inventory Account Asam Semut')
+    sheet_rm_purchase_account_id = fields.Many2one('account.account', string='Purchase Account Asam Semut')
+    sheet_rm_consumption_account_id = fields.Many2one('account.account', string='Consumption Account Asam Semut')
     sheet_rm_opening_qty = fields.Float(string='Begining Qty of Asam Semut')
     sheet_rm_opening_value = fields.Float(string='Begining Value of Asam Semut')
     sheet_rm_incoming_qty = fields.Float(string='Incoming Qty of Asam Semut')
@@ -1055,6 +1058,22 @@ class ClosingProduction(models.Model):
             plantation_cost, summerize_cost = closing._compute_plantation_cost_karet()
             closing.plantation_cost = plantation_cost
             closing.plantation_cost_ids = summerize_cost
+    
+    def action_compute_sheet_rm_cost(self):
+        misc_journal = self.env.ref('ny_closing.plantation_closing_production')
+        for closing in self:
+            purchases_in = self.env['account.move.line'].search([
+                        ('account_id','=',closing.sheet_rm_purchase_account_id.id),
+                        ('parent_state','=','posted'),('date','>=',closing.date_from),
+                        ('date','<=',closing.date_to),('journal_id','!=',misc_journal.id),
+                        ('debit','>',0)])
+            purchases_out = self.env['account.move.line'].search([
+                        ('account_id','=',closing.sheet_rm_purchase_account_id.id),
+                        ('parent_state','=','posted'),('date','>=',closing.date_from),
+                        ('date','<=',closing.date_to),('journal_id','!=',misc_journal.id),
+                        ('credit','>',0)])
+            # closing.sheet_rm_incoming_qty = (sum(purchases_in.mapped('quantity')) if purchases_in else 0.0) - (sum(purchases_out.mapped('quantity')) if purchases_out else 0.0)
+            closing.sheet_rm_incoming_value = (sum(purchases_in.mapped('balance')) if purchases_in else 0.0) + (sum(purchases_out.mapped('balance')) if purchases_out else 0.0)
 
     def action_compute_mrp_cost(self):
         for closing in self:
@@ -1176,6 +1195,8 @@ class ClosingProduction(models.Model):
                                     ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            # Get Purchase Amount Asam Semut
+            closing.action_compute_sheet_rm_cost()
             closing.sheet_rm_incoming_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
             closing.sheet_rm_incoming_value = sum([x.move_id.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
             # Get Consumed Asam Semut
@@ -1484,7 +1505,7 @@ class ClosingProduction(models.Model):
         # BEGIN: Receiving from NAP
         if self.latex_incoming_qty:
             vals_dest = {
-                'name': 'Inventory Receipt and Valuation',
+                'name': 'Inventory Receipt and Valuation Latex',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1510,7 +1531,7 @@ class ClosingProduction(models.Model):
         
         if self.lump_incoming_qty:
             vals_dest = {
-                'name': 'Inventory Receipt and Valuation',
+                'name': 'Inventory Receipt and Valuation Lump',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1606,7 +1627,7 @@ class ClosingProduction(models.Model):
         
         if self.compound_production_cost:
             vals_mrp = {
-                'name': 'Manufacturing Cost to WIP Lateks',
+                'name': 'Manufacturing Cost to WIP Lump',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1682,7 +1703,7 @@ class ClosingProduction(models.Model):
         # BEGIN: Sales Latex & Lump
         if self.latex_delivered_qty:
             vals_src9 = {
-                'name': 'Harga Pokok Penjualan',
+                'name': 'Harga Pokok Penjualan Latex',
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1767,6 +1788,44 @@ class ClosingProduction(models.Model):
             move_lines_outgoing.append((0,0,vals_adjs_12))
         # END: Sales Adjustment & Lump
 
+        # BEGIN: Purchase Asam Semut
+        if self.sheet_rm_incoming_qty:
+            vals_dest31 = {
+                'name': 'Pembelian Asam Semut pada Inventory',
+                'product_id': False,
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_incoming_value if self.sheet_rm_incoming_value>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_incoming_value) if self.sheet_rm_incoming_value<0 else 0.0, 2),
+            }
+            move_lines_receiving.append((0,0,vals_dest31))
+            vals_src_31 = vals_dest31.copy()
+            vals_src_31.update({
+                'account_id': self.sheet_rm_purchase_account_id.id,
+                'debit': vals_dest31['credit'],
+                'credit': vals_dest31['debit'],
+            })
+            move_lines_receiving.append((0,0,vals_src_31))
+        # END: Purchase Asam Semut
+
+        # BEGIN: Konsumsi Asam Semut
+        if self.sheet_rm_outgoing_qty:
+            vals_dest32 = {
+                'name': 'Konsumsi Asam Semut',
+                'product_id': False,
+                'account_id': self.sheet_rm_consumption_account_id.id,
+                'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_src_32))
+        # END: Purchase Asam Semut
+            
         if move_lines_receiving:
             # handling Pembuatan
             first_bal = check_balance = 0.0
