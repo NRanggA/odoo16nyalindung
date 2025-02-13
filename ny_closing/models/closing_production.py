@@ -1839,6 +1839,23 @@ class ClosingProduction(models.Model):
                 'credit': vals_dest32['debit'],
             })
             move_lines_wip.append((0,0,vals_src_32))
+
+            vals_dest33 = {
+                'name': 'Cost Asam Semut to WIP Latex',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.latex_wip_account_id.id,
+                'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
+            }
+            move_lines_wip.append((0,0,vals_dest33))
+            vals_src_33 = vals_dest33.copy()
+            vals_src_33.update({
+                'account_id': self.sheet_rm_consumption_account_id.id,
+                'debit': vals_dest33['credit'],
+                'credit': vals_dest33['debit'],
+            })
+            move_lines_wip.append((0,0,vals_src_33))
         # END: Purchase Asam Semut
             
         if move_lines_receiving:
