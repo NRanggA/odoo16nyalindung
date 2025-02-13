@@ -549,7 +549,7 @@
                         </group>
                         <group string="Account for Asam Semut" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="sheet_rm_inventory_account_id" string="Inventory Account" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
-                            <field name="sheet_rm_consumption_account_id" string="Inventory Account" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <field name="sheet_rm_consumption_account_id" string="Consumption Account" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                         </group>
                     </group>
                     <notebook>
