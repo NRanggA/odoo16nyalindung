@@ -1171,15 +1171,63 @@ class TimbanganPabrik(models.Model):
     stock_picking_id   = fields.Many2one('stock.picking', string='Stock Picking', ondelete='cascade')
     stock_move_ids     = fields.One2many('stock.move', 'nap_tim_pabrik_id',string='Stock Move', ondelete='cascade')
     timbangan_kebun_id = fields.Many2one('timbangan.kebun', string="Data Timbangan Kebun", ondelete='cascade')
-    qty_received       = fields.Float(string='Quantity Received', compute='_compute_stock_move_qty')
+    qty_received       = fields.Float(string='Quantity Received', compute='_compute_stock_move_qty', store=True)
     # drc_line_ids       = fields.One2many('lhm.drc.line', 'timbangan_pabrik_id', string="DRC Lines", ondelete="cascade")
 
+    # Relasi ke NAP Header
     lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')
-
     afdeling_id         = fields.Many2one(string="Afdeling", related='lhm_nap_id.afdeling_id', readonly=True, store=True)
-    state               =    fields.Selection(related='lhm_nap_id.state', readonly=True, store=True)
-    date_nap            =    fields.Date(related='lhm_nap_id.date_nap', readonly=True, store=True)
+    state               = fields.Selection(related='lhm_nap_id.state', readonly=True, store=True)
+    date_nap            = fields.Date(related='lhm_nap_id.date_nap', readonly=True, store=True)
 
+    # Relasi ke Material Receipt
+    # material_receipt = fields.Many2one(
+    #     'stock.picking', 
+    #     related='stock_move_ids.picking_id', 
+    #     string='Material Receipt', 
+    #     store=True
+    # )
+    # material_receipt_state = fields.Selection(
+    #     'stock.picking', 
+    #     related='stock_move_ids.picking_id.state', 
+    #     string='MR State', 
+    #     store=True
+    # )
+    # material_receipt_ids = fields.Many2many(
+    #     'stock.picking',
+    #     compute='_compute_material_receipt',
+    #     string='Material Receipts',
+    #     store=True
+    # )
+
+    # material_receipt_status = fields.Char(
+    #     compute='_compute_material_receipt_status',
+    #     string='Material Receipt Status',
+    #     store=True
+    # )
+
+    # material_receipt_demand = fields.Char(
+    #     compute='_compute_material_receipt_demand',
+    #     string='Material Receipt Demand',
+    #     store=True
+    # )
+
+    # @api.depends('stock_move_ids.picking_id')
+    # def _compute_material_receipt(self):
+    #     for record in self:
+    #         record.material_receipt_ids = record.stock_move_ids.mapped('picking_id')
+
+    # @api.depends('material_receipt_ids')
+    # def _compute_material_receipt_status(self):
+    #     for record in self:
+    #         statuses = record.material_receipt_ids.mapped('state')  # ['done', 'confirmed', 'cancel']
+    #         record.material_receipt_status = ', '.join(statuses) if statuses else ''
+
+    # @api.depends('material_receipt_ids.move_line_ids_without_package.move_id.product_uom_qty')
+    # def _compute_material_receipt_demand(self):
+    #     for record in self:
+    #         demand_qtys = record.material_receipt_ids.mapped('move_line_ids_without_package.move_id.product_uom_qty')
+    #         record.material_receipt_demand = ', '.join(map(str, demand_qtys)) if demand_qtys else ''
 
 
     @api.model
