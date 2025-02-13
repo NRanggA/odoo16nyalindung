@@ -63,9 +63,6 @@
         # LHM Mesin
         'views/lhm_machine_views.xml',
 
-        # Timbangan Pabrik
-        'views/timbangan_pabrik_views.xml',
-
         'views/lhm_views.xml',
         'wizard/lhm_nap_wizard_views.xml',
         'views/lhm_transaction_line_views.xml',
@@ -142,6 +139,9 @@
         # 'report/daily_monitoring_contractor_views.xml',
         # 'report/report_running_account_template.xml',
         # 'report/report_running_account_action.xml',
+
+        # Timbangan Pabrik
+        'views/timbangan_pabrik_views.xml',
         
 
     ],
