@@ -3,6 +3,7 @@
     <record id="closing_production_fg_pisang_form" model="ir.ui.view">
         <field name="name">closing.production.finishgood.pisang.form</field>
         <field name="model">closing.production.finishgood</field>
+        <field name="priority" eval="10"/>
         <field name="arch" type="xml">
             <form>
                 <!-- <header>
@@ -923,7 +924,8 @@
                                 </group>
                             </group>
                             <label for="fg2_valuation_ids" string="Inventory Status"/>
-                            <field name="fg2_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_pisang_form'}"/>
+                            <!-- <field name="fg2_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_pisang_form'}"/> -->
+                            <field name="fg2_valuation_ids"/>
                             
                             <label for="plantation_cost_ids" groups="base.group_no_one"/>
                             <field name="plantation_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
@@ -954,7 +956,8 @@
                         </page>
                         <page name="fg_valuation" string="Finish Good Valuation"
                                 attrs="{'invisible': ['|',('varieties_type','=','pisang'),('state','not in',['fg_valuation','account_entry','done'])]}">
-                            <field name="fg2_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_karet_form'}"/>
+                            <!-- <field name="fg2_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_karet_form'}"/> -->
+                            <field name="fg2_valuation_ids"/>
                         </page>
                     </notebook>
                 </sheet>
