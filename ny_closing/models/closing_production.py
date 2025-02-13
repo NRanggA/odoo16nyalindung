@@ -1498,6 +1498,7 @@ class ClosingProduction(models.Model):
         # 3. Journal Finished Sheet (WIP Lateks > WIP Sheet ) 
         self.ensure_one()
         misc_journal = self.env.ref('ny_closing.plantation_closing_production')
+        varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
         
         move_lines_receiving = []
         move_lines_wip = []
@@ -1506,6 +1507,7 @@ class ClosingProduction(models.Model):
         if self.latex_incoming_qty:
             vals_dest = {
                 'name': 'Inventory Receipt and Valuation Latex',
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_type_id': False,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
@@ -1533,6 +1535,7 @@ class ClosingProduction(models.Model):
             vals_dest = {
                 'name': 'Inventory Receipt and Valuation Lump',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1560,6 +1563,7 @@ class ClosingProduction(models.Model):
             vals_wip_in = {
                 'name': 'Work in Process Lateks',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1580,6 +1584,7 @@ class ClosingProduction(models.Model):
             vals_wip_in = {
                 'name': 'Work in Process Lump',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1603,6 +1608,7 @@ class ClosingProduction(models.Model):
             vals_mrp = {
                 'name': 'Manufacturing Cost to WIP Lateks',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1629,6 +1635,7 @@ class ClosingProduction(models.Model):
             vals_mrp = {
                 'name': 'Manufacturing Cost to WIP Lump',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1657,6 +1664,7 @@ class ClosingProduction(models.Model):
             vals_mrp2 = {
                 'name': 'WIP Lateks to WIP Sheet',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1681,6 +1689,7 @@ class ClosingProduction(models.Model):
             vals_mrp4 = {
                 'name': 'WIP Lump to WIP Compo',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1705,6 +1714,7 @@ class ClosingProduction(models.Model):
             vals_src9 = {
                 'name': 'Harga Pokok Penjualan Latex',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1726,6 +1736,7 @@ class ClosingProduction(models.Model):
             vals_src10 = {
                 'name': 'Harga Pokok Penjualan Lump',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1749,6 +1760,7 @@ class ClosingProduction(models.Model):
             vals_src11 = {
                 'name': 'Penyesuaian Stok Lateks',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1770,6 +1782,7 @@ class ClosingProduction(models.Model):
             vals_src12 = {
                 'name': 'Penyesuaian Stok Lump',
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1792,6 +1805,7 @@ class ClosingProduction(models.Model):
         if self.sheet_rm_incoming_qty:
             vals_dest31 = {
                 'name': 'Pembelian Asam Semut pada Inventory',
+                'plantation_varieties_id': varieties.id,
                 'product_id': False,
                 'account_id': self.sheet_rm_inventory_account_id.id,
                 'debit': round(self.sheet_rm_incoming_value if self.sheet_rm_incoming_value>0 else 0.0, 2),
@@ -1811,19 +1825,20 @@ class ClosingProduction(models.Model):
         if self.sheet_rm_outgoing_qty:
             vals_dest32 = {
                 'name': 'Konsumsi Asam Semut',
+                'plantation_varieties_id': varieties.id,
                 'product_id': False,
                 'account_id': self.sheet_rm_consumption_account_id.id,
                 'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
                 'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
             }
-            move_lines_outgoing.append((0,0,vals_dest32))
+            move_lines_wip.append((0,0,vals_dest32))
             vals_src_32 = vals_dest32.copy()
             vals_src_32.update({
                 'account_id': self.sheet_rm_inventory_account_id.id,
                 'debit': vals_dest32['credit'],
                 'credit': vals_dest32['debit'],
             })
-            move_lines_outgoing.append((0,0,vals_src_32))
+            move_lines_wip.append((0,0,vals_src_32))
         # END: Purchase Asam Semut
             
         if move_lines_receiving:
@@ -1886,6 +1901,7 @@ class ClosingProduction(models.Model):
     def create_move_entries_fg_karet(self):
         self.ensure_one()
         misc_journal = self.env.ref('ny_closing.plantation_closing_production')
+        varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
         
         for line in self.fg2_valuation_ids:
             if (line.incoming_qty or line.outgoing_qty) and not line.inventory_account_id:
@@ -1900,6 +1916,7 @@ class ClosingProduction(models.Model):
                 vals_dest = {
                     'name': f"{line.product_id.name} Finished Process",
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -1924,6 +1941,7 @@ class ClosingProduction(models.Model):
                 vals_src = {
                     'name': 'Cost of Goods Sold',
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -1962,6 +1980,7 @@ class ClosingProduction(models.Model):
     def create_move_entries_fg_pisang(self):
         self.ensure_one()
         misc_journal = self.env.ref('ny_closing.plantation_closing_production')
+        varieties = self.env['plant.varieties'].search([('name','=','Pisang')], limit=1)
         
         move_lines_production = []
         move_lines_production2 = []
@@ -1982,6 +2001,7 @@ class ClosingProduction(models.Model):
             vals_dest = {
                 'name': f"{line.product_id.name} Received",
                 'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_id': False,
                 'plantation_activity_id': False,
                 'plantation_src_journal_id': False,
@@ -1999,6 +2019,7 @@ class ClosingProduction(models.Model):
                 vals_ripening_tf = {
                     'name': f"{line.product_id.name} transfer to Ripening",
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -2021,6 +2042,7 @@ class ClosingProduction(models.Model):
                 vals_cogs = {
                     'name': f"{line.product_id.name} Mentah Delivered",
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -2044,6 +2066,7 @@ class ClosingProduction(models.Model):
                 vals_cogs = {
                     'name': f"Scrap Cost {line.product_id.name} Mentah",
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -2068,6 +2091,7 @@ class ClosingProduction(models.Model):
                 vals_dest2 = vals_dest.copy()
                 vals_dest2.update({
                     'name': f"Ripening Cost to Inventory Ripening",
+                    'plantation_varieties_id': varieties.id,
                     'account_id': line.inventory_ripening_account_id.id,
                     'debit': round(line.ripening_cost,2) if line.ripening_cost>0 else 0.0,
                     'credit': round(abs(line.ripening_cost),2) if line.ripening_cost<0 else 0.0,
@@ -2081,6 +2105,7 @@ class ClosingProduction(models.Model):
                 vals_cogs2 = {
                     'name': f"{line.product_id.name} Delivered",
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -2104,6 +2129,7 @@ class ClosingProduction(models.Model):
                 vals_adj = {
                     'name': f"Adjustment Cost {line.product_id.name} Mentah",
                     'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
@@ -2125,6 +2151,7 @@ class ClosingProduction(models.Model):
         for plt_cost in self.plantation_cost_ids:
             vals_src = {
                 'name': f"Plantation Cost Pisang to Inventory",
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_type_id': plt_cost.plantation_location_type_id.id if plt_cost.plantation_location_type_id else False,
                 'plantation_location_id': plt_cost.plantation_location_id.id if plt_cost.plantation_location_id else False,
                 'plantation_activity_id': plt_cost.plantation_activity_id.id if plt_cost.plantation_activity_id else False,
@@ -2140,6 +2167,7 @@ class ClosingProduction(models.Model):
         for ripe_cost in self.mrp_cost_ids:
             vals_src2 = {
                 'name': f"Ripening Cost Pisang to Inventory",
+                'plantation_varieties_id': varieties.id,
                 'plantation_location_type_id': ripe_cost.plantation_location_type_id.id if ripe_cost.plantation_location_type_id else False,
                 'plantation_location_id': ripe_cost.plantation_location_id.id if ripe_cost.plantation_location_id else False,
                 'plantation_activity_id': ripe_cost.plantation_activity_id.id if ripe_cost.plantation_activity_id else False,
