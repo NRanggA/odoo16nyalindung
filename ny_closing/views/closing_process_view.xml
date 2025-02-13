@@ -152,7 +152,7 @@
                             <label for="closing_production_ids"/>
                             <field name="closing_production_ids"/>
                             <label for="closing_production_without_mrp_ids"/>
-                            <field name="closing_production_without_mrp_ids"/>
+                            <field name="closing_production_without_mrp_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_view_form'}"/>
                         </page>
                     </notebook>
                 </sheet>

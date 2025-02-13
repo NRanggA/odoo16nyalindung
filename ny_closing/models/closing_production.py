@@ -174,11 +174,14 @@ class ClosingProductionFinishGood(models.Model):
 
     @api.depends('onhand_qty', 'onhand_value', 
             'outgoing_qty', 'outgoing_value',
-            'ripening_qty', 'ripening_value')
+            'ripening_qty', 'ripening_value',
+            'scrap_qty', 'scrap_value',
+            'adjustment_qty', 'adjustment_value'
+            )
     def _compute_closing(self):
         for line in self:
-            line.closing_qty = line.onhand_qty - line.outgoing_qty - line.ripening_qty
-            line.closing_value = line.onhand_value - line.outgoing_value - line.ripening_value
+            line.closing_qty = line.onhand_qty - line.ripening_qty - line.outgoing_qty - line.scrap_qty + line.adjustment_qty
+            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.scrap_value + line.adjustment_value
     
     @api.depends('closing_id', 'closing_id.varieties_type', 
         'ripening_incoming_qty', 'closing_id.pisang_ripening_cost', 
@@ -375,7 +378,7 @@ class ClosingProductionFinishGood(models.Model):
                 move_lines_cogs.append((0,0,vals_src2))
             
             if move_lines_receiving or move_lines_cogs:
-                misc_journal = self.env['account.journal'].search([('type','=','general')], limit=1)
+                misc_journal = self.env.ref('ny_closing.plantation_closing_production')
                 values = {
                     'date': line.closing_process_id.date_to,
                     'journal_id': misc_journal.id,
@@ -423,7 +426,9 @@ class ClosingProduction(models.Model):
     latex_inventory_account_id = fields.Many2one('account.account', 'Account Inventory Lateks')
     latex_wip_account_id = fields.Many2one('account.account', 'Account WIP Lateks')
     latex_consumption_account_id = fields.Many2one('account.account', 'Account Consumption Lateks')
-    
+    latex_adjustment_account_id = fields.Many2one('account.account', 'Account Adjustment Lateks')
+    latex_cogs_account_id = fields.Many2one('account.account', 'Account CoGS Lateks')
+
     latex_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Qty of Lateks')
     latex_opening_qty_manual = fields.Float()
     latex_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Value of Lateks')
@@ -486,6 +491,8 @@ class ClosingProduction(models.Model):
     lump_inventory_account_id = fields.Many2one('account.account', 'Account Inventory Lump')
     lump_wip_account_id = fields.Many2one('account.account', 'Account WIP Lump')
     lump_consumption_account_id = fields.Many2one('account.account', 'Account Consumption Lump')
+    lump_adjustment_account_id = fields.Many2one('account.account', 'Account Adjustment Lump')
+    lump_cogs_account_id = fields.Many2one('account.account', 'Account CoGS Lump')
     
     lump_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Beginning Qty of Lump')
     lump_opening_qty_manual = fields.Float(string='Opening Qty of Lump')
@@ -1249,41 +1256,75 @@ class ClosingProduction(models.Model):
 
                 ripening_location = self.env.ref('ny_plantation.loc_ripening_loc_1')
                 # Find Delivery/Sales
-                outgoing_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
-                                # ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
-                                ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
+                delivery_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                ('location_id','!=',ripening_location.id),
                                 ('location_dest_id.usage','=','customer'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                outgoing_qty = sum(outgoing_moves.mapped('qty_done')) if outgoing_moves else 0.0
-                # Find Scrap
-                
-                scrap_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
-                                '|',('location_id.scrap_location','=',True),('location_dest_id.scrap_location','=',True),
-                                '|',('location_id','!=',ripening_location.id),('location_dest_id','!=',ripening_location.id),
+                delivery_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_dest_id','!=',ripening_location.id),
+                                ('location_id.usage','=','customer'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                scrap_qty = sum(scrap_moves.mapped('qty_done')) if scrap_moves else 0.0
+                outgoing_qty = (sum(delivery_moves_out.mapped('qty_done')) if delivery_moves_out else 0.0) - (sum(delivery_moves_return.mapped('qty_done')) if delivery_moves_return else 0.0)
+                
+                # Find Scrap
+                scrap_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
+                                ('location_dest_id.scrap_location','=',True),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                scrap_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.scrap_location','=',True),
+                                ('location_dest_id.usage','=','internal'),('location_dest_id','!=',ripening_location.id),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                scrap_qty = (sum(scrap_moves_out.mapped('qty_done')) if scrap_moves_out else 0.0) - (sum(scrap_moves_return.mapped('qty_done')) if scrap_moves_return else 0.0)
 
                 # Search Ripening Qty Receive from Internal Transfer
                 ripening_int_move_in = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','internal'),('location_id','!=',ripening_location.id),
-                                ('location_dest_id.usage','=','internal'),('location_dest_id','=',ripening_location.id),
+                                ('location_id.usage','=','internal'),
+                                ('location_id','!=',ripening_location.id),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_dest_id','=',ripening_location.id),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                ripening_qty = sum(ripening_int_move_in.mapped('qty_done')) if ripening_int_move_in else 0.0
+                ripening_int_move_out = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                ('location_id','=',ripening_location.id),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_dest_id','!=',ripening_location.id),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                ripening_qty = (sum(ripening_int_move_in.mapped('qty_done')) if ripening_int_move_in else 0.0) - (sum(ripening_int_move_out.mapped('qty_done')) if ripening_int_move_out else 0.0)
 
                 # Search Delivery from Ripening Location
-                ripening_out_moves = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','internal'),('location_id','=',ripening_location.id),
+                out_moves_ripening_loc = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                ('location_id','=',ripening_location.id),
                                 ('location_dest_id.usage','=','customer'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                ripening_outgoing_qty = sum(ripening_out_moves.mapped('qty_done')) if ripening_out_moves else 0.0
+                return_moves_ripening_loc = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','customer'),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_dest_id','=',ripening_location.id),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                ripening_outgoing_qty = (sum(out_moves_ripening_loc.mapped('qty_done')) if out_moves_ripening_loc else 0.0) - (sum(return_moves_ripening_loc.mapped('qty_done')) if return_moves_ripening_loc else 0.0)
 
                 values_to_create = {
                     'product_id': product.id,
@@ -1435,10 +1476,11 @@ class ClosingProduction(models.Model):
         # 2. Journal Addition WIP (Inventory > WIP Lateks/Lump) 
         # 3. Journal Finished Sheet (WIP Lateks > WIP Sheet ) 
         self.ensure_one()
-        misc_journal = self.env['account.journal'].search([('type','=','general')], limit=1)
-
+        misc_journal = self.env.ref('ny_closing.plantation_closing_production')
+        
         move_lines_receiving = []
         move_lines_wip = []
+        move_lines_outgoing = []
         # BEGIN: Receiving from NAP
         if self.latex_incoming_qty:
             vals_dest = {
@@ -1637,6 +1679,94 @@ class ClosingProduction(models.Model):
             move_lines_wip.append((0,0,vals_mrp_src4))
         # END: WIP Lump to WIP Compound
 
+        # BEGIN: Sales Latex & Lump
+        if self.latex_delivered_qty:
+            vals_src9 = {
+                'name': 'Harga Pokok Penjualan',
+                'plantation_location_type_id': False,
+                'plantation_location_id': False,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': False,
+                'product_id': self.latex_product_id.id,
+                'account_id': self.latex_inventory_account_id.id,
+                'debit': round(abs(self.latex_delivered_value) if self.latex_delivered_value<0 else 0.0, 2),
+                'credit': round(abs(self.latex_delivered_value) if self.latex_delivered_value>0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_src9))
+            vals_cogs9 = vals_src9.copy()
+            vals_cogs9.update({
+                'account_id': self.latex_cogs_account_id.id,
+                'debit': vals_src9['credit'],
+                'credit': vals_src9['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_cogs9))
+            
+        if self.lump_delivered_qty:
+            vals_src10 = {
+                'name': 'Harga Pokok Penjualan Lump',
+                'plantation_location_type_id': False,
+                'plantation_location_id': False,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': False,
+                'product_id': self.lump_product_id.id,
+                'account_id': self.lump_inventory_account_id.id,
+                'debit': round(abs(self.lump_delivered_value) if self.lump_delivered_value<0 else 0.0, 2),
+                'credit': round(abs(self.lump_delivered_value) if self.lump_delivered_value>0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_src10))
+            vals_cogs10 = vals_src10.copy()
+            vals_cogs10.update({
+                'account_id': self.lump_cogs_account_id.id,
+                'debit': vals_src10['credit'],
+                'credit': vals_src10['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_cogs10))
+        # END: Sales Latex & Lump
+
+        # BEGIN: Adjustment Latex & Lump
+        if self.latex_adjustment_qty:
+            vals_src11 = {
+                'name': 'Penyesuaian Stok Lateks',
+                'plantation_location_type_id': False,
+                'plantation_location_id': False,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': False,
+                'product_id': self.latex_product_id.id,
+                'account_id': self.latex_inventory_account_id.id,
+                'debit': round(self.latex_adjustment_value if self.latex_adjustment_value>0 else 0.0, 2),
+                'credit': round(abs(self.latex_adjustment_value) if self.latex_adjustment_value<0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_src11))
+            vals_adjs_11 = vals_src11.copy()
+            vals_adjs_11.update({
+                'account_id': self.latex_adjustment_account_id.id,
+                'debit': vals_src9['credit'],
+                'credit': vals_src9['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_adjs_11))
+            
+        if self.lump_adjustment_qty:
+            vals_src12 = {
+                'name': 'Penyesuaian Stok Lump',
+                'plantation_location_type_id': False,
+                'plantation_location_id': False,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': False,
+                'product_id': self.lump_product_id.id,
+                'account_id': self.lump_inventory_account_id.id,
+                'debit': round(self.lump_adjustment_value if self.lump_adjustment_value>0 else 0.0, 2),
+                'credit': round(abs(self.lump_adjustment_value) if self.lump_adjustment_value<0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_src12))
+            vals_adjs_12 = vals_src12.copy()
+            vals_adjs_12.update({
+                'account_id': self.lump_adjustment_account_id.id,
+                'debit': vals_src12['credit'],
+                'credit': vals_src12['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_adjs_12))
+        # END: Sales Adjustment & Lump
+
         if move_lines_receiving:
             # handling Pembuatan
             first_bal = check_balance = 0.0
@@ -1674,15 +1804,34 @@ class ClosingProduction(models.Model):
             }
             new_reverse_move = self.env['account.move'].create(values2)
             self.closing_move_ids = [(4,new_reverse_move.id)]
+        if move_lines_outgoing:
+            first_bal = check_balance = 0.0
+            for x,y,val in move_lines_outgoing:
+                first_bal = val['debit'] - val['credit']
+                check_balance += val['debit'] - val['credit']
+            if check_balance>0.0 or check_balance<0:
+                if first_bal>0:
+                    move_lines_outgoing[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+                else:
+                    move_lines_outgoing[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+            values2 = {
+                'date': self.date_from + relativedelta(months=1),
+                'journal_id': misc_journal.id,
+                'move_type': 'entry',
+                'line_ids': move_lines_outgoing,
+            }
+            new_outgoing_moves = self.env['account.move'].create(values2)
+            self.closing_move_ids = [(4,new_outgoing_moves.id)]
+        
 
     def create_move_entries_fg_karet(self):
         self.ensure_one()
-        misc_journal = self.env['account.journal'].search([('type','=','general')], limit=1)
+        misc_journal = self.env.ref('ny_closing.plantation_closing_production')
         
         for line in self.fg2_valuation_ids:
-            if not line.inventory_account_id:
+            if (line.incoming_qty or line.outgoing_qty) and not line.inventory_account_id:
                 raise ValidationError(f"Silahkan isi akun Inventory valuation untuk Product {line.product_id.name}")
-            if not line.cogs_account_id:
+            if (line.outgoing_qty) and not line.cogs_account_id:
                 raise ValidationError(f"Silahkan isi akun COGS untuk Product {line.product_id.name}")
             # 1. Journal Receiving (Plantation/Manufacturing Cost > Inventory) 
             # 2. Journal Cost of Goods Sold (COGS > Inventory) 
@@ -1753,22 +1902,22 @@ class ClosingProduction(models.Model):
 
     def create_move_entries_fg_pisang(self):
         self.ensure_one()
-        misc_journal = self.env['account.journal'].search([('type','=','general')], limit=1)
+        misc_journal = self.env.ref('ny_closing.plantation_closing_production')
         
         move_lines_production = []
         move_lines_production2 = []
         move_lines_cogs = []
         check_bal = 0.0
         for line in self.fg2_valuation_ids:
-            if not line.inventory_account_id:
+            if any([line.ripening_qty>0,line.outgoing_qty>0,line.scrap_qty>0,line.adjustment_qty>0]) and not line.inventory_account_id:
                 raise ValidationError(f"Silahkan isi akun Inventory valuation untuk Product {line.product_id.name}")
-            if not line.inventory_ripening_account_id:
+            if line.ripening_qty and not line.inventory_ripening_account_id:
                 raise ValidationError(f"Silahkan isi akun Inventory valuation untuk proses Ripening Product {line.product_id.name}")
-            if not line.cogs_account_id:
+            if (line.ripening_outgoing_qty or line.outgoing_qty) and not line.cogs_account_id:
                 raise ValidationError(f"Silahkan isi akun COGS untuk Product {line.product_id.name}")
-            if not line.scrap_account_id:
+            if line.scrap_qty and not line.scrap_account_id:
                 raise ValidationError(f"Silahkan isi akun Scrap untuk Product {line.product_id.name}")
-            if not line.adjustment_account_id:
+            if line.adjustment_qty and not line.adjustment_account_id:
                 raise ValidationError(f"Silahkan isi akun Susut untuk Product {line.product_id.name}")
             # 1. Journal Receiving (Plantation/Manufacturing Cost > Inventory) 
             vals_dest = {
@@ -1891,7 +2040,6 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_cogs.append((0, 0, vals_src5))
             
-            
             # 7. Journal Susut
             if line.adjustment_qty:
                 vals_adj = {
@@ -1945,7 +2093,6 @@ class ClosingProduction(models.Model):
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
             move_lines_production2.append((0,0,vals_src2))
 
-        # print(">>>>>>>>>>>>>>>>>", check_bal)
         if check_bal and check_bal>=-1.0 and check_bal<=1.0:
             move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
         if move_lines_production or move_lines_production2:
@@ -1987,7 +2134,6 @@ class ClosingProduction(models.Model):
                 closing.create_move_entries_rm_karet()
                 closing.create_move_entries_fg_karet()
             elif closing.varieties_type=='pisang':
-                # closing.create_move_entries_rm_pisang()
                 closing.create_move_entries_fg_pisang()
         return True
 
