@@ -20,7 +20,9 @@
                         <field name="journal_ids" widget="many2many_tags"/>
                     </group> -->
                     <group name="account_ids" string="Accounts">
+                        <field name="type_state" />
                         <field name="account_ids" widget="many2many_tags"/>
+                        <field name="is_transaction" />
                     </group>
                     <footer>
                         <button string="print" type="object" name="create_report" class="btn-primary"/>

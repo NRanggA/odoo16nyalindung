@@ -11,6 +11,14 @@ class WizardGeneralLedgerXlsx(models.Model):
     account_ids = fields.Many2many('account.account', string='Accounts')
     company_id      = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
 
+    is_transaction = fields.Boolean('Transactions', default=False)
+    all_entries = fields.Boolean('All Entries', default=False)
+
+    type_state = fields.Selection([
+        ('posted', 'Posted'),
+        ('all_entries', 'All Entries')
+    ], string='Type Status', required=True, default='posted')
+
     def create_report(self):
         if not self.from_date or not self.to_date:
             raise UserError(_("Masukkan Tanggal untuk memfilter Laporan !"))
