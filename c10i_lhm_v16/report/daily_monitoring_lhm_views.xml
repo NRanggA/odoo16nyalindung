@@ -16,27 +16,6 @@
         </field>
     </record>
 
-    <!-- Form View -->
-    <!-- <record id="view_lhm_transaction_report_form" model="ir.ui.view">
-        <field name="name">lhm.transaction.monitoring.form</field>
-        <field name="model">lhm.transaction.monitoring</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <field name="date"/>
-                        <field name="lhm_name"/>
-                        <field name="location_type_id"/>
-                        <field name="varieties_id"/>
-                        <field name="location_id"/>
-                        <field name="activity_id"/>
-                        <field name="lhm_state"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record> -->
-
     <!-- Action Window -->
     <record id="action_lhm_transaction_monitoring" model="ir.actions.act_window">
         <field name="name">Cek Detail Activity LHM</field>
@@ -52,7 +31,7 @@
               sequence="200"/>
 
     <!-- Submenu -->
-    <menuitem id="menu_lhm_transaction_report"
+    <menuitem id="menu_lhm_transaction_monitoring"
               name="Cek Detail Activity LHM"
               parent="menu_lhm_transaction_main"
               action="action_lhm_transaction_monitoring"/>

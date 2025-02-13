@@ -1002,3 +1002,4 @@ access_plantation_182,stock.model_stock_picking c10i_lhm_v16.plantation_manager,
 access_plantation_183,lhm.transaction c10i_lhm_v16.plantation_lhm_nap_user,c10i_lhm_v16.model_lhm_transaction,c10i_lhm_v16.plantation_lhm_nap_user,1,0,0,0
 
 access_lhm_transaction_monitoring,User Access for LHM Monitoring,model_lhm_transaction_monitoring,base.group_user,1,0,0,0
+access_lhm_contractor_monitoring,User Access for LHM Monitoring,model_lhm_contractor_monitoring,base.group_user,1,0,0,0

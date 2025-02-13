@@ -1,0 +1,64 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_lhm_contractor_monitoring_tree" model="ir.ui.view">
+        <field name="name">lhm.contractor.monitoring.tree</field>
+        <field name="model">lhm.contractor.monitoring</field>
+        <field name="arch" type="xml">
+            <tree>
+                <!-- <field name="date"/> -->
+                <field name="bk_name"/>
+                <field name="location_type_id"/>
+                <field name="varieties_id"/>
+                <field name="location_id"/>
+                <field name="activity_id"/>
+                <field name="bk_state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <!-- <record id="timbangan_pabrik_search" model="ir.ui.view">
+        <field name="name">timbangan.pabrik.view.search</field>
+        <field name="model">timbangan.pabrik</field>
+        <field name="arch" type="xml">
+            <search string="Timbangan Pabrik (NAP)">
+                <field name="date_nap" string="Date NAP"/>
+                <field name="lhm_nap_id" string="LHM NAP"/>
+                <field name="block_id" string="Lokasi"/>
+                <field name="afdeling_id" string="Afdeling"/>
+                <field name="product_id" string="Product"/>
+                <separator/>
+                <filter string="Date Nap" name="date_nap" date="date_nap"/>
+                <separator/>
+                <filter name="draft" string="New" domain="[('state','=','draft')]"/>
+                <filter name="process" string="Progress" domain="[('state','=','process')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="cancel" string="Cancel" domain="[('state','=','cancel')]"/>
+                <filter name="done" string="Done" domain="[('state','=','done')]"/>
+                <filter name="revision" string="Revision" domain="[('state','=','revision')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Date Nap" name="date_nap" context="{'group_by':'date_nap'}"/>
+                    <filter string="LHM NAP" name="lhm_nap_id" context="{'group_by':'lhm_nap_id'}"/>
+                    <filter string="Afdeling" name="afdeling_id" context="{'group_by':'afdeling_id'}"/>
+                    <filter string="Lokasi" name="block_id" context="{'group_by':'block_id'}"/>
+                    <filter string="Quality" name="quality_pabrik" context="{'group_by':'quality_pabrik'}"/>
+                </group>
+            </search>
+        </field>
+    </record> -->
+
+    <!-- Action Window -->
+    <record id="action_lhm_contractor_monitoring" model="ir.actions.act_window">
+        <field name="name">Cek Detail Activity Buku Kontraktor</field>
+        <field name="res_model">lhm.contractor.monitoring</field>
+        <field name="view_mode">tree</field>
+        <field name="type">ir.actions.act_window</field>
+    </record>
+
+    <!-- Submenu -->
+    <menuitem id="menu_lhm_contractor_monitoring"
+              name="Cek Detail Activity Buku Kontraktor"
+              parent="menu_lhm_transaction_main"
+              action="action_lhm_contractor_monitoring"/>
+</odoo>

@@ -136,7 +136,7 @@
 
         #REPORT
         'report/daily_monitoring_lhm_views.xml',
-        # 'report/daily_monitoring_contractor_views.xml',
+        'report/daily_monitoring_contractor_views.xml',
         # 'report/report_running_account_template.xml',
         # 'report/report_running_account_action.xml',
 
