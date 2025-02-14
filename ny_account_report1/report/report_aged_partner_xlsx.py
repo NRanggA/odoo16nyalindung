@@ -62,6 +62,12 @@ class ReportFinancialXlsx(models.Model):
         self.wbf['content_float1'].set_bottom() 
         self.wbf['content_float1'].set_top() 
 
+        self.wbf['content_total'] = workbook.add_format({'bold': 1, 'bg_color': '#FFFFDB', 'align': 'right', 'num_format': '#,##0.00;-#,##0.00;'})
+        self.wbf['content_total'].set_right() 
+        self.wbf['content_total'].set_left()
+        self.wbf['content_total'].set_bottom() 
+        self.wbf['content_total'].set_top() 
+
         self.wbf['content_float2'] = workbook.add_format({'align': 'right', 'num_format': '#,##0.00;-#,##0.00;-'})
         self.wbf['content_float2'].set_right() 
         self.wbf['content_float2'].set_left()
@@ -99,7 +105,7 @@ class ReportFinancialXlsx(models.Model):
         self.wbf['total'].set_bottom()
         
         return workbook
- 
+
     def generate_xlsx_report(self, workbook, data, obj):
         # heading_format = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'bold': True, 'size': 14})
         workbook = self.add_workbook_format(workbook)
@@ -149,6 +155,8 @@ class ReportFinancialXlsx(models.Model):
         worksheet.write(next_row, 11, data['form']['1']['name'], wbf['header'])
         worksheet.write(next_row, 12, data['form']['0']['name'], wbf['header'])
         next_row += 1
+
+        total_amount = 0
         for partners in partner_aged:
             # worksheet.write(next_row, 1, partners['name'], wbf['content1'])
             worksheet.set_column(1,1,30) # width number
@@ -166,7 +174,6 @@ class ReportFinancialXlsx(models.Model):
             # worksheet.write(next_row, 11, partners['1'], wbf['content_float1'])
             # worksheet.write(next_row, 12, partners['0'], wbf['content_float1'])
             # next_row += 1
-
             for invoice in partner_move_lines[partners['partner_id']]:
                 worksheet.write(next_row, 1, partners['name'], wbf['content2'])
                 worksheet.write(next_row, 2, invoice['line'].name or '', wbf['content2'])
@@ -198,8 +205,26 @@ class ReportFinancialXlsx(models.Model):
             worksheet.write(next_row, 10, partners['2'], wbf['content_float1'])
             worksheet.write(next_row, 11, partners['1'], wbf['content_float1'])
             worksheet.write(next_row, 12, partners['0'], wbf['content_float1'])
+            
+            total_amount += partners['total']
+
             next_row += 1
 
+        # Baris Total
+        worksheet.write(next_row, 1, 'TOTAL', wbf['header'])
+        worksheet.write(next_row, 2, "", wbf['header'])
+        worksheet.write(next_row, 3, total_amount, wbf['content_total'])  
+        worksheet.write(next_row, 4, "", wbf['header'])
+        worksheet.write(next_row, 5, "", wbf['header'])
+        worksheet.write(next_row, 6, "", wbf['header'])
+        worksheet.write(next_row, 7, '', wbf['header'])  
+        worksheet.write(next_row, 8, '', wbf['header'])
+        worksheet.write(next_row, 9, '', wbf['header'])
+        worksheet.write(next_row, 10, '', wbf['header'])
+        worksheet.write(next_row, 11, '', wbf['header'])
+        worksheet.write(next_row, 12, '', wbf['header'])
+        next_row += 1
+        
         # Page Layout
         worksheet.set_landscape()
         worksheet.set_paper(9) # A4
