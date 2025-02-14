@@ -11,7 +11,7 @@ class WizardGeneralLedgerXlsx(models.Model):
     account_ids = fields.Many2many('account.account', string='Accounts')
     company_id      = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
 
-    is_transaction = fields.Boolean('Transactions', default=False)
+    is_transaction = fields.Boolean('Exclude No Transaction Account', default=False)
     all_entries = fields.Boolean('All Entries', default=False)
 
     type_state = fields.Selection([
