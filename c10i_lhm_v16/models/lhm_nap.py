@@ -615,9 +615,10 @@ class lhm_nap(models.Model):
                 if not contractor_date:
                     continue
                 contractor_day_key = (location_id, contractor_date)
+                contractor_line_nilai = line.nilai2 if line.uom_id.name == "Days" else line.nilai
                 if contractor_day_key not in contractor_day_data:
                     contractor_day_data[contractor_day_key] = 0
-                contractor_day_data[contractor_day_key] += line.nilai
+                contractor_day_data[contractor_day_key] += contractor_line_nilai
 
         # Validasi kesesuaian total hasil
         if transaction_data:
