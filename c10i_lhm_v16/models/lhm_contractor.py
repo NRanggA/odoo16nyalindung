@@ -298,6 +298,7 @@ class lhm_contractor(models.Model):
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Vendor Bill'))
             if contractor.move_id:
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Journal Entry.\n Silahkan di Cancel terlebih dahulu'))
+            contractor.line_nap_ids.unlink()
         self.state = 'draft'
 
     def button_cancel(self):

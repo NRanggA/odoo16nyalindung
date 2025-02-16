@@ -582,12 +582,12 @@ class lhm_nap(models.Model):
                 ('activity_id.is_nap', '=', True),
                 ('activity_id.is_contractor_day', '=', True),
             ])
+            if not transaction_lines and not contractor_day_lines:
+                raise UserError("Data LHM dan data BKH tidak ditemukan. Harap periksa kembali dokumen yang terkait.")
 
             # Mengelompokkan data kebun berdasarkan location_id dan tanggal panen
             kebun_data = {}
             for line in kebun_lines:
-                if line.product_id.name in ["Lateks", "Lump"]:
-                    continue
                 location_id = line.block_id.location_id.id
                 kebun_key = (location_id, line.tgl_panen)
                 if kebun_key not in kebun_data:
@@ -595,27 +595,39 @@ class lhm_nap(models.Model):
                 kebun_data[kebun_key] += line.product_qty
 
             # Mengelompokkan data transaksi LHM berdasarkan location_id dan tanggal
+            # transaction_data = {}
+            # for line in transaction_lines:
+            #     if line.product_id.name == "Lateks" and line.product_id_2.name == "Lump":
+            #         continue
+            #     location_id = line.location_id.id
+            #     transaction_key = (location_id, line.date)
+            #     if transaction_key not in transaction_data:
+            #         transaction_data[transaction_key] = 0
+            #     transaction_data[transaction_key] += line.hasil_1
             transaction_data = {}
             for line in transaction_lines:
-                if line.product_id.name == "Lateks" and line.product_id_2.name == "Lump":
-                    continue
                 location_id = line.location_id.id
                 transaction_key = (location_id, line.date)
+                if line.product_id.name == "Lateks" and line.product_id_2.name == "Lump":
+                    hasil = line.hasil_1 + line.hasil_2
+                else:
+                    hasil = line.hasil_1
                 if transaction_key not in transaction_data:
                     transaction_data[transaction_key] = 0
-                transaction_data[transaction_key] += line.hasil_1
+                transaction_data[transaction_key] += hasil
 
             # Mengelompokkan data transaksi Contractor Harian berdasarkan location_id dan tanggal
             contractor_day_data = {}
             for line in contractor_day_lines:
-                if line.product_id.name == "Lateks" and line.product_id_2.name == "Lump":
-                    continue
                 location_id = line.location_id.id
                 contractor_date = line.contractor_id.date
                 if not contractor_date:
                     continue
                 contractor_day_key = (location_id, contractor_date)
-                contractor_line_nilai = line.nilai2 if line.uom_id.name == "Days" else line.nilai
+                if line.product_id.name == "Lateks" and line.product_id_2.name == "Lump":
+                    contractor_line_nilai = line.nilai + line.nilai2
+                else:
+                    contractor_line_nilai = line.nilai2 if line.uom_id.name == "Days" else line.nilai
                 if contractor_day_key not in contractor_day_data:
                     contractor_day_data[contractor_day_key] = 0
                 contractor_day_data[contractor_day_key] += contractor_line_nilai
@@ -642,7 +654,7 @@ class lhm_nap(models.Model):
             for key, kebun_total in kebun_data.items():
                 if key not in transaction_data:
                     location_name = self.env['lhm.location'].browse(key[0]).name
-                    raise UserError(f"Data tidak ditemukan di LHM untuk lokasi {location_name} dan tanggal {key[1]}.")
+                    raise UserError(f"(LHM) Data tidak ditemukan di LHM untuk lokasi {location_name} dan tanggal {key[1]}.")
 
             # Validasi total akhir
             total_transaction = sum(transaction_data.values())
@@ -658,7 +670,7 @@ class lhm_nap(models.Model):
                 corresponding_kebun_keys = [k for k in kebun_data if k[0] == key[0] and k[1] == key[1]]
                 location_name = self.env['lhm.location'].browse(key[0]).name
                 if not corresponding_kebun_keys:
-                    raise UserError(f"Data tidak ditemukan di Timbangan Kebun untuk lokasi {location_name} dan tanggal {key[1]}.")
+                    raise UserError(f"(BKH) Data tidak ditemukan di Timbangan Kebun untuk lokasi {location_name} dan tanggal {key[1]}.")
                 
                 # Jumlahkan total data kebun untuk lokasi dan tanggal yang sesuai
                 kebun_total = sum(kebun_data[k] for k in corresponding_kebun_keys)
