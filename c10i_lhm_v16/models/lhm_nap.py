@@ -733,6 +733,9 @@ class lhm_nap(models.Model):
                     contractor_lines = self.env['lhm.contractor.nap.line'].sudo().search([
                         ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
                         ('contractor_id.date', '=', pabrik_line.tgl_panen),
+                        ('contractor_id.state', '=', 'process'),
+                        ('activity_id.is_nap', '=', True),
+                        ('activity_id.is_contractor_day', '=', True),
                     ])
                     if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
                         if contractor_lines:
