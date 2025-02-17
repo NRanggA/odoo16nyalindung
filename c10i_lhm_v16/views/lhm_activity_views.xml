@@ -95,6 +95,7 @@
                     <field name="is_panen"/>
                     <field name="is_hasil_2"/>
                     <field name="is_nap"/>
+                    <field name="is_contractor_day"/>
                     <field name="company_id" invisible="1"/>
                 </tree>
             </field>
