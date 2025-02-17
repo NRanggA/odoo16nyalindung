@@ -120,7 +120,7 @@
                         <td colspan="4"></td>
                         <td class="right-align"><strong>Grand Total:</strong></td>
                         <td class="right-align"><strong><t t-esc="o.currency_id.symbol"/></strong></td>
-                        <td class="right-align"><strong><t t-esc="o.format_amount(o.amount_residual)"/></strong></td>
+                        <td class="right-align"><strong><t t-esc="o.format_amount(o.amount_total)"/></strong></td>
                     </tr>
                 </table>
             </t>
