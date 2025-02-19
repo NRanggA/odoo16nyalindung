@@ -16,7 +16,7 @@
                         </group>
                         <group>
                             <field name="to_date" />
-                            <field name="with_journal" />
+                            <field name="with_journal" groups="account.group_account_user"/>
                             <!-- <field name="show_value" widget="radio" /> -->
                         </group>
                     </group>
