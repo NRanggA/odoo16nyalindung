@@ -34,6 +34,10 @@
         'wizard/wizard_report_stock_card_views.xml',
         'report/report_stock_card_action.xml',
 
+        # Detail Store Issue
+        'wizard/wizard_store_issue_views.xml',
+        'report/report_store_issue_action.xml',
+
 
         'views/stock_picking_views.xml',
         

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action Report EXCEL Detail Store Issue -->
+    <record id="action_store_issue_report_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Store Issue XLSX</field>
+        <field name="model">wizard.report.store.issue</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">c10i_stock.store_issue_xlsx</field>
+        <field name="report_file">c10i_stock.store_issue_xlsx</field>
+        <field name="print_report_name">f'Laporan Detail Store Issue {object.from_date} s/d {object.to_date}'</field>
+        <field name="binding_model_id" ref="c10i_stock.model_wizard_report_store_issue"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

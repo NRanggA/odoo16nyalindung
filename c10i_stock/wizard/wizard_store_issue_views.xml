@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_report_store_issue_view_form" model="ir.ui.view">
+        <field name="name">wizard.report.store.issue.view.form</field>
+        <field name="model">wizard.report.store.issue</field>
+        <field name="arch" type="xml">
+            <form string="Report Detail Store Issue">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="from_date" />
+                            <!-- <field name="location_id" domain="[('usage', '=', 'internal')]" /> -->
+                            <field name="company_id" />
+                            <!-- <field name="exclude_exhaust" attrs="{'invisible': [('product_ids', '!=', [])]}"/> -->
+                        </group>
+                        <group>
+                            <field name="to_date" />
+                            <field name="with_journal" />
+                            <!-- <field name="show_value" widget="radio" /> -->
+                        </group>
+                    </group>
+                    <group name="operation_type" string="Operation Type">
+                        <field name="operation_type_id" domain="[('code', '=', 'issue')]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                    </group>
+                    <footer>
+                        <button string="print" type="object" name="create_report" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="wizard_report_store_issue_action" model="ir.actions.act_window">
+        <field name="name">Report Detail Store Issue</field>
+        <field name="res_model">wizard.report.store.issue</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="wizard_report_store_issue_menu"
+        name="Report Detail Store Issue"
+        action="wizard_report_store_issue_action"
+        parent="stock.menu_warehouse_report"
+        sequence="99"/>
+
+</odoo>
