@@ -680,7 +680,7 @@ class ReportStockMutation(models.AbstractModel):
             if mutasi_stock:
 
                 # Menampilkan product nya 
-                sheet.write(row, 0, product['default_code'], wbf['content']) 
+                sheet.write(row, 0, product['default_code'] if product['default_code'] else '-', wbf['content']) 
                 sheet.write(row, 1, product['name'], wbf['content']) 
                 sheet.write(row, 2, product['uom_id'].name, wbf['content']) 
 

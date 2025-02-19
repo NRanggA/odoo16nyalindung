@@ -8,7 +8,7 @@
         <field name="report_type">xlsx</field>
         <field name="report_name">c10i_stock.stock_card_xlsx</field>
         <field name="report_file">c10i_stock.stock_card_xlsx</field>
-        <field name="print_report_name">'(LAPORAN STOCK CARD XLSX)'</field>
+        <field name="print_report_name">f'Laporan Stock Card {object.from_date} s/d {object.to_date}'</field>
         <field name="binding_model_id" ref="c10i_stock.model_wizard_report_stock_card"/>
         <field name="binding_type">report</field>
     </record>
