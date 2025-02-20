@@ -574,7 +574,7 @@ class ReportStockMutation(models.AbstractModel):
         if obj.product_ids:
             products = obj.product_ids
         else:
-            products = self.env['product.product'].search([])
+            products = self.env['product.product'].search([(('categ_id.property_valuation', '=', obj.inventory_valuation))])
         
         # Nama worksheet
         sheet = workbook.add_worksheet(f"{location}")

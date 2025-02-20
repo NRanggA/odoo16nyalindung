@@ -18,6 +18,7 @@
                             <field name="to_date" />
                             <field name="username" />
                             <field name="show_value" widget="radio" />
+                            <field name="inventory_valuation" />
                         </group>
                     </group>
                     <group name="location" string="Product">
