@@ -170,7 +170,7 @@ class lhm_nap(models.Model):
                     totals[line.product_id.id]['qty'] += line.product_qty
                     totals[line.product_id.id]['uom'] = line.uom_id.name
             record.kebun_totals = '\n'.join(
-                f"{self.env['product.product'].browse(pid).name}: {data['qty']} {data['uom']}" 
+                f"{self.env['product.product'].browse(pid).name}: {data['qty']:.2f} {data['uom']}" 
                 for pid, data in totals.items()
             )
 
@@ -183,7 +183,7 @@ class lhm_nap(models.Model):
                     totals[line.product_id.id]['qty'] += line.product_qty
                     totals[line.product_id.id]['uom'] = line.uom_id.name
             record.pabrik_totals = '\n'.join(
-                f"{self.env['product.product'].browse(pid).name}: {data['qty']} {data['uom']}" 
+                f"{self.env['product.product'].browse(pid).name}: {data['qty']:.2f} {data['uom']}" 
                 for pid, data in totals.items()
             )
 
