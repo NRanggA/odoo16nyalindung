@@ -182,9 +182,9 @@ class AccountMove(models.Model):
     ##########################################
     def action_post(self, soft=True):
         res = super(AccountMove, self).action_post()
-        for move in self.filtered(lambda m: not m.period_id):
-            period_id = move._get_account_period(move.date)
-            move.period_id = period_id
+        # for move in self.filtered(lambda m: not m.period_id):
+        #     period_id = move._get_account_period(move.date)
+        #     move.period_id = period_id
 
         # handling account.invoice.advance
         for move in self:
