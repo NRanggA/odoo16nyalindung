@@ -129,9 +129,16 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
         # Format untuk konten rata kanan (angka tanpa desimal)
         self.wbf['content_number'] = workbook.add_format({
             'align': 'right',
-            'valign': 'vcenter'
+            'valign': 'vcenter',
+            'num_format': '#,##0.00',
         })
         self.wbf['content_number'].set_border()
+
+        self.wbf['content_number_center'] = workbook.add_format({
+            'align': 'center',
+            'valign': 'vcenter'
+        })
+        self.wbf['content_number_center'].set_border()
 
         # Format untuk konten persentase
         self.wbf['content_percent'] = workbook.add_format({
@@ -191,7 +198,11 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
             SELECT 
                 ai.invoice_date, 
                 ai.name AS invoice_name, 
-                ai.partner_id, 
+                ai.partner_id,
+                ail.plantation_location_type_id,
+                ail.plantation_varieties_id,
+                ail.plantation_location_id,
+                ail.plantation_activity_id,
                 ail.product_id, 
                 ail.name AS description, 
                 ail.quantity, 
@@ -243,18 +254,22 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
         sheet.set_column('A:A', 15)
         sheet.set_column('B:B', 18)
         sheet.set_column('C:C', 27)
-        sheet.set_column('D:D', 24)
-        sheet.set_column('E:E', 22)
-        sheet.set_column('F:F', 8)
-        sheet.set_column('G:G', 12)
+        sheet.set_column('D:D', 9)
+        sheet.set_column('E:E', 9)
+        sheet.set_column('F:F', 9)
+        sheet.set_column('G:G', 9)
         sheet.set_column('H:H', 14)
         sheet.set_column('I:I', 16)
-        sheet.set_column('J:J', 14)
-        sheet.set_column('K:K', 19)
+        sheet.set_column('J:J', 9)
+        sheet.set_column('K:K', 14)
+        sheet.set_column('L:L', 14)
+        sheet.set_column('M:M', 15)
+        sheet.set_column('N:N', 9)
+        sheet.set_column('O:O', 15)
 
 
         # Header Kolom
-        headers = ['Tanggal Invoice', 'No. Invoice', 'Konsumen', 'Product', 'Deskripsi', 'Quantity',
+        headers = ['Tanggal Invoice', 'No. Invoice', 'Konsumen', 'Tipe Lokasi', 'ORG', 'Lokasi', 'Aktivitas','Product', 'Deskripsi', 'Quantity',
                 'Harga', 'Total Harga', 'Term of Payment', 'Down Payment', 'Net AR']
         for col, header in enumerate(headers):
             sheet.write(row, col, header, wbf['header'])
@@ -266,124 +281,29 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
         results = self.env.cr.fetchall()
 
         # Tulis data ke sheet
-        for invoice_date, invoice_name, partner_id, product_id, description, quantity, price_unit, price_subtotal, term_of_payment, down_payment, outstanding_amount in results:
+        for invoice_date, invoice_name, partner_id, plantation_location_type_id, plantation_varieties_id, plantation_location_id, plantation_activity_id, product_id, description, quantity, price_unit, price_subtotal, term_of_payment, down_payment, outstanding_amount in results:
 
             
             sheet.write(row, 0, invoice_date.strftime('%d-%m-%Y') if invoice_date else '', wbf['content'])
             sheet.write(row, 1, invoice_name, wbf['content'])
             partner_name = self.env['res.partner'].browse(partner_id).name if partner_id else '-'
             sheet.write(row, 2, partner_name, wbf['content'])
+            location_type_name = self.env['lhm.location.type'].browse(plantation_location_type_id).name if plantation_location_type_id else '-'
+            sheet.write(row, 3, location_type_name, wbf['content'])
+            varieties_name = self.env['plant.varieties'].browse(plantation_varieties_id).name if plantation_varieties_id else '-'
+            sheet.write(row, 4, varieties_name, wbf['content'])
+            location_name = self.env['lhm.location'].browse(plantation_location_id).name if plantation_location_id else '-'
+            sheet.write(row, 5, location_name, wbf['content'])
+            activity_name = self.env['lhm.activity'].browse(plantation_activity_id).name if plantation_activity_id else '-'
+            sheet.write(row, 6, activity_name, wbf['content'])
             product_name = self.env['product.product'].browse(product_id).name if product_id else '-'
-            sheet.write(row, 3, product_name, wbf['content'])
-            sheet.write(row, 4, description, wbf['content'])
-            sheet.write(row, 5, quantity, wbf['content'])
-            sheet.write(row, 6, price_unit, wbf['total_float'])
-            sheet.write(row, 7, price_subtotal, wbf['total_float'])
+            sheet.write(row, 7, product_name, wbf['content'])
+            sheet.write(row, 8, description, wbf['content'])
+            sheet.write(row, 9, quantity, wbf['content_number_center'])
+            sheet.write(row, 10, price_unit, wbf['total_float'])
+            sheet.write(row, 11, price_subtotal, wbf['total_float'])
             payment_term_name = self.env['account.payment.term'].browse(term_of_payment).name if term_of_payment else '-'
-            sheet.write(row, 8, payment_term_name, wbf['content'])
-            sheet.write(row, 9, down_payment, wbf['total_float'])
-            sheet.write(row, 10, outstanding_amount, wbf['total_float'])
+            sheet.write(row, 12, payment_term_name, wbf['content'])
+            sheet.write(row, 13, down_payment, wbf['total_float'])
+            sheet.write(row, 14, outstanding_amount, wbf['total_float'])
             row += 1
-
-
-        # # Iterasi Setiap Akun
-        # accounts = obj.account_ids if obj.account_ids else self.env['account.account'].search([])
-        # for account in accounts:
-        #     query = self.get_query()
-
-        #     params = {
-        #         'account_id': account.id,
-        #         'date_from': obj.from_date.strftime('%Y-%m-%d 00:00:00'),
-        #     }
-
-        #     self.env.cr.execute(query, params)
-        #     account_move = self.env.cr.dictfetchone()
-
-        #     # Hitung Saldo Awal
-        #     if account_move:
-        #         total_debit = account_move['total_debit']
-        #         total_credit = account_move['total_credit']
-        #     else:
-        #         total_debit = 0.0
-        #         total_credit = 0.0
-
-        #     opening_balance = total_debit - total_credit
-
-        #     # Opening
-        #     sheet.write(row, 0, '', wbf['account'])
-        #     sheet.write(row, 1, f'{account.code} {account.name}', wbf['account'])
-        #     sheet.write(row, 2, '', wbf['account'])
-        #     sheet.write(row, 3, '', wbf['account'])
-        #     sheet.write(row, 4, '', wbf['account'])
-        #     sheet.write(row, 5, '', wbf['account'])
-        #     sheet.write(row, 6, '', wbf['account'])
-        #     sheet.write(row, 7, '', wbf['account'])
-        #     sheet.write(row, 8, '', wbf['account'])
-        #     sheet.write(row, 9, '', wbf['account'])
-        #     sheet.write(row, 10, '', wbf['account'])
-        #     sheet.write(row, 11, 'Opening', wbf['account'])
-        #     sheet.write(row, 12, total_debit, wbf['opening_balance'])
-        #     sheet.write(row, 13, total_credit, wbf['opening_balance'])
-        #     sheet.write(row, 14, opening_balance, wbf['opening_balance'])
-        #     sheet.write(row, 15, '', wbf['opening_balance'])
-        #     row += 1
-
-        #     domain = [
-        #         ('account_id', '=', account.id),
-        #         ('date', '>=', obj.from_date),
-        #         ('date', '<=', obj.to_date),
-        #         ('move_id.state', '=', 'posted')
-        #     ]
-        #     account_move_lines = self.env['account.move.line'].search(domain, order='date asc')
-
-        #     # balance = 0
-        #     for move_line in account_move_lines:
-        #         sheet.write(row, 0, move_line.date, wbf['content_date'])
-        #         sheet.write(row, 1, f'{move_line.account_id.code} {move_line.account_id.name}', wbf['content'])
-        #         sheet.write(row, 2, move_line.journal_id.code, wbf['content'])
-        #         sheet.write(row, 3, move_line.partner_id.name if move_line.partner_id else '', wbf['content'])
-        #         sheet.write(row, 4, move_line.ref if move_line.ref else '', wbf['content'])
-        #         sheet.write(row, 5, move_line.move_id.name if move_line.move_id else '', wbf['content'])
-        #         sheet.write(row, 6, move_line.plantation_location_type_id.name if move_line.plantation_location_type_id else '', wbf['content'])
-        #         sheet.write(row, 7, move_line.plantation_varieties_id.name if move_line.plantation_varieties_id else '', wbf['content'])
-        #         sheet.write(row, 8, move_line.plantation_location_id.name if move_line.plantation_location_id else '', wbf['content'])
-        #         sheet.write(row, 9, move_line.plantation_activity_id.name if move_line.plantation_activity_id else '', wbf['content'])
-        #         sheet.write(row, 10, '', wbf['content'])
-        #         sheet.write(row, 11, move_line.name if move_line.name else '', wbf['content'])
-
-        #         sheet.write(row, 12, move_line.debit, wbf['content_float'])
-        #         sheet.write(row, 13, move_line.credit, wbf['content_float'])
-
-        #         # balance += move_line.debit - move_line.credit
-        #         # sheet.write(row, 13, balance, wbf['content_float'])
-        #         sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['content_float'])
-
-        #         sheet.write(row, 15, move_line.amount_currency if move_line.currency_id != move_line.company_id.currency_id else 0, wbf['content_float'])
-
-        #         row += 1
-        #     # Menutup looping account_move_lines dengan baris saldo akhir
-        #     last_balance_row = row 
-        #     sheet.write(row, 0, '', wbf['account'])
-        #     sheet.write(row, 1, f'{account.code} {account.name}', wbf['account'])
-        #     sheet.write(row, 2, '', wbf['account'])
-        #     sheet.write(row, 3, '', wbf['account'])
-        #     sheet.write(row, 4, '', wbf['account'])
-        #     sheet.write(row, 5, '', wbf['account'])
-        #     sheet.write(row, 6, '', wbf['account'])
-        #     sheet.write(row, 7, '', wbf['account'])
-        #     sheet.write(row, 8, '', wbf['account'])
-        #     sheet.write(row, 9, '', wbf['account'])
-        #     sheet.write(row, 10, '', wbf['account'])
-        #     sheet.write(row, 11, 'Saldo Akhir', wbf['account'])
-        #     sheet.write(row, 12, '', wbf['account'])
-        #     sheet.write(row, 13, '', wbf['account'])
-
-        #     sheet.write_formula(row, 14, f'=SUM(O{row - len(account_move_lines)}:O{last_balance_row})', wbf['opening_balance'])
-        #     sheet.write(row, 15, '', wbf['account'])
-        #     row += 1
-        
-        # # Pengaturan Cetak
-        # sheet.set_landscape()
-        # sheet.set_paper(9)
-        # sheet.repeat_rows(0)
-        # sheet.set_print_scale(78)
