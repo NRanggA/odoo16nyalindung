@@ -148,9 +148,9 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>(.................)</td>
-                                        <td>(.................)</td>
-                                        <td>(.................)</td>
+                                        <td>(....................)</td>
+                                        <td style="page-break-inside: always;">(....................) (....................)</td>
+                                        <td>(....................)</td>
                                     </tr>
                                 </table>
                             </td>
@@ -174,7 +174,7 @@
         <field name="margin_left">0</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
-        <field name="dpi">50</field>
+        <field name="dpi">10</field>
     </record>
 
 </odoo>
