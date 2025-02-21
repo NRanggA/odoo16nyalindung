@@ -121,7 +121,7 @@
                         </tr>
                         <tr>
                             <td colspan="2" style="border:1px solid #181C14; text-align:center;">
-                                <table>
+                                <table style="page-break-inside: always;">
                                     <tr>
                                         <td>Diterima Tgl : ........</td>
                                         <td>Diperiksa/disetujui : ....</td>
@@ -148,8 +148,13 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td>(....................)</td>
-                                        <td style="page-break-inside: always;">(....................) (....................)</td>
+                                        <td>(....................) (....................)</td>
                                         <td>(....................)</td>
                                     </tr>
                                 </table>
