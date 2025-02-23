@@ -36,10 +36,10 @@
                             <h1><field name="name" readonly="1"/></h1>
                         </div>
                         <group>
-                            <field name="date"/>
+                            <field name="date" attrs="{'readonly': [('state','!=','draft')]}"/>
                             <!-- <field name="kemandoran_id"/> -->
-                            <field name="attendance_type_id"/>
-                            <field name="date_attendance"/>
+                            <field name="attendance_type_id" attrs="{'readonly': [('state','!=','draft')]}"  options="{'no_create_edit':True, 'no_create':True, 'no_open':False}"/>
+                            <field name="date_attendance" attrs="{'readonly': [('state','!=','draft')]}"/>
                         </group>
                         <notebook>
                             <page string="Karyawan">

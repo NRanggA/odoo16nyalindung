@@ -18,7 +18,7 @@
         <field name="inherit_id" ref="c10i_attendance.hr_attendance_correction_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='date']" position="after">
-                <field name="kemandoran_id" />
+                <field name="kemandoran_id" attrs="{'readonly': [('state','!=','draft')]}"  options="{'no_create_edit':True, 'no_create':True, 'no_open':False}"/>
             </xpath>
         </field>
     </record>
