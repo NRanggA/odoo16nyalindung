@@ -40,6 +40,10 @@
 
 
         'views/stock_picking_views.xml',
+
+        # Detail Receipt XLSX
+        'wizard/wizard_report_detail_receipt_views.xml',
+        'report/report_detail_receipt_action.xml',
         
         # 'views/views.xml',
         # 'views/templates.xml',
