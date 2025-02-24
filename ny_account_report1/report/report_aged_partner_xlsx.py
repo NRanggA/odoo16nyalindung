@@ -35,6 +35,7 @@ class ReportFinancialXlsx(models.Model):
         self.wbf['content_date'] = workbook.add_format({'num_format': 'dd/mm/yyyy'})
         self.wbf['content_date'].set_left()
         self.wbf['content_date'].set_right() 
+        self.wbf['content_date'].set_border()
         
         self.wbf['title_doc'] = workbook.add_format({'bold': 1,'align': 'left'})
         self.wbf['title_doc'].set_font_size(12)
@@ -54,6 +55,7 @@ class ReportFinancialXlsx(models.Model):
         self.wbf['content2'].set_left()
         self.wbf['content2'].set_right() 
         self.wbf['content2'].set_text_wrap()
+        self.wbf['content2'].set_border()
         # self.wbf['content2'].set_indent(1)
         
         self.wbf['content_float1'] = workbook.add_format({'bold': 1, 'align': 'right', 'num_format': '#,##0.00;-#,##0.00;'})
@@ -71,10 +73,14 @@ class ReportFinancialXlsx(models.Model):
         self.wbf['content_float2'] = workbook.add_format({'align': 'right', 'num_format': '#,##0.00;-#,##0.00;-'})
         self.wbf['content_float2'].set_right() 
         self.wbf['content_float2'].set_left()
+        self.wbf['content_float2'].set_border()
+
         
         self.wbf['content_number2'] = workbook.add_format({'align': 'center', 'num_format': '#,##0;-#,##0;'})
         self.wbf['content_number2'].set_right() 
         self.wbf['content_number2'].set_left() 
+        self.wbf['content_number2'].set_border()
+
 
         self.wbf['content_center'] = workbook.add_format({'align': 'centre'})
         
@@ -178,7 +184,7 @@ class ReportFinancialXlsx(models.Model):
             for invoice in partner_move_lines[partners['partner_id']]:
                 worksheet.write(next_row, 1, partners['name'], wbf['content2'])
                 worksheet.write(next_row, 2, invoice['line'].name or '', wbf['content2'])
-                worksheet.write(next_row, 3, invoice['line'].move_id.journal_id.varieties_id.name or '', wbf['content_float2'])
+                worksheet.write(next_row, 3, invoice['line'].move_id.journal_id.varieties_id.name or '', wbf['content2'])
                 worksheet.write(next_row, 4, invoice['amount'], wbf['content_float2'])
                 worksheet.write(next_row, 5, invoice['line'].date, wbf['content_date'])
                 due_date = invoice['line'].date_maturity or invoice['line'].date
