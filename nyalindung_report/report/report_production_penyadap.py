@@ -425,7 +425,8 @@ class ReportProductionPenyadap(models.AbstractModel):
                         trans_nap_line.hasil_1_nap,
                         trans_nap_line.hasil_2_nap,
                         trans_nap_line.hasil_convert_latex,
-                        trans_nap_line.hasil_convert_lump,  
+                        trans_nap_line.hasil_convert_lump,
+                        trans_line.work_day,  
                         trans.date, 
                         trans_line.employee_id
                     FROM 
@@ -441,7 +442,8 @@ class ReportProductionPenyadap(models.AbstractModel):
                     employee_data.emp_id,
                     employee_data.no_induk,
                     employee_data.employee_name,
-                    employee_data.kemandoran_emp
+                    employee_data.kemandoran_emp,
+                    SUM(trans_data.work_day) AS total_work_day
                 FROM 
                     employee_data
                 LEFT JOIN 
@@ -450,7 +452,8 @@ class ReportProductionPenyadap(models.AbstractModel):
                     employee_data.emp_id,
                     employee_data.no_induk,
                     employee_data.kemandoran_emp, 
-                    employee_data.employee_name
+                    employee_data.employee_name,
+                    trans_data.work_day
                 ORDER BY 
                     employee_data.employee_name ASC;
             """
@@ -468,7 +471,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             kerani_name = kemandoran.assisten_id.sudo().name if kemandoran.assisten_id else ''
             kerani_nik = kemandoran.assisten_id.sudo().no_induk if kemandoran.assisten_id else ''
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 sheet2.write(row2, 0, nomor, wbf['data_center'])
                 sheet2.write(row2, 1, no_induk, wbf['data_center'])
                 sheet2.write(row2, 2, employee_name, wbf['data'])
@@ -523,7 +526,7 @@ class ReportProductionPenyadap(models.AbstractModel):
                 sheet2.write(row2, hko_start + 3, p_count, wbf['data_center'])
                 sheet2.write(row2, hko_start + 4, ct_count, wbf['data_center'])
                 sheet2.write(row2, hko_start + 5, m_count, wbf['data_center'])
-                sheet2.write(row2, total_hk_start, '-', wbf['data_center'])
+                sheet2.write(row2, total_hk_start, total_work_day if total_work_day else 0, wbf['data_center'])
 
                 # Isi Jumlah Hasil Sadapan Lateks (L)
                 total_hasil_baris_lateks = 0
@@ -742,7 +745,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             sheet2.write(row2, hko_start + 3, "-", wbf['data_center'])
             sheet2.write(row2, hko_start + 4, "-", wbf['data_center'])
             sheet2.write(row2, hko_start + 5, "-", wbf['data_center'])
-            sheet2.write(row2, total_hk_start, '-', wbf['data_center'])
+            sheet2.write(row2, total_hk_start, "-", wbf['data_center'])
 
             # Isi Jumlah Hasil Sadapan Lateks (L)
 
@@ -890,7 +893,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_columns)
             total_m_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 current_col = 4
                 for i in range(len(date_columns)):
                     attendance = self.env['lhm.transaction.line'].search_read([
@@ -907,7 +910,9 @@ class ReportProductionPenyadap(models.AbstractModel):
                 sheet2.write(row2, 11 + i, total_hko_per_tanggal[i], wbf['kuning'])
 
             #2
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            grand_total_work_day = 0
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
+                grand_total_work_day += total_work_day
                 current_col = 4
                 for i in range(len(date_columns)):
                     attendance = self.env['lhm.transaction.line'].search_read([
@@ -937,13 +942,14 @@ class ReportProductionPenyadap(models.AbstractModel):
             sheet2.write(row2, hko_start + 3, sum(total_p_per_tanggal), wbf['hijau_tua'])
             sheet2.write(row2, hko_start + 4, sum(total_ct_per_tanggal), wbf['hijau_tua'])
             sheet2.write(row2, hko_start + 5, sum(total_m_per_tanggal), wbf['hijau_tua'])
-            sheet2.write(row2, total_hk_start, '', wbf['hijau_tua'])
+            # sheet2.write(row2, total_hk_start, sum(total_work_day), wbf['data_center'])
+            sheet2.write(row2, total_hk_start, grand_total_work_day, wbf['hijau_tua'])
 
             #3
             total_keseluruhan_hasil_lateks = 0
             total_per_tanggal_lateks = {}
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 current_col = 4
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
@@ -975,7 +981,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             total_keseluruhan_hasil_lump = 0
             total_per_tanggal_lump = {}
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 current_col = 4
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
@@ -1006,7 +1012,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             total_keseluruhan_konversi_lateks = 0
             total_per_tanggal_konversi_lateks = {}
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
                     col_index = sixth_date_start + i
@@ -1032,7 +1038,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             total_keseluruhan_konversi_lump = 0
             total_per_tanggal_konversi_lump = {}
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
                     col_index = seventh_date_start + i
@@ -1058,7 +1064,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             total_keseluruhan_konversi_total = 0
             total_per_tanggal_konversi_total = {}
 
-            for emp_id, no_induk, employee_name, kemandoran_emp in karyawan_data:
+            for emp_id, no_induk, employee_name, kemandoran_emp, total_work_day in karyawan_data:
                 for i in range((to_date - from_date).days + 1):
                     current_date = from_date + timedelta(days=i)
                     col_index = eighth_date_start + i
