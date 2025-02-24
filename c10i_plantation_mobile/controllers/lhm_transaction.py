@@ -36,10 +36,15 @@ class ProfileApi(ApiBase):
                 
             list_to_create = []
             data_validation_error = []
+            line_validation_error = []
             for vals in raw_list_to_create:
                 lhm_lines = []
                 for line_vals in vals.get('lhm_line_ids',[]):
-                    contract = request.env['hr.contract'].sudo().browse(line_vals['contract_id'])
+                    # contract = request.env['hr.contract'].sudo().browse(line_vals['contract_id'])
+                    employee = request.env['hr.employee'].sudo().browse(line_vals['employee_id'])
+                    if not employee.contract_id:
+                        line_validation_error.append("Karyawan {employee.name} ({employee.no_induk or ''}) tidak memiliki Kontrak Aktif")
+                        continue
                     lhm_lines.append((0,0,{
                         'date': line_vals.get('date', False),
                         'employee_id': line_vals.get('employee_id', False),
@@ -63,8 +68,9 @@ class ProfileApi(ApiBase):
                         'premi': line_vals.get('premi', 0.0),
                         'overtime_hour': line_vals.get('overtime_hour', 0),
                         # 'penalty': line_vals.get('penalty', 0.0),
-                        'contract_id': line_vals.get('contract_id', False),
-                        'contract_wage_value': round(contract.wage / contract.wage_day, 2)
+                        'contract_id': employee.contract_id.id,
+                        # 'contract_wage_value': round(contract.wage / contract.wage_day, 2)
+                        'contract_wage_value': round(employee.contract_id.wage / employee.contract_id.wage_day, 2)
                     }))
                 lhm_transaction = {
                     # 'name'
@@ -79,6 +85,12 @@ class ProfileApi(ApiBase):
                 }
                 list_to_create.append(lhm_transaction)
             
+            if line_validation_error:
+                raise ValidationError("\n".join(line_validation_error))
+
+            if data_validation_error:
+                raise ValidationError("\n".join(data_validation_error))
+
             created_lhm = False
             if list_to_create:
                 created_lhm = request.env['lhm.transaction'].with_user(check_user).create(list_to_create)
