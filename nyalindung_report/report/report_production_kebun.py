@@ -442,7 +442,8 @@ class ReportProductionKebun(models.AbstractModel):
                         trans_nap_line.hasil_1_nap,
                         trans_nap_line.hasil_2_nap,
                         trans_nap_line.hasil_convert_latex,
-                        trans_nap_line.hasil_convert_lump,  
+                        trans_nap_line.hasil_convert_lump,
+                        trans_line.work_day,  
                         trans.date, 
                         trans_line.employee_id,
                         trans_line.location_id
@@ -457,7 +458,8 @@ class ReportProductionKebun(models.AbstractModel):
                 )
                     SELECT 
                         trans_data.location_id,
-                        loc.name AS location_name
+                        loc.name AS location_name,
+                        SUM(trans_data.work_day) AS total_work_day
                     FROM 
                         employee_data
                     LEFT JOIN
@@ -468,7 +470,8 @@ class ReportProductionKebun(models.AbstractModel):
                         trans_data.location_id IS NOT NULL
                     GROUP BY  
                         trans_data.location_id,
-                        loc.name
+                        loc.name,
+                        trans_data.work_day
                     ORDER BY
                         loc.name;
             """
@@ -486,9 +489,10 @@ class ReportProductionKebun(models.AbstractModel):
             for location_data in karyawan_data:
                 location_id = location_data[0]
                 location_name = location_data[1]
+                total_work_day = location_data[2]
                 sheet3.write(row3, 0, nomor, wbf['data_center'])
                 sheet3.write(row3, 1, location_name, wbf['data_center'])
-                sheet3.write(row3, 2, '-', wbf['data_center'])
+                sheet3.write(row3, 2, total_work_day, wbf['data_center'])
 
                 # Isi Jumlah Hasil Sadapan Lateks (L)
                 total_hasil_baris_lateks = 0
@@ -904,7 +908,13 @@ class ReportProductionKebun(models.AbstractModel):
             # 1
             row3 += 1
 
-            sheet3.merge_range(row3, 0, row3, 2, "JUMLAH TOTAL", wbf['jumlah_total'])
+            sheet3.merge_range(row3, 0, row3, 1, "JUMLAH TOTAL", wbf['jumlah_total'])
+            grand_total_work_day = 0
+            for location_data in karyawan_data:
+                total_work_day = location_data[2]
+                grand_total_work_day += total_work_day
+
+            sheet3.write(row3, 2, grand_total_work_day, wbf['hijau_tua'])
 
             #2
             total_keseluruhan_hasil_lateks = 0
