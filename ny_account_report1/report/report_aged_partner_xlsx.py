@@ -178,7 +178,7 @@ class ReportFinancialXlsx(models.Model):
             for invoice in partner_move_lines[partners['partner_id']]:
                 worksheet.write(next_row, 1, partners['name'], wbf['content2'])
                 worksheet.write(next_row, 2, invoice['line'].name or '', wbf['content2'])
-                worksheet.write(next_row, 3, invoice['line'].plantation_varieties_id.name or '', wbf['content_float2'])
+                worksheet.write(next_row, 3, invoice['line'].move_id.journal_id.varieties_id.name or '', wbf['content_float2'])
                 worksheet.write(next_row, 4, invoice['amount'], wbf['content_float2'])
                 worksheet.write(next_row, 5, invoice['line'].date, wbf['content_date'])
                 due_date = invoice['line'].date_maturity or invoice['line'].date
