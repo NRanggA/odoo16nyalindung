@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="auto_account_move_view_tree" model="ir.ui.view">
+        <field name="name">auto.account.move.view.tree</field>
+        <field name="model">auto.account.move</field>
+        <field name="arch" type="xml">
+            <tree string="Auto Account Move">
+                <field name="name" />
+                <field name="move_id" />
+                <field name="generate_interval" />
+                <field name="interval_number" />
+                <field name="after_generate_interval" />
+                <field name="type" widget="badge" />
+                <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-success="state == 'done'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="auto_account_move_view_form" model="ir.ui.view">
+        <field name="name">auto.account.move.view.form</field>
+        <field name="model">auto.account.move</field>
+        <field name="arch" type="xml">
+            <form string="Auto Account Move">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,process,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Account Move">
+                            <field name="name"/>
+                            <field name="move_id" domain="[('move_type', '=', context.get('default_type')),('state', '=', 'posted') ]" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                            <field name="type" readonly="1"/>
+                        </group>
+                        <group string="Interval">
+                            <field name="interval_number"/>
+                            <field name="generate_interval"/>
+                            <field name="after_generate_interval" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="auto_vendor_bill_action" model="ir.actions.act_window">
+        <field name="name">Auto Vendor Bill</field>
+        <field name="res_model">auto.account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[["type", "=", "in_invoice"]]</field>
+        <field name="context">{'default_type': 'in_invoice'}</field>
+    </record>
+
+    <record id="auto_invoice_action" model="ir.actions.act_window">
+        <field name="name">Auto Costumer Invcoices</field>
+        <field name="res_model">auto.account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[["type", "=", "out_invoice"]]</field>
+        <field name="context">{'default_type': 'out_invoice'}</field>
+    </record>
+
+    <record id="auto_journal_entries_action" model="ir.actions.act_window">
+        <field name="name">Auto Journal entries</field>
+        <field name="res_model">auto.account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[["type", "=", "entry"]]</field>
+        <field name="context">{'default_type': 'entry'}</field>
+    </record>
+
+    <menuitem id="auto_vendor_bill_menu" 
+            name="Auto Vendor Bill"
+            parent="account.menu_finance_payables" 
+            sequence="5"
+            action="auto_vendor_bill_action"/>
+
+    <menuitem
+        id="auto_customer_invoice_menu"
+        name="Auto Customer Invoice"
+        action="auto_invoice_action"
+        parent="account.menu_finance_receivables"
+        sequence="5"/>
+
+    <menuitem
+        id="auto_journal_entries_menu"
+        name="Auto Journal Entries"
+        action="auto_journal_entries_action"
+        parent="account.menu_finance_entries_accounting_miscellaneous"
+        sequence="5"/>
+
+
+</odoo>
