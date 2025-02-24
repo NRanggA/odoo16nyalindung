@@ -144,16 +144,17 @@ class ReportFinancialXlsx(models.Model):
         
         worksheet.write(next_row, 1, "Business Partner", wbf['header'])
         worksheet.write(next_row, 2, "No. Invoice", wbf['header'])
-        worksheet.write(next_row, 3, "Open Amount", wbf['header'])
-        worksheet.write(next_row, 4, "Date Invoice", wbf['header'])
-        worksheet.write(next_row, 5, "Due Date", wbf['header'])
-        worksheet.write(next_row, 6, "Days Due", wbf['header'])
-        worksheet.write(next_row, 7, "Amount Due", wbf['header'])
-        worksheet.write(next_row, 8, data['form']['4']['name'], wbf['header'])
-        worksheet.write(next_row, 9, data['form']['3']['name'], wbf['header'])
-        worksheet.write(next_row, 10, data['form']['2']['name'], wbf['header'])
-        worksheet.write(next_row, 11, data['form']['1']['name'], wbf['header'])
-        worksheet.write(next_row, 12, data['form']['0']['name'], wbf['header'])
+        worksheet.write(next_row, 3, "ORG", wbf['header'])
+        worksheet.write(next_row, 4, "Open Amount", wbf['header'])
+        worksheet.write(next_row, 5, "Date Invoice", wbf['header'])
+        worksheet.write(next_row, 6, "Due Date", wbf['header'])
+        worksheet.write(next_row, 7, "Days Due", wbf['header'])
+        worksheet.write(next_row, 8, "Amount Due", wbf['header'])
+        worksheet.write(next_row, 9, data['form']['4']['name'], wbf['header'])
+        worksheet.write(next_row, 10, data['form']['3']['name'], wbf['header'])
+        worksheet.write(next_row, 11, data['form']['2']['name'], wbf['header'])
+        worksheet.write(next_row, 12, data['form']['1']['name'], wbf['header'])
+        worksheet.write(next_row, 13, data['form']['0']['name'], wbf['header'])
         next_row += 1
 
         total_amount = 0
@@ -177,52 +178,54 @@ class ReportFinancialXlsx(models.Model):
             for invoice in partner_move_lines[partners['partner_id']]:
                 worksheet.write(next_row, 1, partners['name'], wbf['content2'])
                 worksheet.write(next_row, 2, invoice['line'].name or '', wbf['content2'])
-                worksheet.write(next_row, 3, invoice['amount'], wbf['content_float2'])
-                worksheet.write(next_row, 4, invoice['line'].date, wbf['content_date'])
+                worksheet.write(next_row, 3, invoice['line'].plantation_varieties_id.name or '', wbf['content_float2'])
+                worksheet.write(next_row, 4, invoice['amount'], wbf['content_float2'])
+                worksheet.write(next_row, 5, invoice['line'].date, wbf['content_date'])
                 due_date = invoice['line'].date_maturity or invoice['line'].date
-                worksheet.write(next_row, 5, due_date, wbf['content_date'])
+                worksheet.write(next_row, 6, due_date, wbf['content_date'])
                 days_due = 0
                 if due_date < odate_from:
                     days_due = (odate_from - due_date).days
-                worksheet.write(next_row, 6, days_due, wbf['content_number2'])
-                worksheet.write(next_row, 7, 0.0 if invoice['period']==6 else invoice['amount'], wbf['content_float2'])
-                worksheet.write(next_row, 8, invoice['amount'] if invoice['period']==5 else 0.0, wbf['content_float2'])
-                worksheet.write(next_row, 9, invoice['amount'] if invoice['period']==4 else 0.0, wbf['content_float2'])
-                worksheet.write(next_row, 10, invoice['amount'] if invoice['period']==3 else 0.0, wbf['content_float2'])
-                worksheet.write(next_row, 11, invoice['amount'] if invoice['period']==2 else 0.0, wbf['content_float2'])
-                worksheet.write(next_row, 12, invoice['amount'] if invoice['period']==1 else 0.0, wbf['content_float2'])
+                worksheet.write(next_row, 7, days_due, wbf['content_number2'])
+                worksheet.write(next_row, 8, 0.0 if invoice['period']==6 else invoice['amount'], wbf['content_float2'])
+                worksheet.write(next_row, 9, invoice['amount'] if invoice['period']==5 else 0.0, wbf['content_float2'])
+                worksheet.write(next_row, 10, invoice['amount'] if invoice['period']==4 else 0.0, wbf['content_float2'])
+                worksheet.write(next_row, 11, invoice['amount'] if invoice['period']==3 else 0.0, wbf['content_float2'])
+                worksheet.write(next_row, 12, invoice['amount'] if invoice['period']==2 else 0.0, wbf['content_float2'])
+                worksheet.write(next_row, 13, invoice['amount'] if invoice['period']==1 else 0.0, wbf['content_float2'])
                 next_row += 1
+                
+                total_amount += invoice['amount']
 
-            worksheet.write(next_row, 1, partners['name'], wbf['content1'])
-            worksheet.write(next_row, 2, "", wbf['content1'])
-            worksheet.write(next_row, 3, partners['total'], wbf['content_float1'])
-            worksheet.write(next_row, 4, "", wbf['content1'])
-            worksheet.write(next_row, 5, "", wbf['content1'])
-            worksheet.write(next_row, 6, "", wbf['content1'])
-            worksheet.write(next_row, 7, partners['direction'], wbf['content_float1'])
-            worksheet.write(next_row, 8, partners['4'], wbf['content_float1'])
-            worksheet.write(next_row, 9, partners['3'], wbf['content_float1'])
-            worksheet.write(next_row, 10, partners['2'], wbf['content_float1'])
-            worksheet.write(next_row, 11, partners['1'], wbf['content_float1'])
-            worksheet.write(next_row, 12, partners['0'], wbf['content_float1'])
+            # worksheet.write(next_row, 1, partners['name'], wbf['content1'])
+            # worksheet.write(next_row, 2, "", wbf['content1'])
+            # worksheet.write(next_row, 3, partners['total'], wbf['content_float1'])
+            # worksheet.write(next_row, 4, "", wbf['content1'])
+            # worksheet.write(next_row, 5, "", wbf['content1'])
+            # worksheet.write(next_row, 6, "", wbf['content1'])
+            # worksheet.write(next_row, 7, partners['direction'], wbf['content_float1'])
+            # worksheet.write(next_row, 8, partners['4'], wbf['content_float1'])
+            # worksheet.write(next_row, 9, partners['3'], wbf['content_float1'])
+            # worksheet.write(next_row, 10, partners['2'], wbf['content_float1'])
+            # worksheet.write(next_row, 11, partners['1'], wbf['content_float1'])
+            # worksheet.write(next_row, 12, partners['0'], wbf['content_float1'])
             
-            total_amount += partners['total']
-
-            next_row += 1
+            # next_row += 1
 
         # Baris Total
         worksheet.write(next_row, 1, 'TOTAL', wbf['header'])
         worksheet.write(next_row, 2, "", wbf['header'])
-        worksheet.write(next_row, 3, total_amount, wbf['content_total'])  
-        worksheet.write(next_row, 4, "", wbf['header'])
+        worksheet.write(next_row, 3, '', wbf['content_total'])  
+        worksheet.write(next_row, 4, total_amount, wbf['content_total'])  
         worksheet.write(next_row, 5, "", wbf['header'])
         worksheet.write(next_row, 6, "", wbf['header'])
-        worksheet.write(next_row, 7, '', wbf['header'])  
-        worksheet.write(next_row, 8, '', wbf['header'])
+        worksheet.write(next_row, 7, "", wbf['header'])
+        worksheet.write(next_row, 8, '', wbf['header'])  
         worksheet.write(next_row, 9, '', wbf['header'])
         worksheet.write(next_row, 10, '', wbf['header'])
         worksheet.write(next_row, 11, '', wbf['header'])
         worksheet.write(next_row, 12, '', wbf['header'])
+        worksheet.write(next_row, 13, '', wbf['header'])
         next_row += 1
         
         # Page Layout
