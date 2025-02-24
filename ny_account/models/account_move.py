@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
+import re
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -91,6 +92,27 @@ class AccountMove(models.Model):
                 continue
 
         return super(AccountMove, self).action_post()
+
+    # gabisa super, karena private kali :(
+    # @api.constrains('l10n_id_tax_number')
+    # def _constrains_l10n_id_tax_number(self):
+    #     super()._constrains_l10n_id_tax_number()
+
+    #     for record in self.filtered('l10n_id_tax_number'):
+    #         if len(record.l10n_id_tax_number) < 16:
+    #             raise UserError(_('A tax number should have at least 16 digits'))
+
+    @api.constrains('l10n_id_tax_number')
+    def _constrains_l10n_id_tax_number(self):
+        for record in self.filtered('l10n_id_tax_number'):
+            if record.l10n_id_tax_number != re.sub(r'\D', '', record.l10n_id_tax_number):
+                record.l10n_id_tax_number = re.sub(r'\D', '', record.l10n_id_tax_number)
+            if len(record.l10n_id_tax_number) < 16:
+                raise UserError(_('A tax number should have at least 16 digits'))
+            elif record.l10n_id_tax_number[:2] not in dict(self._fields['l10n_id_kode_transaksi'].selection).keys():
+                raise UserError(_('A tax number must begin by a valid Kode Transaksi'))
+            elif record.l10n_id_tax_number[2] not in ('0', '1'):
+                raise UserError(_('The third digit of a tax number must be 0 or 1'))
 
     # def _post(self, soft=True):
     #     """Custom override untuk menonaktifkan validasi e-Faktur berdasarkan sistem parameter."""
