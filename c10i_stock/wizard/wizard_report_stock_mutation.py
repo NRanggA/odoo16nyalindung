@@ -19,25 +19,28 @@ class WizardReportStockMutation(models.TransientModel):
     exclude_exhaust = fields.Boolean('Exclude Exhaust Product', default=False)
     product_ids     = fields.Many2many('product.product', string='Product')
 
+    product_type = fields.Selection([
+        ('consu', 'Consumable'),
+        ('service', 'Sercive'),
+        ('product', 'Storable Product'),
+    ], string='Product Type', default='product')
+
     inventory_valuation = fields.Selection([
         ('manual_periodic', 'Manual'),
         ('real_time', 'Automated'),
-    ], string='Inventory Valuation', required=True)
+    ], string='Inventory Valuation', default='real_time')
 
-    @api.onchange('inventory_valuation')
+    @api.onchange('inventory_valuation', 'product_type')
     def _onchange_inventory_valuation(self):
+        domain = []
+
         if self.inventory_valuation:
-            return {
-                'domain': {
-                    'product_ids': [('categ_id.property_valuation', '=', self.inventory_valuation)]
-                }
-            }
-        else:
-            return {
-                'domain': {
-                    'product_ids': []
-                }
-            }
+            domain.append(('categ_id.property_valuation', '=', self.inventory_valuation))
+
+        if self.product_type:
+            domain.append(('detailed_type', '=', self.product_type))
+
+        return {'domain': {'product_ids': domain}}
 
     def create_report(self):
         if not self.from_date or not self.to_date:
