@@ -163,7 +163,7 @@ class ReportFinancialXlsx(models.Model):
         worksheet.write(next_row, 13, data['form']['0']['name'], wbf['header'])
         next_row += 1
 
-        total_amount = 0
+        start_row = next_row
         for partners in partner_aged:
             # worksheet.write(next_row, 1, partners['name'], wbf['content1'])
             worksheet.set_column(1,1,30) # width number
@@ -201,8 +201,6 @@ class ReportFinancialXlsx(models.Model):
                 worksheet.write(next_row, 13, invoice['amount'] if invoice['period']==1 else 0.0, wbf['content_float2'])
                 next_row += 1
                 
-                total_amount += invoice['amount']
-
             # worksheet.write(next_row, 1, partners['name'], wbf['content1'])
             # worksheet.write(next_row, 2, "", wbf['content1'])
             # worksheet.write(next_row, 3, partners['total'], wbf['content_float1'])
@@ -222,16 +220,16 @@ class ReportFinancialXlsx(models.Model):
         worksheet.write(next_row, 1, 'TOTAL', wbf['header'])
         worksheet.write(next_row, 2, "", wbf['header'])
         worksheet.write(next_row, 3, '', wbf['content_total'])  
-        worksheet.write(next_row, 4, total_amount, wbf['content_total'])  
+        worksheet.write(next_row, 4, f"=SUM(E{start_row+1}:E{next_row})", wbf['content_total'])  
         worksheet.write(next_row, 5, "", wbf['header'])
         worksheet.write(next_row, 6, "", wbf['header'])
         worksheet.write(next_row, 7, "", wbf['header'])
-        worksheet.write(next_row, 8, '', wbf['header'])  
-        worksheet.write(next_row, 9, '', wbf['header'])
-        worksheet.write(next_row, 10, '', wbf['header'])
-        worksheet.write(next_row, 11, '', wbf['header'])
-        worksheet.write(next_row, 12, '', wbf['header'])
-        worksheet.write(next_row, 13, '', wbf['header'])
+        worksheet.write(next_row, 8, f"=SUM(I{start_row+1}:I{next_row})", wbf['content_total'])
+        worksheet.write(next_row, 9, f"=SUM(J{start_row+1}:J{next_row})", wbf['content_total'])
+        worksheet.write(next_row, 10, f"=SUM(K{start_row+1}:K{next_row})", wbf['content_total'])
+        worksheet.write(next_row, 11, f"=SUM(L{start_row+1}:L{next_row})", wbf['content_total'])
+        worksheet.write(next_row, 12, f"=SUM(M{start_row+1}:M{next_row})", wbf['content_total'])
+        worksheet.write(next_row, 13, f"=SUM(N{start_row+1}:N{next_row})", wbf['content_total'])
         next_row += 1
         
         # Page Layout
