@@ -14,7 +14,8 @@
         'ny_hr_payroll_account',
         'account',
         'c10i_plantation_seed',
-        'c10i_plantation_lab'
+        'c10i_plantation_lab',
+        'report_xlsx'
     ],
     # always loaded
     'data': [
@@ -38,5 +39,8 @@
         'views/menuitems.xml',
         
         'data/account_journal.xml',
+
+        # Report Mutasi Closing
+        'report/report_mutasi_closing_action.xml',
     ],
 }

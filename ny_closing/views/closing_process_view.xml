@@ -43,6 +43,8 @@
                     
                     <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="draft,running_workshop,running_vehicle,running_machine,closing_project,closing_nursery,closing_laboratory,closing_plantation,closing_production"/>
                     
+                    <button string="Print Report" name="mutasi_closing_report" states="closing_production,done" type="object" class="oe_highlight"/>
+
                     <button string="Set to New" name="button_set_new" type="object" states="cancel"/>
                     
                     <field name="state" widget="statusbar" statusbar_visible="draft,running_workshop,running_vehicle,running_machine,closing_project,closing_nursery,closing_laboratory,closing_plantation,closing_production,done" />

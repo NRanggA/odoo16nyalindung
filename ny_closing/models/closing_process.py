@@ -53,6 +53,12 @@ class ClosingProcess(models.Model):
     closing_production_without_mrp_ids = fields.One2many('closing.production.finishgood', 'closing_process_id', string='Closing Production without MRP', domain=[('without_mrp','=',True)])
     # mark_closing_production_nonkaret_is_done = fields.Boolean(compute='_compute_mark_done_production_nonkaret', store=True)
 
+    ############ REPORT ############
+    def mutasi_closing_report(self):
+        # print("==== mutasi_closing_report ====")
+        return self.env.ref('ny_closing.action_report_mutasi_closing').report_action(self)
+    ############ END REPORT ############
+
     @api.model
     def get_views(self, views, options=None):
         result = super(ClosingProcess, self).get_views(views, options=options)
