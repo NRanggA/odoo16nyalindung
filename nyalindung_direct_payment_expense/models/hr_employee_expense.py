@@ -137,46 +137,53 @@ class HrEmployeeExpense(models.Model):
 
     @api.depends(
         'amount_total',
-        'account_move_id', 
-        'account_move_id.line_ids',
-        'account_move_id.line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
-        'account_move_id.line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual',
-        'account_move_id.line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual_currency',
-        'account_move_id.line_ids.matched_credit_ids.credit_move_id.move_id.payment_id.is_matched',
-        'account_move_id.line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual',
-        'account_move_id.line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual_currency',
-        'account_move_id.line_ids.debit',
-        'account_move_id.line_ids.credit',
-        'account_move_id.line_ids.currency_id',
-        'account_move_id.line_ids.amount_currency',
-        'account_move_id.line_ids.amount_residual',
-        'account_move_id.line_ids.amount_residual_currency',
-        'account_move_id.line_ids.payment_id.state',
-        'account_move_id.line_ids.full_reconcile_id'
+        'account_direct_payment_id.account_move_id', 
+        'account_direct_payment_id.account_move_id.line_ids',
+        'account_direct_payment_id.account_move_id.line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
+        'account_direct_payment_id.account_move_id.line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual',
+        'account_direct_payment_id.account_move_id.line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual_currency',
+        'account_direct_payment_id.account_move_id.line_ids.matched_credit_ids.credit_move_id.move_id.payment_id.is_matched',
+        'account_direct_payment_id.account_move_id.line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual',
+        'account_direct_payment_id.account_move_id.line_ids.matched_credit_ids.credit_move_id.move_id.line_ids.amount_residual_currency',
+        'account_direct_payment_id.account_move_id.line_ids.debit',
+        'account_direct_payment_id.account_move_id.line_ids.credit',
+        'account_direct_payment_id.account_move_id.line_ids.currency_id',
+        'account_direct_payment_id.account_move_id.line_ids.amount_currency',
+        'account_direct_payment_id.account_move_id.line_ids.amount_residual',
+        'account_direct_payment_id.account_move_id.line_ids.amount_residual_currency',
+        'account_direct_payment_id.account_move_id.line_ids.payment_id.state',
+        'account_direct_payment_id.account_move_id.line_ids.full_reconcile_id'
         )
     def _payment_state(self):
         for payment in self:
-            new_payment_state = 'no'
-            currency = payment.currency_id
-            amount_residual = 0.0
-            if payment.account_move_id and payment.account_move_id.state=='posted':
-                new_payment_state = 'not_paid'
-                for line in payment.account_move_id.line_ids.filtered(lambda l : l.account_type in ('receivable', 'payable')):
-                    amount_residual += line.amount_residual
-                    if not line.full_reconcile_id:
-                        continue
-                    
-                    if currency.is_zero(line.amount_residual):
-                        reconciled_payments = payment.account_move_id._get_reconciled_payments()
-                        if not reconciled_payments or all(payment.is_matched for payment in reconciled_payments):
+            if payment.is_advance:
+                new_payment_state = 'no'
+                amount_residual = payment.amount_total
+                move = payment.account_direct_payment_id.account_move_id
+                if payment.employee_expense_state == 'approved':
+                    currency = payment.currency_id
+                    new_payment_state = 'not_paid'
+                    if move and move.state=='posted':
+                        # for line in payment.account_account_move_id.line_ids.filtered(lambda l : l.account_type in ('receivable', 'payable')):
+                        for line in move.line_ids:
+                            if move.journal_id.default_account_id == line.account_id:
+                                amount_residual += line.balance
+                            # elif line.account_id.reconcile:
+                            elif move.journal_id.outbound_payment_method_line_ids.payment_account_id == line.account_id or move.journal_id.inbound_payment_method_line_ids.payment_account_id == line.account_id:
+                                reconciled_payments = payment.account_direct_payment_id.account_move_id._get_reconciled_payments()
+                                if not reconciled_payments or all(payment.is_matched for payment in reconciled_payments):
+                                    amount_residual += line.balance
+                            
+                            # if not line.full_reconcile_id:
+                            #     continue
+                        
+                        if currency.is_zero(amount_residual):
                             new_payment_state = 'paid'
-                        else:
-                            new_payment_state = 'in_payment'
-            
-            payment.write({
-                'payment_state': new_payment_state,
-                'amount_residual': amount_residual,
-                })
+
+                payment.write({
+                    'payment_state': new_payment_state,
+                    'amount_residual': amount_residual,
+                    })
 
     def unlink(self):
         for payment in self:
