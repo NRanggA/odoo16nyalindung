@@ -8,7 +8,7 @@
                 <form string="Buku Kontraktor Harian">
                     <header attrs="{'invisible': [('approval','!=',True)]}">
                         <button name="button_draft" states="cancel,process" string="Set Draft" type="object" class="btn-default"/>
-                        <!-- <button name="get_material" string="Material" states="draft" type="object" groups="c10i_lhm_v16.group_plantation_operator"/> -->
+                        <button name="get_material" string="Material" states="draft,process" type="object" groups="c10i_lhm_v16.group_plantation_operator"/>
                         <button name="button_confirm_harian" states="process" string="Confirm" type="object" class="btn-default btn-primary"/>
                         <button name="button_process" states="draft" string="Process" type="object" class="btn-default btn-primary"/>
                         <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>

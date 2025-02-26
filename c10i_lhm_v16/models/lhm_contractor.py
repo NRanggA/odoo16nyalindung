@@ -516,8 +516,12 @@ class lhm_contractor(models.Model):
             # Tambah SKB baru
             for line in sorted(contractor.line_ids.filtered(lambda x: x.location_id \
                         and x.location_id.type_id.skb_declare), key=lambda x:x.date):
+                date_start  = datetime.combine(line.date.replace(day=1), time(0, 0, 0))
+                date_end    = datetime.combine(line.date, time(23, 59, 59))
                 domain = [
-                        ('date', '<=', str(line.date) + ' 23:59:59'), 
+                        # ('date', '<=', str(line.date) + ' 23:59:59'), 
+                        ('date', '>=', date_start), 
+                        ('date', '<=', date_end), 
                         # ('skb', '=', True), 
                         ('picking_type_id.code', '=', 'issue'), 
                         ('state', '=', 'done'), 
@@ -531,6 +535,9 @@ class lhm_contractor(models.Model):
                     current_move = current_material.mapped('move_id')
                     domain.append(('id','not in',current_move.ids))
                 pending_moves = move_obj.search(domain)
+
+                # print(f"==={pending_moves}===")
+                # print(f"==={pendin}===")
                 for skb in pending_moves:
                     values_skb  = {
                         'name'              : skb.picking_id.bpb_number or '',

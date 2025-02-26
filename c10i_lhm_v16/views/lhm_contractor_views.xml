@@ -11,7 +11,7 @@
                 <form string="Buku Kontraktor">
                     <header attrs="{'invisible': [('approval','!=',True)]}">
                         <button name="button_draft" states="cancel,confirmed" string="Set Draft" type="object" class="btn-default"/>
-                        <button name="get_material" string="Material" states="draft" type="object" groups="c10i_lhm_v16.group_plantation_operator"/>
+                        <button name="get_material" string="Material" states="draft" type="object"/>
                         <button name="button_confirm" states="draft" string="Confirm" type="object" class="btn-default btn-primary"/>
                         <button name="button_cancel" states="confirmed" string="Cancel" type="object" class="btn-default"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,confirmed,done"/>
@@ -41,6 +41,7 @@
                                     <field name="date_end" force_save="1" nolabel="1" class="oe_inline" required="1"/>
                                 </div>
                                 <field name="supplier_id" force_save="1" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                             </group>
                             <group>
                                 <field name="supplier_code"/>
