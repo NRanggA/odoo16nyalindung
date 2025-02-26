@@ -397,7 +397,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         next_row = 1
         worksheet.merge_range(next_row, 1, next_row+1, 1, 'No.' , wbf['header'])
         worksheet.set_column(1,1,3)
-        worksheet.merge_range(next_row, 2, next_row, 8, 'Karyawan' , wbf['header'])
+        worksheet.merge_range(next_row, 2, next_row, 9, 'Karyawan' , wbf['header'])
         worksheet.write(next_row+1, 2, "NIP", wbf['header'])
         worksheet.set_column(2,2,25)
         worksheet.write(next_row+1, 3, "Nama", wbf['header'])
@@ -694,7 +694,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                     worksheet2.set_column(cur_col,cur_col,12)
                     worksheet2.write(next_row+1, cur_col, rb.name, wbf['header'])
                     cur_col += 1
-                worksheet2.merge_range(next_row, cur_col, next_row, cur_col, "Total Gaji Pokok", wbf['header'])
+                worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, "Total Gaji Pokok", wbf['header'])
                 worksheet2.set_column(cur_col,cur_col,12)
                 cur_col += 1
                 
