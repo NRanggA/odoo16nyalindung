@@ -683,6 +683,11 @@ class lhm_contractor_line(models.Model):
         readonly=True
     )
 
+    @api.onchange('contractor_id.date')
+    def _onchange_contractor_id(self):
+        if self.contractor_id.date:
+            for line in self:
+                line.date = line.contractor_id.date
 
     @api.depends('varieties_id','location_type_id', 'contractor_id.state')
     def _filter_locations(self):
