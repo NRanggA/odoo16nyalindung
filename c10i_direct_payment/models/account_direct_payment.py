@@ -89,54 +89,59 @@ class DirectPayment(models.Model):
     def _payment_state(self):
         for payment in self:
             new_payment_state = 'no'
-            amount_residual = payment.amount_total
-            move = payment.account_move_id
-            if payment.state == 'posted':
-                currency = payment.currency_id
+            currency = payment.currency_id
+            amount_residual = 0.0
+            if payment.account_move_id and payment.account_move_id.state=='posted':
                 new_payment_state = 'not_paid'
-                if move and move.state=='posted':
-                    for line in move.line_ids:
-                        if move.journal_id.default_account_id == line.account_id:
-                            amount_residual += line.balance
-                        elif move.journal_id.outbound_payment_method_line_ids.payment_account_id == line.account_id or move.journal_id.inbound_payment_method_line_ids.payment_account_id == line.account_id:
-                            reconciled_payments = move._get_reconciled_payments()
-                            if not reconciled_payments or all(payment.is_matched for payment in reconciled_payments):
-                                amount_residual += line.balance
-                        
-                        # if not line.full_reconcile_id:
-                        #     continue
+                for line in payment.account_move_id.line_ids.filtered(lambda l : l.account_type in ('receivable', 'payable')):
+                    amount_residual += line.amount_residual
+                    if not line.full_reconcile_id:
+                        continue
                     
-                    if currency.is_zero(amount_residual):
-                        new_payment_state = 'paid'
-
+                    if currency.is_zero(line.amount_residual):
+                        reconciled_payments = payment.account_move_id._get_reconciled_payments()
+                        if not reconciled_payments or all(payment.is_matched for payment in reconciled_payments):
+                            new_payment_state = 'paid'
+                        else:
+                            new_payment_state = 'in_payment'
+            
             payment.write({
                 'payment_state': new_payment_state,
                 'amount_residual': amount_residual,
                 })
-
     # def _payment_state(self):
     #     for payment in self:
     #         new_payment_state = 'no'
-    #         currency = payment.currency_id
-    #         amount_residual = 0.0
-    #         if payment.account_move_id and payment.account_move_id.state=='posted':
+    #         amount_residual = payment.amount_total
+    #         move = payment.account_move_id
+    #         if payment.state == 'posted':
+    #             currency = payment.currency_id
     #             new_payment_state = 'not_paid'
-    #             for line in payment.account_move_id.line_ids.filtered(lambda l : l.account_type in ('receivable', 'payable')):
-    #                 amount_residual += line.amount_residual
-    #                 if not line.full_reconcile_id:
-    #                     continue
+    #             if move and move.state=='posted':
+    #                 for line in move.line_ids:
+    #                     if move.journal_id.default_account_id == line.account_id:
+    #                         amount_residual += line.balance
+    #                     elif move.journal_id.outbound_payment_method_line_ids.payment_account_id == line.account_id or move.journal_id.inbound_payment_method_line_ids.payment_account_id == line.account_id:
+    #                         reconciled_payments = move._get_reconciled_payments()
+    #                         if not reconciled_payments or all(payment.is_matched for payment in reconciled_payments):
+    #                             amount_residual += line.balance
+                        
+    #                     # if not line.full_reconcile_id:
+    #                     #     continue
+
+    #                 print(f"===== {reconciled_payments}")
+    #                 print(f"===== {amount_residual}")
+    #                 print(f"===== {currency.is_zero(amount_residual)}")
+    #                 print(f"===== {das}")
                     
-    #                 if currency.is_zero(line.amount_residual):
-    #                     reconciled_payments = payment.account_move_id._get_reconciled_payments()
-    #                     if not reconciled_payments or all(payment.is_matched for payment in reconciled_payments):
-    #                         new_payment_state = 'paid'
-    #                     else:
-    #                         new_payment_state = 'in_payment'
-            
+    #                 if currency.is_zero(amount_residual):
+    #                     new_payment_state = 'paid'
+
     #         payment.write({
     #             'payment_state': new_payment_state,
     #             'amount_residual': amount_residual,
     #             })
+    
 
     def unlink(self):
         for payment in self:

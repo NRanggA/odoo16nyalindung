@@ -200,6 +200,8 @@
                 <filter string="My Reports" name="my_reports" domain="[('employee_id.user_id', '=', uid)]"/>
 
                 <separator/>
+                <filter string="Date" name="date" date="date"/>
+                <separator/>
                 <filter name="submit" string="To Approve" domain="[('employee_expense_state','=','submit')]"/>
                 <filter name="approve" string="To Post" domain="[('employee_expense_state','=','approved')]"/>
                 <filter name="posted" string="Posted" domain="[('employee_expense_state', '=', 'posted')]"/>
@@ -225,7 +227,8 @@
         <field name="res_model">hr.employee.expense</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('expense_report','=',True),('is_advance','=', False)]</field>
-        <field name="context">{'default_expense_report': 1, 'search_default_my_reports': 1}</field>
+        <!-- <field name="context">{'default_expense_report': 1, 'search_default_my_reports': 1}</field> -->
+        <field name="context">{'default_expense_report': 1}</field>
         <field name="search_view_id" ref="account_employee_expense_search" />
     </record>
 
@@ -249,7 +252,8 @@
         <field name="res_model">hr.employee.expense</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('expense_report','=',False),('is_advance','=', True)]</field>
-        <field name="context">{'default_is_advance': True, 'search_default_my_advances': 1}</field>
+        <!-- <field name="context">{'default_is_advance': True, 'search_default_my_advances': 1}</field> -->
+        <field name="context">{'default_is_advance': True}</field>
         <field name="search_view_id" ref="account_employee_expense_search" />
     </record>
 
