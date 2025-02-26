@@ -410,8 +410,10 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.set_column(6,6,26)
         worksheet.write(next_row+1, 7, "Jabatan", wbf['header'])
         worksheet.set_column(7,7,15)
-        worksheet.write(next_row+1, 8, "Tgl. Masuk", wbf['header'])
-        worksheet.set_column(8,8,10)
+        worksheet.write(next_row+1, 8, "Tipe Karyawan", wbf['header'])
+        worksheet.set_column(8,8,15)
+        worksheet.write(next_row+1, 9, "Tgl. Masuk", wbf['header'])
+        worksheet.set_column(9,9,10)
 
         rules_basic = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='BASIC')
         rules_allowance = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' not in r.name)
@@ -419,7 +421,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         rules_premi = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='ALW' and 'Premi' in r.name)
         rules_deduction = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='DED')
         rules_net = obj.line_ids.salary_rule_id.filtered(lambda r: r.appears_on_payslip and r.category_id.code=='NET')
-        cur_col = 9
+        cur_col = 10
         if rules_basic:
             if len(rules_basic.ids)>1:
                 worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_basic.ids)-1, "Gaji Pokok", wbf['header'])
@@ -491,17 +493,18 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         # Mengelompokkan berdasarkan kemandoran
         payslip_grouped = {}
         for payslip in obj:
-            kemandoran = payslip.employee_id.kemandoran_id
-            if kemandoran not in payslip_grouped:
-                payslip_grouped[kemandoran] = []
-            payslip_grouped[kemandoran].append(payslip)
+            # kemandoran = payslip.employee_id.kemandoran_id
+            tipe_karyawan = payslip.employee_id.type_id
+            if tipe_karyawan not in payslip_grouped:
+                payslip_grouped[tipe_karyawan] = []
+            payslip_grouped[tipe_karyawan].append(payslip)
 
         next_row += 1 
         indx = 1
 
-        for kemandoran, payslips in payslip_grouped.items():
+        for tipe, payslips in payslip_grouped.items():
             for col in range(1, cur_col):  
-                value = f"{kemandoran.name}" if col == 2 else "" 
+                value = f"{tipe.name}" if col == 2 else "" 
                 worksheet.write(next_row, col, value, wbf['header_mandor'])
 
             next_row += 1
@@ -521,15 +524,16 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 indx += 1
                 worksheet.write(next_row, 2, payslip.employee_id.no_induk or '', wbf['content'])
                 worksheet.write(next_row, 3, payslip.employee_id.name or '', wbf['content'])
-                worksheet.write(next_row, 4, kemandoran.name, wbf['content'])
+                worksheet.write(next_row, 4, payslip.employee_id.kemandoran_id.name or '', wbf['content'])
                 worksheet.write(next_row, 5, payslip.employee_id.npwp or '', wbf['content'])
                 worksheet.write(next_row, 6, payslip.employee_id.identification_id or '', wbf['content'])
                 worksheet.write(next_row, 7, payslip.employee_id.job_id.name if payslip.employee_id.job_id else '', wbf['content'])
-                worksheet.write(next_row, 8, payslip.employee_id.work_start_date or '', wbf['content_date'])
+                worksheet.write(next_row, 8, payslip.employee_id.type_id.name if payslip.employee_id.type_id else '', wbf['content'])
+                worksheet.write(next_row, 9, payslip.employee_id.work_start_date or '', wbf['content_date'])
 
                 mapped_line = dict(map(lambda l: (l.salary_rule_id.id, l.total), payslip.line_ids))
 
-                l_cur_col = 9
+                l_cur_col = 10
 
                 # Basic
                 for rb in rules_basic.sorted(key=lambda x: x.sequence):
@@ -580,11 +584,11 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
 
             # Header Subtotal
             # worksheet.merge_range(next_row, 1, next_row, 8, f"Subtotal {kemandoran}", wbf['header_mandor'])
-            for col in range(1, 9):  # Looping dari kolom 1 sampai 8
-                value = f"Subtotal: {kemandoran.name}" if col == 2 else "" 
+            for col in range(1, 10):  # Looping dari kolom 1 sampai 8
+                value = f"Subtotal: {tipe.name}" if col == 2 else "" 
                 worksheet.write(next_row, col, value, wbf['header_mandor'])
             
-            col_subtotal = 9
+            col_subtotal = 10
 
             # subtotal basic
             for rb in rules_basic.sorted(key=lambda x: x.sequence):
@@ -723,12 +727,14 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         subtotal_values = {}
 
         indx = 1
-        for kemandoran in obj.employee_id.kemandoran_id:
+        # for kemandoran in obj.employee_id.kemandoran_id:
+        for tipe in obj.employee_id.type_id:
             worksheet2.write(next_row, 1, indx, wbf['content'])
             indx += 1
-            worksheet2.write(next_row, 2, kemandoran.name or '', wbf['content'])
+            worksheet2.write(next_row, 2, tipe.name or '', wbf['content'])
             
-            payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id == kemandoran.id)
+            # payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id == kemandoran.id)
+            payslips = obj.filtered(lambda p : p.employee_id.type_id.id == tipe.id)
             mapped_line = {}
 
             for line in payslips.line_ids:
