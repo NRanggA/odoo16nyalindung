@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_hr_foreman_form" model="ir.ui.view">
+        <field name="name">view.hr.foreman.form</field>
+        <field name="model">hr.foreman</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_hr_foreman_form" />
+        <field name="arch" type="xml">
+            <field name="code" position="before">
+                <field name="payroll_sequence" />
+            </field>
+        </field>
+    </record>
+
     <record id="edit_hr_foreman_tree" model="ir.ui.view">
         <field name="name">edit.hr.foreman.target</field>
         <field name="model">hr.foreman</field>

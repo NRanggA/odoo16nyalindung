@@ -430,10 +430,22 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                     worksheet.set_column(cur_col,cur_col,12)
                     worksheet.write(next_row+1, cur_col, rb.name, wbf['header'])
                     cur_col += 1
+                worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Total Gaji Pokok', wbf['header'])
+                worksheet.set_column(cur_col,cur_col,15)
+                cur_col += 1
             else:
                 worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, rules_basic.name, wbf['header'])
                 worksheet.set_column(cur_col,cur_col,12)
                 cur_col += 1
+        
+
+        worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Basis BPJS Kes', wbf['header'])
+        worksheet.set_column(cur_col,cur_col,15)
+        cur_col += 1
+        worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Basis BPJS TK', wbf['header'])
+        worksheet.set_column(cur_col,cur_col,15)
+        cur_col += 1
+
         if rules_allowance:
             if len(rules_allowance.ids)>1:
                 worksheet.merge_range(next_row, cur_col, next_row, cur_col+len(rules_allowance.ids)-1, "Tunjangan", wbf['header'])
@@ -518,7 +530,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             subtotal_gross = 0.0
             subtotal_deduction = {}
             subtotal_net = 0.0
-
+            grand_gapok = 0.0
             for payslip in payslips:
                 worksheet.write(next_row, 1, indx, wbf['content'])
                 indx += 1
@@ -536,11 +548,23 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 l_cur_col = 10
 
                 # Basic
+                sub_gapok = 0.0
                 for rb in rules_basic.sorted(key=lambda x: x.sequence):
                     value = mapped_line.get(rb.id, 0.0)
                     worksheet.write(next_row, l_cur_col, value, wbf['content_float'])
                     subtotal_basic[rb.id] = subtotal_basic.get(rb.id, 0.0) + value
+                    sub_gapok += value
                     l_cur_col += 1
+                
+                if len(rules_basic.ids):
+                    worksheet.write(next_row, l_cur_col, sub_gapok, wbf['content_float'])
+                    # subtotal_basic[rb.id] = subtotal_basic.get(rb.id, 0.0) + sub_gapok
+                    grand_gapok += sub_gapok
+                    l_cur_col += 1
+                worksheet.write(next_row, l_cur_col, payslip.contract_id.base_amount_bpjs_kes if payslip.contract_id.bpjs_kesehatan else 0.0, wbf['content_float'])
+                l_cur_col += 1
+                worksheet.write(next_row, l_cur_col, payslip.contract_id.base_amount_bpjs_tk if payslip.contract_id.bpjs_ketenagakerjaan else 0.0, wbf['content_float'])
+                l_cur_col += 1
 
                 # Allowance
                 for ra in rules_allowance.sorted(key=lambda x: x.sequence):
@@ -594,6 +618,14 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             for rb in rules_basic.sorted(key=lambda x: x.sequence):
                 worksheet.write(next_row, col_subtotal, subtotal_basic.get(rb.id, 0.0), wbf['footer_total'])
                 col_subtotal += 1
+            
+            if len(rules_basic.ids):
+                worksheet.write(next_row, col_subtotal, grand_gapok, wbf['footer_total'])
+                col_subtotal += 1
+            worksheet.write(next_row, col_subtotal, 0.0, wbf['footer_total'])
+            col_subtotal += 1
+            worksheet.write(next_row, col_subtotal, 0.0, wbf['footer_total'])
+            col_subtotal += 1
 
             # subtotal allowance
             for ra in rules_allowance.sorted(key=lambda x: x.sequence):
@@ -662,6 +694,10 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                     worksheet2.set_column(cur_col,cur_col,12)
                     worksheet2.write(next_row+1, cur_col, rb.name, wbf['header'])
                     cur_col += 1
+                worksheet2.merge_range(next_row, cur_col, next_row, cur_col, "Total Gaji Pokok", wbf['header'])
+                worksheet2.set_column(cur_col,cur_col,12)
+                cur_col += 1
+                
             else:
                 worksheet2.merge_range(next_row, cur_col, next_row+1, cur_col, rules_basic2.name, wbf['header'])
                 worksheet2.set_column(cur_col,cur_col,12)
@@ -738,6 +774,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             # payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id == kemandoran.id)
             payslips = obj.filtered(lambda p : p.employee_id.type_id.id == tipe.id)
             worksheet2.write(next_row, 3, len(payslips.employee_id.ids), wbf['content'])
+            subtotal_values[3] = subtotal_values.get(3, 0) + len(payslips.employee_id.ids)
             mapped_line = {}
 
             for line in payslips.line_ids:
@@ -746,10 +783,17 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 mapped_line[line.salary_rule_id.id] += line.total
 
             l_cur_col = 4
+            sub_gapok2 = 0.0
             for rb in rules_basic2.sorted(key=lambda x: x.sequence):
                 value = mapped_line.get(rb.id, 0.0)
                 worksheet2.write(next_row, l_cur_col, value, wbf['content_float'])
                 subtotal_values[l_cur_col] = subtotal_values.get(l_cur_col, 0.0) + value  
+                sub_gapok2 += value
+                l_cur_col += 1
+            
+            if len(rules_basic2.ids)>1:
+                worksheet2.write(next_row, l_cur_col, sub_gapok2, wbf['content_float'])
+                subtotal_values[l_cur_col] = sub_gapok2
                 l_cur_col += 1
 
             for ra in rules_allowance2.sorted(key=lambda x: x.sequence):
