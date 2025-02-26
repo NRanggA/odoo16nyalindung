@@ -17,6 +17,7 @@
         'security/ir.model.access.csv',
         'views/hr_payslip_view.xml',
         'views/hr_employee_view.xml',
+        'views/lhm_view.xml',
     ],
     # only loaded in demonstration mode
     # 'demo': [
