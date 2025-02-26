@@ -1,5 +1,11 @@
 from odoo import models, fields
 
+class hr_employee_type(models.Model):
+    _inherit           = 'hr.employee.type'
+
+    payroll_sequence = fields.Integer(default=5)
+    
+
 class Employee(models.Model):
     _inherit = 'hr.employee'
 

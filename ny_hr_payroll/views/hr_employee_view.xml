@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_employee_type_form" model="ir.ui.view">
+        <field name="name">view.employee.type.form</field>
+        <field name="model">hr.employee.type</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_employee_type_form"/>    
+        <field name="arch" type="xml">
+            <field name="code" position="after" >
+                <field name="payroll_sequence" />
+            </field>
+        </field>
+    </record>
 
     <record id="view_employee_form_inherit_lhm" model="ir.ui.view">
         <field name="name">view.employee.form.inherit.lhm</field>
