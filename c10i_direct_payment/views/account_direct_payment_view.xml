@@ -120,7 +120,7 @@
                 <field name="amount_total"/>
                 <field name="company_id" optional="hide"/>
                 <field name="state" widget="badge" decoration-warning="state=='confirm'" decoration-success="state=='posted'"/>
-                <field name="payment_state" widget="badge" optional="show" decoration-warning="payment_state=='not_paid'" decoration-info="payment_state=='in_payment'" decoration-success="payment_state=='paid'" decoration-info="payment_state=='partial'"/>
+                <field name="payment_state" widget="badge" optional="show" decoration-warning="payment_state=='not_paid'" decoration-info="payment_state=='in_payment'" decoration-success="payment_state=='paid'" decoration-primary="payment_state=='partial'"/>
             </tree>
         </field>
     </record>
