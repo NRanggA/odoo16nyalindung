@@ -1,4 +1,4 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import UserError
 
 class Picking(models.Model):
@@ -26,3 +26,15 @@ class Picking(models.Model):
             "default_picking_id": self.id,
         }
         return result
+
+    def unlink(self):
+        for picking in self:
+            moves = self.env['stock.move'].search([
+                ('picking_id', '=', picking.id),
+                ('mr_line_id', '!=', False)
+            ])
+            # print(moves)
+            if moves:
+                raise exceptions.UserError("Tidak dapat menghapus dokumen karena dokumen memiliki relasi ke Material Request.")
+        
+        return super(Picking, self).unlink()
