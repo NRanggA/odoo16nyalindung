@@ -318,8 +318,8 @@ class ReportDetailReceipt(models.AbstractModel):
         # Header Produk
         sheet.write('A5', 'No.', wbf['header'])
         sheet.write('B5', 'Tanggal', wbf['header'])
-        sheet.write('C5', 'No. Issue', wbf['header'])
-        sheet.write('D5', 'No. MR', wbf['header'])
+        sheet.write('C5', 'No. Receipt', wbf['header'])
+        sheet.write('D5', 'No. Purchase Order', wbf['header'])
         sheet.write('E5', 'Product Code', wbf['header'])
         sheet.write('F5', 'Product Name', wbf['header'])
         sheet.write('G5', 'Qty', wbf['header'])
@@ -330,12 +330,12 @@ class ReportDetailReceipt(models.AbstractModel):
             sheet.write('J5', 'Journal Entry', wbf['header'])
             sheet.write('K5', 'Account', wbf['header'])
             sheet.write('L5', 'Value on Journal', wbf['header'])
-            sheet.write('M5', 'Tipe Lokasi', wbf['header'])
-            sheet.write('N5', 'ORG', wbf['header'])
-            sheet.write('O5', 'Lokasi', wbf['header'])
-            sheet.write('P5', 'Aktivitas', wbf['header'])
-            sheet.write('Q5', 'Account', wbf['header'])
-            sheet.write('R5', 'Value on Journal', wbf['header'])
+            # sheet.write('M5', 'Tipe Lokasi', wbf['header'])
+            # sheet.write('N5', 'ORG', wbf['header'])
+            # sheet.write('O5', 'Lokasi', wbf['header'])
+            # sheet.write('P5', 'Aktivitas', wbf['header'])
+            # sheet.write('Q5', 'Account', wbf['header'])
+            # sheet.write('R5', 'Value on Journal', wbf['header'])
 
         row = 5
 
@@ -354,44 +354,57 @@ class ReportDetailReceipt(models.AbstractModel):
             sheet.write(row, 0, row_number, wbf['content'])  
             sheet.write(row, 1, stock.date.strftime('%d-%m-%Y %H:%M:%S'), wbf['content'])  
             sheet.write(row, 2, stock.reference, wbf['content'])  
-            sheet.write(row, 3, stock.mr_line_id.mr_id.name if stock.mr_line_id.mr_id else '-', wbf['content'])  
+            sheet.write(row, 3, stock.purchase_line_id.order_id.name if stock.purchase_line_id.order_id else '-', wbf['content']) 
             sheet.write(row, 4, stock.product_id.default_code if stock.product_id.default_code else '-', wbf['content'])  
             sheet.write(row, 5, stock.product_id.name, wbf['content']) 
             sheet.write(row, 6, stock.product_uom_qty, wbf['content_float'])  
             sheet.write(row, 7, stock.product_id.uom_id.name, wbf['content']) 
 
             if obj.with_accounting_journal:
-                for svl in stock.stock_valuation_layer_ids:
-                    sheet.write(row, 8, svl.value, wbf['content_float'])
+                if stock.stock_valuation_layer_ids:
+                    for svl in stock.stock_valuation_layer_ids:
+                        sheet.write(row, 8, svl.value, wbf['content_float'])
+                else:
+                    sheet.write(row, 8, '-', wbf['content'])
 
                 if stock.account_move_ids:
                     for acc_move in stock.account_move_ids:  
                         sheet.write(row, 9, acc_move.name, wbf['content']) 
-                        
+
+                        found_account = False
                         for acc_move_line in acc_move.line_ids:
-                            if stock.product_id.categ_id.property_stock_valuation_account_id.id != acc_move_line.account_id.id:
+                            if stock.product_id.categ_id.property_stock_valuation_account_id.id == acc_move_line.account_id.id:
                                 sheet.write(row, 10, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])  
                                 sheet.write(row, 11, acc_move_line.balance, wbf['content_float'])  
-                                # row += 1 
-                            else:
-                                sheet.write(row, 12, acc_move_line.plantation_location_type_id.name if acc_move_line.plantation_location_type_id else '-', wbf['content'])
-                                sheet.write(row, 13, acc_move_line.plantation_varieties_id.name if acc_move_line.plantation_varieties_id else '-', wbf['content'])
-                                sheet.write(row, 14, acc_move_line.plantation_location_id.name if acc_move_line.plantation_location_id else '-', wbf['content'])
-                                sheet.write(row, 15, f"{acc_move_line.plantation_activity_id.code} - {acc_move_line.plantation_activity_id.name}" if acc_move_line.plantation_activity_id else '-', wbf['content'])
-                                sheet.write(row, 16, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])
-                                sheet.write(row, 17, acc_move_line.balance, wbf['content_float'])
-                            
-                                # row += 1 
+                                found_account = True
+                        
+                        if not found_account:
+                            sheet.write(row, 10, '-', wbf['content'])  
+                            sheet.write(row, 11, '-', wbf['content'])
                 else:
-                    sheet.write(row, 9, '-', wbf['content']) 
-                    sheet.write(row, 10, '-', wbf['content'])  
-                    sheet.write(row, 11, '-', wbf['content'])  
-                    sheet.write(row, 12, '-', wbf['content'])  
-                    sheet.write(row, 13, '-', wbf['content'])  
-                    sheet.write(row, 14, '-', wbf['content'])  
-                    sheet.write(row, 15, '-', wbf['content'])  
-                    sheet.write(row, 16, '-', wbf['content'])  
-                    sheet.write(row, 17, '-', wbf['content'])  
+                    sheet.write(row, 9, '-', wbf['content'])
+                    sheet.write(row, 10, '-', wbf['content'])
+                    sheet.write(row, 11, '-', wbf['content'])
+                                # row += 1 
+                #             else:
+                #                 sheet.write(row, 12, acc_move_line.plantation_location_type_id.name if acc_move_line.plantation_location_type_id else '-', wbf['content'])
+                #                 sheet.write(row, 13, acc_move_line.plantation_varieties_id.name if acc_move_line.plantation_varieties_id else '-', wbf['content'])
+                #                 sheet.write(row, 14, acc_move_line.plantation_location_id.name if acc_move_line.plantation_location_id else '-', wbf['content'])
+                #                 sheet.write(row, 15, f"{acc_move_line.plantation_activity_id.code} - {acc_move_line.plantation_activity_id.name}" if acc_move_line.plantation_activity_id else '-', wbf['content'])
+                #                 sheet.write(row, 16, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])
+                #                 sheet.write(row, 17, acc_move_line.balance, wbf['content_float'])
+                            
+                #                 # row += 1 
+                # else:
+                #     sheet.write(row, 9, '-', wbf['content']) 
+                #     sheet.write(row, 10, '-', wbf['content'])  
+                #     sheet.write(row, 11, '-', wbf['content'])  
+                #     sheet.write(row, 12, '-', wbf['content'])  
+                #     sheet.write(row, 13, '-', wbf['content'])  
+                #     sheet.write(row, 14, '-', wbf['content'])  
+                #     sheet.write(row, 15, '-', wbf['content'])  
+                #     sheet.write(row, 16, '-', wbf['content'])  
+                #     sheet.write(row, 17, '-', wbf['content'])  
 
                 
                 if row == first_journal_row:  
