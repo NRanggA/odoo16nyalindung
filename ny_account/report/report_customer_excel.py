@@ -136,7 +136,8 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
 
         self.wbf['content_number_center'] = workbook.add_format({
             'align': 'center',
-            'valign': 'vcenter'
+            'valign': 'vcenter',
+            'num_format': '#,##0.00',
         })
         self.wbf['content_number_center'].set_border()
 
