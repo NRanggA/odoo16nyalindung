@@ -43,6 +43,7 @@
                     <!-- Payment status -->
                     <widget name="web_ribbon" title="Paid" attrs="{'invisible': [('payment_state', '!=', 'paid')]}"/>
                     <widget name="web_ribbon" title="In Payment" attrs="{'invisible': [('payment_state', '!=', 'in_payment')]}"/>
+                    <widget name="web_ribbon" title="Partially Paid" attrs="{'invisible': [('payment_state', '!=', 'partial')]}"/>
                     <!-- <widget name="web_ribbon" title="Partial" attrs="{'invisible': [('payment_state', '!=', 'paid')]}"/> -->
 
                     <div class="oe_title">
@@ -183,7 +184,7 @@
                 <!-- <field name="amount_to_clear"/> -->
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="employee_expense_state" widget="badge" decoration-danger="employee_expense_state=='reject'" decoration-warning="employee_expense_state=='submit'" decoration-success="employee_expense_state=='approved'"/>
-                <field name="payment_state" widget="badge" optional="show" decoration-warning="payment_state=='not_paid'" decoration-info="payment_state=='in_payment'" decoration-success="payment_state=='paid'"/>
+                <field name="payment_state" widget="badge" optional="show" decoration-warning="payment_state=='not_paid'" decoration-info="payment_state=='in_payment'" decoration-success="payment_state=='paid'" decoration-primary="payment_state=='partial'"/>
             </tree>
         </field>
     </record>
