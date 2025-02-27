@@ -94,3 +94,42 @@ class PurchaseOrder(models.Model):
             new_po = self.create(new_vals)
             record.button_cancel()
             return new_po
+
+    def action_create_invoice(self):
+        res = super().action_create_invoice()
+        for order in self:
+            if order.non_credit:
+                move = self.env['account.move'].search([('invoice_origin', '=', order.name)], order='id desc', limit=1)
+                if move:
+                    total_ppn_value = 0.0
+                    account_id = False
+
+                    for line in order.order_line:
+                        ppn_taxes = line.taxes_id.filtered(lambda tax: 'PPN' in tax.name)
+
+                        if ppn_taxes:
+                            ppn_amount = sum(ppn_taxes.mapped('amount')) / 100
+                            qty = line.qty_to_invoice if line.qty_to_invoice > 0 else line.product_qty
+                            ppn_value = line.price_unit * ppn_amount * qty
+
+                            if not account_id:
+                                move_line = move.line_ids.filtered(lambda l: l.purchase_line_id == line)
+                                account_id = move_line.account_id.id if move_line else False
+
+                            total_ppn_value += ppn_value
+
+                    if total_ppn_value > 0 and account_id:
+                        ppn_line_vals = {
+                            'display_type': 'product',
+                            'name': 'PPN Tidak di kreditkan',
+                            'product_id': False,
+                            'product_uom_id': False,
+                            'quantity': 1,
+                            'price_unit': total_ppn_value,
+                            'account_id': account_id,
+                            'tax_ids': [],
+                            'move_id': move.id,
+                        }
+                        self.env['account.move.line'].create(ppn_line_vals)
+
+        return res
