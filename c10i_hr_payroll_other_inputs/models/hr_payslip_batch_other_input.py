@@ -69,18 +69,23 @@ class HrPayslipBatchOtherInput(models.Model):
             employee = self.env['hr.employee'].search([('no_induk', '=', row['NIP'])], limit=1)
             if not employee:
                 error_msg_list.append(f"Karyawan dengan NIP {row['NIP']} tidak dapat ditemukan pada baris {index}")
+            if not np.nan_to_num(row.get('AMOUNT', 0.0)):
+                continue
             vals = {
                 'employee_id': employee.id,
-                'amount': row['AMOUNT'],
+                'amount': np.nan_to_num(row.get('AMOUNT', 0.0)),
             }
             
             to_create.append(vals)
 
+        print(">>>>>>>>>>>>", to_create)
+
         if error_msg_list:
             self.error_upload_msg = "\n".join(error_msg_list)
         else:
-            self.line_ids = [Command.create(val) for val in to_create]        
-            self.error_upload_msg = ""
+            # self.line_ids = [Command.create(val) for val in to_create]        
+            self.line_ids = [(0,0,val) for val in to_create]        
+            self.error_upload_msg = False
         return True
 
     def action_confirm(self):
