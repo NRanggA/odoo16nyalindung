@@ -657,12 +657,12 @@ class lhm_nap(models.Model):
                     raise UserError(f"(LHM) Data tidak ditemukan di LHM untuk lokasi {location_name} dan tanggal {key[1]}.")
 
             # Validasi total akhir
-            total_transaction = sum(transaction_data.values())
-            total_kebun = sum(kebun_data.values())
+            total_transaction = sum(transaction_data.values(), 2)
+            total_kebun = sum(kebun_data.values(), 2)
             if total_transaction != total_kebun:
                 raise UserError(f"Total keseluruhan tidak sesuai. "
-                                f"LHM - Daftar Karyawan: {total_transaction}, "
-                                f"NAP - Timbangan Kebun: {total_kebun}.")
+                                f"LHM - Daftar Karyawan: {total_transaction:.2f}, "
+                                f"NAP - Timbangan Kebun: {total_kebun:.2f}.")
         
         if contractor_day_data:
             for key, contractor_day_total in contractor_day_data.items():
@@ -688,12 +688,12 @@ class lhm_nap(models.Model):
                     raise UserError(f"Data tidak ditemukan di LHM untuk lokasi {location_name} dan tanggal {key[1]}.")
 
             # Validasi total akhir
-            total_contractor_day = sum(contractor_day_data.values())
-            total_kebun = sum(kebun_data.values())
+            total_contractor_day = sum(contractor_day_data.values(), 2)
+            total_kebun = sum(kebun_data.values(), 2)
             if total_contractor_day != total_kebun:
                 raise UserError(f"Total keseluruhan tidak sesuai. "
-                                f"Detail Aktivitas Buku Kontraktor Harian: {total_contractor_day}, "
-                                f"NAP - Timbangan Kebun: {total_kebun}.")
+                                f"Detail Aktivitas Buku Kontraktor Harian: {total_contractor_day:.2f}, "
+                                f"NAP - Timbangan Kebun: {total_kebun:.2f}.")
 
         self.state = 'process'
         self.process = True
