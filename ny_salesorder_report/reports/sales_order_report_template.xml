@@ -66,10 +66,10 @@
 
                     <table style="width: 100%; margin-bottom: 20px; font-family: Arial, sans-serif; font-size: 7px; text-align: left;">
                         <tr>
-                            <td>Total Harga : Rp<span t-esc="doc.env['report.ny_salesorder_report.sales_order_template_custom'].format_price(line.price_total)"/></td>
+                            <td>Total Harga : Rp<span t-esc="doc.env['report.ny_salesorder_report.sales_order_template_custom'].format_price(doc.amount_total)"/></td>
                         </tr>
                         <tr>
-                            <td style="font-style: italic;">Terbilang : # <span t-esc="doc.env['report.ny_salesorder_report.sales_order_template_custom'].price_to_text(line.price_total)"/> rupiah #</td>
+                            <td style="font-style: italic;">Terbilang : # <span t-esc="doc.env['report.ny_salesorder_report.sales_order_template_custom'].price_to_text(doc.amount_total)"/> rupiah #</td>
                         </tr>
                     </table>
 
