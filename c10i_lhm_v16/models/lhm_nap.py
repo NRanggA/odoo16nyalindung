@@ -691,8 +691,8 @@ class lhm_nap(models.Model):
                     raise UserError(f"Data tidak ditemukan di LHM untuk lokasi {location_name} dan tanggal {key[1]}.")
 
             # Validasi total akhir
-            total_contractor_day = round(sum(contractor_day_data.values(), 2))
-            total_kebun = round(sum(kebun_data.values(), 2))
+            total_contractor_day = round(sum(contractor_day_data.values()), 2)
+            total_kebun = round(sum(kebun_data.values()), 2)
             if total_contractor_day != total_kebun:
                 raise UserError(f"Total keseluruhan tidak sesuai. "
                                 f"Detail Aktivitas Buku Kontraktor Harian: {total_contractor_day:.2f}, "
