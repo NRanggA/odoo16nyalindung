@@ -614,8 +614,8 @@ class ReportProduction(models.AbstractModel):
                     date = datetime.strptime(date_str, "%d_%b_%y")
                     col_index = second_date_start + i
                     column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_1_NAP"
-                    hasil_sadapan_lateks = line.get(column_key, 0)
-                    total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0)
+                    hasil_sadapan_lateks = line.get(column_key, 0) or 0
+                    total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0) or 0
                     total_hasil_1_per_tanggal[date_str] += hasil_sadapan_lateks
                     sheet.write(lateks_row_start + 2, second_date_start - 1, total_hasil_1_tanggal, wbf['total_float'])
                     sheet.write(lateks_row_start + 2, col_index, hasil_sadapan_lateks, wbf['total_float'])
@@ -625,8 +625,8 @@ class ReportProduction(models.AbstractModel):
                     date = datetime.strptime(date_str, "%d_%b_%y")
                     col_index = third_date_start + i
                     column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_2_NAP"
-                    hasil_sadapan_lump = line.get(column_key, 0)
-                    total_hasil_2_tanggal = line.get("total_hasil_2_nap", 0)
+                    hasil_sadapan_lump = line.get(column_key, 0) or 0
+                    total_hasil_2_tanggal = line.get("total_hasil_2_nap", 0) or 0
                     total_hasil_2_per_tanggal[date_str] += hasil_sadapan_lump
                     sheet.write(lump_row_start + 2, third_date_start - 1, total_hasil_2_tanggal, wbf['total_float'])
                     sheet.write(lump_row_start + 2, col_index, hasil_sadapan_lump, wbf['total_float'])
@@ -650,8 +650,8 @@ class ReportProduction(models.AbstractModel):
                     date = datetime.strptime(date_str, "%d_%b_%y")
                     col_index = sixth_date_start + i
                     column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LATEKS"
-                    hasil_convert_lateks = line.get(column_key, 0)
-                    total_hasil_convert_lateks = line.get("total_hasil_convert_latex", 0)
+                    hasil_convert_lateks = line.get(column_key, 0) or 0
+                    total_hasil_convert_lateks = line.get("total_hasil_convert_latex", 0) or 0
                     total_chasil_1_per_tanggal[date_str] += hasil_convert_lateks
                     sheet.write(clateks_row_start + 2, sixth_date_start - 1, total_hasil_convert_lateks, wbf['total_float'])
                     sheet.write(clateks_row_start + 2, col_index, hasil_convert_lateks, wbf['total_float'])
@@ -661,8 +661,8 @@ class ReportProduction(models.AbstractModel):
                     date = datetime.strptime(date_str, "%d_%b_%y")
                     col_index = seventh_date_start + i
                     column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LUMP"
-                    hasil_convert_lump = line.get(column_key, 0)
-                    total_hasil_convert_lump = line.get("total_hasil_convert_lump", 0)
+                    hasil_convert_lump = line.get(column_key, 0) or 0
+                    total_hasil_convert_lump = line.get("total_hasil_convert_lump", 0) or 0
                     total_chasil_2_per_tanggal[date_str] += hasil_convert_lump
                     sheet.write(clump_row_start + 2, seventh_date_start - 1, total_hasil_convert_lump, wbf['total_float'])
                     sheet.write(clump_row_start + 2, col_index, hasil_convert_lump, wbf['total_float'])
@@ -672,8 +672,8 @@ class ReportProduction(models.AbstractModel):
                     date = datetime.strptime(date_str, "%d_%b_%y")
                     col_index = eighth_date_start + i
                     column_key = f"{date.strftime('%d_%b_%y').upper()}_TOTAL_HASIL_CONVERT"
-                    hasil_convert = line.get(column_key, 0)
-                    total_hasil_convert = line.get("total_hasil_convert", 0)
+                    hasil_convert = line.get(column_key, 0) or 0
+                    total_hasil_convert = line.get("total_hasil_convert", 0) or 0
                     total_convert_per_tanggal[date_str] += hasil_convert
                     sheet.write(tkonversi_row_start + 2, eighth_date_start - 1, total_hasil_convert, wbf['total_float'])
                     sheet.write(tkonversi_row_start + 2, col_index, hasil_convert, wbf['total_float'])
