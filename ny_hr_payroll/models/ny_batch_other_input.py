@@ -75,10 +75,12 @@ class NyBatchOtherInput(models.Model):
             employee = self.env['hr.employee'].search([('no_induk', '=', nip)], limit=1)
             if not employee:
                 error_msg_list.append(f"Karyawan dengan NIP {row['NIP']} tidak dapat ditemukan pada baris {index}")
+            if not np.nan_to_num(row['AMOUNT']):
+                continue
             vals = {
                 'employee_id': employee.id,
                 'type_id': mapped_type.get(row['TIPE'], False),
-                'amount': row['AMOUNT'],
+                'amount': np.nan_to_num(row['AMOUNT']),
             }
             to_create.append(vals)
 
