@@ -18,8 +18,16 @@ class HrPayslipLine(models.Model):
             elif config.default_debit_account_id and 'expense_' in config.default_debit_account_id.account_type:
                 account = self.env.company.payroll_bill_account_id
                 dr_amount = self.total
-            else:
+            elif config.default_credit_account_id and 'expense_' in config.default_credit_account_id.account_type:
+                account = self.env.company.payroll_bill_account_id
                 cr_amount = self.total
+            elif config.default_debit_account_id and 'expense_' not in config.default_debit_account_id.account_type:
+                account = config.default_debit_account_id
+                dr_amount = self.total
+            else:
+                account = config.default_credit_account_id
+                cr_amount = self.total
+            print("/.......................", self.name)
             vals1 = {
                 'payslip_line_id': self.id,
                 'partner_id': config.partner_id.id,
@@ -53,16 +61,33 @@ class HrPayslipLine(models.Model):
                     'payslip_run_id': self.slip_id.payslip_run_id.id,
                     'type': type,
                 }
-                if config.is_general_charge and config.is_bpjs_tk:
+                # if config.is_general_charge and config.is_bpjs_tk:
+                #     vals1.update({
+                #         'plantation_activity_id': gc_default_location_result.get('plantation_activity_bpjs_tk_id', False),
+                #         'account_id': gc_default_location_result.get('plantation_account_bpjs_tk_id', False),
+                #     })
+                # elif config.is_general_charge and config.is_bpjs_kes:
+                #     vals1.update({
+                #         'plantation_activity_id': gc_default_location_result.get('plantation_activity_bpjs_kes_id', False),
+                #         'account_id': gc_default_location_result.get('plantation_account_bpjs_kes_id', False),
+                #     })
+                if config.is_general_charge and self.salary_rule_id.name=='Premi Produksi' and self.slip_id.employee_id.payroll_premi_produksi_account_id:
                     vals1.update({
-                        'plantation_activity_id': gc_default_location_result.get('plantation_activity_bpjs_tk_id', False),
-                        'account_id': gc_default_location_result.get('plantation_account_bpjs_tk_id', False),
+                        'plantation_location_type_id': False,
+                        'plantation_varieties_id': False,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'account_id': self.slip_id.employee_id.payroll_premi_produksi_account_id.id,
                     })
-                elif config.is_general_charge and config.is_bpjs_kes:
+                elif config.is_general_charge and self.salary_rule_id.name=='Premi Produksi' and self.slip_id.employee_id.payroll_premi_produksi_account_id:
                     vals1.update({
-                        'plantation_activity_id': gc_default_location_result.get('plantation_activity_bpjs_kes_id', False),
-                        'account_id': gc_default_location_result.get('plantation_account_bpjs_kes_id', False),
+                        'plantation_varieties_id': False,
+                        'plantation_location_type_id': False,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'account_id': self.slip_id.employee_id.payroll_premi_produksi_account_id.id,
                     })
+                
                 if config.is_general_charge and not vals1['account_id']:
                     raise ValidationError(f"Karyawan {self.slip_id.employee_id.name} belum memiliki Setting GC (Aktifitas dan Akun). Silahkan di seting terlebih dahulu di Kemandoran {self.slip_id.employee_id.kemandoran_id.name} atau Karyawan")
                 mappings.append(vals1)

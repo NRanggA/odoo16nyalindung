@@ -29,5 +29,6 @@
         'views/hr_payslip_run_view.xml',
         'views/account_cost_map_payroll_view.xml',
         'views/res_config_settings_view.xml',
+        'views/hr_employee_view.xml',
     ],
 }

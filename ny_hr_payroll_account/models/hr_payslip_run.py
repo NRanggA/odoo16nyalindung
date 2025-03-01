@@ -94,12 +94,17 @@ class HrPayslipRun(models.Model):
             batch.action_gc_distribution()
     
     def action_map_cost_bill(self):
-        self.cost_map_ids.filtered(lambda x: x.type=='reclass').unlink()
+        self.cost_map_ids.filtered(lambda x: x.type=='bill').unlink()
         self.slip_ids.action_map_cost_bill()
+    
+    def done_payslip_run(self):
+        self.action_map_cost_bill()
+        super().action_map_cost_bill()
     
     def action_view_cost_map(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
-        action['domain'] = [('payslip_run_id','=',self.id),('type','=','bill')]
+        # action['domain'] = [('payslip_run_id','=',self.id),('type','=','bill')]
+        action['domain'] = [('payslip_run_id','=',self.id)]
         return action
     
     def create_account_move(self):

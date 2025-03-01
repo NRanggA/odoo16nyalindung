@@ -10,7 +10,7 @@
                 <field name="bill_move_ids" invisible="1"/>
             </xpath>
             <button name="draft_payslip_run" position="before">
-                <!-- <button string="Cost Mapping" name="action_map_cost" type="object" class="oe_highlight" states="close" /> -->
+                <!-- <button string="Cost Mapping" name="action_map_cost_bill" type="object" class="oe_highlight" states="close" /> -->
                 <!-- <button string="Create General Charge Allocation" name="create_account_move_general_charge" type="object" class="oe_highlight" states="close,done" groups="base.group_no_one" /> -->
                 <button string="Create Bill" name="create_account_move" type="object" class="oe_highlight" attrs="{'invisible': [('bill_move_ids','!=',[]),('state','in',['close','done'])]}" />
             </button>

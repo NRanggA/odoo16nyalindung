@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form" model="ir.ui.view">
+        <field name="name">hr.employee.view.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_employee_form_inherit_lhm"/>
+        <field name="arch" type="xml">
+            <field name="plantation_activity_id" position="after" >
+                <field name="payroll_upah_account_id" />
+                <field name="payroll_premi_produksi_account_id" />
+                <field name="payroll_other_account_id" />
+            </field>
+        </field>
+    </record>
+
+</odoo>
