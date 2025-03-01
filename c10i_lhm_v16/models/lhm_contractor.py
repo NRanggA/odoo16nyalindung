@@ -296,7 +296,7 @@ class lhm_contractor(models.Model):
         for contractor in self:
             if contractor.invoice_id:
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Vendor Bill'))
-            if contractor.move_id:
+            if contractor.move_id and contractor.move_id.sudo().state == 'posted':
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Journal Entry.\n Silahkan di Cancel terlebih dahulu'))
             contractor.line_nap_ids.unlink()
         self.state = 'draft'
@@ -307,8 +307,8 @@ class lhm_contractor(models.Model):
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Vendor Bill'))
             if contractor.move_id:
                 contractor.move_id.sudo().button_draft()
-                contractor.move_id.sudo().button_cancel()
-                contractor.move_id.sudo().unlink()
+                # contractor.move_id.sudo().button_cancel()
+                # contractor.move_id.sudo().unlink()
             contractor.line_nap_ids.unlink()
         self.state = 'cancel'
         for line in self.line_ids:
@@ -379,84 +379,159 @@ class lhm_contractor(models.Model):
                 raise exceptions.UserError(_("Dokumen dengan status 'Confirmed' tidak dapat dihapus!"))
         return super(lhm_contractor, self).unlink()
 
+    # Fungsi lama 
+    # def _account_move_entry(self):
+    #     AccountMove = self.env['account.move']
+    #     AccountMoveLine = self.env['account.move.line']
+    #     grouped_lines = {}
+    #     for buku_kontraktor in self:
+    #         acc_dest = buku_kontraktor.account_payable_contractor_id #untuk credit
+    #         if not acc_dest:
+    #             raise ValidationError(_('Akun Perantara Hutang pada Kontraktor Belum diisi.\n'
+    #                 'Silahkan isi akun tersebut terlebih dahulu'))
+    #         journal_id = buku_kontraktor.contractor_default_journal_id
+    #         if not journal_id:
+    #             raise ValidationError(_('General Jurnal belum didefinisikan.\n'
+    #                 'Silahkan membuat General Jurnal terlebih dahulu'))
+    #         total_lines = 0.0
+    #         for line in buku_kontraktor.line_ids:
+    #             key = (line.location_type_id, line.location_id, line.activity_id)
+    #             if key not in grouped_lines.keys():
+    #                 acc_src = line.activity_id.account_id # untuk debit
+    #                 if not acc_src:
+    #                     raise ValidationError(_('Aktivitas yg digunakan tidak memiliki Account Allocation.\n'
+    #                         'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
+    #                         (line.activity_id.code,line.activity_id.name))
+    #                 # untuk sisi debit
+    #                 grouped_lines.update({key: {
+    #                     'varieties_id'      : line.varieties_id,
+    #                     'location_type'     : line.location_type_id,
+    #                     'location'          : line.location_id,
+    #                     'activity'          : line.activity_id,
+    #                     'account_id'        : acc_src.id,
+    #                     'journal_id'        : journal_id.id,
+    #                     'partner_id'        : buku_kontraktor.supplier_id.id,
+    #                     'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+    #                     'amount'            : 0.0,
+    #                     }})
+    #             grouped_lines[key]['amount'] += line.total
+    #             total_lines += line.total
+    #         for line in buku_kontraktor.line_vehicle_ids:
+    #             key = (line.location_type_id, line.location_id, line.activity_id)
+    #             if key not in grouped_lines.keys():
+    #                 acc_src = line.activity_id.account_id
+    #                 if not acc_src:
+    #                     raise ValidationError(_('Aktivitas yg digunakan tidak memiliki Account Allocation.\n'
+    #                         'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
+    #                         (line.activity_id.code,line.activity_id.name))
+    #                 grouped_lines.update({key: {
+    #                     'location_type'     : line.location_type_id,
+    #                     'location'          : line.location_id,
+    #                     'activity'          : line.activity_id,
+    #                     'account_id'        : acc_src.id,
+    #                     'journal_id'        : journal_id.id,
+    #                     'partner_id'        : buku_kontraktor.supplier_id.id,
+    #                     'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+    #                     'amount'            : 0.0,
+    #                     'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
+    #                     }})
+    #             grouped_lines[key]['amount'] += line.total
+    #             total_lines += line.total
+            
+    #         move_lines = []
+    #         for line in grouped_lines.values():
+    #             move_lines.append((0,0, self._prepare_move_line_entry(line)))
+    #         # counterpart entry for all activity
+    #         # untuk sisi credit
+    #         move_lines.append((0, 0, self._prepare_move_line_entry({
+    #                 'account_id'        : acc_dest.id,
+    #                 'journal_id'        : journal_id.id,
+    #                 'partner_id'        : buku_kontraktor.supplier_id.id,
+    #                 'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+    #                 'amount'            : -1*total_lines,
+    #                 'plantation_src_journal_id': journal_id.id,
+    #                 })))
+    #         move = AccountMove.sudo().create({
+    #             'journal_id'    : journal_id.id,
+    #             'date'          : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+    #             'line_ids'      : move_lines,
+    #             'ref'           : buku_kontraktor.name,
+    #             })
+    #         move.sudo().action_post()
+    #         buku_kontraktor.sudo().write({'move_id': move.id})
+
+    # Fungsi Baru
     def _account_move_entry(self):
         AccountMove = self.env['account.move']
         AccountMoveLine = self.env['account.move.line']
-        grouped_lines = {}
+        
         for buku_kontraktor in self:
-            acc_dest = buku_kontraktor.account_payable_contractor_id #untuk credit
+            acc_dest = buku_kontraktor.account_payable_contractor_id  # untuk credit
             if not acc_dest:
                 raise ValidationError(_('Akun Perantara Hutang pada Kontraktor Belum diisi.\n'
-                    'Silahkan isi akun tersebut terlebih dahulu'))
+                                        'Silahkan isi akun tersebut terlebih dahulu'))
+            
             journal_id = buku_kontraktor.contractor_default_journal_id
             if not journal_id:
                 raise ValidationError(_('General Jurnal belum didefinisikan.\n'
-                    'Silahkan membuat General Jurnal terlebih dahulu'))
+                                        'Silahkan membuat General Jurnal terlebih dahulu'))
+            
             total_lines = 0.0
+            grouped_lines = {}
+
+            # Mengelompokkan baris berdasarkan lokasi & aktivitas
+            # for line in buku_kontraktor.line_ids + buku_kontraktor.line_vehicle_ids:
             for line in buku_kontraktor.line_ids:
                 key = (line.location_type_id, line.location_id, line.activity_id)
-                if key not in grouped_lines.keys():
-                    acc_src = line.activity_id.account_id # untuk debit
+                if key not in grouped_lines:
+                    acc_src = line.activity_id.account_id  # untuk debit
                     if not acc_src:
                         raise ValidationError(_('Aktivitas yg digunakan tidak memiliki Account Allocation.\n'
-                            'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
-                            (line.activity_id.code,line.activity_id.name))
-                    # untuk sisi debit
-                    grouped_lines.update({key: {
-                        'varieties_id'      : line.varieties_id,
-                        'location_type'     : line.location_type_id,
-                        'location'          : line.location_id,
-                        'activity'          : line.activity_id,
-                        'account_id'        : acc_src.id,
-                        'journal_id'        : journal_id.id,
-                        'partner_id'        : buku_kontraktor.supplier_id.id,
-                        'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
-                        'amount'            : 0.0,
-                        }})
+                                                'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % 
+                                            (line.activity_id.code, line.activity_id.name))
+                    grouped_lines[key] = {
+                        'varieties_id': getattr(line, 'varieties_id', False),
+                        'location_type': line.location_type_id,
+                        'location': line.location_id,
+                        'activity': line.activity_id,
+                        'account_id': acc_src.id,
+                        'journal_id': journal_id.id,
+                        'partner_id': buku_kontraktor.supplier_id.id,
+                        'date': buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+                        'amount': 0.0,
+                    }
                 grouped_lines[key]['amount'] += line.total
                 total_lines += line.total
-            for line in buku_kontraktor.line_vehicle_ids:
-                key = (line.location_type_id, line.location_id, line.activity_id)
-                if key not in grouped_lines.keys():
-                    acc_src = line.activity_id.account_id
-                    if not acc_src:
-                        raise ValidationError(_('Aktivitas yg digunakan tidak memiliki Account Allocation.\n'
-                            'Gunakan Aktivitas lain atau Lengkapi Allocation pada Aktifitas %s %s') % \
-                            (line.activity_id.code,line.activity_id.name))
-                    grouped_lines.update({key: {
-                        'location_type'     : line.location_type_id,
-                        'location'          : line.location_id,
-                        'activity'          : line.activity_id,
-                        'account_id'        : acc_src.id,
-                        'journal_id'        : journal_id.id,
-                        'partner_id'        : buku_kontraktor.supplier_id.id,
-                        'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
-                        'amount'            : 0.0,
-                        'operating_unit_id' : buku_kontraktor.operating_unit_id and buku_kontraktor.operating_unit_id.id or False,
-                        }})
-                grouped_lines[key]['amount'] += line.total
-                total_lines += line.total
+
+            # Kalo sudah ada move_id nya, maka dia akan update line nya saha 
+            if buku_kontraktor.move_id:
+                move = buku_kontraktor.move_id
+                move.sudo().line_ids.unlink()  # data pada account.move.line dihapus dulu
+            else:
+                move = AccountMove.sudo().create({
+                    'journal_id': journal_id.id,
+                    'date': buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+                    'ref': buku_kontraktor.name,
+                })
+                buku_kontraktor.sudo().write({'move_id': move.id})
+
             move_lines = []
             for line in grouped_lines.values():
-                move_lines.append((0,0, self._prepare_move_line_entry(line)))
-            # counterpart entry for all activity
-            # untuk sisi credit
+                move_lines.append((0, 0, self._prepare_move_line_entry(line)))
+
+            # Menambahkan sisi credit
             move_lines.append((0, 0, self._prepare_move_line_entry({
-                    'account_id'        : acc_dest.id,
-                    'journal_id'        : journal_id.id,
-                    'partner_id'        : buku_kontraktor.supplier_id.id,
-                    'date'              : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
-                    'amount'            : -1*total_lines,
-                    'plantation_src_journal_id': journal_id.id,
-                    })))
-            move = AccountMove.sudo().create({
-                'journal_id'    : journal_id.id,
-                'date'          : buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
-                'line_ids'      : move_lines,
-                'ref'           : buku_kontraktor.name,
-                })
+                'account_id': acc_dest.id,
+                'journal_id': journal_id.id,
+                'partner_id': buku_kontraktor.supplier_id.id,
+                'date': buku_kontraktor.date_end if buku_kontraktor.date_end else buku_kontraktor.date,
+                'amount': -1 * total_lines,
+                'plantation_src_journal_id': journal_id.id,
+            })))
+
+            move.sudo().write({'line_ids': move_lines})
             move.sudo().action_post()
-            buku_kontraktor.sudo().write({'move_id': move.id})
+
 
     def _prepare_move_line_entry(self, line):
         # convert amount
