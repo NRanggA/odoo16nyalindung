@@ -742,33 +742,33 @@ class ReportProduction(models.AbstractModel):
                 col_index_7 = seventh_date_start + i
                 col_index_8 = eighth_date_start + i
 
-                sheet.write(row, col_index_2, "-", cell_format)
-                sheet.write(row + 1, col_index_2, "-", cell_format)
-                sheet.write(row + 2, col_index_2, "-", cell_format)
+                sheet.write(row, col_index_2, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_2, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_2, "-", wbf['data_center'])
 
-                sheet.write(row, col_index_3, "-", cell_format)
-                sheet.write(row + 1, col_index_3, "-", cell_format)
-                sheet.write(row + 2, col_index_3, "-", cell_format)
+                sheet.write(row, col_index_3, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_3, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_3, "-", wbf['data_center'])
 
-                sheet.write(row, col_index_4, "-", cell_format)
-                sheet.write(row + 1, col_index_4, "-", cell_format)
-                sheet.write(row + 2, col_index_4, "-", cell_format)
+                sheet.write(row, col_index_4, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_4, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_4, "-", wbf['data_center'])
 
-                sheet.write(row, col_index_5, "-", cell_format)
-                sheet.write(row + 1, col_index_5, "-", cell_format)
-                sheet.write(row + 2, col_index_5, "-", cell_format)
+                sheet.write(row, col_index_5, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_5, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_5, "-", wbf['data_center'])
 
-                sheet.write(row, col_index_6, "-", cell_format)
-                sheet.write(row + 1, col_index_6, "-", cell_format)
-                sheet.write(row + 2, col_index_6, "-", cell_format)
+                sheet.write(row, col_index_6, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_6, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_6, "-", wbf['data_center'])
 
-                sheet.write(row, col_index_7, "-", cell_format)
-                sheet.write(row + 1, col_index_7, "-", cell_format)
-                sheet.write(row + 2, col_index_7, "-", cell_format)
+                sheet.write(row, col_index_7, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_7, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_7, "-", wbf['data_center'])
 
-                sheet.write(row, col_index_8, "-", cell_format)
-                sheet.write(row + 1, col_index_8, "-", cell_format)
-                sheet.write(row + 2, col_index_8, "-", cell_format)
+                sheet.write(row, col_index_8, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_8, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_8, "-", wbf['data_center'])
 
                 total_column_index_2 = jumlah_hasil_sadapan_lateks
                 total_column_index_3 = jumlah_hasil_sadapan_lump
