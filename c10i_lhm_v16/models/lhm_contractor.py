@@ -306,7 +306,8 @@ class lhm_contractor(models.Model):
             if contractor.invoice_id:
                 raise UserError(_('Buku Kontraktor ini sudah memiliki Vendor Bill'))
             if contractor.move_id:
-                contractor.move_id.unlink()
+                contractor.move_id.sudo().button_draft()
+                contractor.move_id.sudo().unlink()
             contractor.line_nap_ids.unlink()
         self.state = 'cancel'
         for line in self.line_ids:
