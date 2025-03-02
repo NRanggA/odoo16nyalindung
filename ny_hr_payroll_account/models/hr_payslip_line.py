@@ -88,6 +88,14 @@ class HrPayslipLine(models.Model):
                         'plantation_activity_id': False,
                         'account_id': self.slip_id.employee_id.payroll_premi_produksi_account_id.id,
                     })
+                elif config.is_general_charge and self.salary_rule_id.category_id.code=='ALW' and self.slip_id.employee_id.payroll_other_account_id:
+                    vals1.update({
+                        'plantation_varieties_id': False,
+                        'plantation_location_type_id': False,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'account_id': self.slip_id.employee_id.payroll_other_account_id.id,
+                    })
                 
                 if config.is_general_charge and not vals1['account_id']:
                     raise ValidationError(f"Karyawan {self.slip_id.employee_id.name} belum memiliki Setting GC (Aktifitas dan Akun). Silahkan di seting terlebih dahulu di Kemandoran {self.slip_id.employee_id.kemandoran_id.name} atau Karyawan")
