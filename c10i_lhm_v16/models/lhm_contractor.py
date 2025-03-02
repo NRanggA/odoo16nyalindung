@@ -901,11 +901,22 @@ class lhm_contractor_line(models.Model):
         if self.skip_constraint:
             return True
 
-        if not (self.date >= self.contractor_id.date_start and self.date <= self.contractor_id.date_end):
+        # if not (self.date >= self.contractor_id.date_start and self.date <= self.contractor_id.date_end):
+        #     raise UserError(_('Tanggal %s pada Buku Kontraktor tidak dalam Periode Pembayaran \n'
+        #                       '%s - %s.\n'
+        #                       'Ubah tanggal atau hapus baris di Daftar Buku Kontraktor') % (
+        #                     self.date, self.contractor_id.date_start, self.contractor_id.date_end))
+
+        date_start = self.contractor_id.date_start or self.date 
+        date_end = self.contractor_id.date_end or self.date 
+
+        if not (date_start <= self.date <= date_end):
             raise UserError(_('Tanggal %s pada Buku Kontraktor tidak dalam Periode Pembayaran \n'
-                              '%s - %s.\n'
-                              'Ubah tanggal atau hapus baris di Daftar Buku Kontraktor') % (
-                            self.date, self.contractor_id.date_start, self.contractor_id.date_end))
+                            '%s - %s.\n'
+                            'Ubah tanggal atau hapus baris di Daftar Buku Kontraktor') % (
+                            self.date, date_start, date_end))
+
+
         domain = []
         total_domain = 0
         if self.date:
