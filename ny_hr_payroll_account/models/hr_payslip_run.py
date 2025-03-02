@@ -10,11 +10,14 @@ class HrPayslipRun(models.Model):
     accrued_move_ids = fields.Many2many('account.move', 'hr_payslip_run_accrued_move_rel', 'payslip_run_id', 'move_id', string='Accrued Journal Entries')
     bill_move_ids = fields.Many2many('account.move', 'hr_payslip_run_bill_move_rel', 'payslip_run_id', 'move_id', string='Vendor Bills')
 
+    account_cost_map_payroll_ids = fields.Many2many('account.cost.map.payroll', 'account_cost_map_payslip_run_rel', 'hr_payslip_run_id', 'account_cost_map_payroll_id', string='Payslip Batch')
+
     def action_gc_distribution(self):
         self.ensure_one()
         query_get_gc = f"""SELECT 
                 cm.partner_id, cm.plantation_varieties_id, cm.plantation_location_type_id, 
-                cm.plantation_location_id,sum(cm.debit_amount) as cost  
+                cm.plantation_location_id,
+                array_agg(cm.id) as cm_ids, sum(cm.debit_amount) as cost  
             FROM hr_payslip_cost_map cm, lhm_location_type llt \
             WHERE cm.plantation_location_type_id=llt.id
                 and llt.general_charge='true'
@@ -28,13 +31,13 @@ class HrPayslipRun(models.Model):
         cost_map_to_add = []
         field_cost_type = self.env['lhm.location.type'].search([('plantation','=',True)], limit=1)
         project_cost_type = self.env['lhm.location.type'].search([('project','=',True)], limit=1)
-        for partner_id, varieties_id, type_id, location_id, debit_amt in gc_lines:
+        for partner_id, varieties_id, type_id, location_id, cm_ids, debit_amt in gc_lines:
             afdeling_found = self.env['res.afdeling'].search([('location_id','=',location_id)], limit=1)
             cost_center_found = self.env['account.cost.center'].search([('location_id','=',location_id)], limit=1)
             if afdeling_found:
-                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('afdeling_id','=',afdeling_found.id),('planted','>',0)])
+                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('afdeling_id','=',afdeling_found.id),('planted','>',0)], order='status desc')
             elif cost_center_found:
-                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('planted','>',0)])
+                block_tanams = self.env['lhm.plant.block'].search([('varieties_id','=',varieties_id),('planted','>',0)], order='status desc')
             else:
                 if varieties_id:
                     orgx = self.env['plant.varieties'].browse(varieties_id)
@@ -46,7 +49,12 @@ class HrPayslipRun(models.Model):
             total_planted = total_planted if total_planted else 1
             n_block = len(block_tanams.ids)
             remaining_cost = debit_amt
+            allocated_cost = 0.0
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>remaining_cost", remaining_cost)
             for block_tanam in block_tanams:
+                if block_tanam.status != 'tbm':
+                    continue
+
                 if not block_tanam.payroll_gc_dest_activity_id:
                     raise ValidationError(_(f"Block Tanam {block_tanam.code} belum dapat setting Payroll GC to Block Activity"))
                 pct_cost = block_tanam.planted / total_planted
@@ -64,24 +72,38 @@ class HrPayslipRun(models.Model):
                         'plantation_location_id': block_tanam.location_id.id,
                         'plantation_activity_id': block_tanam.payroll_gc_dest_activity_id.id,
                         'account_id': block_tanam.payroll_gc_dest_activity_id.account_id.id,
-                        'debit_amount': dr_amount,
-                        'credit_amount': 0.0,
+                        'gc_distribution_debit_amount': dr_amount,
                         'slip_id': False,
                         'payslip_run_id': self.id,
                         'gc_distribution': True,
                         'type': 'reclass',
                     })
                 n_block -= 1
-                remaining_cost -= round(pct_cost*debit_amt,0)
+                remaining_cost -= dr_amount
+                allocated_cost += dr_amount
             
-            query_update_gc = f"""UPDATE hr_payslip_cost_map SET gc_distributed='true' 
-                    WHERE plantation_varieties_id={varieties_id}
-                            and plantation_location_type_id={type_id}
-                            and plantation_location_id={location_id}
-                            and payslip_run_id={self.id}
-                            and debit_amount>0 
-                    """
-            self.env.cr.execute(query_update_gc)
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>remaining_cost 2", remaining_cost)
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>allocated_cost", allocated_cost)            
+            if allocated_cost:
+                check_indx3 = 1
+                for cm in self.env['hr.payslip.cost.map'].browse(cm_ids):
+                    if check_indx3==len(cm_ids):
+                        gc_distributed_amt = allocated_cost
+                    else:
+                        gc_distributed_amt = round(allocated_cost*(cm.debit_amount/debit_amt), 0)
+
+                    query_update_gc = f"""UPDATE hr_payslip_cost_map SET gc_distributed='true', 
+                            gc_distribution_credit_amount={gc_distributed_amt} 
+                            WHERE id={cm.id}"""
+                    # plantation_varieties_id={varieties_id}
+                    # and plantation_location_type_id={type_id}
+                    # and plantation_location_id={location_id}
+                    # and payslip_run_id={self.id}
+                    # and debit_amount>0 
+                    self.env.cr.execute(query_update_gc)
+                    check_indx3 += 1
+                    allocated_cost -= gc_distributed_amt
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>allocated_cost 2", allocated_cost)            
 
         if cost_map_to_add:
             self.env['hr.payslip.cost.map'].create(cost_map_to_add)
@@ -99,12 +121,11 @@ class HrPayslipRun(models.Model):
     
     def done_payslip_run(self):
         self.action_map_cost_bill()
-        super().action_map_cost_bill()
+        return super().done_payslip_run()
     
     def action_view_cost_map(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
-        # action['domain'] = [('payslip_run_id','=',self.id),('type','=','bill')]
-        action['domain'] = [('payslip_run_id','=',self.id)]
+        action['domain'] = [('payslip_run_id','=',self.id),('type','=','bill')]
         return action
     
     def create_account_move(self):

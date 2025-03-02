@@ -27,7 +27,7 @@
                             <field name="date" />
                         </group>
                     </group>
-                    <field name="payslip_run_ids" required="1" attrs="{'readonly': [('state','=','done')]}" >
+                    <field name="payslip_run_ids" required="1" attrs="{'readonly': [('state','=','done')]}" domain="[('state','in',['done','close']),('account_cost_map_payroll_ids','=',False)]" >
                         <tree>
                             <field name="name" />
                             <field name="date_start" />

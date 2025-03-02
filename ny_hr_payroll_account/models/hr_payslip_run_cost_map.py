@@ -25,4 +25,6 @@ class HrPayslipRunCostMap(models.Model):
     lhm_type = fields.Selection([('gaji', 'Gaji Harian'),('upah_borong', 'Upah Borongan')], string='LHM Type')
     gc_distributed = fields.Boolean(default=False)
     gc_distribution = fields.Boolean(default=False)
+    gc_distribution_debit_amount = fields.Float('GC Distribution Amount Debit')
+    gc_distribution_credit_amount = fields.Float('GC Distribution Amount Credit')
     type = fields.Selection([('bill', 'for Vendor Bill'),('reclass', 'For Reclass Journal')], string='Type')

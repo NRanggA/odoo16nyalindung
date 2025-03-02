@@ -86,7 +86,7 @@ class HrPayslip(models.Model):
 
     def action_payslip_draft(self):
         if any([x.state!='cancel' for x in self]):
-            ValidationError("Could not set draft if the payslip is not in Cancel state")
+            raise ValidationError("Could not set draft if the payslip is not in Cancel state")
         return self.write({'state': 'draft'})
 
     def action_payslip_done(self):
@@ -97,7 +97,10 @@ class HrPayslip(models.Model):
         # if self.filtered(lambda slip: slip.state == 'done'):
         #     raise UserError(_("Cannot cancel a payslip that is done."))
         if any([x.state not in ['done','verify'] for x in self]):
-            ValidationError("Could not Cancel if the payslip is not in Waiting or Done state")
+            raise ValidationError("Could not Cancel if the payslip is not in Waiting or Done state")
+        for batch in self.payslip_run_id:
+            if batch.state=='close':
+                raise ValidationError("Could not Cancel if the payslip batches already in Closed State")
         return self.write({'state': 'cancel'})
 
     def refund_sheet(self):
@@ -177,6 +180,8 @@ class HrPayslip(models.Model):
         return True
     
     def compute_sheet(self):
+        if any([p.state=='done' for p in self]):
+            raise ValidationError(_('You Cannot Compute Sheet on Payslip that has been Done'))
         payslips = self.filtered(lambda p: p.state in ['draft', 'verify'])
         payslips.line_ids.unlink()
         for slip in payslips:
@@ -540,6 +545,9 @@ class HrPayslipRun(models.Model):
             rec.slip_count = len(rec.slip_ids.ids) if rec.slip_ids else 0
 
     def draft_payslip_run(self):
+        for slip in self.slip_ids:
+            if slip.state=='done':
+                raise ValidationError("Could not set to draft if any Payslip were in Done State. Please cancel the payslip first!.")
         return self.write({'state': 'draft'})
 
     def close_payslip_run(self):

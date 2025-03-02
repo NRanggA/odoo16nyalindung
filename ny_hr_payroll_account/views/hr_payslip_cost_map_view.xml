@@ -28,17 +28,38 @@
     <record id="hr_payslip_cost_map_view_tree" model="ir.ui.view">
         <field name="name">hr_payslip_cost_map.view.tree</field>
         <field name="model">hr.payslip.cost.map</field>
+        <field name="priority" eval="5"/>
         <field name="arch" type="xml">
             <tree create="0" edit="0" delete="0">
                 <field name="slip_id" optional="hide"/>
                 <field name="partner_id" />
                 <field name="rule_id" />
+                <field name="plantation_varieties_id" optional="show"/>
                 <field name="plantation_location_type_id" optional="show"/>
                 <field name="plantation_location_id" optional="show"/>
                 <field name="plantation_activity_id" optional="show"/>
                 <field name="account_id" />
                 <field name="debit_amount" sum="debit_amount" />
                 <field name="credit_amount" sum="credit_amount" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_payslip_cost_map_gc_view_tree" model="ir.ui.view">
+        <field name="name">hr_payslip_cost_map.gc.view.tree</field>
+        <field name="model">hr.payslip.cost.map</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="slip_id" optional="hide"/>
+                <field name="partner_id" />
+                <field name="rule_id" />
+                <field name="plantation_varieties_id" optional="show"/>
+                <field name="plantation_location_type_id" optional="show"/>
+                <field name="plantation_location_id" optional="show"/>
+                <field name="plantation_activity_id" optional="show"/>
+                <field name="account_id" />
+                <field name="gc_distribution_debit_amount" sum="gc_distribution_debit_amount" />
+                <field name="gc_distribution_credit_amount" sum="gc_distribution_credit_amount" />
             </tree>
         </field>
     </record>
@@ -51,9 +72,19 @@
                 <field name="slip_id" groups="c10i_hr_payroll.group_hr_payroll_user" />
                 <field name="rule_id" />
                 <field name="partner_id" />
+                <field name="plantation_varieties_id"/>
+                <field name="plantation_location_type_id"/>
+                <field name="plantation_location_id"/>
+                <field name="plantation_activity_id"/>
+                <field name="account_id" />
 
                 <filter name="groupby_rule" string="Salary Rule" context="{'group_by': 'rule_id'}" />
                 <filter name="groupby_partner" string="Partner" context="{'group_by': 'partner_id'}" />
+                <filter name="groupby_plantation_varieties" string="ORG" context="{'group_by': 'plantation_varieties_id'}" />
+                <filter name="groupby_plantation_location_type" string="Location Type" context="{'group_by': 'plantation_location_type_id'}" />
+                <filter name="groupby_plantation_location" string="Location" context="{'group_by': 'plantation_location_id'}" />
+                <filter name="groupby_plantation_activity" string="Activity" context="{'group_by': 'plantation_activity_id'}" />
+                <filter name="groupby_account" string="Account" context="{'group_by': 'account_id'}" />
             </search>
         </field>
     </record>

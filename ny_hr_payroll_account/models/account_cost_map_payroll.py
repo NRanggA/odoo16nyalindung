@@ -6,7 +6,7 @@ class AccountCostMapPayroll(models.Model):
     _name = 'account.cost.map.payroll'
     _description = 'Account Cost Mapping'
 
-    payslip_run_ids = fields.Many2many('hr.payslip.run', 'account_cost_map_payslip_run_rel', string='Payslip Batch')
+    payslip_run_ids = fields.Many2many('hr.payslip.run', 'account_cost_map_payslip_run_rel', 'account_cost_map_payroll_id', 'hr_payslip_run_id', string='Payslip Batch')
     date = fields.Date("Accounting Date", required=True)
     move_ids = fields.Many2many('account.move', 'account_cost_map_accrued_move_rel', string='Accrued Journal Entries')
     state = fields.Selection([('draft','New'),('mapped','Mapped'),('done','Posted')], default='draft', string='Status')
@@ -42,6 +42,7 @@ class AccountCostMapPayroll(models.Model):
                 action['domain'] = [('payslip_run_id','=',self.payslip_run_ids.id),'|',('gc_distributed','=',True),('gc_distribution','=',True),('type','=','reclass')]
         else:
             action['domain'] = [('payslip_run_id','=',0)]
+        action['context'] = {'tree_view_ref': 'ny_hr_payroll_account.hr_payslip_cost_map_gc_view_tree'}
         return action
 
     def create_account_move(self):
@@ -137,7 +138,7 @@ class AccountCostMapPayroll(models.Model):
                     plantation_location_id,
                     plantation_activity_id,
                     account_id,
-                    sum(debit_amount-credit_amount) as balance
+                    sum(coalesce(gc_distribution_debit_amount,0)-coalesce(gc_distribution_credit_amount,0)) as balance
                 FROM hr_payslip_cost_map
                 WHERE payslip_run_id=%s and gc_distribution='true' and type='reclass'
                 GROUP BY account_id, plantation_varieties_id, plantation_location_type_id,
@@ -149,7 +150,7 @@ class AccountCostMapPayroll(models.Model):
                     plantation_location_id,
                     plantation_activity_id,
                     account_id,
-                    sum(credit_amount-debit_amount) as balance
+                    sum(coalesce(gc_distribution_debit_amount,0)-coalesce(gc_distribution_credit_amount,0)) as balance
                 FROM hr_payslip_cost_map
                 WHERE payslip_run_id=%s and gc_distributed='true'
                 GROUP BY account_id, plantation_varieties_id, plantation_location_type_id,
@@ -186,7 +187,12 @@ class AccountCostMapPayroll(models.Model):
         return True
 
     def action_post(self):
-        self.move_ids._post()
+        if not self.move_ids:
+            raise ValidationError("You dont have journal entry to post")
+        self.move_ids.filtered(lambda m: m.state!='posted')._post()
+        for batch in self.payslip_run_ids:
+            if batch.state!='close':
+                batch.close_payslip_run()
         self.state = 'done'
 
     def action_reset_move(self):

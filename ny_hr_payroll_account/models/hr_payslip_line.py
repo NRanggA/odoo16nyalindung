@@ -15,19 +15,19 @@ class HrPayslipLine(models.Model):
             if config.is_general_charge or config.is_map_from_lhm:
                 account = self.env.company.payroll_bill_account_id
                 dr_amount = self.total
-            elif config.default_debit_account_id and 'expense_' in config.default_debit_account_id.account_type:
+            elif config.default_debit_account_id and 'expense' in config.default_debit_account_id.account_type:
                 account = self.env.company.payroll_bill_account_id
                 dr_amount = self.total
-            elif config.default_credit_account_id and 'expense_' in config.default_credit_account_id.account_type:
+            elif config.default_credit_account_id and 'expense' in config.default_credit_account_id.account_type:
                 account = self.env.company.payroll_bill_account_id
                 cr_amount = self.total
-            elif config.default_debit_account_id and 'expense_' not in config.default_debit_account_id.account_type:
+            elif config.default_debit_account_id and 'expense' not in config.default_debit_account_id.account_type:
                 account = config.default_debit_account_id
                 dr_amount = self.total
             else:
                 account = config.default_credit_account_id
                 cr_amount = self.total
-            print("/.......................", self.name)
+            # print("/.......................", self.name)
             vals1 = {
                 'payslip_line_id': self.id,
                 'partner_id': config.partner_id.id,
@@ -47,6 +47,7 @@ class HrPayslipLine(models.Model):
                     dr_amount = self.total
                 else:
                     cr_amount = self.total
+                    
                 vals1 = {
                     'payslip_line_id': self.id,
                     'partner_id': config.partner_id.id,
@@ -71,13 +72,13 @@ class HrPayslipLine(models.Model):
                 #         'plantation_activity_id': gc_default_location_result.get('plantation_activity_bpjs_kes_id', False),
                 #         'account_id': gc_default_location_result.get('plantation_account_bpjs_kes_id', False),
                 #     })
-                if config.is_general_charge and self.salary_rule_id.name=='Premi Produksi' and self.slip_id.employee_id.payroll_premi_produksi_account_id:
+                if config.is_general_charge and self.salary_rule_id.name=='Gaji Pokok' and self.slip_id.employee_id.payroll_upah_account_id:
                     vals1.update({
                         'plantation_location_type_id': False,
                         'plantation_varieties_id': False,
                         'plantation_location_id': False,
                         'plantation_activity_id': False,
-                        'account_id': self.slip_id.employee_id.payroll_premi_produksi_account_id.id,
+                        'account_id': self.slip_id.employee_id.payroll_upah_account_id.id,
                     })
                 elif config.is_general_charge and self.salary_rule_id.name=='Premi Produksi' and self.slip_id.employee_id.payroll_premi_produksi_account_id:
                     vals1.update({
@@ -90,7 +91,10 @@ class HrPayslipLine(models.Model):
                 
                 if config.is_general_charge and not vals1['account_id']:
                     raise ValidationError(f"Karyawan {self.slip_id.employee_id.name} belum memiliki Setting GC (Aktifitas dan Akun). Silahkan di seting terlebih dahulu di Kemandoran {self.slip_id.employee_id.kemandoran_id.name} atau Karyawan")
-                mappings.append(vals1)
+                
+                account = self.env['account.account'].sudo().browse(vals1['account_id'])
+                if 'expense' in account.account_type:
+                    mappings.append(vals1)
             else:
                 lhm_lines = []
                 if config.lhm_type=='upah_borong':
