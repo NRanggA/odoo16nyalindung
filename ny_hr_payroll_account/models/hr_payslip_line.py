@@ -5,6 +5,42 @@ from odoo.exceptions import ValidationError
 class HrPayslipLine(models.Model):
     _inherit = 'hr.payslip.line'
 
+    def _custom_gc_activity_mapping(self, config, values):
+        if config.is_general_charge and self.salary_rule_id.name=='Gaji Pokok':
+            if self.slip_id.employee_id.payroll_upah_activity_id:
+                values.update({
+                    'plantation_activity_id': self.slip_id.employee_id.payroll_upah_activity_id.id,
+                    'account_id': self.slip_id.employee_id.payroll_upah_activity_id.account_id.id,
+                })
+            elif self.slip_id.employee_id.kemandoran_id.payroll_upah_activity_id:
+                values.update({
+                    'plantation_activity_id': self.slip_id.employee_id.kemandoran_id.payroll_upah_activity_id.id,
+                    'account_id': self.slip_id.employee_id.kemandoran_id.payroll_upah_activity_id.account_id.id,
+                })
+        elif config.is_general_charge and self.salary_rule_id.name=='Premi Produksi':
+            if self.slip_id.employee_id.payroll_premi_produksi_activity_id:
+                values.update({
+                    'plantation_activity_id': self.slip_id.employee_id.payroll_premi_produksi_activity_id.id,
+                    'account_id': self.slip_id.employee_id.payroll_premi_produksi_activity_id.account_id.id,
+                })
+            elif self.slip_id.employee_id.kemandoran_id.payroll_premi_produksi_activity_id:
+                values.update({
+                    'plantation_activity_id': self.slip_id.employee_id.kemandoran_id.payroll_premi_produksi_activity_id.id,
+                    'account_id': self.slip_id.employee_id.kemandoran_id.payroll_premi_produksi_activity_id.account_id.id,
+                })
+        elif config.is_general_charge and self.salary_rule_id.category_id.code=='ALW':
+            if self.slip_id.employee_id.payroll_other_activity_id:
+                values.update({
+                    'plantation_activity_id': self.slip_id.employee_id.payroll_other_activity_id.id,
+                    'account_id': self.slip_id.employee_id.payroll_other_activity_id.account_id.id,
+                })
+            elif self.slip_id.employee_id.kemandoran_id.payroll_other_activity_id:
+                values.update({
+                    'plantation_activity_id': self.slip_id.employee_id.kemandoran_id.payroll_other_activity_id.id,
+                    'account_id': self.slip_id.employee_id.kemandoran_id.payroll_other_activity_id.account_id.id,
+                })
+        return values
+
     def _get_mapping_account(self, config, type):
         if not self.total:
             return []
@@ -72,30 +108,8 @@ class HrPayslipLine(models.Model):
                 #         'plantation_activity_id': gc_default_location_result.get('plantation_activity_bpjs_kes_id', False),
                 #         'account_id': gc_default_location_result.get('plantation_account_bpjs_kes_id', False),
                 #     })
-                if config.is_general_charge and self.salary_rule_id.name=='Gaji Pokok' and self.slip_id.employee_id.payroll_upah_account_id:
-                    vals1.update({
-                        'plantation_location_type_id': False,
-                        'plantation_varieties_id': False,
-                        'plantation_location_id': False,
-                        'plantation_activity_id': False,
-                        'account_id': self.slip_id.employee_id.payroll_upah_account_id.id,
-                    })
-                elif config.is_general_charge and self.salary_rule_id.name=='Premi Produksi' and self.slip_id.employee_id.payroll_premi_produksi_account_id:
-                    vals1.update({
-                        'plantation_varieties_id': False,
-                        'plantation_location_type_id': False,
-                        'plantation_location_id': False,
-                        'plantation_activity_id': False,
-                        'account_id': self.slip_id.employee_id.payroll_premi_produksi_account_id.id,
-                    })
-                elif config.is_general_charge and self.salary_rule_id.category_id.code=='ALW' and self.slip_id.employee_id.payroll_other_account_id:
-                    vals1.update({
-                        'plantation_varieties_id': False,
-                        'plantation_location_type_id': False,
-                        'plantation_location_id': False,
-                        'plantation_activity_id': False,
-                        'account_id': self.slip_id.employee_id.payroll_other_account_id.id,
-                    })
+                # if config.is_general_charge and self.salary_rule_id.name=='Gaji Pokok' and self.slip_id.employee_id.payroll_upah_account_id:
+                vals1 = self._custom_gc_activity_mapping(config, vals1)
                 
                 if config.is_general_charge and not vals1['account_id']:
                     raise ValidationError(f"Karyawan {self.slip_id.employee_id.name} belum memiliki Setting GC (Aktifitas dan Akun). Silahkan di seting terlebih dahulu di Kemandoran {self.slip_id.employee_id.kemandoran_id.name} atau Karyawan")

@@ -7,9 +7,12 @@
         <field name="inherit_id" ref="c10i_lhm_v16.view_employee_form_inherit_lhm"/>
         <field name="arch" type="xml">
             <field name="plantation_activity_id" position="after" >
-                <field name="payroll_upah_account_id" />
+                <!-- <field name="payroll_upah_account_id" />
                 <field name="payroll_premi_produksi_account_id" />
-                <field name="payroll_other_account_id" />
+                <field name="payroll_other_account_id" /> -->
+                <field name="payroll_upah_activity_id" />
+                <field name="payroll_premi_produksi_activity_id" />
+                <field name="payroll_other_activity_id" />
             </field>
         </field>
     </record>

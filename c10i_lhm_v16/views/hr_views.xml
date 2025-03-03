@@ -916,8 +916,8 @@
                                 <field name="plantation_location_type_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                                 <field name="plantation_location_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
                                 <field name="plantation_activity_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
-                                <field name="plantation_activity_bpjs_tk_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
-                                <field name="plantation_activity_bpjs_kes_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/>
+                                <!-- <field name="plantation_activity_bpjs_tk_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/> -->
+                                <!-- <field name="plantation_activity_bpjs_kes_id" attrs="{'required': [('plantation_varieties_id','!=',False)]}"/> -->
                             </group>
                         </group>
                         <notebook>
