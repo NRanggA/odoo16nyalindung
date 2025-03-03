@@ -5,6 +5,10 @@
         <field name="model">lhm.plant.block</field>
         <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_plant_block_form" />
         <field name="arch" type="xml">
+            <div class="oe_button_box" position="inside">
+                <button string="Journal History" name="action_view_journal_history" type="object" class="oe_stat_button" icon="fa-search"/>
+            </div>
+
             <field name="code" position="after">
                 <field name="type_of_plant" required="1" />
             </field>

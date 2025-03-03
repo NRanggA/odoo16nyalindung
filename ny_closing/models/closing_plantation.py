@@ -169,7 +169,7 @@ class ClosingPlantation(models.Model):
                                 aml1.plantation_location_type_id,
                                 aml1.plantation_location_id,
                                 aml1.plantation_activity_id,
-                                aml1.plantation_src_journal_id,
+                                coalesce(aml1.plantation_src_journal_id, aml1.journal_id) as plantation_src_journal_id,
                                 SUM(aml1.debit - aml1.credit) as cost 
                             FROM account_move_line aml1
                             WHERE 
@@ -182,7 +182,8 @@ class ClosingPlantation(models.Model):
                             GROUP BY aml1.plantation_location_type_id,
                                 aml1.plantation_location_id,
                                 aml1.plantation_activity_id,
-                                aml1.plantation_src_journal_id
+                                aml1.plantation_src_journal_id,
+                                aml1.journal_id
                 LOOP
                     -- v_current_period_cost := v_current_period_cost + sums_cost_aml.cost;
                     INSERT INTO closing_plantation_line
@@ -249,7 +250,7 @@ class ClosingPlantation(models.Model):
                                     aml1.plantation_location_type_id,
                                     aml1.plantation_location_id,
                                     aml1.plantation_activity_id,
-                                    aml1.plantation_src_journal_id,
+                                    coalesce(aml1.plantation_src_journal_id, aml1.journal_id) as plantation_src_journal_id,
                                     SUM(CASE WHEN aml1.debit>0 THEN aml1.debit ELSE 0 END) as deferred_cost,
                                     SUM(CASE WHEN aml1.credit>0 THEN aml1.credit ELSE 0 END) as accumulated_cost,
                                     SUM(0) as new_deferred_cost
@@ -263,7 +264,8 @@ class ClosingPlantation(models.Model):
                                 GROUP BY aml1.plantation_location_type_id,
                                     aml1.plantation_location_id,
                                     aml1.plantation_activity_id,
-                                    aml1.plantation_src_journal_id
+                                    aml1.plantation_src_journal_id,
+                                    aml1.journal_id
                                 UNION ALL
                                 SELECT 
                                     cpl1.plantation_location_type_id,
@@ -463,8 +465,19 @@ class ClosingPlantation(models.Model):
                     raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 elif not line1.plantation_activity_id:
                     raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
-                elif not line1.plantation_activity_id.cost_account_id:
+                # if not line1.plantation_activity_id.cost_account_id:
+                elif not line1.plantation_activity_id.get_plantation_cost_account(line1.plantation_src_journal_id):
                     raise ValidationError(f"Plantation Cost pada Aktifitas {line1.plantation_activity_id.code} {line1.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
+            
+            cost_account_id = False
+            if line1.to_be_deferred:
+                cost_account_id = self.deferred_account_id.id 
+            else:
+                if self.plant_block_id.owner_type=='inti':
+                    cost_account_id = line1.plantation_activity_id.get_plantation_cost_account(line1.plantation_src_journal_id)
+                else:
+                    cost_account_id = self.plant_block_id.plasma_account_id.id
+            
             dest_vals1 = {
                 'name': 'Move Cost Driver to Cost Account',
                 'plantation_varieties_id': self.plant_block_id.varieties_id.id,
@@ -472,7 +485,8 @@ class ClosingPlantation(models.Model):
                 'plantation_location_id': line1.plantation_location_id.id,
                 'plantation_activity_id': line1.plantation_activity_id.id,
                 'plantation_src_journal_id': line1.plantation_src_journal_id.id,
-                'account_id': self.deferred_account_id.id if line1.to_be_deferred else (line1.plantation_activity_id.cost_account_id.id if self.plant_block_id.owner_type=='inti' else self.plant_block_id.plasma_account_id.id),
+                # 'account_id': self.deferred_account_id.id if line1.to_be_deferred else (line1.plantation_activity_id.cost_account_id.id if self.plant_block_id.owner_type=='inti' else self.plant_block_id.plasma_account_id.id),
+                'account_id': cost_account_id,
                 'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
                 'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
             }
@@ -492,15 +506,22 @@ class ClosingPlantation(models.Model):
             move_lines.append([0,0,src_vals1])
         
         for line2 in self.deferred_cost_line_ids:
-            if line2.to_be_deferred and not self.deferred_account_id:
+            if not self.deferred_account_id:
                 raise ValidationError(f"Akun Deferred pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+            
+            if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
+                raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
+            elif not line2.plantation_activity_id:
+                raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
+            elif not line2.plantation_activity_id.cost_account_id:
+                raise ValidationError(f"Plantation Cost pada Aktifitas {line2.plantation_activity_id.code} {line2.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
+            
+            cost_account_id = False
+            if self.plant_block_id.owner_type=='inti':
+                cost_account_id = line2.plantation_activity_id.get_plantation_cost_account(line2.plantation_src_journal_id)
             else:
-                if self.plant_block_id.owner_type!='inti' and not self.plant_block_id.plasma_account_id:
-                    raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
-                elif not line2.plantation_activity_id:
-                    raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
-                elif not line2.plantation_activity_id.cost_account_id:
-                    raise ValidationError(f"Plantation Cost pada Aktifitas {line2.plantation_activity_id.code} {line2.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                cost_account_id = self.plant_block_id.plasma_account_id.id
+            
             if line2.cost_to_post:
                 dest_vals2 = {
                     'name': 'Move Deferred Cost to Cost Account',
@@ -509,7 +530,8 @@ class ClosingPlantation(models.Model):
                     'plantation_location_id': line2.plantation_location_id.id,
                     'plantation_activity_id': line2.plantation_activity_id.id,
                     'plantation_src_journal_id': line2.plantation_src_journal_id.id,
-                    'account_id': (line2.plantation_activity_id.cost_account_id.id if self.plant_block_id.owner_type=='inti' else self.plant_block_id.plasma_account_id.id),
+                    # 'account_id': (line2.plantation_activity_id.cost_account_id.id if self.plant_block_id.owner_type=='inti' else self.plant_block_id.plasma_account_id.id),
+                    'account_id': cost_account_id,
                     'debit': line2.cost_to_post if line2.cost_to_post > 0 else 0.0,
                     'credit': abs(line2.cost_to_post) if line2.cost_to_post < 0 else 0.0,
                 }
@@ -646,8 +668,15 @@ class ClosingPlantation(models.Model):
                     raise ValidationError(f"Akun Plasma pada Blok Tanam {self.plant_block_id.code} {self.plant_block_id.name} kosong. Silahkan diisi terlebih dahulu") 
                 elif not line1.plantation_activity_id:
                     raise ValidationError(f"Ditemukan transaksi dengan Aktifitas kosong") 
-                elif not line1.plantation_activity_id.cost_account_id:
+                # elif not line1.plantation_activity_id.cost_account_id:
+                elif not line1.plantation_activity_id.get_plantation_cost_account(line1.plantation_src_journal_id):
                     raise ValidationError(f"Plantation Cost pada Aktifitas {line1.plantation_activity_id.code} {line1.plantation_activity_id.name} kosong. Silahkan diisi terlebih dahulu") 
+                cost_account_id = False
+                if self.plant_block_id.owner_type=='inti':
+                    cost_account_id = line1.plantation_activity_id.get_plantation_cost_account(line1.plantation_src_journal_id) 
+                else:
+                    cost_account_id = self.plant_block_id.plasma_account_id.id
+
                 dest_vals1 = {
                     'name': 'Move Cost Driver to Account Cost / Plasma',
                     'plantation_varieties_id': self.plant_block_id.varieties_id.id,
@@ -655,7 +684,8 @@ class ClosingPlantation(models.Model):
                     'plantation_location_id': line1.plantation_location_id.id,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': line1.plantation_src_journal_id.id,
-                    'account_id': line1.plantation_activity_id.cost_account_id.id if self.plant_block_id.owner_type=='inti' else self.plant_block_id.plasma_account_id.id,
+                    # 'account_id': line1.plantation_activity_id.cost_account_id.id if self.plant_block_id.owner_type=='inti' else self.plant_block_id.plasma_account_id.id,
+                    'account_id': cost_account_id,
                     'debit': line1.total_cost if line1.total_cost > 0 else 0.0,
                     'credit': abs(line1.total_cost) if line1.total_cost < 0 else 0.0,
                 }

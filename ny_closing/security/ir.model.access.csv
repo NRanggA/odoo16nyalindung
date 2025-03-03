@@ -1,4 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lhm_activity_closing_account_base_user,lhm.activity.closing.account user,model_lhm_activity_closing_account,c10i_lhm_v16.plantation_base_user,1,0,0,0
+access_lhm_activity_closing_account_base_account,lhm.activity.closing.account account,model_lhm_activity_closing_account,account.group_account_user,1,1,1,1
+
 access_closing_process_user,closing.process user,model_closing_process,account.group_account_user,1,1,1,1
 
 access_running_workshop_user,running.workshop user,model_running_workshop,account.group_account_user,1,1,1,1

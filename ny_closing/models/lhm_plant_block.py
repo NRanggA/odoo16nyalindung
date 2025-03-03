@@ -34,3 +34,8 @@ class PlantBlock(models.Model):
             block.tbm_age = ''
             block.tm_category_id = False
             block.need_to_be_approved = False
+    
+    def action_view_journal_history(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
+        action['domain'] = [('plantation_location_id','=',self.location_id.id)]
+        return action

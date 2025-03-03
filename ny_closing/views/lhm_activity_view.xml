@@ -7,6 +7,13 @@
         <field name="arch" type="xml">
             <group name="accounting" position="inside">
                 <field name="cost_account_id" />
+                <label for="cost_account_ids" />
+                <field name="cost_account_ids" nolabel="1">
+                    <tree editable="bottom">
+                        <field name="src_journal_id" />
+                        <field name="account_id" />
+                    </tree>
+                </field>
             </group>
         </field>
     </record>
