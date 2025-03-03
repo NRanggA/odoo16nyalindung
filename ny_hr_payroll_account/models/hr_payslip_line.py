@@ -150,4 +150,4 @@ class HrPayslipLine(models.Model):
             for config in line.salary_rule_id.config_account_ids:
                 vals_list.extend(line._get_mapping_account(config, type))
         if vals_list:
-            self.env['hr.payslip.cost.map'].create(vals_list)
+            self.env['hr.payslip.cost.map'].sudo().create(vals_list)

@@ -106,17 +106,17 @@ class HrPayslipRun(models.Model):
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>allocated_cost 2", allocated_cost)            
 
         if cost_map_to_add:
-            self.env['hr.payslip.cost.map'].create(cost_map_to_add)
+            self.env['hr.payslip.cost.map'].sudo().create(cost_map_to_add)
 
             
     def action_map_cost_reclass(self):
-        self.cost_map_ids.filtered(lambda x: x.type=='reclass').unlink()
+        self.cost_map_ids.sudo().filtered(lambda x: x.type=='reclass').unlink()
         self.slip_ids.action_map_cost_reclass()
         for batch in self:
             batch.action_gc_distribution()
     
     def action_map_cost_bill(self):
-        self.cost_map_ids.filtered(lambda x: x.type=='bill').unlink()
+        self.cost_map_ids.sudo().filtered(lambda x: x.type=='bill').unlink()
         self.slip_ids.action_map_cost_bill()
     
     def done_payslip_run(self):
@@ -170,7 +170,7 @@ class HrPayslipRun(models.Model):
                     'invoice_line_ids': move_lines,
                 })
 
-            bill_moves = self.env['account.move'].create(bill_to_create)
+            bill_moves = self.env['account.move'].sudo().create(bill_to_create)
             # print("::::::::::::::::::::bill_moves", bill_moves)
             
             batch.write({
@@ -236,7 +236,7 @@ class HrPayslipRun(models.Model):
                 'line_ids': accrual_move_lines,
             })
 
-            gc_moves = self.env['account.move'].create(accrual_to_create)
+            gc_moves = self.env['account.move'].sudo().create(accrual_to_create)
             # print("::::::::::::::::::::bill_moves", bill_moves)
             
             batch.write({

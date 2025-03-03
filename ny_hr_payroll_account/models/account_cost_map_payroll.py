@@ -118,7 +118,7 @@ class AccountCostMapPayroll(models.Model):
                 'line_ids': move_lines + [(0,0,reclass_move_vals)],
             })
         
-        cost_moves = self.env['account.move'].create(cost_move_to_create)
+        cost_moves = self.env['account.move'].sudo().create(cost_move_to_create)
         self.write({
             'move_ids': list(map(lambda x2: Command.link(x2.id), cost_moves))
         })
@@ -179,7 +179,7 @@ class AccountCostMapPayroll(models.Model):
             'move_type': 'entry',
             'line_ids': move_lines,
         }
-        gc_moves = self.env['account.move'].create(reclass_gc_vals)
+        gc_moves = self.env['account.move'].sudo().create(reclass_gc_vals)
             
         self.write({
             'move_ids': list(map(lambda x2: Command.link(x2.id), gc_moves))
