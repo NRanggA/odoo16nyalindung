@@ -123,7 +123,7 @@ class lhm_contractor(models.Model):
                                 string="Account Payable Perantara Buku Kontraktor")
     is_hasil_2                   = fields.Boolean(string='Is Hasil 2', compute='_compute_is_hasil_2', store=True)
 
-    @api.onchange('line_ids')
+    @api.onchange('line_ids', 'date')
     def _onchange_line_ids(self):
         for line in self.line_ids:
             if not line.date:
@@ -172,8 +172,8 @@ class lhm_contractor(models.Model):
             return
         # if self.supplier_id and self.account_period_id and self.type:
         if self.supplier_id and self.type:
-            print(f"berfore Date Start: {self.date_start}")
-            print(f"berfore date_end: {self.date_end}")
+            # print(f"berfore Date Start: {self.date_start}")
+            # print(f"berfore date_end: {self.date_end}")
             # other_ids = self.env['lhm.contractor'].search([('id', '!=', self._origin.id), ('account_period_id', '=', self.account_period_id.id), ('supplier_id', '=', self.supplier_id.id), ('payment_type', '=', self.payment_type), ('type','=',self.type), ('contractor_vehicle','=',self.contractor_vehicle)])
             other_ids = self.env['lhm.contractor'].search([
                 ('id', '!=', self._origin.id),
@@ -235,25 +235,17 @@ class lhm_contractor(models.Model):
         move = self._account_move_entry()
         self.state = 'confirmed'
 
-    # def button_confirm_harian(self):
-    #     if not any(line.nilai for line in self.line_ids):
-    #         self.state = 'confirmed'
-    #         return
-    #     for contractor_nap in self.line_nap_ids:
-    #         if not contractor_nap.nilai:
-    #             raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" tidak memiliki nilai. Silahkan isi melalui Dokumen NAP'))
-    #     self.state = 'confirmed'
-
     def button_confirm_harian(self):
         if not self.is_hasil_2:
             self.state = 'confirmed'
-            return
-        for contractor_nap in self.line_nap_ids:
-            # if not contractor_nap.nilai and not contractor_nap.nilai2:
-            #     raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" belum memiliki nilai. Silahkan isi melalui Dokumen NAP'))
-            if not contractor_nap.hasil_convert_latex and not contractor_nap.hasil_convert_lump:
-                raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai. Silahkan isi melalui Dokumen NAP'))
-        move = self._account_move_entry()
+        else:
+            for contractor_nap in self.line_nap_ids:
+                # if not contractor_nap.nilai and not contractor_nap.nilai2:
+                #     raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" belum memiliki nilai. Silahkan isi melalui Dokumen NAP'))
+                if not contractor_nap.hasil_convert_latex and not contractor_nap.hasil_convert_lump:
+                    raise UserError(_('Salah satu baris di "NAP Kontraktor Harian" memiliki nilai. Silahkan isi melalui Dokumen NAP'))
+        
+        self._account_move_entry()
         self.state = 'confirmed'
 
     def button_process(self):
@@ -552,20 +544,12 @@ class lhm_contractor(models.Model):
         }
 
     def write(self, values):
-        # supplier_id     = self.env['lhm.utility'].search([('id', '=', values.get('supplier_id', self.supplier_id.id))])
-        # # period_id       = self.env['account.period'].search([('id', '=', values.get('account_period_id', self.account_period_id.id))])
-        # # if period_id:
-        # #     month           = period_id.date_start.strftime('%m')
-        # #     year            = period_id.date_start.strftime('%Y')
-        # #     values['name']  = (supplier_id.code or "") + "/" + year + "-" + month
-        # # Menggunakan date baru jika diubah, atau tetap pakai yang lama jika tidak ada perubahan
-        # date_value = values.get('date', self.date)
-        # if date_value:
-        #     date_obj = fields.Date.from_string(date_value)
-        #     month = date_obj.strftime('%m')
-        #     year = date_obj.strftime('%Y')
-        #     values['name'] = f"{supplier_id.code or ''}/{year}-{month}"
-
+        if "date" in values:
+            for contractors in self:
+                new_date = values["date"]
+                for line in contractors.line_ids:
+                    line.date = new_date
+        
         return super(lhm_contractor, self).write(values)
 
     def get_material(self):

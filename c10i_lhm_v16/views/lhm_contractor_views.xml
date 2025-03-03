@@ -37,8 +37,8 @@
                                 <div>
                                 <!-- attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"
                                 attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}"    -->
-                                    <field name="date_start" force_save="1" class="oe_inline" nolabel="1" required="1"/> -
-                                    <field name="date_end" force_save="1" nolabel="1" class="oe_inline" required="1"/>
+                                    <field name="date_start" force_save="1" class="oe_inline" nolabel="1" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/> -
+                                    <field name="date_end" force_save="1" nolabel="1" class="oe_inline" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 </div>
                                 <field name="supplier_id" force_save="1" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" required="1" attrs="{'readonly': ['|',('line_ids','!=',[]),('line_vehicle_ids','!=',[])]}" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
