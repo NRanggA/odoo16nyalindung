@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="group_hr_payroll_user_readonly" model="res.groups">
+        <field name="name">Payroll View Only</field>
+    </record>
+        <!-- <field name="implied_ids"
+                eval="[(4, ref('hr.group_hr_user')), (4, ref('hr_contract.group_hr_contract_manager'))]"/> -->
+
+</odoo>

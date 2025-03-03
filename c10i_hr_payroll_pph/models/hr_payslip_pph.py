@@ -20,58 +20,58 @@ class HrPayslipPph(models.Model):
     
     ptkp_id = fields.Many2one('hr.ptkp', string='PTKP', ondelete='restrict', required=True)
     date = fields.Date('Masa Pajak', required=True)
-    masa_pajak_penyetahun = fields.Integer(compute='_compute_masa_pajak_penyetahun', string='Masa Pajak Penyetahun')
-    total_masa_penyetahun = fields.Integer(compute='_compute_masa_pajak_penyetahun', string='Total Masa Pajak Penyetahun')
+    masa_pajak_penyetahun = fields.Integer(compute='_compute_masa_pajak_penyetahun', compute_sudo=True, string='Masa Pajak Penyetahun')
+    total_masa_penyetahun = fields.Integer(compute='_compute_masa_pajak_penyetahun', compute_sudo=True, string='Total Masa Pajak Penyetahun')
     
     ######################################################################
     #                     VARIABLE PPH PP58                              #
     ######################################################################
     current_income_base_pph_amount = fields.Float("Pendapatan Tetap Bulan Ini")
     prev_income_base_pph_amount = fields.Float("Pendapatan Tetap Sebelumnya di Bulan ini")
-    tunj_pph_this_month = fields.Float(compute='_compute_pph', store=True, stirng='Tunj. PPH Bulan ini')
-    cumm_pph_base_amount = fields.Float(compute='_compute_pph_pp58', store=True, string='Pendapatan Kumulatif di Bulan ini')
+    tunj_pph_this_month = fields.Float(compute='_compute_pph', compute_sudo=True, store=True, stirng='Tunj. PPH Bulan ini')
+    cumm_pph_base_amount = fields.Float(compute='_compute_pph_pp58', compute_sudo=True, store=True, string='Pendapatan Kumulatif di Bulan ini')
     current_jht = fields.Float(string='Current JHT/Pensiun')
 
-    rate_category = fields.Char(compute='_compute_pph_pp58', store=True, string='Kategori Tarif')
-    rate_pph = fields.Float(compute='_compute_pph_pp58', store=True, string='% Potongan PPH')
+    rate_category = fields.Char(compute='_compute_pph_pp58', compute_sudo=True, store=True, string='Kategori Tarif')
+    rate_pph = fields.Float(compute='_compute_pph_pp58', compute_sudo=True, store=True, string='% Potongan PPH')
     this_month_pph_paid_amount = fields.Float("PPH yang telah dibayar Bulan ini")
-    n_loop_1 = fields.Float(compute='_compute_pph_pp58', store=True, string='Jumlah Loop PPH PP58')
-    pph_pp58_amount = fields.Float(compute='_compute_pph_pp58', store=True, string='PPH bulan ini')
+    n_loop_1 = fields.Float(compute='_compute_pph_pp58', compute_sudo=True, store=True, string='Jumlah Loop PPH PP58')
+    pph_pp58_amount = fields.Float(compute='_compute_pph_pp58', compute_sudo=True, store=True, string='PPH bulan ini')
     
     ######################################################################
     #                     VARIABLE PPH PROGRESIF                         #
     ######################################################################
     # 1. Penghasilan Setahun
     prev_income_this_year = fields.Float("Pendapatan Tetap Sebelumnya di Tahun ini")
-    a_year_income = fields.Float(compute='_compute_pph_progresif', string='Pendapatan Setahun')
+    a_year_income = fields.Float(compute='_compute_pph_progresif', compute_sudo=True, string='Pendapatan Setahun')
     
     # 2. Pengurang Penghasilan Setahun
     # 2.1. Potongan Jaminan Hari Tua
     a_year_jht = fields.Float(string='Potongan Pensiun atau JHT/THT Setahun')
     # 2.2. Biaya Jabatan
-    biaya_jabatan = fields.Float(compute='_compute_pph_progresif', store=True, string='Biaya Jabatan Setahun')
+    biaya_jabatan = fields.Float(compute='_compute_pph_progresif', compute_sudo=True, store=True, string='Biaya Jabatan Setahun')
     # 2.3. PTKP
-    ptkp_amount = fields.Float(compute='_compute_ptkp', string='Nilai PTKP', store=True)
-    pkp_amount = fields.Float(compute='_compute_pph_progresif', store=True, string='Nilai PKP')
+    ptkp_amount = fields.Float(compute='_compute_ptkp', compute_sudo=True, string='Nilai PTKP', store=True)
+    pkp_amount = fields.Float(compute='_compute_pph_progresif', compute_sudo=True, store=True, string='Nilai PKP')
 
     # 3. Penghitungan PPH Progresif
     pph_progresif_line_ids = fields.One2many('hr.payslip.pph.progresif', 'payslip_pph_id', string='Progresif Lines atas Gaji')
     # 3.1. PPH Setahun
-    a_year_tunj_pph = fields.Float(compute='_compute_pph_progresif', store=True, stirng='Tunj. PPH Setahun')
-    a_year_pph = fields.Float(compute='_compute_pph_progresif', store=True, string='PPH Setahun')
+    a_year_tunj_pph = fields.Float(compute='_compute_pph_progresif', compute_sudo=True, store=True, stirng='Tunj. PPH Setahun')
+    a_year_pph = fields.Float(compute='_compute_pph_progresif', compute_sudo=True, store=True, string='PPH Setahun')
     # 3.1. PPH Terbayar
     prev_pph_paid_amount = fields.Float("PPH Terbayar Sebelumnya di Tahun Ini")
-    pph_paid_amount = fields.Float(compute='_compute_pph_pp58', string="Total PPH Terbayar")
+    pph_paid_amount = fields.Float(compute='_compute_pph_pp58', compute_sudo=True, string="Total PPH Terbayar")
     # 3.1. PPH Terhutang
-    pph_unpaid_amount = fields.Float(compute='_compute_pph', store=True, string='PPH Terhutang')
-    status_potongan = fields.Selection([('lebih','Lebih Bayar'),('kurang','Kurang Bayar'),('benar','Tidak Terhutang')], compute='_compute_pph', string='Status Potongan Saat ini', store=True)
+    pph_unpaid_amount = fields.Float(compute='_compute_pph', compute_sudo=True, store=True, string='PPH Terhutang')
+    status_potongan = fields.Selection([('lebih','Lebih Bayar'),('kurang','Kurang Bayar'),('benar','Tidak Terhutang')], compute='_compute_pph', compute_sudo=True, string='Status Potongan Saat ini', store=True)
     
     ############################################################
     # Final Potongan PPH
     ############################################################
-    pph_amount = fields.Float(compute='_compute_pph', store=True, string='Potongan PPH')
+    pph_amount = fields.Float(compute='_compute_pph', compute_sudo=True, store=True, string='Potongan PPH')
 
-    count_payslip_pph = fields.Integer(compute='_compute_pph_datas', string='# PPH', store=True)
+    count_payslip_pph = fields.Integer(compute='_compute_pph_datas', compute_sudo=True, string='# PPH', store=True)
 
     ##########################################
     #            COMPUTED METHOD             #
@@ -355,8 +355,8 @@ class PphProgresif(models.Model):
     range_stop = fields.Float('To')
     rate = fields.Float('Rate')
     rate_denda = fields.Float('+ Rate Denda')
-    base_amount = fields.Float(compute='_compute_amount', string='Base Amount', store=True)
-    amount = fields.Float(compute='_compute_amount', store=True, string='Amount')
+    base_amount = fields.Float(compute='_compute_amount', compute_sudo=True, string='Base Amount', store=True)
+    amount = fields.Float(compute='_compute_amount', compute_sudo=True, store=True, string='Amount')
     
     @api.depends(
         'prev_range_stop',

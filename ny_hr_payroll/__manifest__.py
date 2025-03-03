@@ -28,6 +28,7 @@
 
     # always loaded
     'data': [
+        'security/hr_security.xml',
         'security/ir.model.access.csv',
 
         'data/other_input_type_data.xml',
