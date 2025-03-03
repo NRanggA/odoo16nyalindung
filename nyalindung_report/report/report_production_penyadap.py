@@ -732,7 +732,7 @@ class ReportProductionPenyadap(models.AbstractModel):
             row += 4
 
             # Line Total Paling Bawah
-            sheet.merge_range(row, 0, row, 4, "JUMLAH TOTAL", wbf['jumlah_total'])
+            sheet.merge_range(row, 0, row, 3, "JUMLAH TOTAL", wbf['jumlah_total'])
             
             total_attendance = 0
             grandtotal_hasil_1 = 0 
