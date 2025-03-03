@@ -132,3 +132,9 @@ class ResRunningLine(models.Model):
     default_journal_id  = fields.Many2one(comodel_name="account.journal", string="Default Journal")
     running_id          = fields.Many2one(comodel_name="res.running", string="Running")
     run_state           = fields.Selection(selection='_get_state', string='Running State', default='running')
+
+
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+    
+    plantation_lock_date = fields.Date(string='Plantation Lock Date')

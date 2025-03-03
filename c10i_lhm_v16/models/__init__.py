@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import models
+from . import plantation_lock_date_mixin
 from . import plant_varieties
 from . import lhm
 from . import lhm_nap
@@ -12,6 +13,7 @@ from . import lhm_transaction
 from . import lhm_activity
 from . import lhm_contractor
 from . import lhm_machine
+from . import lhm_vehicle
 
 from . import res
 from . import hr

@@ -34,7 +34,7 @@ _logger = logging.getLogger(__name__)
 ############################################### Transaction Buku Kontraktor #################################################
 class lhm_contractor(models.Model):
     _name           = 'lhm.contractor'
-    _inherit        = ['mail.thread', 'mail.activity.mixin']
+    _inherit        = ['mail.thread', 'mail.activity.mixin', 'lock.date.mixin']
     _description    = 'Buku Kontraktor'
 
     # def _default_account_period_id(self):

@@ -34,7 +34,7 @@ _logger = logging.getLogger(__name__)
 ###################################################### Transaction LHM ######################################################
 class lhm_transaction(models.Model):
     _name           = 'lhm.transaction'
-    _inherit        = ['mail.thread', 'mail.activity.mixin']
+    _inherit        = ['mail.thread', 'mail.activity.mixin', 'lock.date.mixin']
     _order          = "date desc, kemandoran_code asc"
     _description    = 'Transaksi Laporan Harian Mandor'
 

@@ -8,7 +8,7 @@ from collections import defaultdict
 class lhm_nap(models.Model):
     _name           = 'lhm.nap'
     _description    = 'Nota Angkut Panen'
-    _inherit            = ['mail.thread', 'mail.activity.mixin']
+    _inherit        = ['mail.thread', 'mail.activity.mixin', 'lock.date.mixin']
 
 
     @api.depends('timbang_ksg_kbn', 'timbang_isi_kbn', 'timbang_isi_pks', 'timbang_ksg_pks', 'grading')

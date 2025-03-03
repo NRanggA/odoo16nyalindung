@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="plantation_lock_date_wizard_view_form" model="ir.ui.view">
+        <field name="name">plantation.lock.date.wizard</field>
+        <field name="model">plantation.lock.date.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Setting Lock Date Plantation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="lock_date" />
+                            <!-- <field name="company_id" /> -->
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Set" type="object" name="action_set_lock_date" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="plantation_lock_date_action" model="ir.actions.act_window">
+        <field name="name">Setting Lock Date Plantation</field>
+        <field name="res_model">plantation.lock.date.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="plantation_lock_date_menu"
+        name="Setting Lock Date Plantation"
+        action="plantation_lock_date_action"
+        parent="c10i_lhm_v16.menu_lhm_config"
+        sequence="2"/>
+
+</odoo>

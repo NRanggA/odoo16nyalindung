@@ -21,4 +21,5 @@ from . import wizard_seed_mutation
 from . import lhm_nap_wizard
 
 from . import lhm_transaction_warning
+from . import plantation_lock_date_wizard
 

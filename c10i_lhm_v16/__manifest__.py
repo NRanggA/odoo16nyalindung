@@ -62,6 +62,8 @@
         'views/lhm_contractor_line_views.xml',
         # LHM Mesin
         'views/lhm_machine_views.xml',
+        # LHM Buku Kendaraan
+        'views/lhm_vehicle_views.xml',
 
         'views/lhm_views.xml',
         'wizard/lhm_nap_wizard_views.xml',
@@ -123,6 +125,7 @@
         'views/lhm_station_views.xml',
         
         'wizard/lhm_transaction_warning_views.xml',
+        'wizard/plantation_lock_date_wizard_views.xml',
 
         # Bibitan
         'views/mutation_type_views.xml',
