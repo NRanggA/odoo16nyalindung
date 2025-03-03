@@ -48,13 +48,14 @@
     <record id="plantation_mandor_user" model="res.groups">
         <field name="name">Mandor</field>
         <field name="category_id" ref="module_category_plantation_supervise"/>
-        <field name="implied_ids" eval="[
-(4, ref('c10i_lhm_v16.plantation_lhm_approver')),
-(4, ref('c10i_lhm_v16.plantation_lhm_contractor_approver')),
-(4, ref('c10i_lhm_v16.plantation_lhm_workshop_approver')),
-(4, ref('c10i_lhm_v16.plantation_lhm_vehicle_approver')),
-(4, ref('c10i_lhm_v16.plantation_lhm_machine_approver'))]"/>
+        <field name="implied_ids" eval="[(4, ref('c10i_lhm_v16.plantation_manager'))]"/>
     </record>
+        <!-- <field name="implied_ids" eval="[
+(4, ref('c10i_lhm_v16.plantation_lhm_user')),
+(4, ref('c10i_lhm_v16.plantation_lhm_contractor_user')),
+(4, ref('c10i_lhm_v16.plantation_lhm_workshop_user')),
+(4, ref('c10i_lhm_v16.plantation_lhm_vehicle_user')),
+(4, ref('c10i_lhm_v16.plantation_lhm_machine_user'))]"/> -->
 
     <record id="plantation_kepala_mandor_user" model="res.groups">
         <field name="name">Kepala Mandor</field>

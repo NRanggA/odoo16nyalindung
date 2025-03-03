@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 class Lhm(models.Model):
     _inherit = 'lhm.transaction'
@@ -18,6 +19,8 @@ class Lhm(models.Model):
 
     unique_lhm_nap_ids = fields.Many2many('lhm.nap', string="Nota Angkut Panen", compute='_compute_unique_lhm_naps')
 
+    kepala_mandor_approved = fields.Boolean('Approved By Kepala Mandor')
+
     @api.depends('lhm_nap_line_ids.lhm_nap_line_id.lhm_nap_id')
     def _compute_unique_lhm_naps(self):
         for lhm in self:
@@ -30,3 +33,20 @@ class Lhm(models.Model):
         action = self.env.ref('c10i_lhm_v16.action_lhm_nap_input_button_box').read()[0]
         action['domain'] = [('id', 'in', self.unique_lhm_nap_ids.ids)]
         return action
+    
+    def action_approve_kepala_mandor(self):
+        for rec in self:
+            rec.sudo().kepala_mandor_approved = True
+    
+    def button_approve(self):
+        for rec in self:
+            if not rec.kepala_mandor_approved:
+                raise ValidationError("Tidak dapat meng-Approve LHM yang belum di Approve oleh Kepala Mandor")
+        return super().button_approve()
+
+    def button_draft(self):
+        res = super().button_draft()
+        
+        self.write({'kepala_mandor_approved': False})
+
+        return res

@@ -17,6 +17,7 @@
     # any module necessary for this one to work correctly
     'depends': [
         'c10i_lhm_v16',
+        'c10i_plantation_payroll',
         'hr',
         'stock',
     ],

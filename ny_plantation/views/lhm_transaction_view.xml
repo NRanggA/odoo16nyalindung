@@ -26,6 +26,13 @@
                 <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver</attribute>
             </button>
 
+            <button name="button_approve" position="before">
+                <button string="Approve Kepala Mandor" name="action_approve_kepala_mandor" 
+                    type="object" class="oe_highlight" attrs="{'invisible': ['|',('state','!=','confirmed'),('kepala_mandor_approved','=',True)]}"
+                    groups="ny_plantation.plantation_kepala_mandor_user"
+                    confirm="Apakah anda menyetujui dokumen ini?"/>
+            </button>
+
             <!-- <field name="afdeling_id" position="replace"/> -->
             <field name="asisten_mandor_id" position="replace"/>
             <field name="mandor_id" position="replace"/>
@@ -37,6 +44,7 @@
             <field name="kemandoran_id" position="after">
                 <field name="assisten_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
                 <field name="kepala_mandor_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
+                <field name="kepala_mandor_approved" invisible="1"/>
                 <field name="mandor_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
                 <field name="tap_kontrol_id" domain="[('kerani','=',True)]" context="{'form_view_ref':'c10i_lhm_v16.view_karyawan_form'}"/>
             </field>
@@ -49,4 +57,37 @@
         </field>
     </record>
 
+    <record id="view_lhm_transaction_tree" model="ir.ui.view">
+        <field name="name">lhm.transaction.view.form</field>
+        <field name="model">lhm.transaction</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_transaction_tree" />
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="kepala_mandor_approved"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_lhm_transaction_filter" model="ir.ui.view">
+        <field name="name">view.lhm.transaction.filter</field>
+        <field name="model">lhm.transaction</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_transaction_filter" />
+        <field name="arch" type="xml">
+            <filter name="confirmed" position="after">
+                <filter name="kepala_mandor_not_approved" string="Not Approved by Kepala Mandor" domain="[('kepala_mandor_approved','=',False)]"/>
+                <filter name="kepala_mandor_has_approved" string="Approved by Kepala Mandor" domain="[('kepala_mandor_approved','=',True)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="view_lhm_transaction_form" model="ir.ui.view">
+        <field name="name">view.lhm.transaction.form</field>
+        <field name="model">lhm.transaction</field>
+        <field name="inherit_id" ref="c10i_plantation_payroll.view_lhm_transaction_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lhm_line_ids']/tree/field[@name='contract_wage_value']" position="attributes">
+                <attribute name="groups">base.group_no_one,c10i_hr_payroll.group_hr_payroll_user,ny_plantation.plantation_kepala_mandor_user</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>
