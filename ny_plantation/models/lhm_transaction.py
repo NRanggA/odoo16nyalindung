@@ -39,9 +39,9 @@ class Lhm(models.Model):
             rec.sudo().kepala_mandor_approved = True
     
     def button_approve(self):
-        for rec in self:
-            if not rec.kepala_mandor_approved:
-                raise ValidationError("Tidak dapat meng-Approve LHM yang belum di Approve oleh Kepala Mandor")
+        # for rec in self:
+        #     if not rec.kepala_mandor_approved:
+        #         raise ValidationError("Tidak dapat meng-Approve LHM yang belum di Approve oleh Kepala Mandor")
         return super().button_approve()
 
     def button_draft(self):
