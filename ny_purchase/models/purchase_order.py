@@ -5,6 +5,7 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
     non_credit = fields.Boolean('Non Credit')
+    termin_pembayaran = fields.Char('Termin Pembayaran')
 
     def button_confirm(self):
         if any(line.price_unit == 0.0 for line in self.order_line):

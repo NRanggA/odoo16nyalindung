@@ -68,21 +68,26 @@
                                     <t t-set="seq" t-value="seq + 1"/>
                                 </tr>
                                 <t t-set="grouped_taxes" t-value="o.get_grouped_taxes()"/>
-                                <t t-if="grouped_taxes" t-foreach="grouped_taxes.values()" t-as="tax">
-                                    <td></td>
-                                    <td style="padding-left: 8px; font-weight : bold"><t t-esc="tax['name']"/></td>
-                                    <td style="text-align: center"></td>
-                                    <td style="text-align: center"></td>
-                                    <td style="text-align: center"></td>
-                                    <td style="text-align: center">
-                                        <!-- <t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0, "default": 0}'/> -->
-                                        <t t-if="tax['amount'] &lt; 0">
-                                            -<t t-esc="abs(tax['amount'])" t-options='{"widget": "float", "precision": 0}'/>
-                                        </t>
-                                        <t t-else="">
-                                            <t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0}'/>
-                                        </t>
-                                    </td>
+                                <t t-if="grouped_taxes">
+                                    <t t-foreach="grouped_taxes.values()" t-as="tax">
+                                        <tr>
+                                            <td></td>
+                                            <td style="padding-left: 8px; font-weight: bold">
+                                                <t t-esc="tax['name']"/>
+                                            </td>
+                                            <td style="text-align: center"></td>
+                                            <td style="text-align: center"></td>
+                                            <td style="text-align: center"></td>
+                                            <td style="text-align: center">
+                                                <t t-if="tax['amount'] &lt; 0">
+                                                    -<t t-esc="abs(tax['amount'])" t-options='{"widget": "float", "precision": 0}'/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-esc="tax['amount']" t-options='{"widget": "float", "precision": 0}'/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
                                 </t>
                                 <tr height="34px" style="font-weight : bold">
                                     <td style=""></td>
@@ -97,6 +102,11 @@
 
                         <table width="90%" style="margin-left : 48px; margin-top: 48px">
                             <tbody>
+                                <tr>
+                                    <td width="28%" height="40px" style="vertical-align : top">Termin</td>
+                                    <td width="1%" height="40px" style="vertical-align : top">:</td>
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-if="o.termin_pembayaran" t-esc="o.termin_pembayaran"/></td>
+                                </tr>
                                 <tr>
                                     <td width="28%" height="40px" style="vertical-align : top">Term of Payment</td>
                                     <td width="1%" height="40px" style="vertical-align : top">:</td>
