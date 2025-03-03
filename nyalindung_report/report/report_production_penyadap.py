@@ -258,7 +258,538 @@ class ReportProductionPenyadap(models.AbstractModel):
 
         return workbook
 
+    def generate_query_hasil_1(self, obj, kemandoran_id):
+        from_date = obj.from_date.strftime("%Y-%m-%d")
+        to_date = obj.to_date.strftime("%Y-%m-%d")
+
+        start_date = datetime.strptime(from_date, "%Y-%m-%d")
+        end_date = datetime.strptime(to_date, "%Y-%m-%d")
+
+        date_generated = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
+
+        cases_attendance_id = [
+            f"MAX(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.attendance_id ELSE NULL END) AS \"{date.strftime('%d_%b_%y').upper()}_DATE\""
+            for date in date_generated
+        ]
+        sum_cases_hasil_1 = [
+            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_1_nap ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_1_NAP\""
+            for date in date_generated
+        ]
+        sum_cases_hasil_2 = [
+            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_2_nap ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_2_NAP\""
+            for date in date_generated
+        ]
+        sum_cases_konversi_hasil_1 = [
+            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_convert_latex ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LATEKS\""
+            for date in date_generated
+        ]
+        sum_cases_konversi_hasil_2 = [
+            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_convert_lump ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LUMP\""
+            for date in date_generated
+        ]
+
+        sum_cases_total_konversi = [
+            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0) ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_TOTAL_HASIL_CONVERT\""
+            for date in date_generated
+        ]
+
+        queryhasil1 = f"""
+        WITH employee_data AS (
+            SELECT 
+                emp.id AS emp_id,
+                emp.name AS employee_name,
+                emp.kemandoran_id AS kemandoran_emp,
+                emp.no_induk as no_induk
+            FROM 
+                hr_employee emp
+            WHERE 
+                emp.active = TRUE
+                AND emp.kemandoran_id = %s
+        ),
+        trans_data AS (
+            SELECT 
+                trans_nap_line.hasil_1_nap,  
+                trans_nap_line.hasil_2_nap,  
+                trans_nap_line.hasil_convert_latex,  
+                trans_nap_line.hasil_convert_lump,  
+                trans.date,
+                trans_line.attendance_id, 
+                trans_line.employee_id
+            FROM 
+                lhm_transaction_nap_line trans_nap_line
+            JOIN 
+                lhm_transaction_line trans_line 
+                ON trans_line.id = trans_nap_line.lhm_transaction_line_id
+                AND trans_line.state = 'done'
+            JOIN 
+                lhm_transaction trans 
+                ON trans.id = trans_line.lhm_id
+            WHERE 
+                trans.date BETWEEN %s AND %s
+        )
+        SELECT
+            employee_data.employee_name,
+            employee_data.no_induk,
+            employee_data.kemandoran_emp,
+            SUM(COALESCE(trans_data.hasil_1_nap, 0)) AS total_hasil_1_nap,
+            SUM(COALESCE(trans_data.hasil_2_nap, 0)) AS total_hasil_2_nap,
+            SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex,
+            SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump,
+            SUM(COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert,
+            COUNT(trans_data.attendance_id) AS attendance_count,
+            {','.join(cases_attendance_id)},
+            {','.join(sum_cases_hasil_1)},
+            {','.join(sum_cases_hasil_2)},
+            {','.join(sum_cases_konversi_hasil_1)},
+            {','.join(sum_cases_konversi_hasil_2)},
+            {','.join(sum_cases_total_konversi)}
+        FROM 
+            employee_data
+        LEFT JOIN 
+            trans_data ON employee_data.emp_id = trans_data.employee_id
+        GROUP BY 
+            employee_data.employee_name,
+            employee_data.no_induk,
+            employee_data.kemandoran_emp
+        ORDER BY
+            employee_data.employee_name ASC;
+        """
+        return queryhasil1, [kemandoran_id, from_date, to_date]
+
     def generate_xlsx_report(self, workbook, datas, obj):
+        workbook = self.add_workbook_format(workbook)
+        wbf = self.wbf
+        sheet = workbook.add_worksheet("Laporan Produksi Karet Per Penyadap")
+        row = 0
+
+        from_date = obj.from_date
+        to_date = obj.to_date
+        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 194, 195]
+
+        attendance_data = {}
+
+        for kemandoran_id in kemandoran_ids:
+            query1, params1 = self.generate_query_hasil_1(obj, kemandoran_id)
+            self.env.cr.execute(query1, params1)
+            list_hasil_1 = self.env.cr.dictfetchall()
+
+            sheet.write(row, 0, 'Laporan Produksi Karet Per Penyadap')
+            row += 1
+            sheet.write(row, 0,'BULAN')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2,f'{from_date.strftime("%d-%m-%Y")} s/d {to_date.strftime("%d-%m-%Y")}' if from_date and to_date else '')
+            row += 2
+            kemandoran = self.env['hr.foreman'].browse(kemandoran_id)
+            sheet.merge_range(row, 0, row + 1, 3, kemandoran.name or '', wbf['kemandoran'])
+            sheet.write(row + 2, 0, 'NO.', wbf['header'])
+            sheet.set_column(5, 0, 7)
+            sheet.write(row + 2, 1,'NIK', wbf['header'])
+            sheet.set_column(5, 1, 13)
+            sheet.write(row + 2, 2,'NAMA', wbf['header'])
+            sheet.set_column(5, 2, 13)
+            sheet.write(row + 2, 3, 'KEMANDORAN', wbf['header'])
+            sheet.set_column(5, 3, 13)
+            sheet.set_column(5, 4, 8)
+
+            mandor_name = kemandoran.kepala_mandor_id.sudo().name if kemandoran.kepala_mandor_id else ''
+            mandor_nik = kemandoran.kepala_mandor_id.sudo().no_induk if kemandoran.kepala_mandor_id else ''
+            asisten_mandor_name = kemandoran.mandor_id.sudo().name if kemandoran.mandor_id else ''
+            asisten_mandor_nik = kemandoran.mandor_id.sudo().no_induk if kemandoran.mandor_id else ''
+            kerani_name = kemandoran.assisten_id.sudo().name if kemandoran.assisten_id else ''
+            kerani_nik = kemandoran.assisten_id.sudo().no_induk if kemandoran.assisten_id else ''
+
+            if from_date and to_date:
+                delta = to_date - from_date
+                date_columns = []
+                for i in range(delta.days + 1):
+                    current_date = from_date + timedelta(days=i)
+                    date_columns.append(current_date.strftime('%d_%b_%y').upper())
+                
+                attendance_data = {date: 0 for date in date_columns}
+
+                hko_start = 4
+                sheet.merge_range(row, hko_start, row + 1, hko_start + 5, 'JUMLAH HKO', wbf['header'])
+
+                total_hk_start = hko_start + 6
+                sheet.merge_range(row, total_hk_start, row + 2, total_hk_start, 'TOTAL HK', wbf['header'])
+
+                start_col = total_hk_start + 1
+                end_col = start_col + len(date_columns) - 1
+                sheet.merge_range(row, start_col, row + 1, end_col, 'TANGGAL', wbf['header'])
+
+                for i, date in enumerate(date_columns):
+                    sheet.write(row + 2, start_col + i, date[:2], wbf['header'])
+                    sheet.set_column(start_col + i, start_col + i, 5)
+            hko_headers = ['HKO', 'L', 'S', 'P', 'CT', 'M']
+            hko_formats = [self.wbf['biru_muda'], self.wbf['hijau_tua'], self.wbf['kuning'], self.wbf['biru_tua'], self.wbf['biru_muda'], self.wbf['merah']]
+
+            for i, header in enumerate(hko_headers):
+                sheet.write(row + 2, hko_start + i, header, hko_formats[i])
+
+            for i, header in enumerate(hko_headers):
+                sheet.write(row + 2, hko_start + i, header, hko_formats[i])
+
+            #lateks
+            if from_date and to_date:
+                jumlah_hasil_sadapan_lateks = end_col + 2
+                sheet.merge_range(row, jumlah_hasil_sadapan_lateks, row + 1, jumlah_hasil_sadapan_lateks, 'JUMLAH HASIL SADAPAN', wbf['header'])
+                
+                second_date_start = jumlah_hasil_sadapan_lateks + 1
+                second_date_end = second_date_start + len(date_columns) - 1
+                sheet.merge_range(row, second_date_start, row + 1, second_date_end, 'TANGGAL', wbf['header'])
+                
+                for i, date in enumerate(date_columns):
+                    col_index = second_date_start + i
+                    sheet.write(row + 2, col_index, date[:2], wbf['header'])
+                    sheet.set_column(col_index, col_index, 5)
+
+            #lump
+            if from_date and to_date:
+                jumlah_hasil_sadapan_lump = second_date_end + 2
+                sheet.merge_range(row, jumlah_hasil_sadapan_lump, row + 1, jumlah_hasil_sadapan_lump, 'JUMLAH HASIL SADAPAN', wbf['header'])
+                
+                third_date_start = jumlah_hasil_sadapan_lump + 1
+                third_date_end = third_date_start + len(date_columns) - 1
+                sheet.merge_range(row, third_date_start, row + 1, third_date_end, 'TANGGAL', wbf['header'])
+                
+                for i, date in enumerate(date_columns):
+                    col_index = third_date_start + i
+                    sheet.write(row + 2, col_index, date[:2], wbf['header'])
+                    sheet.set_column(col_index, col_index, 5)
+            
+            #konversi lateks
+            if from_date and to_date:
+                jumlah_hasil_konversi_lateks = third_date_end + 2
+                sheet.merge_range(row, jumlah_hasil_konversi_lateks, row + 1, jumlah_hasil_konversi_lateks, 'JUMLAH HASIL KONVERSI', wbf['header'])
+                
+                sixth_date_start = jumlah_hasil_konversi_lateks + 1
+                sixth_date_end = sixth_date_start + len(date_columns) - 1
+                sheet.merge_range(row, sixth_date_start, row + 1, sixth_date_end, 'TANGGAL', wbf['header'])
+                
+                for i, date in enumerate(date_columns):
+                    col_index = sixth_date_start + i
+                    sheet.write(row + 2, col_index, date[:2], wbf['header'])
+                    sheet.set_column(col_index, col_index, 5)
+
+            #konversi lump
+            if from_date and to_date:
+                jumlah_hasil_konversi_lump = sixth_date_end + 2
+                sheet.merge_range(row, jumlah_hasil_konversi_lump, row + 1, jumlah_hasil_konversi_lump, 'JUMLAH HASIL KONVERSI', wbf['header'])
+                
+                seventh_date_start = jumlah_hasil_konversi_lump + 1
+                seventh_date_end = seventh_date_start + len(date_columns) - 1
+                sheet.merge_range(row, seventh_date_start, row + 1, seventh_date_end, 'TANGGAL', wbf['header'])
+                
+                for i, date in enumerate(date_columns):
+                    col_index = seventh_date_start + i
+                    sheet.write(row + 2, col_index, date[:2], wbf['header'])
+                    sheet.set_column(col_index, col_index, 5)
+
+            #total konversi lateks + lump
+            if from_date and to_date:
+                jumlah_total_konversi = seventh_date_end + 2
+                sheet.merge_range(row, jumlah_total_konversi, row + 1, jumlah_total_konversi, 'TOTAL HASIL KONVERSI', wbf['header'])
+                
+                eighth_date_start = jumlah_total_konversi + 1
+                eighth_date_end = eighth_date_start + len(date_columns) - 1
+                sheet.merge_range(row, eighth_date_start, row + 1, eighth_date_end, 'TANGGAL', wbf['header'])
+                
+                for i, date in enumerate(date_columns):
+                    col_index = eighth_date_start + i
+                    sheet.write(row + 2, col_index, date[:2], wbf['header'])
+                    sheet.set_column(col_index, col_index, 5)
+            
+            lateks_row_start = row + 2
+            lateks_col_start = jumlah_hasil_sadapan_lateks
+            sheet.write(lateks_row_start, lateks_col_start, 'LATEKS (L)', wbf['header'])
+
+            lump_row_start = row + 2
+            lump_col_start = jumlah_hasil_sadapan_lump
+            sheet.write(lump_row_start, lump_col_start, 'LUMP (Kg)', wbf['header'])
+
+            clateks_row_start = row + 2
+            clateks_col_start = jumlah_hasil_konversi_lateks
+            sheet.write(clateks_row_start, clateks_col_start, 'LATEKS (Kg)', wbf['header'])
+
+            clump_row_start = row + 2
+            clump_col_start = jumlah_hasil_konversi_lump
+            sheet.write(clump_row_start, clump_col_start, 'LUMP (Kg)', wbf['header'])
+
+            tkonversi_row_start = row + 2
+            tkonversi_col_start = jumlah_total_konversi
+            sheet.write(tkonversi_row_start, tkonversi_col_start, 'KARET (Kg)', wbf['header'])
+
+            row += 3
+
+            # Data
+            row += 1
+            nomor = 1
+            total_kj_per_date = {date: 0 for date in date_columns}
+            total_hasil_1_per_tanggal = {date: 0 for date in date_columns}
+            total_hasil_2_per_tanggal = {date: 0 for date in date_columns}
+            total_chasil_1_per_tanggal = {date: 0 for date in date_columns}
+            total_chasil_2_per_tanggal = {date: 0 for date in date_columns}
+            total_convert_per_tanggal = {date: 0 for date in date_columns}
+
+            for line in list_hasil_1:
+                # print(f"Row Data: {line}")
+                sheet.write(row, 0, nomor, wbf['data_center'])
+
+                no_induk = line.get("no_induk")
+                sheet.write(row, 1, no_induk, wbf['data'])
+
+                employee_name = line.get("employee_name", "N/A")
+                sheet.write(row, 2, employee_name, wbf['data'])
+
+                kemandoran_emp = line.get("kemandoran_emp")
+                kemandoran_name = self.env["hr.foreman"].browse(kemandoran_emp).name if kemandoran_emp else "-"
+                sheet.write(row, 3, kemandoran_name, wbf['data'])
+                
+                location_id = line.get("location_id")
+                location_name = self.env["lhm.location"].browse(location_id).name if location_id else "-"
+                sheet.write(row, 4, location_name, wbf['data'])
+
+                attendance_count = line.get("attendance_count", 0)
+                sheet.write(row, hko_start, attendance_count, wbf['biru_muda'])
+                sheet.write(row, hko_start + 1, 0, wbf['data_center'])
+                sheet.write(row, hko_start + 2, 0, wbf['data_center'])
+                sheet.write(row, hko_start + 3, 0, wbf['data_center'])
+                sheet.write(row, hko_start + 4, 0, wbf['data_center'])
+                sheet.write(row, hko_start + 5, 0, wbf['data_center'])
+                sheet.write(row, total_hk_start, attendance_count, wbf['data_center'])
+
+                for i, date_str in enumerate(date_columns):
+                    date = datetime.strptime(date_str, "%d_%b_%y")
+                    column_name = f"{date.strftime('%d_%b_%y').upper()}_DATE"
+                    attendance_id = line.get(column_name)
+                    attendance_code = self.env["hr.attendance.type"].browse(attendance_id).code if attendance_id else "-"
+                    if attendance_code == "KJ":
+                        total_kj_per_date[date_str] += 1
+                    cell_format = wbf['hijau_muda'] if attendance_code == "KJ" else wbf['data_center']
+                    sheet.write(row, start_col + i, attendance_code, cell_format)
+
+                for i, date_str in enumerate(date_columns):
+                    date = datetime.strptime(date_str, "%d_%b_%y")
+                    col_index = second_date_start + i
+                    column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_1_NAP"
+                    hasil_sadapan_lateks = line.get(column_key, 0) or 0
+                    total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0) or 0
+                    total_hasil_1_per_tanggal[date_str] += hasil_sadapan_lateks
+                    sheet.write(lateks_row_start + 2, second_date_start - 1, total_hasil_1_tanggal, wbf['total_float'])
+                    sheet.write(lateks_row_start + 2, col_index, hasil_sadapan_lateks, wbf['total_float'])
+                lateks_row_start += 1
+
+                for i, date_str in enumerate(date_columns):
+                    date = datetime.strptime(date_str, "%d_%b_%y")
+                    col_index = third_date_start + i
+                    column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_2_NAP"
+                    hasil_sadapan_lump = line.get(column_key, 0) or 0
+                    total_hasil_2_tanggal = line.get("total_hasil_2_nap", 0) or 0
+                    total_hasil_2_per_tanggal[date_str] += hasil_sadapan_lump
+                    sheet.write(lump_row_start + 2, third_date_start - 1, total_hasil_2_tanggal, wbf['total_float'])
+                    sheet.write(lump_row_start + 2, col_index, hasil_sadapan_lump, wbf['total_float'])
+                lump_row_start += 1
+
+                for i, date_str in enumerate(date_columns):
+                    date = datetime.strptime(date_str, "%d_%b_%y")
+                    col_index = sixth_date_start + i
+                    column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LATEKS"
+                    hasil_convert_lateks = line.get(column_key, 0) or 0
+                    total_hasil_convert_lateks = line.get("total_hasil_convert_latex", 0) or 0
+                    total_chasil_1_per_tanggal[date_str] += hasil_convert_lateks
+                    sheet.write(clateks_row_start + 2, sixth_date_start - 1, total_hasil_convert_lateks, wbf['total_float'])
+                    sheet.write(clateks_row_start + 2, col_index, hasil_convert_lateks, wbf['total_float'])
+                clateks_row_start += 1
+
+                for i, date_str in enumerate(date_columns):
+                    date = datetime.strptime(date_str, "%d_%b_%y")
+                    col_index = seventh_date_start + i
+                    column_key = f"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LUMP"
+                    hasil_convert_lump = line.get(column_key, 0) or 0
+                    total_hasil_convert_lump = line.get("total_hasil_convert_lump", 0) or 0
+                    total_chasil_2_per_tanggal[date_str] += hasil_convert_lump
+                    sheet.write(clump_row_start + 2, seventh_date_start - 1, total_hasil_convert_lump, wbf['total_float'])
+                    sheet.write(clump_row_start + 2, col_index, hasil_convert_lump, wbf['total_float'])
+                clump_row_start += 1
+
+                for i, date_str in enumerate(date_columns):
+                    date = datetime.strptime(date_str, "%d_%b_%y")
+                    col_index = eighth_date_start + i
+                    column_key = f"{date.strftime('%d_%b_%y').upper()}_TOTAL_HASIL_CONVERT"
+                    hasil_convert = line.get(column_key, 0) or 0
+                    total_hasil_convert = line.get("total_hasil_convert", 0) or 0
+                    total_convert_per_tanggal[date_str] += hasil_convert
+                    sheet.write(tkonversi_row_start + 2, eighth_date_start - 1, total_hasil_convert, wbf['total_float'])
+                    sheet.write(tkonversi_row_start + 2, col_index, hasil_convert, wbf['total_float'])
+                tkonversi_row_start += 1
+
+                row += 1
+                nomor += 1
+
+            row += 1
+            sheet.write(row, 0, "M-1", wbf['data_center'])
+            sheet.write(row + 1, 0, "M-2", wbf['data_center'])
+            sheet.write(row + 2, 0, "M-3", wbf['data_center'])
+
+            sheet.write(row, 1, mandor_nik, wbf['data'])
+            sheet.write(row + 1, 1, asisten_mandor_nik, wbf['data'])
+            sheet.write(row + 2, 1, kerani_nik, wbf['data'])
+
+            sheet.write(row, 2, mandor_name, wbf['data'])
+            sheet.write(row + 1, 2, asisten_mandor_name, wbf['data'])
+            sheet.write(row + 2, 2, kerani_name, wbf['data'])
+
+            sheet.write(row, 3, kemandoran_name, wbf['data'])
+            sheet.write(row + 1, 3, kemandoran_name, wbf['data'])
+            sheet.write(row + 2, 3, kemandoran_name, wbf['data'])
+
+            sheet.write(row, 4, "-", wbf['data'])
+            sheet.write(row + 1, 4, "-", wbf['data'])
+            sheet.write(row + 2, 4, "-", wbf['data'])
+
+            sheet.write(row, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
+
+            sheet.write(row + 1, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row + 1, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row + 1, total_hk_start, "-", wbf['data_center'])
+
+            sheet.write(row + 2, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row + 2, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row + 2, total_hk_start, "-", wbf['data_center'])
+
+            for i, date in enumerate(date_columns):
+                sheet.write(row, start_col + i, "-", wbf['header'])
+                sheet.write(row + 1, start_col + i, "-", wbf['header'])
+                sheet.write(row + 2, start_col + i, "-", wbf['header'])
+
+            for i in range((to_date - from_date).days + 1):
+                current_date = from_date + timedelta(days=i)
+                col_index_2 = second_date_start + i
+                col_index_3 = third_date_start + i
+                col_index_6 = sixth_date_start + i
+                col_index_7 = seventh_date_start + i
+                col_index_8 = eighth_date_start + i
+
+                sheet.write(row, col_index_2, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_2, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_2, "-", wbf['data_center'])
+
+                sheet.write(row, col_index_3, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_3, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_3, "-", wbf['data_center'])
+
+                sheet.write(row, col_index_6, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_6, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_6, "-", wbf['data_center'])
+
+                sheet.write(row, col_index_7, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_7, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_7, "-", wbf['data_center'])
+
+                sheet.write(row, col_index_8, "-", wbf['data_center'])
+                sheet.write(row + 1, col_index_8, "-", wbf['data_center'])
+                sheet.write(row + 2, col_index_8, "-", wbf['data_center'])
+
+                total_column_index_2 = jumlah_hasil_sadapan_lateks
+                total_column_index_3 = jumlah_hasil_sadapan_lump
+                total_column_index_6 = jumlah_hasil_konversi_lateks
+                total_column_index_7 = jumlah_hasil_konversi_lump
+                total_column_index_8 = jumlah_total_konversi
+
+                sheet.write(row, total_column_index_2, "-", wbf['data_center'])
+                sheet.write(row + 1, total_column_index_2, "-", wbf['data_center'])
+                sheet.write(row + 2, total_column_index_2, "-", wbf['data_center'])
+
+                sheet.write(row, total_column_index_3, "-", wbf['data_center'])
+                sheet.write(row + 1, total_column_index_3, "-", wbf['data_center'])
+                sheet.write(row + 2, total_column_index_3, "-", wbf['data_center'])
+
+                sheet.write(row, total_column_index_6, "-", wbf['data_center'])
+                sheet.write(row + 1, total_column_index_6, "-", wbf['data_center'])
+                sheet.write(row + 2, total_column_index_6, "-", wbf['data_center'])
+
+                sheet.write(row, total_column_index_7, "-", wbf['data_center'])
+                sheet.write(row + 1, total_column_index_7, "-", wbf['data_center'])
+                sheet.write(row + 2, total_column_index_7, "-", wbf['data_center'])
+
+                sheet.write(row, total_column_index_8, "-", wbf['data_center'])
+                sheet.write(row + 1, total_column_index_8, "-", wbf['data_center'])
+                sheet.write(row + 2, total_column_index_8, "-", wbf['data_center'])
+            row += 4
+
+            # Line Total Paling Bawah
+            sheet.merge_range(row, 0, row, 4, "JUMLAH TOTAL", wbf['jumlah_total'])
+            
+            total_attendance = 0
+            grandtotal_hasil_1 = 0 
+            grandtotal_hasil_2 = 0 
+            grandtotal_chasil_1 = 0 
+            grandtotal_chasil_2 = 0 
+            grandtotal_konversi = 0 
+            for line in list_hasil_1:
+                attendance_count = line.get("attendance_count", 0)
+                total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0)
+                total_attendance += attendance_count
+
+                sheet.write(row, hko_start, total_attendance, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 1, 0, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 2, 0, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 3, 0, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 4, 0, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 5, 0, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 6, total_attendance, wbf['hijau_tua'])
+
+            for i, date_str in enumerate(date_columns):
+                total_kj = total_kj_per_date.get(date_str, 0)
+                sheet.write(row, start_col + i, total_kj, wbf['kuning'])
+
+            for i, date_str in enumerate(date_columns):
+                total_hasil_1 = total_hasil_1_per_tanggal.get(date_str, 0)
+                grandtotal_hasil_1 += total_hasil_1
+                sheet.write(row, second_date_start - 1, grandtotal_hasil_1, wbf['hijau_tua'])
+                sheet.write(row, second_date_start + i, total_hasil_1, wbf['kuning'])
+
+            for i, date_str in enumerate(date_columns):
+                total_hasil_2 = total_hasil_2_per_tanggal.get(date_str, 0)
+                grandtotal_hasil_2 += total_hasil_2
+                sheet.write(row, third_date_start - 1, grandtotal_hasil_2, wbf['hijau_tua'])
+                sheet.write(row, third_date_start + i, total_hasil_2, wbf['kuning'])
+
+            for i, date_str in enumerate(date_columns):
+                total_chasil_1 = total_chasil_1_per_tanggal.get(date_str, 0)
+                grandtotal_chasil_1 += total_chasil_1
+                sheet.write(row, sixth_date_start - 1, grandtotal_chasil_1, wbf['hijau_tua'])
+                sheet.write(row, sixth_date_start + i, total_chasil_1, wbf['kuning'])
+
+            for i, date_str in enumerate(date_columns):
+                total_chasil_2 = total_chasil_2_per_tanggal.get(date_str, 0)
+                grandtotal_chasil_2 += total_chasil_2
+                sheet.write(row, seventh_date_start - 1, grandtotal_chasil_2, wbf['hijau_tua'])
+                sheet.write(row, seventh_date_start + i, total_chasil_2, wbf['kuning'])
+
+            for i, date_str in enumerate(date_columns):
+                total_konversi = total_convert_per_tanggal.get(date_str, 0)
+                grandtotal_konversi += total_konversi
+                sheet.write(row, eighth_date_start - 1, grandtotal_konversi, wbf['hijau_tua'])
+                sheet.write(row, eighth_date_start + i, total_konversi, wbf['kuning'])
+            
+            row += 5
+
+    def generate_xlsx_report_old(self, workbook, datas, obj):
         workbook = self.add_workbook_format(workbook)
         wbf = self.wbf
 
