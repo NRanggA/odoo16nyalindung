@@ -19,19 +19,22 @@
                     
                     <button string="Summerize Cost" name="summerize_machine_cost" type="object" states="running_machine"/>
                     <button string="Create Running Entries" name="create_account_move_machine" type="object" states="running_machine"/>
-                    <button string="Continue" name="button_continue_to_closing_project" type="object" class="oe_highlight" states="running_machine"/>
+                    <!-- <button string="Continue" name="button_continue_to_closing_project" type="object" class="oe_highlight" states="running_machine"/> -->
+                    <button string="Continue" name="button_continue_to_closing_laboratory" type="object" class="oe_highlight" states="running_machine"/>
                     
+                    <button string="Summerize Cost" name="summerize_laboratory_cost" type="object" states="closing_laboratory"/>
+                    <button string="Create Closing Entries" name="create_account_move_laboratory" type="object" states="closing_laboratory"/>
+                    <!-- <button string="Continue" name="button_continue_to_closing_plantation" type="object" class="oe_highlight" states="closing_laboratory"/> -->
+                    <button string="Continue" name="button_continue_to_closing_project" type="object" class="oe_highlight" states="closing_laboratory"/>
+
                     <button string="Summerize Cost" name="summerize_project_cost" type="object" states="closing_project"/>
                     <button string="Create Closing Entries" name="create_account_move_project" type="object" states="closing_project"/>
                     <button string="Continue" name="button_continue_to_closing_nursery" type="object" class="oe_highlight" states="closing_project"/>
                     
                     <button string="Summerize Cost" name="summerize_nursery_cost" type="object" states="closing_nursery"/>
                     <button string="Create Closing Entries" name="create_account_move_nursery" type="object" states="closing_nursery"/>
-                    <button string="Continue" name="button_continue_to_closing_laboratory" type="object" class="oe_highlight" states="closing_nursery"/>
-
-                    <button string="Summerize Cost" name="summerize_laboratory_cost" type="object" states="closing_laboratory"/>
-                    <button string="Create Closing Entries" name="create_account_move_laboratory" type="object" states="closing_laboratory"/>
-                    <button string="Continue" name="button_continue_to_closing_plantation" type="object" class="oe_highlight" states="closing_laboratory"/>
+                    <!-- <button string="Continue" name="button_continue_to_closing_laboratory" type="object" class="oe_highlight" states="closing_nursery"/> -->
+                    <button string="Continue" name="button_continue_to_closing_plantation" type="object" class="oe_highlight" states="closing_nursery"/>
                     
                     <button string="Summerize Cost" name="summerize_plantation_cost" type="object" states="closing_plantation"/>
                     <button string="Create Closing Entries" name="create_account_move_plantation" type="object" states="closing_plantation"/>
@@ -39,9 +42,9 @@
                     
                     <button string="Done" name="action_done" type="object" class="oe_highlight" states="closing_production"/>
                     
-                    <button string="Back" name="button_back" type="object" states="running_vehicle,running_machine,closing_project,closing_nursery,closing_laboratory,closing_plantation,closing_production"/>
+                    <button string="Back" name="button_back" type="object" states="running_vehicle,running_machine,closing_laboratory,closing_project,closing_nursery,closing_plantation,closing_production"/>
                     
-                    <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="draft,running_workshop,running_vehicle,running_machine,closing_project,closing_nursery,closing_laboratory,closing_plantation,closing_production"/>
+                    <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="draft,running_workshop,running_vehicle,running_machine,closing_laboratory,closing_project,closing_nursery,closing_plantation,closing_production"/>
                     
                     <button string="Plantation Report" name="print_closing_plantation_report" states="closing_plantation,closing_production,done" type="object" />
                     <button string="Stock Report" name="print_closing_production_report" states="closing_production,done" type="object" />
@@ -60,7 +63,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page name="running_workshop" string="Workshop" attrs="{'invisible': [('state','not in',['running_workshop','running_vehicle','running_machine','closing_project','closing_nursery','closing_laboratory','closing_plantation','closing_production','done'])]}">
+                        <page name="running_workshop" string="Workshop" attrs="{'invisible': [('state','not in',['running_workshop','running_vehicle','running_machine','closing_laboratory','closing_project','closing_nursery','closing_laboratory','closing_plantation','closing_production','done'])]}">
                             <div class="oe_button_box" name="button_box">
                                 <button string="Open All" name="action_open_running_workshop" type="object" class="oe_stat_button" icon="fa-search"/>
                                 <button string="Journal Entries" name="action_open_output_journal_workshop" type="object" class="oe_stat_button" icon="fa-list"/>
@@ -72,7 +75,7 @@
                             </group>
                             <field name="running_workshop_ids"/>
                         </page>
-                        <page name="running_vehicle" string="Vehicle" attrs="{'invisible': [('state','not in',['running_vehicle','running_machine','closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
+                        <page name="running_vehicle" string="Vehicle" attrs="{'invisible': [('state','not in',['running_vehicle','running_machine','closing_laboratory','closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
                             <div class="oe_button_box" name="button_box">
                                 <button string="Open All" name="action_open_running_vehicle" type="object" class="oe_stat_button" icon="fa-search"/>
                                 <button string="Journal Entries" name="action_open_output_journal_vehicle" type="object" class="oe_stat_button" icon="fa-list"/>
@@ -96,7 +99,19 @@
                             </group>
                             <field name="running_machine_ids"/>
                         </page>
-                        <page name="closing_project" string="Project" attrs="{'invisible': [('state','not in',['closing_project','closing_nursery','closing_laboratory','closing_plantation','closing_production','done'])]}">
+                        <page name="closing_laboratory" string="Laboratory" attrs="{'invisible': [('state','not in',['closing_laboratory','closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
+                            <div class="oe_button_box" name="button_box">
+                                <button string="Open All" name="action_open_closing_laboratory" type="object" class="oe_stat_button" icon="fa-search"/>
+                                <button string="Journal Entries" name="action_open_output_journal_laboratory" type="object" class="oe_stat_button" icon="fa-list"/>
+                                <button string="All Journal Items" name="action_open_all_move_line_laboratory" type="object" class="oe_stat_button" icon="fa-list"/>
+                            </div>
+                            <group>
+                                <group><field name="mark_closing_laboratory_is_done" string="Mark as Done"/></group>
+                                <!-- <group><field name="counterpart_closing_ns_account_id" /></group> -->
+                            </group>
+                            <field name="closing_laboratory_ids"/>
+                        </page>
+                        <page name="closing_project" string="Project" attrs="{'invisible': [('state','not in',['closing_project','closing_nursery','closing_plantation','closing_production','done'])]}">
                             <div class="oe_button_box" name="button_box">
                                 <button string="Open All" name="action_open_closing_project" type="object" class="oe_stat_button" icon="fa-search"/>
                                 <button string="Journal Entries" name="action_open_output_journal_project" type="object" class="oe_stat_button" icon="fa-list"/>
@@ -108,7 +123,7 @@
                             </group>
                             <field name="closing_project_ids"/>
                         </page>
-                        <page name="closing_nursery" string="Nursery" attrs="{'invisible': [('state','not in',['closing_nursery','closing_laboratory','closing_plantation','closing_production','done'])]}">
+                        <page name="closing_nursery" string="Nursery" attrs="{'invisible': [('state','not in',['closing_nursery','closing_plantation','closing_production','done'])]}">
                             <div class="oe_button_box" name="button_box">
                                 <button string="Open All" name="action_open_closing_nursery" type="object" class="oe_stat_button" icon="fa-search"/>
                                 <button string="Journal Entries" name="action_open_output_journal_nursery" type="object" class="oe_stat_button" icon="fa-list"/>
@@ -119,18 +134,6 @@
                                 <group><field name="counterpart_closing_ns_account_id" /></group>
                             </group>
                             <field name="closing_nursery_ids"/>
-                        </page>
-                        <page name="closing_laboratory" string="Laboratory" attrs="{'invisible': [('state','not in',['closing_laboratory','closing_plantation','closing_production','done'])]}">
-                            <div class="oe_button_box" name="button_box">
-                                <button string="Open All" name="action_open_closing_laboratory" type="object" class="oe_stat_button" icon="fa-search"/>
-                                <button string="Journal Entries" name="action_open_output_journal_laboratory" type="object" class="oe_stat_button" icon="fa-list"/>
-                                <button string="All Journal Items" name="action_open_all_move_line_laboratory" type="object" class="oe_stat_button" icon="fa-list"/>
-                            </div>
-                            <group>
-                                <group><field name="mark_closing_laboratory_is_done" string="Mark as Done"/></group>
-                                <!-- <group><field name="counterpart_closing_ns_account_id" /></group> -->
-                            </group>
-                            <field name="closing_laboratory_ids"/>
                         </page>
                         <page name="closing_plantation" string="Plantation" attrs="{'invisible': [('state','not in',['closing_plantation','closing_production','done'])]}">
                             <div class="oe_button_box" name="button_box">

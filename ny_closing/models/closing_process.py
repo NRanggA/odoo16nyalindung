@@ -14,9 +14,9 @@ class ClosingProcess(models.Model):
         ('running_workshop', 'Running Workshop'),
         ('running_vehicle', 'Running Vehicle'),
         ('running_machine', 'Running Machine'),
+        ('closing_laboratory', 'Closing Laboratory'),
         ('closing_project', 'Closing Project'),
         ('closing_nursery', 'Closing Nursery'),
-        ('closing_laboratory', 'Closing Laboratory'),
         ('closing_plantation', 'Closing Plantation'),
         ('closing_production', 'Closing Production'),
         ('done', 'Done'),
@@ -532,6 +532,18 @@ class ClosingProcess(models.Model):
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
+    
+    def button_continue_to_closing_laboratory(self):
+        for rec in self:
+            if not rec.mark_closing_nursery_is_done:
+                raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
+            rec.get_laboratory()
+            rec.write({'state': 'closing_laboratory'})
+            # rec.compute_initial_and_cost_fg2()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def button_continue_to_closing_project(self):
         for rec in self:
@@ -551,18 +563,6 @@ class ClosingProcess(models.Model):
                 raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
             rec.get_nursery()
             rec.write({'state': 'closing_nursery'})
-            # rec.compute_initial_and_cost_fg2()
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'reload',
-        }
-
-    def button_continue_to_closing_laboratory(self):
-        for rec in self:
-            if not rec.mark_closing_nursery_is_done:
-                raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
-            rec.get_laboratory()
-            rec.write({'state': 'closing_laboratory'})
             # rec.compute_initial_and_cost_fg2()
         return {
             'type': 'ir.actions.client',
