@@ -191,8 +191,8 @@ class AccountCostMapPayroll(models.Model):
             raise ValidationError("You dont have journal entry to post")
         self.move_ids.filtered(lambda m: m.state!='posted')._post()
         for batch in self.payslip_run_ids:
-            if batch.state!='close':
-                batch.close_payslip_run()
+            if batch.sudo().state!='close':
+                batch.sudo().close_payslip_run()
         self.state = 'done'
 
     def action_reset_move(self):
