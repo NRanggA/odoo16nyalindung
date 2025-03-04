@@ -126,7 +126,7 @@ class lhm_contractor(models.Model):
     @api.onchange('line_ids', 'date')
     def _onchange_line_ids(self):
         for line in self.line_ids:
-            if not line.date:
+            if self.date:
                 line.date = self.date
 
     @api.depends('line_ids.activity_id.is_panen')
@@ -252,6 +252,7 @@ class lhm_contractor(models.Model):
         if not self.date:
             raise UserError(_('Data tanggal kosong, mohon diisi.'))
         self.state = 'process'
+        self.line_ids.write({"date": self.date})
         self.env['lhm.contractor.nap.line'].search([('contractor_id', '=', self.id)]).unlink()
         
         contractor_nap_lines = []
@@ -315,12 +316,6 @@ class lhm_contractor(models.Model):
         period = self.env['account.period'].browse(values.get('account_period_id'))
 
         if self.env.context.get('is_harian'):
-            # if values.get('date'):
-            #     date_str = fields.Date.from_string(values['date']).strftime('%Y-%m-%d')
-            #     supplier_ref = supplier.ref if supplier.ref else supplier.name
-            #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{date_str}"
-            # else:
-            #     values['name'] = supplier.ref or supplier.name or 'Harian'
             if not values.get('name') or values.get('name') == "New":
                 date_str = values.get('date')
                 if not date_str:
@@ -336,19 +331,6 @@ class lhm_contractor(models.Model):
 
                 values['name'] = f"BKH/{supplier_name}/{year}/{month}"
         else:
-            # if period:
-            #     month = period.date_start.strftime('%m')
-            #     year = period.date_start.strftime('%Y')
-            #     supplier_ref = supplier.ref if supplier.ref else supplier.name
-            #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
-            # if values.get('date_start'):
-            #     date_obj = fields.Date.from_string(values['date_start'])
-            #     month = date_obj.strftime('%m')
-            #     year = date_obj.strftime('%Y')
-            #     supplier_ref = supplier.ref if supplier.ref else supplier.name
-            #     values['name'] = f"{supplier_ref or 'Unknown Supplier'}/{year}-{month}"
-            # else:
-            #     values['name'] = supplier.ref or supplier.name or 'Bulanan'
             if not values.get('name') or values.get('name') == "New":
                 date_start_str = values.get('date_start')
                 if not date_start_str:
@@ -545,12 +527,20 @@ class lhm_contractor(models.Model):
 
     def write(self, values):
         if "date" in values:
-            for contractors in self:
-                new_date = values["date"]
-                for line in contractors.line_ids:
+            new_date = fields.Date.from_string(values["date"])
+            year = new_date.strftime("%Y")
+            month = new_date.strftime("%m")
+
+            for contractor in self:
+                for line in contractor.line_ids:
                     line.date = new_date
-        
-        return super(lhm_contractor, self).write(values)
+
+                if contractor.name.startswith("BKH/"):
+                    supplier = contractor.supplier_id
+                    supplier_name = supplier.name.upper().replace(" ", "_")
+                    contractor.name = f"BKH/{supplier_name}/{year}/{month}"
+
+        return super().write(values)
 
     def get_material(self):
         move_obj            = self.env['stock.move']
