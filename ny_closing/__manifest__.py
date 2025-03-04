@@ -42,5 +42,6 @@
 
         # Report Mutasi Closing
         'report/report_mutasi_closing_action.xml',
+        'report/report_view.xml',
     ],
 }

@@ -54,9 +54,12 @@ class ClosingProcess(models.Model):
     # mark_closing_production_nonkaret_is_done = fields.Boolean(compute='_compute_mark_done_production_nonkaret', store=True)
 
     ############ REPORT ############
-    def mutasi_closing_report(self):
+    def print_closing_production_report(self):
         # print("==== mutasi_closing_report ====")
         return self.env.ref('ny_closing.action_report_mutasi_closing').report_action(self)
+
+    def print_closing_plantation_report(self):
+        return self.env.ref('ny_closing.action_plantation_closing_xlsx').report_action(self)
     ############ END REPORT ############
 
     @api.model
