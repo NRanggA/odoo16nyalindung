@@ -104,6 +104,7 @@ class ClosingLaboratory(models.Model):
         for closing in self:
             StockMove = self.env['stock.move']
             # Get Initial Value
+            prev_closing = self.search([('lab_product_id','=',closing.lab_product_id.id),('date_to','<',closing.date_from)], order='date_to desc', limit=1)
 
             # Beginning WIP
             open_prod_orders = self.env['lab.production.order'].search([('lab_product_id','=',closing.lab_product_id.id),
@@ -113,10 +114,11 @@ class ClosingLaboratory(models.Model):
                                                                 ('date_end','>=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
             closing.opening_wip_qty = sum(open_prod_orders.mapped('product_qty')) if open_prod_orders else 0.0
 
-            domain_op_wip = closing._get_domain_source_move_lines()
-            domain_op_wip.extend([('date','<',closing.date_from)])
-            begining_moves_wip = self.env['account.move.line'].search(domain_op_wip)
-            closing.opening_wip_value = sum(begining_moves_wip.mapped('balance')) if begining_moves_wip else 0.0
+            # domain_op_wip = closing._get_domain_source_move_lines()
+            # domain_op_wip.extend([('date','<',closing.date_from)])
+            # begining_moves_wip = self.env['account.move.line'].search(domain_op_wip)
+            closing.opening_wip_value = prev_closing.closing_wip_value if prev_closing else 0.0
+            # closing.opening_wip_value = sum(begining_moves_wip.mapped('balance')) if begining_moves_wip else 0.0
             
             # Receiving WIP
             new_prod_ordres = self.env['lab.production.order'].search([('lab_product_id','=',closing.lab_product_id.id),
@@ -146,12 +148,13 @@ class ClosingLaboratory(models.Model):
                                                           ('location_dest_id.usage','!=','internal'),
                                                           ('date','<',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                                           ('state','=','done')])
-            closing.opening_fg_qty = (sum(all_in_moves.mapped('product_uom_qty')) if all_in_moves else 0.0) + (sum(all_out_moves.mapped('product_uom_qty')) if all_out_moves else 0.0)
+            closing.opening_fg_qty = (sum(all_in_moves.mapped('product_uom_qty')) if all_in_moves else 0.0) - (sum(all_out_moves.mapped('product_uom_qty')) if all_out_moves else 0.0)
 
-            domain_op = closing._get_domain_source_move_lines_fg()
-            domain_op.extend([('date','<',closing.date_from)])
-            begining_moves = self.env['account.move.line'].search(domain_op)
-            closing.opening_fg_value = sum(begining_moves.mapped('balance')) if begining_moves else 0.0
+            # domain_op = closing._get_domain_source_move_lines_fg()
+            # domain_op.extend([('date','<',closing.date_from)])
+            # begining_moves = self.env['account.move.line'].search(domain_op)
+            # closing.opening_fg_value = sum(begining_moves.mapped('balance')) if begining_moves else 0.0
+            closing.opening_fg_value = prev_closing.closing_fg_value
 
             # Receiving FG
             in_moves = self.env['stock.move'].search([('product_id','=',closing.lab_product_id.product_id.id),
