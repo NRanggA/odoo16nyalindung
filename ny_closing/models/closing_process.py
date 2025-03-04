@@ -497,7 +497,7 @@ class ClosingProcess(models.Model):
                     vals2.update({'prev_closing_id': prev_closing2.id,
                         'pisang_inventory_account_id': prev_closing2.pisang_inventory_account_id.id if prev_closing2.pisang_inventory_account_id else False,
                         'pisang_wip_account_id': prev_closing2.pisang_wip_account_id.id if prev_closing2.pisang_wip_account_id else False,
-                        'pisang_varieties_id': prev_closing2.id,
+                        'pisang_varieties_id': prev_closing2.pisang_varieties_id.id,
                         'pisang_non_grade_ids': [(6,0,prev_closing2.pisang_non_grade_ids.ids)] if prev_closing2.pisang_non_grade_ids else [],
                         'pisang_with_grade_ids': [(6,0,prev_closing2.pisang_with_grade_ids.ids)] if prev_closing2.pisang_with_grade_ids else [],
                     })
