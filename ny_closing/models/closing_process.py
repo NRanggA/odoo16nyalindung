@@ -535,7 +535,8 @@ class ClosingProcess(models.Model):
     
     def button_continue_to_closing_laboratory(self):
         for rec in self:
-            if not rec.mark_closing_nursery_is_done:
+            # if not rec.mark_closing_nursery_is_done:
+            if not rec.mark_running_machine_is_done:
                 raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
             rec.get_laboratory()
             rec.write({'state': 'closing_laboratory'})
@@ -547,7 +548,8 @@ class ClosingProcess(models.Model):
 
     def button_continue_to_closing_project(self):
         for rec in self:
-            if not rec.mark_running_machine_is_done:
+            if not rec.mark_closing_laboratory_is_done:
+            # if not rec.mark_running_machine_is_done:
                 raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
             rec.get_project()
             rec.write({'state': 'closing_project'})
@@ -571,7 +573,8 @@ class ClosingProcess(models.Model):
 
     def button_continue_to_closing_plantation(self):
         for rec in self:
-            if not rec.mark_closing_laboratory_is_done:
+            # if not rec.mark_closing_laboratory_is_done:
+            if not rec.mark_closing_nursery_is_done:
                 raise ValidationError(f"Silahkan centang 'Mark as Done' atas proses '{rec.state.replace('_',' ')}' terlebih dahulu untuk melanjutkan ke proses berikutnya") 
             rec.get_plantation()
             rec.write({'state': 'closing_plantation'})
