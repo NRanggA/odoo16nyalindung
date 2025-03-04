@@ -1467,14 +1467,18 @@ class ClosingProduction(models.Model):
 
     def button_start(self):
         for closing in self:
-            # Linked to Last Opening Balance
-            prev_closing = self.search([('state','=','done'),('date_to','<',closing.date_from)], order='date_from desc', limit=1)
-            if prev_closing:
-                closing.prev_closing_id = prev_closing.id
             #####
             if closing.varieties_type=='karet':
+                # Linked to Last Opening Balance
+                prev_closing = self.search([('state','=','done'),('date_to','<',closing.date_from),('varieties_type','=','karet')], order='date_from desc', limit=1)
+                if prev_closing:
+                    closing.prev_closing_id = prev_closing.id
                 closing.compute_initial_and_cost_rm_karet()
             elif closing.varieties_type=='pisang':
+                # Linked to Last Opening Balance
+                prev_closing = self.search([('state','=','done'),('date_to','<',closing.date_from),('varieties_type','=','pisang')], order='date_from desc', limit=1)
+                if prev_closing:
+                    closing.prev_closing_id = prev_closing.id
                 closing.compute_initial_and_cost_rm_pisang()
             closing.write({'state': 'rm_valuation'})
         return True
