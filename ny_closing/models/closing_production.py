@@ -668,14 +668,15 @@ class ClosingProduction(models.Model):
             closing.lump_wip_incoming_value = closing.lump_wip_incoming_qty * closing.lump_new_cost_price
 
     @api.depends('pct_cost_for_sheet', 'pct_cost_for_compound', 
-        'mrp_cost_ids.total_cost_latex', 'mrp_cost_ids.total_cost_lump')
+        'mrp_cost_ids.total_cost_latex', 'mrp_cost_ids.total_cost_lump',
+        'mrp_sheet_cost','mrp_compound_cost')
     def _compute_mrp_cost_distribution(self):
         for closing in self:
             mrp_cost_only = closing.mrp_cost_ids.filtered(lambda x: x.is_manufacturing_cost and not x.is_mrp_sheet_cost and not x.is_mrp_compound_cost)
             closing.sheet_manufacturing_cost = sum(mrp_cost_only.mapped('total_cost_latex')) if mrp_cost_only else 0.0
             closing.compound_manufacturing_cost = sum(mrp_cost_only.mapped('total_cost_lump')) if mrp_cost_only else 0.0
-            closing.sheet_production_cost = closing.sheet_manufacturing_cost
-            closing.compound_production_cost = closing.compound_manufacturing_cost
+            closing.sheet_production_cost = closing.sheet_manufacturing_cost + closing.mrp_sheet_cost
+            closing.compound_production_cost = closing.compound_manufacturing_cost + closing.mrp_compound_cost
 
     # @api.depends('manufacturing_cost', 
     #         'pct_cost_for_sheet', 'pct_cost_for_compound')
