@@ -1907,8 +1907,10 @@ class ClosingProduction(models.Model):
             # handling Pembuatan
             first_bal = check_balance = 0.0
             for x,y,val in move_lines_receiving:
-                first_bal = val['debit'] - val['credit']
-                check_balance += val['debit'] - val['credit']
+                if not first_bal:
+                    first_bal = round(val['debit'] - val['credit'], 2)
+                check_balance += round(val['debit'] - val['credit'], 2)
+            print("-------------- check balance receiving", check_balance)
             if check_balance>0.0 or check_balance<0:
                 if first_bal>0:
                     move_lines_receiving[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
@@ -1925,15 +1927,17 @@ class ClosingProduction(models.Model):
         if move_lines_wip:
             first_bal = check_balance = 0.0
             for x,y,val in move_lines_wip:
-                first_bal = val['debit'] - val['credit']
-                check_balance += val['debit'] - val['credit']
+                if not first_bal:
+                    first_bal = round(val['debit'] - val['credit'],2)
+                check_balance += round(val['debit'] - val['credit'], 2)
+            print("-------------- check balance wip", check_balance)
             if check_balance>0.0 or check_balance<0:
                 if first_bal>0:
                     move_lines_wip[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
                     move_lines_wip[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
             values2 = {
-                'date': self.date_from + relativedelta(months=1),
+                'date': self.date_to,
                 'journal_id': misc_journal.id,
                 'move_type': 'entry',
                 'line_ids': move_lines_wip,
@@ -1943,15 +1947,17 @@ class ClosingProduction(models.Model):
         if move_lines_outgoing:
             first_bal = check_balance = 0.0
             for x,y,val in move_lines_outgoing:
-                first_bal = val['debit'] - val['credit']
-                check_balance += val['debit'] - val['credit']
+                if not first_bal:
+                    first_bal = round(val['debit'] - val['credit'], 2)
+                check_balance += round(val['debit'] - val['credit'], 2)
+            print("-------------- check balance outgoing", check_balance)
             if check_balance>0.0 or check_balance<0:
                 if first_bal>0:
                     move_lines_outgoing[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
                     move_lines_outgoing[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
             values2 = {
-                'date': self.date_from + relativedelta(months=1),
+                'date': self.date_to,
                 'journal_id': misc_journal.id,
                 'move_type': 'entry',
                 'line_ids': move_lines_outgoing,
@@ -2238,7 +2244,7 @@ class ClosingProduction(models.Model):
                 'debit': round(abs(ripe_cost.total_cost), 2) if ripe_cost.total_cost<0 else 0.0,
                 'credit': round(ripe_cost.total_cost, 2) if ripe_cost.total_cost>0 else 0.0,
             }
-            check_bal += vals_src2['debit'] - vals_src2['credit']
+            check_bal += round(vals_src2['debit'] - vals_src2['credit'], 2)
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
             move_lines_production2.append((0,0,vals_src2))
 
