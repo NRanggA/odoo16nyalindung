@@ -281,6 +281,16 @@ class lhm_nap(models.Model):
             'target': 'new',
             'context': {'default_lhm_ids': []},
         }
+    
+    def button_get_data_melon(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Dapatkan Data Melon',
+            'res_model': 'lhm.nap.melon.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_lhm_melon_ids': []},
+        }
 
     # def button_get_data_karet(self):
     #     """
@@ -338,6 +348,37 @@ class lhm_nap(models.Model):
                 grouped.update({key: {'quantity': 0.0, 'date': kebun_data.lhm_transaction_line_id.date}})
             grouped[key]['quantity'] += kebun_data.lhm_transaction_line_id.hasil_2
 
+        for keyx, data in grouped.items():
+            self.env['timbangan.kebun'].create({
+                'block_id': keyx[0].id,
+                'product_id': keyx[1].id,
+                'product_qty': data['quantity'],
+                'tgl_panen': data['date'],
+                'uom_id': keyx[1].uom_id.id,
+                'lhm_nap_id': self.id
+            })
+
+    def process_data_melon(self, selected_lhm_melons):
+        self.kebun_line_ids.unlink()
+        self.pabrik_line_ids.unlink()
+        grouped = {}
+        for kebun_data in selected_lhm_melons:
+            lokasi = kebun_data.lhm_transaction_line_id.location_id 
+            blok_tanam = self.env['lhm.plant.block'].search([('location_id', '=', lokasi.id)])
+            if not blok_tanam:
+                continue
+            product = False
+            if kebun_data.product_id:
+                product = kebun_data.product_id
+            else:
+                product = kebun_data.lhm_transaction_line_id.product_id 
+            if not product or "melon".lower() not in product.name.lower():
+                continue
+            key = (blok_tanam, product) 
+            if key not in grouped.keys():
+                grouped.update({key: {'quantity': 0.0, 'date': kebun_data.lhm_transaction_line_id.date}})
+            grouped[key]['quantity'] += kebun_data.lhm_transaction_line_id.hasil_1
+        
         for keyx, data in grouped.items():
             self.env['timbangan.kebun'].create({
                 'block_id': keyx[0].id,
@@ -406,7 +447,6 @@ class lhm_nap(models.Model):
                 'lhm_nap_id': self.id
             })
 
-    
     def create_material_receipt(self):
         self.state = 'confirmed'
         for record in self:

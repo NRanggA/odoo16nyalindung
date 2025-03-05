@@ -24,4 +24,27 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
+
+    <record id="view_lhm_nap_melon_wizard_form" model="ir.ui.view">
+        <field name="name">lhm.nap.melon.wizard.form</field>
+        <field name="model">lhm.nap.melon.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Dapatkan Data Melon">
+                <group>
+                    <field name="lhm_melon_ids" widget="many2many_tags" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                </group>
+                <footer>
+                    <button string="Dapatkan Data" type="object" name="action_get_data_melon" class="btn-primary"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lhm_nap_melon_wizard" model="ir.actions.act_window">
+        <field name="name">Dapatkan Data Melon</field>
+        <field name="res_model">lhm.nap.melon.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
 </odoo>
