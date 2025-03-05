@@ -246,7 +246,8 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet.write_formula(row, 7, f"=SUM(H{start_wip_row}:H{row})", wbf['total_float'])  
         sheet.write_formula(row, 8, f"=SUM(I{start_wip_row}:I{row})", wbf['total_float'])  
 
-        sheet.write_formula(row, 9, f"=SUM(J{start_wip_row}:J{row})", wbf['total_float'])  
+        # sheet.write_formula(row, 9, f"=SUM(J{start_wip_row}:J{row})", wbf['total_float'])  
+        sheet.write(row, 9, "", wbf['total_float'])  
 
         sheet.write_formula(row, 10, f"=SUM(K{start_wip_row}:K{row})", wbf['total_float'])  
         sheet.write_formula(row, 11, f"=SUM(L{start_wip_row}:L{row})", wbf['total_float'])  
@@ -292,7 +293,8 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet.write_formula(row, 7, f"=SUM(H{start_fg_row}:H{row})", wbf['total_float'])  
         sheet.write_formula(row, 8, f"=SUM(I{start_fg_row}:I{row})", wbf['total_float'])  
 
-        sheet.write_formula(row, 9, f"=SUM(J{start_fg_row}:J{row})", wbf['total_float'])  
+        # sheet.write_formula(row, 9, f"=SUM(J{start_fg_row}:J{row})", wbf['total_float'])  
+        sheet.write(row, 9, "", wbf['total_float'])  
 
         sheet.write_formula(row, 10, f"=SUM(K{start_fg_row}:K{row})", wbf['total_float'])  
         sheet.write_formula(row, 11, f"=SUM(L{start_fg_row}:L{row})", wbf['total_float'])  
@@ -574,7 +576,8 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet2.write_formula(row, 9, f"=SUM(J{start_row}:J{row})", wbf['total_float'])  
 
         sheet2.write_formula(row, 10, f"=SUM(K{start_row}:K{row})", wbf['total_float']) 
-        sheet2.write_formula(row, 11, f"=SUM(L{start_row}:L{row})", wbf['total_float']) 
+        # sheet2.write_formula(row, 11, f"=SUM(L{start_row}:L{row})", wbf['total_float']) 
+        sheet2.write(row, 11, "", wbf['total_float']) 
         
         sheet2.write_formula(row, 12, f"=SUM(M{start_row}:M{row})", wbf['total_float']) 
         sheet2.write_formula(row, 13, f"=SUM(N{start_row}:N{row})", wbf['total_float']) 
@@ -616,7 +619,14 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet2.write(row, 1, "TOTAL", wbf['header'])
         sheet2.write(row, 2, '', wbf['header'])
         col = 3  
-        for total in total_values:
+        # for total in total_values:
+        #     sheet2.write(row, col, total, wbf['total_float'])
+        #     col += 1
+        for idx, total in enumerate(total_values):
+            if idx == 6:
+                sheet2.write(row, col, '', wbf['total_float'])
+                col += 1
+                continue
             sheet2.write(row, col, total, wbf['total_float'])
             col += 1
 
@@ -763,7 +773,8 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet2.write_formula(row, 7, f"=SUM(H{start_row}:H{row})", wbf['total_float']) 
         sheet2.write_formula(row, 8, f"=SUM(I{start_row}:I{row})", wbf['total_float']) 
 
-        sheet2.write_formula(row, 9, f"=SUM(J{start_row}:J{row})", wbf['total_float'])  
+        # sheet2.write_formula(row, 9, f"=SUM(J{start_row}:J{row})", wbf['total_float'])  
+        sheet2.write(row, 9, "", wbf['total_float'])  
 
         sheet2.write_formula(row, 10, f"=SUM(K{start_row}:K{row})", wbf['total_float']) 
         sheet2.write_formula(row, 11, f"=SUM(L{start_row}:L{row})", wbf['total_float']) 
@@ -923,7 +934,8 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet3.write_formula(row, 7, f"=SUM(H{start_row}:H{row})", wbf['total_float']) 
         sheet3.write_formula(row, 8, f"=SUM(I{start_row}:I{row})", wbf['total_float']) 
 
-        sheet3.write_formula(row, 9, f"=SUM(J{start_row}:J{row})", wbf['total_float'])  
+        # sheet3.write_formula(row, 9, f"=SUM(J{start_row}:J{row})", wbf['total_float'])  
+        sheet3.write(row, 9, "", wbf['total_float'])  
 
         sheet3.write_formula(row, 10, f"=SUM(K{start_row}:K{row})", wbf['total_float']) 
         sheet3.write_formula(row, 11, f"=SUM(L{start_row}:L{row})", wbf['total_float']) 
@@ -984,7 +996,8 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet3.write_formula(row, 7, f"=SUM(H{start_repening_row}:H{row})", wbf['total_float'])
         sheet3.write_formula(row, 8, f"=SUM(I{start_repening_row}:I{row})", wbf['total_float'])
         sheet3.write_formula(row, 9, f"=SUM(J{start_repening_row}:J{row})", wbf['total_float'])
-        sheet3.write_formula(row, 10, f"=SUM(K{start_repening_row}:K{row})", wbf['total_float'])
+        # sheet3.write_formula(row, 10, f"=SUM(K{start_repening_row}:K{row})", wbf['total_float'])
+        sheet3.write(row, 10, "", wbf['total_float'])
         sheet3.write_formula(row, 11, f"=SUM(L{start_repening_row}:L{row})", wbf['total_float'])
         sheet3.write_formula(row, 12, f"=SUM(M{start_repening_row}:M{row})", wbf['total_float'])
         sheet3.write_formula(row, 13, f"=SUM(N{start_repening_row}:N{row})", wbf['total_float'])
