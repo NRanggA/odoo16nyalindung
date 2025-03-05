@@ -15,8 +15,11 @@ class HrPayslipRun(models.Model):
     def action_gc_distribution(self):
         self.ensure_one()
         query_get_gc = f"""SELECT 
-                cm.partner_id, cm.plantation_varieties_id, cm.plantation_location_type_id, 
+                cm.partner_id, 
+                cm.plantation_varieties_id, 
+                cm.plantation_location_type_id, 
                 cm.plantation_location_id,
+                cm.plantation_activity_id, 
                 array_agg(cm.id) as cm_ids, sum(cm.debit_amount) as cost  
             FROM hr_payslip_cost_map cm, lhm_location_type llt \
             WHERE cm.plantation_location_type_id=llt.id
@@ -24,14 +27,17 @@ class HrPayslipRun(models.Model):
                 and cm.payslip_run_id={self.id} 
                 and cm.debit_amount>0 
                 and cm.type='reclass'
-            GROUP BY cm.partner_id,cm.plantation_varieties_id,cm.plantation_location_type_id,
-                cm.plantation_location_id"""
+            GROUP BY cm.partner_id,
+                cm.plantation_varieties_id,
+                cm.plantation_location_type_id,
+                cm.plantation_location_id,
+                cm.plantation_activity_id"""
         self.env.cr.execute(query_get_gc)
         gc_lines = self.env.cr.fetchall()
         cost_map_to_add = []
         field_cost_type = self.env['lhm.location.type'].search([('plantation','=',True)], limit=1)
         project_cost_type = self.env['lhm.location.type'].search([('project','=',True)], limit=1)
-        for partner_id, varieties_id, type_id, location_id, cm_ids, debit_amt in gc_lines:
+        for partner_id, varieties_id, type_id, location_id, activity_id, cm_ids, debit_amt in gc_lines:
             afdeling_found = self.env['res.afdeling'].search([('location_id','=',location_id)], limit=1)
             cost_center_found = self.env['account.cost.center'].search([('location_id','=',location_id)], limit=1)
             if afdeling_found:

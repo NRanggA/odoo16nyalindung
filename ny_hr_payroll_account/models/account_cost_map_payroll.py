@@ -145,7 +145,7 @@ class AccountCostMapPayroll(models.Model):
                     plantation_location_id, plantation_activity_id)
                 UNION ALL
                 (SELECT
-                    NULL as plantation_varieties_id, 
+                    plantation_varieties_id,
                     plantation_location_type_id,
                     plantation_location_id,
                     plantation_activity_id,
@@ -156,6 +156,7 @@ class AccountCostMapPayroll(models.Model):
                 GROUP BY account_id, plantation_varieties_id, plantation_location_type_id,
                     plantation_location_id, plantation_activity_id)
             """
+                    # NULL as plantation_varieties_id, 
             self.env.cr.execute(query%(batch.id,batch.id))
             
             for vals in self.env.cr.dictfetchall():
