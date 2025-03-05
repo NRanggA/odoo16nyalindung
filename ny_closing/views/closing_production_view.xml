@@ -748,11 +748,11 @@
                                     <tr>
                                         <td>Other Cost for Sheet</td>
                                         <td></td>
-                                        <td><field name="mrp_sheet_cost" readonly="1"/></td>
+                                        <td style="text-align: right;"><field name="mrp_sheet_cost" readonly="1"/></td>
                                         <td></td>
-                                        <td>Other Cot for Compo</td>
+                                        <td>Other Cost for Compo</td>
                                         <td></td>
-                                        <td><field name="mrp_compound_cost" readonly="1"/></td>
+                                        <td style="text-align: right;"><field name="mrp_compound_cost" readonly="1"/></td>
                                         <td></td>
                                     </tr>
                                     <!-- ASAM SEMUT -->
@@ -822,10 +822,10 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Cost Asam Semut</td>
+                                        <td style="padding-left: 20px;">Cost Asam Semut</td>
                                         <td></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="sheet_rm_closing_value" /></td>
+                                        <td style="text-align: right;"><field name="sheet_raw_material_cost" /></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
