@@ -803,9 +803,9 @@ class ReportMutasiClosing(models.AbstractModel):
                 sheet3.merge_range(start_row, 5, start_row, 6, 'Incoming', wbf['header'])
                 sheet3.merge_range(start_row, 7, start_row, 8, 'Onhand Qty', wbf['header'])
                 sheet3.write(start_row, 9, 'New Cost Price', wbf['header'])
-                sheet3.merge_range(start_row, 10, start_row, 11, 'Repening', wbf['header'])
+                sheet3.merge_range(start_row, 10, start_row, 11, 'Ripening', wbf['header'])
                 sheet3.merge_range(start_row, 12, start_row, 13, 'Scrap', wbf['header'])
-                sheet3.merge_range(start_row, 14, start_row, 15, 'Devlivery', wbf['header'])
+                sheet3.merge_range(start_row, 14, start_row, 15, 'Delivery', wbf['header'])
                 sheet3.merge_range(start_row, 16, start_row, 17, 'Adjustment', wbf['header'])
                 sheet3.merge_range(start_row, 18, start_row, 19, 'Ending', wbf['header'])
                 
@@ -852,7 +852,7 @@ class ReportMutasiClosing(models.AbstractModel):
 
                 sheet3.write(start_row + 1, 5, 'Qty', wbf['header'])
                 sheet3.write(start_row + 1, 6, 'Value', wbf['header'])
-                sheet3.write(start_row + 1, 7, 'Repening Cost', wbf['header'])
+                sheet3.write(start_row + 1, 7, 'Ripening Cost', wbf['header'])
                 
                 sheet3.write(start_row + 1, 8, 'Qty', wbf['header'])
                 sheet3.write(start_row + 1, 9, 'Value', wbf['header'])
@@ -943,9 +943,9 @@ class ReportMutasiClosing(models.AbstractModel):
 
         # Repening Location
         row += 2 
-        sheet3.write(row, 0, "Repening Location", wbf['title_doc'])
+        sheet3.write(row, 0, "Ripening Location", wbf['title_doc'])
         row += 1
-        row = write_table_headers(row, "Repening Location")
+        row = write_table_headers(row, "Ripening Location")
         
         for pisang in pisang_fg2_items:
             sheet3.write(row, 0, pisang.product_id.default_code if pisang.product_id.default_code else '-', wbf['content'])
