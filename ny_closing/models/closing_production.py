@@ -1465,12 +1465,18 @@ class ClosingProduction(models.Model):
                     if line.product_id.id==closing.compound_product_id.id:
                         prev_closing_fg_compo = line
             # Find Delivery/Sales
-            outgoing_moves22 = self.env['stock.move'].search([('product_id','=',closing.compound_product_id.id),('state','=','done'),
-                            ('location_id.usage','=','internal'),('location_dest_id.usage','!=','internal'),
+            outgoing_moves22_1 = self.env['stock.move'].search([('product_id','=',closing.compound_product_id.id),('state','=','done'),
+                            ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
                             ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                             ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                             ])
-            outgoing_qty22 = sum(outgoing_moves22.mapped('product_uom_qty')) if outgoing_moves22 else 0.0
+            outgoing_moves22_2 = self.env['stock.move'].search([('product_id','=',closing.compound_product_id.id),('state','=','done'),
+                            ('location_id.usage','=','customer'),('location_dest_id.usage','=','internal'),
+                            ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                            ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                            ])
+            outgoing_qty22 = sum(outgoing_moves22_1.mapped('product_uom_qty')) if outgoing_moves22_1 else 0.0
+            outgoing_qty22 -= sum(outgoing_moves22_2.mapped('product_uom_qty')) if outgoing_moves22_2 else 0.0
             values_to_create_compo = {
                 'product_id': closing.compound_product_id.id,
                 'prev_closing_fg_id': prev_closing_fg_compo.id if prev_closing_fg_compo else False,
