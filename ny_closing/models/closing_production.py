@@ -1668,6 +1668,7 @@ class ClosingProduction(models.Model):
             for ll in self.mrp_cost_ids:
                 vals_wip_src = {
                     'name': 'Move Cost to WIP Lateks',
+                    'plantation_varieties_id': varieties.id,
                     # 'plantation_location_type_id': ll.plantation_location_type_id.id,
                     # 'plantation_location_id': ll.plantation_location_id.id,
                     # 'plantation_activity_id': ll.plantation_activity_id.id,
