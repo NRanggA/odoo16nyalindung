@@ -1479,7 +1479,6 @@ class ClosingProduction(models.Model):
                     'inventory_account_id': prev_closing_fg_compo.inventory_account_id.id if prev_closing_fg_compo.inventory_account_id else False,
                     'cogs_account_id': prev_closing_fg_compo.cogs_account_id.id if prev_closing_fg_compo.cogs_account_id else False,
                 })
-                to_create.append(values_to_create_compo)
             to_create.append(values_to_create_compo)
 
             # Other Plantation Product
