@@ -1566,6 +1566,7 @@ class ClosingProduction(models.Model):
             for ll in self.plantation_cost_ids:
                 vals_src = {
                     'name': 'Move Cost to Inventory Lateks',
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_type_id': ll.plantation_location_type_id.id,
                     'plantation_location_id': ll.plantation_location_id.id,
                     'plantation_activity_id': ll.plantation_activity_id.id,
@@ -1592,6 +1593,7 @@ class ClosingProduction(models.Model):
             for ll in self.plantation_cost_ids:
                 vals_src = {
                     'name': 'Move Cost to Inventory Lump',
+                    'plantation_varieties_id': varieties.id,
                     'plantation_location_type_id': ll.plantation_location_type_id.id,
                     'plantation_location_id': ll.plantation_location_id.id,
                     'plantation_activity_id': ll.plantation_activity_id.id,
