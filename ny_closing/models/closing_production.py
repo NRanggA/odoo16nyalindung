@@ -2,6 +2,7 @@ from odoo import models, api, fields, Command, _
 from odoo.exceptions import ValidationError
 
 from dateutil.relativedelta import relativedelta
+from lxml import etree
 
 class ClosingProductionPlantationCost(models.Model):
     _name = 'closing.production.plantation.cost'
@@ -387,6 +388,22 @@ class ClosingProductionFinishGood(models.Model):
                 }
                 new_move = self.env['account.move'].create(values)
                 line.closing_move_id = new_move.id
+    
+    @api.model
+    def get_views(self, views, options=None):
+        result = super(ClosingProductionFinishGood, self).get_views(views, options=options)
+        print(";;;;;;;;;;;;;;;;;;;;;;;;;", self._context)
+        # if self._context.get('params',{}).get('id',0)>0:
+        #     res_active_rec = self.search_read([('id','=',self._context['params']['id'])], ['state'])
+        #     if res_active_rec and res_active_rec[0]['state'] not in ('draft','cancel'):
+        #         form_arch = etree.fromstring(result['views']['form']['arch'])
+        #         page_name_active = res_active_rec[0]['state']
+        #         if page_name_active=='done':
+        #             page_name_active = 'closing_production'
+        #         for node in form_arch.xpath(f"//page[@name='{page_name_active}']"):
+        #             node.set("autofocus", "autofocus")
+        #         result['views']['form']['arch'] = etree.tostring(form_arch, encoding="unicode").replace('\t', '')
+        return result
 
 class ClosingProduction(models.Model):
     _name = 'closing.production'
@@ -458,8 +475,10 @@ class ClosingProduction(models.Model):
     sheet_rm_inventory_account_id = fields.Many2one('account.account', string='Inventory Account Asam Semut')
     sheet_rm_purchase_account_id = fields.Many2one('account.account', string='Purchase Account Asam Semut')
     sheet_rm_consumption_account_id = fields.Many2one('account.account', string='Consumption Account Asam Semut')
-    sheet_rm_opening_qty = fields.Float(string='Begining Qty of Asam Semut')
-    sheet_rm_opening_value = fields.Float(string='Begining Value of Asam Semut')
+    sheet_rm_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Begining Qty of Asam Semut')
+    sheet_rm_opening_qty_manual = fields.Float(string='Begining Qty of Asam Semut')
+    sheet_rm_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Begining Value of Asam Semut')
+    sheet_rm_opening_value_manual = fields.Float(string='Begining Value of Asam Semut')
     sheet_rm_incoming_qty = fields.Float(string='Incoming Qty of Asam Semut')
     sheet_rm_incoming_value = fields.Float(string='Incoming Qty of Asam Semut')
     sheet_rm_onhand_qty = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='Onhand Qty of Asam Semut')
@@ -551,6 +570,8 @@ class ClosingProduction(models.Model):
     compound_wip_account_id = fields.Many2one('account.account', 'Account WIP Compo')
     
     fg2_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Finish Goods Valuation')
+    fg_karet_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Finish Goods Valuation')
+    fg_pisang_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Finish Goods Valuation')
 
     ############################# PISANG ###########################
     # Pisang
@@ -581,6 +602,9 @@ class ClosingProduction(models.Model):
             closing.lump_opening_value = closing.prev_closing_id.lump_closing_value if closing.prev_closing_id else closing.lump_opening_value_manual
             # closing.lump_wip_opening_qty = closing.prev_closing_id.lump_wip_qty if closing.prev_closing_id else closing.lump_wip_opening_qty_manual
             closing.lump_wip_opening_value = closing.prev_closing_id.lump_wip_value if closing.prev_closing_id else closing.lump_wip_opening_value_manual
+
+            closing.sheet_rm_opening_qty = closing.prev_closing_id.sheet_rm_opening_qty if closing.prev_closing_id else closing.sheet_rm_opening_qty_manual
+            closing.sheet_rm_opening_value = closing.prev_closing_id.sheet_rm_opening_value if closing.prev_closing_id else closing.sheet_rm_opening_value_manual
 
     @api.onchange('latex_opening_qty', 'latex_opening_value',
             # 'latex_wip_opening_qty', 
@@ -631,7 +655,6 @@ class ClosingProduction(models.Model):
     def _compute_onhand_and_cost_price_rm(self):
         for closing in self:
             closing.latex_onhand_qty = closing.latex_opening_qty + closing.latex_incoming_qty
-            print(">>>>>>>>>>>>>>>>>")
             closing.latex_onhand_value = closing.latex_opening_value + closing.latex_plantation_cost
             closing.latex_new_cost_price = closing.latex_onhand_value/closing.latex_onhand_qty if closing.latex_onhand_qty else 0.0
             closing.lump_onhand_qty = closing.lump_opening_qty + closing.lump_incoming_qty
@@ -649,8 +672,9 @@ class ClosingProduction(models.Model):
         'mrp_cost_ids.total_cost_latex', 'mrp_cost_ids.total_cost_lump')
     def _compute_mrp_cost_distribution(self):
         for closing in self:
-            closing.sheet_manufacturing_cost = sum(closing.mrp_cost_ids.mapped('total_cost_latex')) if closing.mrp_cost_ids else 0.0
-            closing.compound_manufacturing_cost = sum(closing.mrp_cost_ids.mapped('total_cost_lump')) if closing.mrp_cost_ids else 0.0
+            mrp_cost_only = closing.mrp_cost_ids.filtered(lambda x: x.is_manufacturing_cost and not x.is_mrp_sheet_cost and not x.is_mrp_compound_cost)
+            closing.sheet_manufacturing_cost = sum(mrp_cost_only.mapped('total_cost_latex')) if mrp_cost_only else 0.0
+            closing.compound_manufacturing_cost = sum(mrp_cost_only.mapped('total_cost_lump')) if mrp_cost_only else 0.0
             closing.sheet_production_cost = closing.sheet_manufacturing_cost
             closing.compound_production_cost = closing.compound_manufacturing_cost
 
@@ -1419,6 +1443,8 @@ class ClosingProduction(models.Model):
                     values_to_create.update({
                         'inventory_account_id': prev_closing_fg.inventory_account_id.id if prev_closing_fg.inventory_account_id else False,
                         'cogs_account_id': prev_closing_fg.cogs_account_id.id if prev_closing_fg.cogs_account_id else False,
+                        'scrap_account_id': prev_closing_fg.scrap_account_id.id if prev_closing_fg.scrap_account_id else False,
+                        'adjustment_account_id': prev_closing_fg.adjustment_account_id.id if prev_closing_fg.adjustment_account_id else False,
                     })
                 to_create.append(values_to_create)
             # Fill in manufacturing Cost proporsionally

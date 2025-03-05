@@ -6,10 +6,6 @@
         <field name="priority" eval="10"/>
         <field name="arch" type="xml">
             <form>
-                <!-- <header>
-                    <button string="Summerize Cost" name="compute_initial_and_cost_oth_variant" type="object" class="oe_highlight" attrs="{'invisible': ['|',('closing_process_id','=',False),('closing_move_id','!=',False)]}"/>
-                    <button string="Create Joural Entry" name="create_move_entry_fg" type="object" class="oe_highlight" attrs="{'invisible': ['|',('closing_process_id','=',False),('closing_move_id','!=',False)]}"/>
-                </header> -->
                 <sheet>
                     <field name="closing_process_id" invisible="1"/>
                     <group>
@@ -54,16 +50,17 @@
                                         <td style="font-weight: bold;">Incoming</td>
                                         <td style="text-align: right;"><field name="incoming_qty"/></td>
                                         <td></td>
-                                        <td style="text-align: right;">
+                                        <!-- <td style="text-align: right;">
                                             <field name="manufacturing_cost" />
                                             <br/>
-                                            <field name="plantation_cost" /></td>
+                                            <field name="plantation_cost" /></td> -->
+                                        <td></td>
                                         <td></td>
                                     </tr>
                                     <tr>
                                         <td style="font-weight: bold;">Plantation Cost
-                                            <button name="action_compute_plant_cost" type="object" icon="fa-refresh"/>
-                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
+                                            <!-- <button name="action_compute_plant_cost" type="object" icon="fa-refresh"/>
+                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/> -->
                                         </td>
                                         <td style="text-align: right;"></td>
                                         <td></td>
@@ -122,8 +119,8 @@
                                 </tbody>
                             </table>
 
-                            <label for="plantation_cost_ids" groups="base.group_no_one" attrs="{'invisible': [('plantation_cost_ids','=',[])]}"/>
-                            <field name="plantation_cost_ids" groups="base.group_no_one" attrs="{'invisible': [('plantation_cost_ids','=',[])]}" readonly="1">
+                            <label for="plantation_cost_ids" attrs="{'invisible': [('plantation_cost_ids','=',[])]}"/>
+                            <field name="plantation_cost_ids" attrs="{'invisible': [('plantation_cost_ids','=',[])]}" readonly="1">
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
@@ -157,7 +154,14 @@
                                         <td style="font-weight: bold;">Incoming</td>
                                         <td style="text-align: right;"><field name="ripening_incoming_qty"/></td>
                                         <td></td>
-                                        <td style="text-align: right;"><field name="ripening_incoming_value" /><br/><field name="ripening_cost" /></td>
+                                        <td style="text-align: right;"><field name="ripening_incoming_value" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Ripening Cost</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_cost" /></td>
                                         <td></td>
                                     </tr>
                                     <tr>
@@ -200,12 +204,9 @@
     <record id="closing_production_fg_karet_form" model="ir.ui.view">
         <field name="name">closing.production.finishgood.karet.form</field>
         <field name="model">closing.production.finishgood</field>
+        <field name="priority" eval="10"/>
         <field name="arch" type="xml">
             <form>
-                <!-- <header>
-                    <button string="Summerize Cost" name="compute_initial_and_cost_oth_variant" type="object" class="oe_highlight" attrs="{'invisible': ['|',('closing_process_id','=',False),('closing_move_id','!=',False)]}"/>
-                    <button string="Create Joural Entry" name="create_move_entry_fg" type="object" class="oe_highlight" attrs="{'invisible': ['|',('closing_process_id','=',False),('closing_move_id','!=',False)]}"/>
-                </header> -->
                 <sheet>
                     <field name="closing_process_id" invisible="1"/>
                     <group>
@@ -251,16 +252,6 @@
                                         <td style="text-align: right;"><field name="manufacturing_cost" /></td>
                                         <td></td>
                                     </tr>
-                                    <!-- <tr>
-                                        <td style="font-weight: bold;">Plantation Cost
-                                            <button name="action_compute_plant_cost" type="object" icon="fa-refresh"/>
-                                            <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
-                                        </td>
-                                        <td style="text-align: right;"></td>
-                                        <td></td>
-                                        <td style="text-align: right;"><field name="plantation_cost" /></td>
-                                        <td></td>
-                                    </tr> -->
                                     <tr>
                                         <td style="font-weight: bold;">Onhand Qty</td>
                                         <td style="text-align: right;"><field name="onhand_qty"/></td>
@@ -306,16 +297,16 @@
                                 </tbody>
                             </table>
 
-                            <label for="plantation_cost_ids" groups="base.group_no_one" attrs="{'invisible': [('plantation_cost_ids','=',[])]}"/>
-                            <field name="plantation_cost_ids" groups="base.group_no_one" attrs="{'invisible': [('plantation_cost_ids','=',[])]}" readonly="1">
+                            <label for="plantation_cost_ids" attrs="{'invisible': [('plantation_cost_ids','=',[])]}"/>
+                            <field name="plantation_cost_ids" attrs="{'invisible': [('plantation_cost_ids','=',[])]}" readonly="1">
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" invisible="1"/>
-                                    <field name="total_cost_lump" invisible="1"/>
+                                    <field name="total_cost_latex" optional="hide"/>
+                                    <field name="total_cost_lump" optional="hide"/>
                                     <field name="total_cost" sum="total_cost"/>
                                 </tree>
                             </field>
@@ -329,6 +320,7 @@
     <record id="closing_production_fg_view_form" model="ir.ui.view">
         <field name="name">closing.production.finishgood.view.form</field>
         <field name="model">closing.production.finishgood</field>
+        <field name="priority" eval="5"/>
         <field name="arch" type="xml">
             <form>
                 <header>
@@ -458,6 +450,7 @@
     <record id="closing_production_fg_view_tree" model="ir.ui.view">
         <field name="name">closing.production.finishgood.view.tree</field>
         <field name="model">closing.production.finishgood</field>
+        <field name="priority" eval="5"/>
         <field name="arch" type="xml">
             <tree>
                 <field name="product_id" />
@@ -467,10 +460,59 @@
                 <field name="manufacturing_cost" sum="manufacturing_cost" optional="hide" />
                 <field name="plantation_cost" sum="plantation_cost" optional="hide" />
                 <field name="onhand_qty" sum="onhand_qty" optional="hide" />
+                <field name="onhand_value" sum="onhand_value" optional="hide" />
+                <field name="new_cost_price" optional="hide" />
                 <field name="outgoing_qty" sum="outgoing_qty" />
-                <field name="outgoing_value" sum="outgoing_value" optional="show"/>
+                <field name="outgoing_value" sum="outgoing_value" optional="hide"/>
+                <field name="adjustment_qty" sum="adjustment_qty" />
+                <field name="adjustment_value" sum="adjustment_value" optional="hide"/>
                 <field name="closing_qty" sum="closing_qty" />
-                <field name="closing_value" sum="closing_value" optional="show"/>
+                <field name="closing_value" sum="closing_value" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_production_fg_pisang_tree" model="ir.ui.view">
+        <field name="name">closing.production.finishgood.view.tree</field>
+        <field name="model">closing.production.finishgood</field>
+        <field name="priority" eval="10"/>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id" />
+                <field name="opening_qty" sum="opening_qty"/>
+                <field name="opening_value" sum="opening_value" optional="hide" />
+                <field name="incoming_qty" sum="incoming_qty" />
+                <field name="plantation_cost" sum="plantation_cost" optional="hide" />
+                <field name="onhand_qty" sum="onhand_qty" optional="hide" />
+                <field name="onhand_value" sum="onhand_value" optional="hide" />
+                <field name="new_cost_price" optional="hide" />
+                <field name="ripening_qty" sum="ripening_qty" />
+                <field name="ripening_value" sum="ripening_value" optional="hide"/>
+                <field name="outgoing_qty" sum="outgoing_qty" />
+                <field name="outgoing_value" sum="outgoing_value" optional="hide"/>
+                <field name="scrap_qty" sum="scrap_qty" />
+                <field name="scrap_value" sum="scrap_value" optional="hide"/>
+                <field name="adjustment_qty" sum="adjustment_qty" />
+                <field name="adjustment_value" sum="adjustment_value" optional="hide"/>
+                <field name="closing_qty" sum="closing_qty" />
+                <field name="closing_value" sum="closing_value" optional="hide"/>
+
+                <field name="ripening_opening_qty" sum="ripening_opening_qty"/>
+                <field name="ripening_opening_value" sum="ripening_opening_value" optional="hide" />
+                <field name="ripening_incoming_qty" sum="ripening_incoming_qty" />
+                <field name="ripening_incoming_value" sum="ripening_incoming_value" />
+                <field name="ripening_cost" sum="ripening_cost" optional="hide" />
+                <field name="ripening_onhand_qty" sum="ripening_onhand_qty" optional="hide" />
+                <field name="ripening_onhand_value" sum="ripening_onhand_value" optional="hide" />
+                <field name="new_cost_price_ripening" optional="hide" />
+                <field name="ripening_outgoing_qty" sum="ripening_outgoing_qty" />
+                <field name="ripening_outgoing_value" sum="ripening_outgoing_value" optional="hide"/>
+                <!-- <field name="ripening_scrap_qty" sum="ripening_scrap_qty" />
+                <field name="ripening_scrap_value" sum="ripening_scrap_value" optional="hide"/> -->
+                <!-- <field name="adjustment_qty" sum="adjustment_qty" />
+                <field name="adjustment_value" sum="adjustment_value" optional="hide"/> -->
+                <field name="ripening_closing_qty" sum="ripening_closing_qty" />
+                <field name="ripening_closing_value" sum="ripening_closing_value" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -684,6 +726,16 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>% Cost for Sheet</td>
+                                        <td><field name="pct_cost_for_sheet" attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="text-align: right;"><field name="sheet_manufacturing_cost" /></td>
+                                        <td></td>
+                                        <td>% Cost for Compo</td>
+                                        <td><field name="pct_cost_for_compound" attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
+                                        <td style="text-align: right;"><field name="compound_manufacturing_cost" /></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td>Cost Account for Sheet</td>
                                         <td></td>
                                         <td><field name="mrp_sheet_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/></td>
@@ -694,13 +746,13 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>% Cost for Sheet</td>
-                                        <td><field name="pct_cost_for_sheet" attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td style="text-align: right;"><field name="sheet_manufacturing_cost" /></td>
+                                        <td>Other Cost for Sheet</td>
                                         <td></td>
-                                        <td>% Cost for Compo</td>
-                                        <td><field name="pct_cost_for_compound" attrs="{'readonly': [('state','!=','rm_valuation')]}" /></td>
-                                        <td style="text-align: right;"><field name="compound_manufacturing_cost" /></td>
+                                        <td><field name="mrp_sheet_cost" readonly="1"/></td>
+                                        <td></td>
+                                        <td>Other Cot for Compo</td>
+                                        <td></td>
+                                        <td><field name="mrp_compound_cost" readonly="1"/></td>
                                         <td></td>
                                     </tr>
                                     <!-- ASAM SEMUT -->
@@ -880,32 +932,36 @@
                                 </tbody>
                             </table>
 
-                            <label for="plantation_cost_ids" groups="base.group_no_one"/>
-                            <field name="plantation_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                            <label for="plantation_cost_ids" />
+                            <field name="plantation_cost_ids" nolabel="1" readonly="1" >
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" sum="total_cost_latex" />
-                                    <field name="total_cost_lump" sum="total_cost_lump" />
-                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" optional="hide" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" optional="hide" />
+                                    <field name="total_cost" sum="total_cost" />
                                 </tree>
                             </field>
-                            <label for="mrp_cost_ids" groups="base.group_no_one"/>
-                            <field name="mrp_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                            <label for="mrp_cost_ids" />
+                            <field name="mrp_cost_ids" nolabel="1" readonly="1" >
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" sum="total_cost_latex" />
-                                    <field name="total_cost_lump" sum="total_cost_lump" />
-                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                    <field name="total_cost_latex" sum="total_cost_latex" string="Total Cost for Sheet" optional="hide" />
+                                    <field name="total_cost_lump" sum="total_cost_lump" string="Total Cost for Compo" optional="hide" />
+                                    <field name="total_cost" sum="total_cost" />
                                 </tree>
                             </field>
+                        </page>
+                        <page name="fg_valuation" string="Finish Good Valuation"
+                                attrs="{'invisible': ['|',('varieties_type','=','pisang'),('state','not in',['fg_valuation','account_entry','done'])]}">
+                            <field name="fg_karet_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_karet_form'}"/>
                         </page>
                         <page name="rm_valuation_pisang" string="Production Computation" 
                                     attrs="{'invisible': ['|',('varieties_type','!=','pisang'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
@@ -932,41 +988,31 @@
                                     <field name="pisang_incoming_qty" groups="base.group_no_one" readonly="1"/>
                                 </group>
                             </group>
-                            <label for="fg2_valuation_ids" string="Inventory Status"/>
-                            <!-- <field name="fg2_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_pisang_form'}"/> -->
-                            <field name="fg2_valuation_ids"/>
+                            <label for="fg_pisang_valuation_ids" string="Inventory Status"/>
+                            <field name="fg_pisang_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_pisang_form', 'tree_view_ref': 'ny_closing.closing_production_fg_pisang_tree'}"/>
                             
-                            <label for="plantation_cost_ids" groups="base.group_no_one"/>
-                            <field name="plantation_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                            <label for="plantation_cost_ids" />
+                            <field name="plantation_cost_ids" nolabel="1" readonly="1" >
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" sum="total_cost_latex" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
-                                    <field name="total_cost_lump" sum="total_cost_lump" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
                                     <field name="total_cost" sum="total_cost" />
                                 </tree>
                             </field>
-                            <label for="mrp_cost_ids" groups="base.group_no_one"/>
-                            <field name="mrp_cost_ids" nolabel="1" readonly="1" groups="base.group_no_one">
+                            <label for="mrp_cost_ids" string="Ripening Cost"/>
+                            <field name="mrp_cost_ids" nolabel="1" readonly="1" >
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
                                     <field name="account_id" />
-                                    <field name="total_cost_latex" sum="total_cost_latex" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
-                                    <field name="total_cost_lump" sum="total_cost_lump" attrs="{'column_invisible': [('parent.varieties_type','!=','karet')]}" />
-                                    <field name="total_cost" sum="total_cost" optional="hide" />
+                                    <field name="total_cost" sum="total_cost" />
                                 </tree>
                             </field>
-                        </page>
-                        <page name="fg_valuation" string="Finish Good Valuation"
-                                attrs="{'invisible': ['|',('varieties_type','=','pisang'),('state','not in',['fg_valuation','account_entry','done'])]}">
-                            <!-- <field name="fg2_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_karet_form'}"/> -->
-                            <field name="fg2_valuation_ids"/>
                         </page>
                     </notebook>
                 </sheet>
