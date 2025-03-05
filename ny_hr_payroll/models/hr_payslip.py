@@ -9,6 +9,8 @@ from dateutil.relativedelta import relativedelta
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
+    kemandoran_id = fields.Many2one(related='employee_id.kemandoran_id', store=True, string='Kemandoran')
+
     def get_worked_day_lines(self, contracts, employee_id, date_from, date_to):
         '''
             Summarize attendance sheet
