@@ -392,7 +392,6 @@ class ClosingProductionFinishGood(models.Model):
     @api.model
     def get_views(self, views, options=None):
         result = super(ClosingProductionFinishGood, self).get_views(views, options=options)
-        print(";;;;;;;;;;;;;;;;;;;;;;;;;", self._context)
         # if self._context.get('params',{}).get('id',0)>0:
         #     res_active_rec = self.search_read([('id','=',self._context['params']['id'])], ['state'])
         #     if res_active_rec and res_active_rec[0]['state'] not in ('draft','cancel'):
@@ -1505,6 +1504,8 @@ class ClosingProduction(models.Model):
                 prev_closing = self.search([('state','=','done'),('date_to','<',closing.date_from),('varieties_type','=','pisang')], order='date_from desc', limit=1)
                 if prev_closing:
                     closing.prev_closing_id = prev_closing.id
+                    closing.plantation_other_cost_account_ids = [(6,0,prev_closing.plantation_other_cost_account_ids.ids)] if prev_closing.plantation_other_cost_account_ids else False
+                    closing.manufacturing_cost_account_ids = [(6,0,prev_closing.manufacturing_cost_account_ids.ids)] if prev_closing.manufacturing_cost_account_ids else False
                 closing.compute_initial_and_cost_rm_pisang()
             closing.write({'state': 'rm_valuation'})
         return True
