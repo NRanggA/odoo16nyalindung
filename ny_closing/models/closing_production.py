@@ -1376,6 +1376,8 @@ class ClosingProduction(models.Model):
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
                     'opening_qty': prev_closing_fg.closing_qty if prev_closing_fg else 0.0,
                     'opening_value': prev_closing_fg.closing_value if prev_closing_fg else 0.0,
+                    'ripening_opening_qty': prev_closing_fg.ripening_closing_qty if prev_closing_fg else 0.0,
+                    'ripening_opening_value': prev_closing_fg.ripening_closing_value if prev_closing_fg else 0.0,
                     'incoming_qty': incoming_qty,
                     'scrap_qty': scrap_qty,
                     'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
