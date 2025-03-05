@@ -2026,6 +2026,7 @@
                         <button name="create_material_receipt" states="process" string="Create Material Receipt" type="object" class="oe_highlight"/>
                         <button name="button_cancel" states="draft,process,confirmed,done" string="Cancel" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/>
                         <button name="button_get_data_karet" states="draft" string="Get Data Karet" type="object" class="btn-default"/>
+                        <button name="button_get_data_melon" states="draft" string="Get Data Melon" type="object" class="btn-default"/>
                         <!-- <button name="button_get_data_non_karet" states="draft" string="Get Data Non Karet" type="object" class="btn-default"/> -->
                         <!-- <button name="button_revise" states="done" string="Force Edit" type="object" class="btn-default" groups="c10i_lhm_v16.group_plantation_manager"/> -->
                         <button name="button_approve_revision" states="revision" string="Update Revision" type="object" class="btn-default btn-primary"/>

@@ -48,6 +48,7 @@
                                 <field name="is_borong" invisible="1"/>
                                 <field name="is_hasil_2" invisible="1"/>
                                 <field name="nap_line_zero" invisible="1"/>
+                                <field name="nap_line_melon" invisible="1"/>
                                 <field name="skb" invisible="1"/>
                             </group>
                         </group>
