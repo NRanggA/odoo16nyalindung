@@ -523,6 +523,7 @@ class ReportMutasiClosing(models.AbstractModel):
                 # Plantataion Cost
                 sheet2.write(row, col, getattr(karet_1, f"pct_cost_for_{product}", '-'), wbf['content_float'])
                 col += 1
+                # sheet2.write(row, col, getattr(karet_1, f"{product}_plantation_cost", '-'), wbf['content_float'])
                 sheet2.write(row, col, getattr(karet_1, f"{product}_plantation_cost", '-'), wbf['content_float'])
                 col += 1
                 # Onhand
@@ -726,7 +727,7 @@ class ReportMutasiClosing(models.AbstractModel):
             sheet2.write(row, 4, karet.opening_value, wbf['content_float'])
             
             sheet2.write(row, 5, karet.incoming_qty, wbf['content_float'])
-            sheet2.write(row, 6, karet.plantation_cost, wbf['content_float'])
+            sheet2.write(row, 6, karet.manufacturing_cost, wbf['content_float'])
             
             sheet2.write(row, 7, karet.onhand_qty, wbf['content_float'])
             sheet2.write(row, 8, karet.onhand_value, wbf['content_float'])
@@ -814,7 +815,7 @@ class ReportMutasiClosing(models.AbstractModel):
                 sheet3.write(start_row + 1, 4, 'Value', wbf['header'])
                 # Incoming
                 sheet3.write(start_row + 1, 5, 'Qty', wbf['header'])
-                sheet3.write(start_row + 1, 6, 'Plantation Cost', wbf['header'])
+                sheet3.write(start_row + 1, 6, 'Production Cost', wbf['header'])
 
                 # Onhand Qty
                 sheet3.write(start_row + 1, 7, 'Qty', wbf['header'])
