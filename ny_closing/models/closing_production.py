@@ -1457,7 +1457,7 @@ class ClosingProduction(models.Model):
             if mrp_compound_done:
                 # rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 # finished_compo_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-                finished_compo_qty = mrp_compound_done.mapped('qty_produced') if mrp_compound_done else 0.0
+                finished_compo_qty = sum(mrp_compound_done.mapped('qty_produced')) if mrp_compound_done else 0.0
                 
             prev_closing_fg_compo = False
             if closing.prev_closing_id:
@@ -1485,7 +1485,7 @@ class ClosingProduction(models.Model):
                     'inventory_account_id': prev_closing_fg_compo.inventory_account_id.id if prev_closing_fg_compo.inventory_account_id else False,
                     'cogs_account_id': prev_closing_fg_compo.cogs_account_id.id if prev_closing_fg_compo.cogs_account_id else False,
                 })
-            to_create.append(values_to_create_compo)
+            to_create.append((values_to_create_compo))
 
             # Other Plantation Product
             if to_create:
