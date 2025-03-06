@@ -2047,6 +2047,7 @@
                                 <!-- <field name="account_period_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/> -->
                                 <field name="no_nap" />
                                 <field name="afdeling_id" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+                                <field name="is_process_karet" invisible='1'/>
                             </group>
 
                             <group  name="kendaraan" string="Unit Kendaraan">

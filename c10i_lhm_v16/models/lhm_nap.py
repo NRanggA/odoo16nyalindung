@@ -91,8 +91,17 @@ class lhm_nap(models.Model):
     kebun_totals        = fields.Text(string="Total Kebun", compute="_compute_kebun_totals", store=False)
     pabrik_totals       = fields.Text(string="Total Pabrik", compute="_compute_pabrik_totals", store=False)
     product_totals      = fields.Text(string="Total Produk", compute="_compute_product_totals", store=False)
+    is_process_karet    = fields.Boolean(string="Process Karet", compute="_compute_is_process_karet", store=False)
     # drc_id             = fields.One2many('lhm.drc', 'nap_id', string="DRC Lines")
     _order = "date_nap desc"
+
+    @api.depends('kebun_line_ids.product_id')
+    def _compute_is_process_karet(self):
+        for record in self:
+            record.is_process_karet = any(
+                kebun_line.product_id and any(keyword in kebun_line.product_id.name.lower() for keyword in ["lateks", "lump"])
+                for kebun_line in record.kebun_line_ids
+            )
 
     @api.depends('confirmed', 'invoice_id', 'invoice_id.state', 'cancelled', 'process', 'force_edit')
     def _get_state(self):
@@ -741,192 +750,386 @@ class lhm_nap(models.Model):
         self.state = 'process'
         self.process = True
         for record in self:
-            if not record.pabrik_line_ids:
-                raise UserError("Tidak ada data di Timbangan Kebun/Pabrik. Mohon diisi barisnya terlebih dahulu.")
-            no_tgl_terima = record.pabrik_line_ids.filtered(lambda line: not line.tgl_terima)
-            if no_tgl_terima:
-                raise UserError("Mohon lengkapi Tanggal Terima di Timbangan Pabrik untuk semua baris.")
-            no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: (line.product_id.name in ["Lateks", "Lump"]) and not line.quality_pabrik)
-            if no_quality_pabrik:
-                raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris yang memiliki produk 'Lateks' atau 'Lump'.")
-            no_product_qty = record.pabrik_line_ids.filtered(lambda line: not line.product_qty)
-            if no_product_qty:
-                raise UserError("Mohon lengkapi Product Quantity di Timbangan Pabrik untuk semua baris, dan juga Product Quantity tidak boleh bernilai 0.")
+            if record.is_process_karet:
+                if not record.pabrik_line_ids:
+                    raise UserError("Tidak ada data di Timbangan Kebun/Pabrik. Mohon diisi barisnya terlebih dahulu.")
+                no_tgl_terima = record.pabrik_line_ids.filtered(lambda line: not line.tgl_terima)
+                if no_tgl_terima:
+                    raise UserError("Mohon lengkapi Tanggal Terima di Timbangan Pabrik untuk semua baris.")
+                no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: (line.product_id.name in ["Lateks", "Lump"]) and not line.quality_pabrik)
+                if no_quality_pabrik:
+                    raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris yang memiliki produk 'Lateks' atau 'Lump'.")
+                no_product_qty = record.pabrik_line_ids.filtered(lambda line: not line.product_qty)
+                if no_product_qty:
+                    raise UserError("Mohon lengkapi Product Quantity di Timbangan Pabrik untuk semua baris, dan juga Product Quantity tidak boleh bernilai 0.")
 
-            record.line_ids.unlink()
-            employee_data = {}
-            supplier_data = {}
+                record.line_ids.unlink()
+                employee_data = {}
+                supplier_data = {}
 
-            for pabrik_line in record.pabrik_line_ids:
-                kebun_line = self.env['timbangan.kebun'].search([
-                    ('lhm_nap_id', '=', self.id),
-                    ('block_id', '=', pabrik_line.block_id.id),
-                    ('product_id', '=', pabrik_line.product_id.id),
-                    ('tgl_panen', '=', pabrik_line.tgl_panen),
-                ], limit=1)
+                for pabrik_line in record.pabrik_line_ids:
+                    kebun_line = self.env['timbangan.kebun'].search([
+                        ('lhm_nap_id', '=', self.id),
+                        ('block_id', '=', pabrik_line.block_id.id),
+                        ('product_id', '=', pabrik_line.product_id.id),
+                        ('tgl_panen', '=', pabrik_line.tgl_panen),
+                    ], limit=1)
 
-                if kebun_line:
-                    nap_lines = self.env['lhm.transaction.nap.line'].sudo().search([
-                        ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
-                        ('lhm_transaction_line_id.date', '=', pabrik_line.tgl_panen),
-                        ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
-                        ('lhm_transaction_line_id.state', '=', 'in_progress'),
-                    ])
+                    if kebun_line:
+                        nap_lines = self.env['lhm.transaction.nap.line'].sudo().search([
+                            ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
+                            ('lhm_transaction_line_id.date', '=', pabrik_line.tgl_panen),
+                            ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
+                            ('lhm_transaction_line_id.state', '=', 'in_progress'),
+                        ])
 
-                    contractor_lines = self.env['lhm.contractor.nap.line'].sudo().search([
-                        ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
-                        ('contractor_id.date', '=', pabrik_line.tgl_panen),
-                        ('contractor_id.state', '=', 'process'),
-                        ('activity_id.is_nap', '=', True),
-                        ('activity_id.is_contractor_day', '=', True),
-                    ])
-                    if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
-                        if contractor_lines:
-                            pass
-                        else:
-                            raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
+                        contractor_lines = self.env['lhm.contractor.nap.line'].sudo().search([
+                            ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
+                            ('contractor_id.date', '=', pabrik_line.tgl_panen),
+                            ('contractor_id.state', '=', 'process'),
+                            ('activity_id.is_nap', '=', True),
+                            ('activity_id.is_contractor_day', '=', True),
+                        ])
+                        if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
+                            if contractor_lines:
+                                pass
+                            else:
+                                raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
 
+                        for nap_line in nap_lines:
+                            employee_id = nap_line.employee_id.id
+                            product_id = pabrik_line.product_id.id
 
-                    for nap_line in nap_lines:
-                        employee_id = nap_line.employee_id.id
-                        product_id = pabrik_line.product_id.id
+                            if employee_id not in employee_data:
+                                employee_data[employee_id] = {
+                                    'employee_id': employee_id,
+                                    'product_1': None,
+                                    'hasil_1_nap': None,
+                                    'drc_latex': None,
+                                    'uom_1': None,
+                                    'product_2': None,
+                                    'hasil_2_nap': None,
+                                    'drc_lump': None,
+                                    'uom_2': None,
+                                    'lhm_transaction_nap_id': nap_line.id,
+                                    'block_id': pabrik_line.block_id.id,
+                                    'tgl_panen': pabrik_line.tgl_panen
+                                }
 
-                        if employee_id not in employee_data:
-                            employee_data[employee_id] = {
-                                'employee_id': employee_id,
-                                'product_1': None,
-                                'hasil_1_nap': None,
-                                'drc_latex': None,
-                                'uom_1': None,
-                                'product_2': None,
-                                'hasil_2_nap': None,
-                                'drc_lump': None,
-                                'lhm_transaction_nap_id': nap_line.id,
-                                'block_id': pabrik_line.block_id.id,
-                                'tgl_panen': pabrik_line.tgl_panen
-                            }
-
-                        if nap_line.lhm_transaction_line_id.product_id.id == product_id:
-                            if employee_data[employee_id]['product_1'] is None:
-                                employee_data[employee_id]['product_1'] = nap_line.lhm_transaction_line_id.product_id.id
-                                employee_data[employee_id]['hasil_1_nap'] = (
-                                    (nap_line.lhm_transaction_line_id.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
+                            if nap_line.lhm_transaction_line_id.product_id.id == product_id:
+                                if employee_data[employee_id]['product_1'] is None:
+                                    employee_data[employee_id]['product_1'] = nap_line.lhm_transaction_line_id.product_id.id
+                                    employee_data[employee_id]['hasil_1_nap'] = (
+                                        (nap_line.lhm_transaction_line_id.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
+                                    )
+                                    employee_data[employee_id]['drc_latex'] = pabrik_line.drc
+                                    employee_data[employee_id]['uom_1'] = pabrik_line.uom_id.id
+                            elif nap_line.lhm_transaction_line_id.product_id_2.id == product_id:
+                                employee_data[employee_id]['product_2'] = nap_line.lhm_transaction_line_id.product_id_2.id
+                                employee_data[employee_id]['hasil_2_nap'] = (
+                                    (nap_line.lhm_transaction_line_id.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
                                 )
-                                employee_data[employee_id]['drc_latex'] = pabrik_line.drc
-                                employee_data[employee_id]['uom_1'] = pabrik_line.uom_id.id
-                        elif nap_line.lhm_transaction_line_id.product_id_2.id == product_id:
-                            employee_data[employee_id]['product_2'] = nap_line.lhm_transaction_line_id.product_id_2.id
-                            employee_data[employee_id]['hasil_2_nap'] = (
-                                (nap_line.lhm_transaction_line_id.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
-                            )
-                            employee_data[employee_id]['drc_lump'] = pabrik_line.drc
-                            employee_data[employee_id]['uom_2'] = pabrik_line.uom_id.id
+                                employee_data[employee_id]['drc_lump'] = pabrik_line.drc
+                                employee_data[employee_id]['uom_2'] = pabrik_line.uom_id.id
 
-                    for contractor_line in contractor_lines:
-                        supplier_id = contractor_line.supplier_id.id
-                        product_id = pabrik_line.product_id.id
-                        supplier_key = (supplier_id, pabrik_line.block_id.id, pabrik_line.tgl_panen)
+                        for contractor_line in contractor_lines:
+                            supplier_id = contractor_line.supplier_id.id
+                            product_id = pabrik_line.product_id.id
+                            supplier_key = (supplier_id, pabrik_line.block_id.id, pabrik_line.tgl_panen)
 
-                        if supplier_key not in supplier_data:
-                            supplier_data[supplier_key] = {
-                                'supplier_id': supplier_id,
-                                'product_1': None,
-                                'hasil_1_nap': None,
-                                'drc_latex': None,
-                                'uom_1': None,
-                                'product_2': None,
-                                'hasil_2_nap': None,
-                                'drc_lump': None,
-                                'lhm_contractor_nap_id': contractor_line.id,
-                                'block_id': pabrik_line.block_id.id,
-                                'tgl_panen': pabrik_line.tgl_panen
-                            }
+                            if supplier_key not in supplier_data:
+                                supplier_data[supplier_key] = {
+                                    'supplier_id': supplier_id,
+                                    'product_1': None,
+                                    'hasil_1_nap': None,
+                                    'drc_latex': None,
+                                    'uom_1': None,
+                                    'product_2': None,
+                                    'hasil_2_nap': None,
+                                    'drc_lump': None,
+                                    'lhm_contractor_nap_id': contractor_line.id,
+                                    'block_id': pabrik_line.block_id.id,
+                                    'tgl_panen': pabrik_line.tgl_panen
+                                }
 
-                        if contractor_line.product_id.id == product_id:  
-                            if supplier_data[supplier_key]['product_1'] is None:
-                                supplier_data[supplier_key]['product_1'] = contractor_line.product_id.id
-                                supplier_data[supplier_key]['hasil_1_nap'] = (
-                                    (contractor_line.contractor_line_id.nilai / kebun_line.product_qty) * pabrik_line.product_qty
+                            if contractor_line.product_id.id == product_id:  
+                                if supplier_data[supplier_key]['product_1'] is None:
+                                    supplier_data[supplier_key]['product_1'] = contractor_line.product_id.id
+                                    supplier_data[supplier_key]['hasil_1_nap'] = (
+                                        (contractor_line.contractor_line_id.nilai / kebun_line.product_qty) * pabrik_line.product_qty
+                                    )
+                                    supplier_data[supplier_key]['drc_latex'] = pabrik_line.drc
+                                    supplier_data[supplier_key]['uom_1'] = pabrik_line.uom_id.id
+                            elif contractor_line.product_id_2.id == product_id:
+                                supplier_data[supplier_key]['product_2'] = contractor_line.product_id_2.id
+                                supplier_data[supplier_key]['hasil_2_nap'] = (
+                                    (contractor_line.contractor_line_id.nilai2 / kebun_line.product_qty) * pabrik_line.product_qty
                                 )
-                                supplier_data[supplier_key]['drc_latex'] = pabrik_line.drc
-                                supplier_data[supplier_key]['uom_1'] = pabrik_line.uom_id.id
-                        elif contractor_line.product_id_2.id == product_id:
-                            supplier_data[supplier_key]['product_2'] = contractor_line.product_id_2.id
-                            supplier_data[supplier_key]['hasil_2_nap'] = (
-                                (contractor_line.contractor_line_id.nilai2 / kebun_line.product_qty) * pabrik_line.product_qty
+                                supplier_data[supplier_key]['drc_lump'] = pabrik_line.drc
+                                supplier_data[supplier_key]['uom_2'] = pabrik_line.uom_id.id
+
+                for employee_id, data in employee_data.items():
+                    if data['hasil_1_nap']:
+                        transaction_exists = (
+                            self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
+                        )
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'employee_id': data.get('employee_id'),
+                                'product_id': data['product_1'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_1_nap'],
+                                'drc': data['drc_latex'],
+                                'uom_id': data['uom_1'],
+                                'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
+                            })
+
+                    if data['product_2'] and data['hasil_2_nap']:
+                        transaction_exists = (
+                            self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
+                        )
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'employee_id': data.get('employee_id'),
+                                'product_id': data['product_2'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_2_nap'],
+                                'drc': data['drc_lump'],
+                                'uom_id': data['uom_2'],
+                                'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
+                            })
+
+                for supplier_key, data in supplier_data.items():
+                    if data['hasil_1_nap']:
+                        transaction_exists = (
+                            self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
+                        )    
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'supplier_id': data.get('supplier_id'),
+                                'product_id': data['product_1'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_1_nap'],
+                                'drc': data['drc_latex'],
+                                'uom_id': data['uom_1'],
+                                'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
+                            })
+
+                    if data['product_2'] and data['hasil_2_nap']:
+                        transaction_exists = (
+                            self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
+                        )
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'supplier_id': data.get('supplier_id'),
+                                'product_id': data['product_2'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_2_nap'],
+                                'drc': data['drc_lump'],
+                                'uom_id': data['uom_2'],
+                                'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
+                            })
+            
+            else:
+                if not record.pabrik_line_ids:
+                    raise UserError("Tidak ada data di Timbangan Kebun/Pabrik. Mohon diisi barisnya terlebih dahulu.")
+                no_tgl_terima = record.pabrik_line_ids.filtered(lambda line: not line.tgl_terima)
+                if no_tgl_terima:
+                    raise UserError("Mohon lengkapi Tanggal Terima di Timbangan Pabrik untuk semua baris.")
+                no_quality_pabrik = record.pabrik_line_ids.filtered(lambda line: (line.product_id.name in ["Lateks", "Lump"]) and not line.quality_pabrik)
+                if no_quality_pabrik:
+                    raise UserError("Mohon lengkapi Quality di Timbangan Pabrik untuk semua baris yang memiliki produk 'Lateks' atau 'Lump'.")
+                no_product_qty = record.pabrik_line_ids.filtered(lambda line: not line.product_qty)
+                if no_product_qty:
+                    raise UserError("Mohon lengkapi Product Quantity di Timbangan Pabrik untuk semua baris, dan juga Product Quantity tidak boleh bernilai 0.")
+                
+                record.line_ids.unlink()
+                employee_data = {}
+                supplier_data = {}
+
+                for pabrik_line in record.pabrik_line_ids:
+                    kebun_line = self.env['timbangan.kebun'].search([
+                        ('lhm_nap_id', '=', self.id),
+                        ('block_id', '=', pabrik_line.block_id.id),
+                        ('product_id', '=', pabrik_line.product_id.id),
+                        ('tgl_panen', '=', pabrik_line.tgl_panen),
+                    ], limit=1)
+
+                    if kebun_line:
+                        nap_lines = self.env['lhm.transaction.nap.line'].sudo().search([
+                            ('lhm_transaction_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
+                            ('lhm_transaction_line_id.date', '=', pabrik_line.tgl_panen),
+                            ('lhm_transaction_line_id.activity_id.is_nap', '=', True),
+                            ('lhm_transaction_line_id.state', '=', 'in_progress'),
+                        ])
+
+                        contractor_lines = self.env['lhm.contractor.nap.line'].sudo().search([
+                            ('contractor_line_id.location_id', '=', pabrik_line.block_id.location_id.id),
+                            ('contractor_id.date', '=', pabrik_line.tgl_panen),
+                            ('contractor_id.state', '=', 'process'),
+                            ('activity_id.is_nap', '=', True),
+                            ('activity_id.is_contractor_day', '=', True),
+                        ])
+                        if pabrik_line.product_id.name in ['Lateks', 'Lump'] and not nap_lines:
+                            if contractor_lines:
+                                pass
+                            else:
+                                raise UserError(f"LHM tidak ditemukan untuk Lokasi: {pabrik_line.block_id.name}, Tanggal Panen: {pabrik_line.tgl_panen}, dan Product: {pabrik_line.product_id.name}. Harap periksa data terkait di dokumen LHM terkait.")
+                        
+                        for nap_line in nap_lines:
+                            employee_id = nap_line.employee_id.id
+                            product_id = pabrik_line.product_id.id
+                            block_id = pabrik_line.block_id.id
+
+                            if nap_line.lhm_transaction_line_id.product_id.id != product_id:
+                                continue
+
+                            if employee_id not in employee_data:
+                                employee_data[employee_id] = {
+                                    'employee_id': employee_id,
+                                    'products': {},
+                                    'product_2': None,
+                                    'hasil_2_nap': None,
+                                    'drc_lump': None,
+                                    'uom_2': None,
+                                    'lhm_transaction_nap_id': nap_line.id,
+                                    'tgl_panen': pabrik_line.tgl_panen
+                                }
+
+                            if (product_id, block_id) not in employee_data[employee_id]['products']:
+                                employee_data[employee_id]['products'][(product_id, block_id)] = {
+                                    'hasil_1_nap': 0,
+                                    'drc': pabrik_line.drc,
+                                    'uom_id': pabrik_line.uom_id.id,
+                                    'block_id': block_id,  # Simpan block_id dari pabrik_line
+                                    'lhm_transaction_nap_id': nap_line.id
+                                }
+
+                            employee_data[employee_id]['products'][(product_id, block_id)]['hasil_1_nap'] += (
+                                (nap_line.lhm_transaction_line_id.hasil_1 / kebun_line.product_qty) * pabrik_line.product_qty
                             )
-                            supplier_data[supplier_key]['drc_lump'] = pabrik_line.drc
-                            supplier_data[supplier_key]['uom_2'] = pabrik_line.uom_id.id
 
-            for employee_id, data in employee_data.items():
-                if data['hasil_1_nap']:
-                    transaction_exists = (
-                        self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
-                    )
-                    if transaction_exists:
-                        self.env['lhm.nap.line'].create({
-                            'lhm_nap_id': record.id,
-                            'block_id': data['block_id'],
-                            'employee_id': data.get('employee_id'),
-                            'product_id': data['product_1'],
-                            'tgl_panen': data['tgl_panen'],
-                            'qty_nap': data['hasil_1_nap'],
-                            'drc': data['drc_latex'],
-                            'uom_id': data['uom_1'],
-                            'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
-                        })
+                            if nap_line.lhm_transaction_line_id.product_id_2.id == product_id:
+                                employee_data[employee_id]['product_2'] = nap_line.lhm_transaction_line_id.product_id_2.id
+                                employee_data[employee_id]['hasil_2_nap'] = (
+                                    (nap_line.lhm_transaction_line_id.hasil_2 / kebun_line.product_qty) * pabrik_line.product_qty
+                                )
+                                employee_data[employee_id]['drc_lump'] = pabrik_line.drc
+                                employee_data[employee_id]['uom_2'] = pabrik_line.uom_id.id
+                        
+                        for contractor_line in contractor_lines:
+                            supplier_id = contractor_line.supplier_id.id
+                            product_id = pabrik_line.product_id.id
+                            supplier_key = (supplier_id, pabrik_line.block_id.id, pabrik_line.tgl_panen)
 
-                if data['product_2'] and data['hasil_2_nap']:
-                    transaction_exists = (
-                        self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
-                    )
-                    if transaction_exists:
-                        self.env['lhm.nap.line'].create({
-                            'lhm_nap_id': record.id,
-                            'block_id': data['block_id'],
-                            'employee_id': data.get('employee_id'),
-                            'product_id': data['product_2'],
-                            'tgl_panen': data['tgl_panen'],
-                            'qty_nap': data['hasil_2_nap'],
-                            'drc': data['drc_lump'],
-                            'uom_id': data['uom_2'],
-                            'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
-                        })
+                            if supplier_key not in supplier_data:
+                                supplier_data[supplier_key] = {
+                                    'supplier_id': supplier_id,
+                                    'product_1': None,
+                                    'hasil_1_nap': None,
+                                    'drc_latex': None,
+                                    'uom_1': None,
+                                    'product_2': None,
+                                    'hasil_2_nap': None,
+                                    'drc_lump': None,
+                                    'lhm_contractor_nap_id': contractor_line.id,
+                                    'block_id': pabrik_line.block_id.id,
+                                    'tgl_panen': pabrik_line.tgl_panen
+                                }
 
-            for supplier_key, data in supplier_data.items():
-                if data['hasil_1_nap']:
-                    transaction_exists = (
-                        self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
-                    )    
-                    if transaction_exists:
-                        self.env['lhm.nap.line'].create({
-                            'lhm_nap_id': record.id,
-                            'block_id': data['block_id'],
-                            'supplier_id': data.get('supplier_id'),
-                            'product_id': data['product_1'],
-                            'tgl_panen': data['tgl_panen'],
-                            'qty_nap': data['hasil_1_nap'],
-                            'drc': data['drc_latex'],
-                            'uom_id': data['uom_1'],
-                            'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
-                        })
+                            if contractor_line.product_id.id == product_id:  
+                                if supplier_data[supplier_key]['product_1'] is None:
+                                    supplier_data[supplier_key]['product_1'] = contractor_line.product_id.id
+                                    supplier_data[supplier_key]['hasil_1_nap'] = (
+                                        (contractor_line.contractor_line_id.nilai / kebun_line.product_qty) * pabrik_line.product_qty
+                                    )
+                                    supplier_data[supplier_key]['drc_latex'] = pabrik_line.drc
+                                    supplier_data[supplier_key]['uom_1'] = pabrik_line.uom_id.id
+                            elif contractor_line.product_id_2.id == product_id:
+                                supplier_data[supplier_key]['product_2'] = contractor_line.product_id_2.id
+                                supplier_data[supplier_key]['hasil_2_nap'] = (
+                                    (contractor_line.contractor_line_id.nilai2 / kebun_line.product_qty) * pabrik_line.product_qty
+                                )
+                                supplier_data[supplier_key]['drc_lump'] = pabrik_line.drc
+                                supplier_data[supplier_key]['uom_2'] = pabrik_line.uom_id.id
 
-                if data['product_2'] and data['hasil_2_nap']:
-                    transaction_exists = (
-                        self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
-                    )
-                    if transaction_exists:
-                        self.env['lhm.nap.line'].create({
-                            'lhm_nap_id': record.id,
-                            'block_id': data['block_id'],
-                            'supplier_id': data.get('supplier_id'),
-                            'product_id': data['product_2'],
-                            'tgl_panen': data['tgl_panen'],
-                            'qty_nap': data['hasil_2_nap'],
-                            'drc': data['drc_lump'],
-                            'uom_id': data['uom_2'],
-                            'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
-                        })
+                for employee_id, data in employee_data.items():
+                    for (product_id, block_id), product_data in data['products'].items():
+                        transaction_exists = (
+                            self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', product_data['lhm_transaction_nap_id'])]) > 0
+                        )
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': product_data['block_id'],
+                                'employee_id': data.get('employee_id'),
+                                'product_id': product_id,
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': product_data['hasil_1_nap'],
+                                'drc': product_data['drc'],
+                                'uom_id': product_data['uom_id'],
+                                'lhm_transaction_nap_id': product_data['lhm_transaction_nap_id'],
+                            })
+
+                    if data['product_2'] and data['hasil_2_nap']:
+                        transaction_exists = (
+                            self.env['lhm.transaction.nap.line'].sudo().search_count([('id', '=', data['lhm_transaction_nap_id'])]) > 0
+                        )
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'employee_id': data.get('employee_id'),
+                                'product_id': data['product_2'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_2_nap'],
+                                'drc': data['drc_lump'],
+                                'uom_id': data['uom_2'],
+                                'lhm_transaction_nap_id': data['lhm_transaction_nap_id'],
+                            })
+                            
+                for supplier_key, data in supplier_data.items():
+                    if data['hasil_1_nap']:
+                        transaction_exists = (
+                            self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
+                        )    
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'supplier_id': data.get('supplier_id'),
+                                'product_id': data['product_1'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_1_nap'],
+                                'drc': data['drc_latex'],
+                                'uom_id': data['uom_1'],
+                                'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
+                            })
+
+                    if data['product_2'] and data['hasil_2_nap']:
+                        transaction_exists = (
+                            self.env['lhm.contractor.nap.line'].sudo().search_count([('id', '=', data['lhm_contractor_nap_id'])]) > 0
+                        )
+                        if transaction_exists:
+                            self.env['lhm.nap.line'].create({
+                                'lhm_nap_id': record.id,
+                                'block_id': data['block_id'],
+                                'supplier_id': data.get('supplier_id'),
+                                'product_id': data['product_2'],
+                                'tgl_panen': data['tgl_panen'],
+                                'qty_nap': data['hasil_2_nap'],
+                                'drc': data['drc_lump'],
+                                'uom_id': data['uom_2'],
+                                'lhm_contractor_nap_id': data['lhm_contractor_nap_id'],
+                            })
 
 class lhm_nap_line(models.Model):
     _name               = 'lhm.nap.line'
