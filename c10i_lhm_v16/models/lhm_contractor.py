@@ -454,8 +454,9 @@ class lhm_contractor(models.Model):
             grouped_lines = {}
 
             # Mengelompokkan baris berdasarkan lokasi & aktivitas
-            # for line in buku_kontraktor.line_ids + buku_kontraktor.line_vehicle_ids:
-            for line in buku_kontraktor.line_ids:
+            # for line in buku_kontraktor.line_ids | buku_kontraktor.line_vehicle_ids:
+            for line in list(buku_kontraktor.line_ids) + list(buku_kontraktor.line_vehicle_ids):
+            # for line in buku_kontraktor.line_ids:
                 key = (line.location_type_id, line.location_id, line.activity_id)
                 if key not in grouped_lines:
                     acc_src = line.activity_id.account_id  # untuk debit
