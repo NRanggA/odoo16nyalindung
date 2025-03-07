@@ -65,13 +65,13 @@
                         <group>
                             <!-- <field name="journal_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'invisible' : [('is_advance','!=',True)]}"/> -->
                             <field name="employee_advance_journal_id" options="{'no_create_edit': True, 'no_create': True}" readonly="1"/>
-                            <field name="currency_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                            <field name="currency_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly' : [('employee_expense_state','!=','draft')]}"/>
                             <field name="account_move_id" readonly="1" groups="account.group_account_user" invisible="1"/>
                             <field name="settelement_date" attrs="{'readonly' : [('employee_expense_state','!=','draft')], 'required' : [('is_advance','=',True)], 'invisible' : [('is_advance','!=',True)]}"/>
                             <field name="has_amount" invisible="1"/>
 
-                            <field name="company_id" options="{'no_create_edit': True, 'no_create': True}"/>
-                            <field name="is_return" attrs="{'invisible' : [('expense_report','!=',True)]}"/>
+                            <field name="company_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly' : [('employee_expense_state','!=','draft')]}"/>
+                            <field name="is_return" attrs="{'invisible' : [('expense_report','!=',True)], 'readonly' : [('employee_expense_state','!=','draft')]}"/>
                             <!-- groups="base.group_multi_company"-->
                         </group>
                     </group>
@@ -90,7 +90,8 @@
                     </group>
                     <notebook>
                         <page string="Lines" attrs="{'invisible' : [('is_return','=',True)]}">
-                            <field name="line_ids" required="1" attrs="{'readonly': [('employee_expense_state','not in',['draft', 'submit', 'approved'])]}">
+                            <!-- attrs="{'readonly': [('employee_expense_state','not in',['draft', 'submit', 'approved'])]}" -->
+                            <field name="line_ids" required="1" attrs="{'readonly': [('employee_expense_state','!=', 'draft')]}">
                                 <tree editable="bottom">
                                     <field name="currency_id" invisible="1"/>
                                     <field name="product_id" options="{'no_create_edit': True, 'no_create': True}" attrs="{'readonly': [('parent.employee_expense_state', '!=', 'draft')]}" invisible="1"/>
