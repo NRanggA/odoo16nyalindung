@@ -169,6 +169,7 @@
                     <field name="supplier_code"/>
                     <!-- <field name="account_period_id"/> -->
                     <field name="payment_type"/>
+                    <field name="amount_total"/>
                     <field name="contractor_vehicle"/>
                     <field name="company_id"/>
                     <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>

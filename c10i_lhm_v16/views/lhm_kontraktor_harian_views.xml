@@ -194,6 +194,7 @@
                     <!-- <field name="account_period_id"/> -->
                     <!-- <field name="payment_type"/> -->
                     <!-- <field name="contractor_vehicle"/> -->
+                    <field name="amount_total"/>
                     <field name="company_id"/>
                     <field name="state" widget="badge" decoration-warning="state == 'process'" decoration-info="state == 'confirmed'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
                     <!-- <field name="invoice_id"/> -->
