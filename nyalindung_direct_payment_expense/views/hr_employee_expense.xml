@@ -71,13 +71,14 @@
                             <field name="has_amount" invisible="1"/>
 
                             <field name="company_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                            <field name="is_return" attrs="{'invisible' : [('expense_report','!=',True)]}"/>
                             <!-- groups="base.group_multi_company"-->
                         </group>
                     </group>
                     <group>
                         <group string="Advance to Settle" attrs="{'invisible': [('advance_found','=',False),('advance_to_settle_ids','=',[])]}">
                             <!-- <label for="advance_to_settle_ids"/> -->
-                            <field name="advance_to_settle_ids" colspan="4" nolabel="1" domain="[('partner_id','=',partner_id),('employee_expense_state','=','approved'),('advance_residual','!=',0)]">
+                            <field name="advance_to_settle_ids" colspan="4" nolabel="1" domain="[('partner_id','=',partner_id),('employee_expense_state','=','approved'),('advance_residual','!=',0)]" attrs="{'readonly': [('employee_expense_state','!=', 'draft')]}">
                                 <tree create="false">
                                     <field name="name"/>
                                     <field name="advance_residual" sum="amount_to_settle" attrs="{'column_invisible' : [('parent.has_amount','!=',True)]}"/>
@@ -88,7 +89,7 @@
                         <!-- <group></group> -->
                     </group>
                     <notebook>
-                        <page string="Lines">
+                        <page string="Lines" attrs="{'invisible' : [('is_return','=',True)]}">
                             <field name="line_ids" required="1" attrs="{'readonly': [('employee_expense_state','not in',['draft', 'submit', 'approved'])]}">
                                 <tree editable="bottom">
                                     <field name="currency_id" invisible="1"/>
@@ -128,16 +129,24 @@
                                     </group>
                                 </form>
                             </field>
-                            <group class="oe_subtotal_footer oe_right">
+                            <!-- <group class="oe_subtotal_footer oe_right">
                                 <label for="amount_total" string="Settlement Amount" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
                                 <field name="amount_total" nolabel="1" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
                                 <field name="amount_total" attrs="{'invisible': [('advance_amount_settle', '&lt;', 0.0)]}"/>
                                 <field name="advance_amount_settle" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
                                 <field name="amount_total2" class="oe_subtotal_footer_separator" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
                                 <field name="amount_residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('state', '!=', 'posted')]}"/>
-                            </group>
+                            </group> -->
                         </page>
                     </notebook>
+                    <group class="oe_subtotal_footer oe_right">
+                        <label for="amount_total" string="Settlement Amount" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
+                        <field name="amount_total" nolabel="1" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
+                        <field name="amount_total" attrs="{'invisible': [('advance_amount_settle', '&lt;', 0.0)]}"/>
+                        <field name="advance_amount_settle" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
+                        <field name="amount_total2" class="oe_subtotal_footer_separator" attrs="{'invisible': [('advance_amount_settle', '=', 0.0)]}"/>
+                        <field name="amount_residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('state', '!=', 'posted')]}"/>
+                    </group>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>

@@ -112,6 +112,8 @@ class HrEmployeeExpense(models.Model):
     has_amount = fields.Boolean('Has Amount', compute='_compute_amount_to_clear')
     employee_expense_direct_payment_count = fields.Integer('Journal Count', compute='_get_count_employee_expense')
 
+    is_return = fields.Boolean('Pengembalian Full', default=False)
+
     def _compute_settlement(self):
         for record in self:
             settlement_ids = []
@@ -298,14 +300,24 @@ class HrEmployeeExpense(models.Model):
             })
 
             if record.expense_report:
-                direct_payment.write({
-                        'line_ids' : [Command.create({
-                            'product_id' : line.product_id.id,
-                            'name' : line.name,
-                            'account_id' : record.contra_account_for_advance.id,
-                            'amount' : abs(record.amount_total2),
-                        }) for line in record.line_ids[0]]
-                })
+                if record.is_return:
+                    direct_payment.write({
+                            'line_ids' : [Command.create({
+                                'product_id' : line.product_id.id,
+                                'name' : line.name,
+                                'account_id' : line.account_id.id,
+                                'amount' : abs(record.amount_total2),
+                            }) for line in record.advance_to_settle_ids.line_ids]
+                    })
+                else:
+                    direct_payment.write({
+                            'line_ids' : [Command.create({
+                                'product_id' : line.product_id.id,
+                                'name' : line.name,
+                                'account_id' : record.contra_account_for_advance.id,
+                                'amount' : abs(record.amount_total2),
+                            }) for line in record.line_ids[0]]
+                    })
             else:
                 direct_payment.write({
                         'line_ids' : [Command.create({
