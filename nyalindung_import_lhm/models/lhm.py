@@ -374,23 +374,23 @@ class lhm_transaction(models.Model):
                 # I
                 
                 # Cek apakah employee_id dan location_id sudah ada di to_update
-                is_duplicate = False
-                for update in to_update:
-                    # Ambil data yang ada dalam to_update
-                    existing_employee_id = update[2].get('employee_id')
-                    existing_location_id = update[2].get('location_id')
-                    existing_activity_id = update[2].get('activity_id')
+                # is_duplicate = False
+                # for update in to_update:
+                #     # Ambil data yang ada dalam to_update
+                #     existing_employee_id = update[2].get('employee_id')
+                #     existing_location_id = update[2].get('location_id')
+                #     existing_activity_id = update[2].get('activity_id')
 
 
-                    if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id) and str(existing_activity_id) == str(activity.id):
-                        is_duplicate = True
-                        break
+                #     if str(existing_employee_id) == str(employee.id) and str(existing_location_id) == str(location.id) and str(existing_activity_id) == str(activity.id):
+                #         is_duplicate = True
+                #         break
 
-                if is_duplicate:
-                    error_message_list.append(
-                        f"Baris ke- {index + 2} Duplikat entri ditemukan untuk karyawan {employee.name} pada lokasi {location.code} dan aktivitas {activity.code} dalam data yang sedang diimpor!"
-                    )
-                    continue
+                # if is_duplicate:
+                #     error_message_list.append(
+                #         f"Baris ke- {index + 2} Duplikat entri ditemukan untuk karyawan {employee.name} pada lokasi {location.code} dan aktivitas {activity.code} dalam data yang sedang diimpor!"
+                #     )
+                #     continue
 
                 to_update.append((0, 0, {
                     'date'              : self.date,
