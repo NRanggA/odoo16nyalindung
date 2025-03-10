@@ -28,6 +28,13 @@ class DirectPayment(models.Model):
         else:
             self.atas_nama = ''
 
+    @api.model
+    def create(self, vals):
+        record = super(DirectPayment, self).create(vals)
+        record._onchange_atas_nama()
+
+        return record
+
     def format_amount(self, amount_total):
         if amount_total is not None:
             # Menggunakan format desimal dengan dua tempat desimal dan pemisah ribuan
