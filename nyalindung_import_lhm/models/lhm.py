@@ -123,7 +123,9 @@ class lhm_transaction(models.Model):
                 if type_location_found.code=='PJ':
                     project_found = self.env['lhm.project'].search([('location_id','=',location.id)])
                     if project_found.activity_ids:
-                        activity = project_found.activity_ids.filtered(lambda x: x.code==row.get('AKTIVITAS', ''))
+                        # diubah karena jika langsung menggunakan row.get, code aktivitas dibaca sebagai integer
+                        change_type_activity = str(row.get('AKTIVITAS', ''))
+                        activity = project_found.activity_ids.filtered(lambda x: x.code==change_type_activity)
                         if not activity:
                             error_message_list.append(f"Baris ke- {index + 2} Aktivitas dengan kode {row.get('AKTIVITAS', '')} tidak ditemukan pada Project {project_found.code}!")
                         else:
