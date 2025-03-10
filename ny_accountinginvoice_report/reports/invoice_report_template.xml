@@ -38,7 +38,7 @@
                     <img t-att-src="'%s/nyalindung_report/static/img/ny_logo.png' % (request.env['ir.config_parameter'].sudo().get_param('web.base.url'))" width="225px" height="60px" alt="Logo"/>
                     <div style="border-bottom: 5px solid black; width: 100%; margin-top: 10px;"></div>
                     <h2 style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 32px;">INVOICE</h2>
-                    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 14px;">
+                    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 12px;">
                         <table style="width: 100%;">
                             <tr>
                                 <td style="font-weight: bold;"><t t-esc="o.partner_id.name"/></td>
@@ -47,7 +47,7 @@
                                 <td><t t-esc="o.name"/></td>
                             </tr>
                             <tr>
-                                <td style="width: 50%; font-size: 12px;"><t t-esc="o.partner_id.contact_address"/></td>
+                                <td style="width: 50%; font-size: 10px;"><t t-esc="o.partner_id.contact_address"/></td>
                                 <td style="padding-left: 70px;">Due Date</td>
                                 <td>: </td>
                                 <td><t t-esc="o.invoice_date_due"/></td>
@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Tabel Kedua -->
-                <table class="bordered" style="font-size: 14px;">
+                <table class="bordered" style="font-size: 12px;">
                     <tr>
                         <th>No.</th>
                         <th style="text-align: center;">Deskripsi/Product</th>
@@ -97,7 +97,7 @@
                 <t t-set="total_discount" t-value="sum(line.price_unit * line.quantity * line.discount / 100 for line in o.invoice_line_ids)"/>
 
                 <!-- Tabel Ketiga -->
-                <table class="no-border2" style="font-size: 14px;">
+                <table class="no-border2" style="font-size: 12px;">
                     <tr>
                         <td colspan="4" class="terbilang">Terbilang :</td>
                         <td class="right-align col-narrow">Sub Total:</td>
@@ -110,11 +110,18 @@
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align"><t t-esc="o.format_amount(total_discount)"/></td>
                     </tr>
-                    <tr>
-                        <td colspan="4"></td>
-                        <td class="right-align">PPN 11%:</td>
-                        <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="o.format_amount(o.amount_tax)"/></td>
+                    <tr t-foreach="o.line_ids.filtered(lambda l: l.tax_ids)" t-as="line">
+                        <t t-foreach="line.tax_ids" t-as="tax">
+                            <tr>
+                                <td colspan="4"></td>
+                                <td class="right-align"><t t-esc="tax.name"/>:</td>
+                                <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                                <td class="right-align">
+                                    <t t-set="tax_amount" t-value="(line.price_unit * line.quantity) * (tax.amount / 100)"/>
+                                    <t t-esc="o.format_amount(tax_amount)"/>
+                                </td>
+                            </tr>
+                        </t>
                     </tr>
                     <tr>
                         <td colspan="4"></td>
