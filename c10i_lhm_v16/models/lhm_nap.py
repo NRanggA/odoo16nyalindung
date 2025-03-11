@@ -641,7 +641,7 @@ class lhm_nap(models.Model):
                 kebun_key = (location_id, line.tgl_panen)
                 if kebun_key not in kebun_data:
                     kebun_data[kebun_key] = 0
-                kebun_data[kebun_key] += line.product_qty
+                kebun_data[kebun_key] += round(line.product_qty, 2)
 
             # Mengelompokkan data transaksi LHM berdasarkan location_id dan tanggal
             # transaction_data = {}
