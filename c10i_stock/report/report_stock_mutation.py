@@ -486,15 +486,18 @@ class ReportStockMutation(models.AbstractModel):
                             SELECT 
                                 sml.product_id, 
                                 sml.qty_done as qty,
-                                svl.value
+                                svl.value,
+                                sm.picking_type_id
                             FROM 
-                                stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+                                stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl, stock_move sm
                             WHERE sml.location_id = lsrc.id
+                            AND sml.move_id = sm.id
                             AND sml.location_id = %(location_id)s 
                             AND svl.stock_move_id = sml.move_id
                             AND sml.location_dest_id = ldest.id 
+                            AND sm.picking_type_id IS NOT NULL
                             AND lsrc.usage = 'internal' 
-                            AND ldest.usage IN ('supplier', 'customer','production') 
+                            AND ldest.usage IN ('supplier', 'customer','production', 'inventory') 
                             AND sml.state = 'done'
                             AND sml.product_id = %(product_id)s  
                             AND sml.date BETWEEN %(date_from)s AND %(date_to)s
@@ -528,13 +531,16 @@ class ReportStockMutation(models.AbstractModel):
                             (SELECT 
                                 sml.product_id, 
                                 sml.qty_done as qty,
-                                svl.value 
+                                svl.value,
+                                sm.picking_type_id
                             FROM 
-                                stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+                                stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl, stock_move sm
                             WHERE sml.location_id = lsrc.id
+                            AND sml.move_id = sm.id
                             AND svl.stock_move_id = sml.move_id 
                             AND sml.location_dest_id = ldest.id
                             AND sml.location_dest_id = %(location_id)s  
+                            AND sm.picking_type_id IS NULL
                             AND lsrc.usage = 'inventory' 
                             AND ldest.usage = 'internal' 
                             AND sml.state = 'done'
@@ -544,13 +550,16 @@ class ReportStockMutation(models.AbstractModel):
                             (SELECT 
                                 sml.product_id, 
                                 -sml.qty_done as qty,
-                                svl.value
+                                svl.value,
+                                sm.picking_type_id
                             FROM 
-                                stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl
+                                stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl, stock_move sm
                             WHERE sml.location_id = lsrc.id
+                            AND sml.move_id = sm.id
                             AND sml.location_id = %(location_id)s 
                             AND svl.stock_move_id = sml.move_id
                             AND sml.location_dest_id = ldest.id 
+                            AND sm.picking_type_id IS NULL
                             AND lsrc.usage = 'internal' 
                             AND ldest.usage = 'inventory' 
                             AND sml.state = 'done' 
@@ -742,3 +751,55 @@ class ReportStockMutation(models.AbstractModel):
         sheet.print_area(0, 0, row, 13)
         sheet.set_print_scale(78)
 
+
+
+    # LEFT JOIN (
+    #     SELECT 
+    #         product_id, 
+    #         SUM(qty) as qty,
+    #         SUM(value) as value 
+    #     FROM (
+    #         (SELECT 
+    #             sml.product_id, 
+    #             sml.qty_done as qty,
+    #             svl.value,
+    #             sm.picking_type_id  -- Ambil picking_type_id dari stock.move
+    #         FROM 
+    #             stock_move_line sml
+    #         JOIN stock_move sm ON sml.move_id = sm.id  -- JOIN ke stock_move
+    #         JOIN stock_location lsrc ON sml.location_id = lsrc.id
+    #         JOIN stock_location ldest ON sml.location_dest_id = ldest.id
+    #         JOIN stock_valuation_layer svl ON svl.stock_move_id = sml.move_id
+    #         WHERE 
+    #             sm.picking_type_id IS NULL  -- Sesuai dengan kondisi awal
+    #             AND sml.location_dest_id = %(location_id)s  
+    #             AND lsrc.usage = 'inventory' 
+    #             AND ldest.usage = 'internal' 
+    #             AND sml.state = 'done'
+    #             AND sml.product_id = %(product_id)s  
+    #             AND sml.date BETWEEN %(date_from)s AND %(date_to)s)
+            
+    #         UNION ALL
+            
+    #         (SELECT 
+    #             sml.product_id, 
+    #             -sml.qty_done as qty,
+    #             svl.value,
+    #             sm.picking_type_id  -- Ambil picking_type_id dari stock.move
+    #         FROM 
+    #             stock_move_line sml
+    #         JOIN stock_move sm ON sml.move_id = sm.id  -- JOIN ke stock_move
+    #         JOIN stock_location lsrc ON sml.location_id = lsrc.id
+    #         JOIN stock_location ldest ON sml.location_dest_id = ldest.id
+    #         JOIN stock_valuation_layer svl ON svl.stock_move_id = sml.move_id
+    #         WHERE 
+    #             sm.picking_type_id IS NULL  -- Sesuai dengan kondisi awal
+    #             AND sml.location_id = %(location_id)s 
+    #             AND lsrc.usage = 'internal' 
+    #             AND ldest.usage = 'inventory' 
+    #             AND sml.state = 'done' 
+    #             AND sml.product_id = %(product_id)s 
+    #             AND sml.date BETWEEN %(date_from)s AND %(date_to)s)
+    #     ) sub
+    #     GROUP BY product_id
+    # ) adjustment ON adjustment.product_id = pp.id
