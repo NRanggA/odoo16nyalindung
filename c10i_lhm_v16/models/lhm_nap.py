@@ -661,6 +661,7 @@ class lhm_nap(models.Model):
                     hasil = line.hasil_1 + line.hasil_2
                 else:
                     hasil = line.hasil_1
+                hasil = round(hasil, 2)
                 if transaction_key not in transaction_data:
                     transaction_data[transaction_key] = 0
                 transaction_data[transaction_key] += hasil
@@ -677,6 +678,7 @@ class lhm_nap(models.Model):
                     contractor_line_nilai = line.nilai + line.nilai2
                 else:
                     contractor_line_nilai = line.nilai2 if line.uom_id.name == "Days" else line.nilai
+                contractor_line_nilai = round(contractor_line_nilai, 2)
                 if contractor_day_key not in contractor_day_data:
                     contractor_day_data[contractor_day_key] = 0
                 contractor_day_data[contractor_day_key] += contractor_line_nilai
