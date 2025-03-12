@@ -1008,7 +1008,7 @@
 
 
         <!--HR Attendance Type -->
-        <record id="view_attendance_type_plantation_form" model="ir.ui.view">   
+        <!-- <record id="view_attendance_type_plantation_form" model="ir.ui.view">   
             <field name="name">view.attendance.type.plantation.form</field>
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
@@ -1061,15 +1061,6 @@
             <field name="model">hr.attendance.type</field>
             <field name="arch" type="xml">
                 <search string="Tipe Absensi">
-                    <!-- <field name="name" string="Tipe Absensi" filter_domain="['|',('code','ilike',self),('name','ilike',self)]"/>
-                    <separator/>
-                    <filter name="active" string="Active" domain="[('active','=',True)]"/>
-                    <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
-                    <filter name="special" string="Spesial" domain="[('special','=',True)]"/>
-                    <group expand="0" string="Group By">
-                        <filter string="Type" domain="[]" context="{'group_by':'type'}"/>
-                        <filter string="Company" domain="[]" context="{'group_by':'company_id'}"/>
-                    </group> -->
                 </search>
             </field>
         </record>
@@ -1086,10 +1077,10 @@
                 Klik untuk menambahkan Tipe Absensi.
                 </p>
             </field>
-        </record>
+        </record> -->
         
         <!-- Menu tipe absensi ambil dari modul c10i_attendance -->
-        <menuitem id="menu_hr_attendance_type_plantation" action="action_hr_attendance_plantation_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/>
+        <!-- <menuitem id="menu_hr_attendance_type_plantation" action="action_hr_attendance_plantation_type" parent="menu_lhm_karyawan" groups="base.group_no_one,group_plantation_manager" sequence="20"/> -->
         <!--End Of HR Attendance Type -->
 
 
