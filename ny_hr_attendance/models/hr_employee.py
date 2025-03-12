@@ -33,3 +33,8 @@ class HrEmployee(models.Model):
         result = super(HrEmployee, self).write(vals)
         self._check_unique_mydaya_user_login()
         return result
+
+class HrForeman(models.Model):
+    _inherit = 'hr.foreman'
+
+    attendance_correction_user_id = fields.Many2one('res.users')

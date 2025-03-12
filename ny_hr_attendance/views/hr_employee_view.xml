@@ -22,4 +22,14 @@
             </page>
         </field>
     </record>
+    <record id="hr_foreman_user_form_inherit" model="ir.ui.view">
+        <field name="name">hr.foreman.user.form.inherit</field>
+        <field name="model">hr.foreman</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_hr_foreman_form"/>
+        <field name="arch" type="xml">
+            <field name="user_input_id" position="after">
+                <field name="attendance_correction_user_id" string="Attendance Correction User" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
+            </field>
+        </field>
+    </record>
 </odoo>
