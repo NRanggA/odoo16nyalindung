@@ -238,6 +238,406 @@ class ReportSummaryAttendance(models.AbstractModel):
 
         return workbook
 
+    def generate_query_hasil_1(self, obj, kemandoran_id):
+        from_date = obj.from_date.strftime("%Y-%m-%d")
+        to_date = obj.to_date.strftime("%Y-%m-%d")
+
+        start_date = datetime.strptime(from_date, "%Y-%m-%d")
+        end_date = datetime.strptime(to_date, "%Y-%m-%d")
+
+        date_generated = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
+
+        # cases_attendance_id = [
+        #     f"MAX(CASE WHEN att_sheet.date = '{date.strftime('%Y-%m-%d')}' THEN att_sheet.type_id ELSE NULL END) AS \"{date.strftime('%d_%b_%y').upper()}_DATE\""
+        #     for date in date_generated
+        # ]
+
+        cases_attendance_employee = [
+            f"MAX(CASE WHEN att_sheet.date = '{date.strftime('%Y-%m-%d')}' AND e.emp_type = 'employee' THEN att_sheet.type_id ELSE NULL END) AS \"{date.strftime('%d_%b_%y').upper()}_EMPLOYEE_DATE\""
+            for date in date_generated
+        ]
+
+        cases_attendance_foreman = [
+            f"MAX(CASE WHEN att_sheet.date = '{date.strftime('%Y-%m-%d')}' AND e.emp_type = 'foreman' THEN att_sheet.type_id ELSE NULL END) AS \"{date.strftime('%d_%b_%y').upper()}_FOREMAN_DATE\""
+            for date in date_generated
+        ]
+
+        queryhasil1 = f"""
+        WITH employee_data AS (
+            SELECT 
+                emp.id AS emp_id,
+                emp.name AS employee_name,
+                emp.kemandoran_id AS kemandoran_emp,
+                emp.no_induk AS no_induk,
+                'employee' AS emp_type
+            FROM 
+                hr_employee emp
+            WHERE 
+                emp.active = TRUE
+                AND emp.kemandoran_id = %s
+            UNION ALL
+            SELECT 
+                foreman.kepala_mandor_id AS emp_id,
+                emp_kepala.name AS employee_name,
+                foreman.id AS kemandoran_emp,
+                emp_kepala.no_induk AS no_induk,
+                'foreman' AS emp_type
+            FROM 
+                hr_foreman foreman
+            JOIN 
+                hr_employee emp_kepala ON emp_kepala.id = foreman.kepala_mandor_id
+            WHERE 
+                foreman.active = TRUE
+                AND foreman.id = %s
+            UNION ALL
+            SELECT 
+                foreman.mandor_id AS emp_id,
+                emp_mandor.name AS employee_name,
+                foreman.id AS kemandoran_emp,
+                emp_mandor.no_induk AS no_induk,
+                'foreman' AS emp_type
+            FROM 
+                hr_foreman foreman
+            JOIN 
+                hr_employee emp_mandor ON emp_mandor.id = foreman.mandor_id
+            WHERE 
+                foreman.active = TRUE
+                AND foreman.id = %s
+        ),
+        trans_summary AS (
+            SELECT 
+                trans_line.employee_id,
+                SUM(COALESCE(trans_nap_line.hasil_1_nap, 0)) AS total_hasil_1_nap,
+                SUM(COALESCE(trans_nap_line.hasil_2_nap, 0)) AS total_hasil_2_nap,
+                SUM(COALESCE(trans_nap_line.hasil_convert_latex, 0)) AS total_hasil_convert_latex,
+                SUM(COALESCE(trans_nap_line.hasil_convert_lump, 0)) AS total_hasil_convert_lump
+            FROM 
+                lhm_transaction_nap_line trans_nap_line
+            JOIN 
+                lhm_transaction_line trans_line 
+                ON trans_line.id = trans_nap_line.lhm_transaction_line_id
+                AND trans_line.state = 'done'
+            JOIN 
+                lhm_transaction trans 
+                ON trans.id = trans_line.lhm_id
+            WHERE 
+                trans.date BETWEEN %s AND %s
+            GROUP BY trans_line.employee_id
+        ),
+        attendance_data AS (
+            SELECT 
+                att_sheet.employee_id,
+                SUM(CASE WHEN att_sheet.type_id = 1 THEN 1 ELSE 0 END) AS attendance_count_kj,
+                SUM(CASE WHEN att_sheet.type_id = 5 THEN 1 ELSE 0 END) AS attendance_count_l,
+                SUM(CASE WHEN att_sheet.type_id = 4 THEN 1 ELSE 0 END) AS attendance_count_s,
+                SUM(CASE WHEN att_sheet.type_id = 6 THEN 1 ELSE 0 END) AS attendance_count_p,
+                SUM(CASE WHEN att_sheet.type_id = 3 THEN 1 ELSE 0 END) AS attendance_count_ct,
+                SUM(CASE WHEN att_sheet.type_id = 2 THEN 1 ELSE 0 END) AS attendance_count_m
+            FROM 
+                hr_attendance_sheet att_sheet
+            WHERE 
+                att_sheet.date BETWEEN %s AND %s
+            GROUP BY att_sheet.employee_id
+        )
+        SELECT
+            e.employee_name,
+            e.no_induk,
+            e.emp_type,
+            COALESCE(t.total_hasil_1_nap, 0) AS total_hasil_1_nap,
+            COALESCE(t.total_hasil_2_nap, 0) AS total_hasil_2_nap,
+            COALESCE(t.total_hasil_convert_latex, 0) AS total_hasil_convert_latex,
+            COALESCE(t.total_hasil_convert_lump, 0) AS total_hasil_convert_lump,
+            COALESCE(a.attendance_count_kj, 0) AS attendance_count_kj,
+            COALESCE(a.attendance_count_l, 0) AS attendance_count_l,
+            COALESCE(a.attendance_count_s, 0) AS attendance_count_s,
+            COALESCE(a.attendance_count_p, 0) AS attendance_count_p,
+            COALESCE(a.attendance_count_ct, 0) AS attendance_count_ct,
+            COALESCE(a.attendance_count_m, 0) AS attendance_count_m,
+            COALESCE(a.attendance_count_kj, 0) + COALESCE(a.attendance_count_l, 0) + COALESCE(a.attendance_count_s, 0) + COALESCE(a.attendance_count_p, 0) + COALESCE(a.attendance_count_ct, 0) + COALESCE(a.attendance_count_m, 0) AS total_attendance,
+            {','.join(cases_attendance_employee)},
+            {','.join(cases_attendance_foreman)}
+        FROM 
+            employee_data e
+        LEFT JOIN 
+            trans_summary t ON e.emp_id = t.employee_id
+        LEFT JOIN 
+            attendance_data a ON e.emp_id = a.employee_id
+        LEFT JOIN 
+            hr_attendance_sheet att_sheet ON e.emp_id = att_sheet.employee_id
+        GROUP BY
+            e.employee_name, 
+            e.no_induk, 
+            e.emp_type, 
+            t.total_hasil_1_nap, 
+            t.total_hasil_2_nap, 
+            t.total_hasil_convert_latex, 
+            t.total_hasil_convert_lump, 
+            a.attendance_count_kj, 
+            a.attendance_count_l, 
+            a.attendance_count_s, 
+            a.attendance_count_p, 
+            a.attendance_count_ct, 
+            a.attendance_count_m
+        ORDER BY
+            e.emp_type ASC,
+            e.employee_name ASC;
+        """
+        # print(queryhasil1)
+        return queryhasil1, [kemandoran_id, kemandoran_id, kemandoran_id, from_date, to_date, from_date, to_date]
+    
+
+    def generate_xlsx_report_new(self, workbook, datas, obj):
+        workbook = self.add_workbook_format(workbook)
+        wbf = self.wbf
+        sheet = workbook.add_worksheet("Summary Attendance")
+        row = 0
+
+        from_date = obj.from_date
+        to_date = obj.to_date
+        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 194, 195]
+
+        attendance_data = {}
+
+        for kemandoran_id in kemandoran_ids:
+            query1, params1 = self.generate_query_hasil_1(obj, kemandoran_id)
+            self.env.cr.execute(query1, params1)
+            list_hasil_1 = self.env.cr.dictfetchall()
+            kemandoran = self.env['hr.foreman'].browse(kemandoran_id)
+
+            sheet.write(row, 0, 'BLOK')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2, kemandoran.name)
+            row += 1
+            sheet.write(row, 0, 'BULAN')
+            sheet.write(row, 1,':', wbf['content_center'])
+            sheet.write(row, 2, f'{from_date.strftime("%d-%m-%Y")} s/d {to_date.strftime("%d-%m-%Y")}' if from_date and to_date else '')
+
+            row += 2
+            sheet.merge_range(row, 0, row + 1, 2, kemandoran.name or '', wbf['kemandoran'])
+            sheet.merge_range(row, 3, row + 1, 4, 'JUMLAH', wbf['header'])
+            sheet.write(row + 2, 0, 'NO.', wbf['header'])
+            sheet.set_column(5, 0, 7)
+            sheet.write(row + 2, 1,'NIK', wbf['header'])
+            sheet.set_column(5, 1, 13)
+            sheet.write(row + 2, 2,'NAMA', wbf['header'])
+            sheet.set_column(5, 2, 20)
+            sheet.write(row + 2, 3, 'BSH', wbf['header'])
+            sheet.set_column(5, 3, 8)
+            sheet.write(row + 2, 4, 'KRG',  wbf['header'])
+            sheet.set_column(5, 4, 8)
+
+            mandor_name = kemandoran.kepala_mandor_id.sudo().name if kemandoran.kepala_mandor_id else ''
+            mandor_nik = kemandoran.kepala_mandor_id.sudo().no_induk if kemandoran.kepala_mandor_id else ''
+            asisten_mandor_name = kemandoran.mandor_id.sudo().name if kemandoran.mandor_id else ''
+            asisten_mandor_nik = kemandoran.mandor_id.sudo().no_induk if kemandoran.mandor_id else ''
+            kerani_name = kemandoran.assisten_id.sudo().name if kemandoran.assisten_id else ''
+            kerani_nik = kemandoran.assisten_id.sudo().no_induk if kemandoran.assisten_id else ''
+
+            if from_date and to_date:
+                delta = to_date - from_date
+                date_columns = []
+                for i in range(delta.days + 1):
+                    current_date = from_date + timedelta(days=i)
+                    date_columns.append(current_date.strftime('%d_%b_%y').upper())
+                
+                attendance_data = {date: 0 for date in date_columns}
+
+                hko_start = 5
+                sheet.merge_range(row, hko_start, row + 1, hko_start + 5, 'JUMLAH HKO', wbf['header'])
+
+                total_hk_start = hko_start + 6
+                sheet.merge_range(row, total_hk_start, row + 2, total_hk_start, 'TOTAL HK', wbf['header'])
+
+                start_col = total_hk_start + 1
+                end_col = start_col + len(date_columns) - 1
+                sheet.merge_range(row, start_col, row + 1, end_col, 'TANGGAL', wbf['header'])
+
+                for i, date in enumerate(date_columns):
+                    sheet.write(row + 2, start_col + i, date[:2], wbf['header'])
+                    sheet.set_column(start_col + i, start_col + i, 5)
+            hko_headers = ['HKO', 'L', 'S', 'P', 'CT', 'M']
+            hko_formats = [self.wbf['biru_muda'], self.wbf['hijau_tua'], self.wbf['kuning'], self.wbf['biru_tua'], self.wbf['biru_muda'], self.wbf['merah']]
+
+            for i, header in enumerate(hko_headers):
+                sheet.write(row + 2, hko_start + i, header, hko_formats[i])
+
+            for i, header in enumerate(hko_headers):
+                sheet.write(row + 2, hko_start + i, header, hko_formats[i])
+
+            row += 3
+
+            # Data
+            row += 1
+            nomor = 1
+
+            for line in list_hasil_1:
+                if line.get("emp_type") == "employee":
+                    sheet.write(row, 0, nomor, wbf['data_center'])
+
+                    no_induk = line.get("no_induk")
+                    sheet.write(row, 1, no_induk, wbf['data'])
+                
+                    employee_name = line.get("employee_name", "N/A")
+                    sheet.write(row, 2, employee_name, wbf['data'])
+
+                    bsh_data = line.get("total_hasil_convert_latex", 0) or 0
+                    sheet.write(row, 3, bsh_data, wbf['data'])
+
+                    krg_data = line.get("total_hasil_convert_lump", 0) or 0
+                    sheet.write(row, 4, krg_data, wbf['data'])
+
+                    attendance_kj = line.get("attendance_count_kj", 0)
+                    attendance_l = line.get("attendance_count_l", 0)
+                    attendance_s = line.get("attendance_count_s", 0)
+                    attendance_p = line.get("attendance_count_p", 0)
+                    attendance_ct = line.get("attendance_count_ct", 0)
+                    attendance_m = line.get("attendance_count_m", 0)
+                    total_attendance = line.get("total_attendance", 0)
+
+                    sheet.write(row, hko_start, attendance_kj, wbf['biru_muda'])
+                    sheet.write(row, hko_start + 1, attendance_l, wbf['data_center'])
+                    sheet.write(row, hko_start + 2, attendance_s, wbf['data_center'])
+                    sheet.write(row, hko_start + 3, attendance_p, wbf['data_center'])
+                    sheet.write(row, hko_start + 4, attendance_ct, wbf['data_center'])
+                    sheet.write(row, hko_start + 5, attendance_m, wbf['data_center'])
+                    sheet.write(row, total_hk_start, total_attendance, wbf['data_center'])
+
+                    for i, date_str in enumerate(date_columns):
+                        date = datetime.strptime(date_str, "%d_%b_%y")
+                        column_name = f"{date.strftime('%d_%b_%y').upper()}_EMPLOYEE_DATE"
+                        attendance_id = line.get(column_name)
+                        attendance_code = self.env["hr.attendance.type"].browse(attendance_id).code if attendance_id else "-"
+                        
+                        if attendance_code == "KJ":
+                            cell_format = wbf['hijau_muda']
+                        elif attendance_code == "L":
+                            cell_format = wbf['hijau_tua']
+                        elif attendance_code == "S1":
+                            cell_format = wbf['kuning']
+                        elif attendance_code == "P":
+                            cell_format = wbf['biru_tua']
+                        elif attendance_code == "CT":
+                            cell_format = wbf['biru_muda']
+                        elif attendance_code == "M":
+                            cell_format = wbf['merah']
+                        else:
+                            cell_format = wbf['data_center']
+
+                        sheet.write(row, start_col + i, attendance_code, cell_format)
+
+                row += 1
+                nomor += 1
+
+            row += 1
+            sheet.write(row, 0, "M-1", wbf['data_center'])
+            sheet.write(row + 1, 0, "M-2", wbf['data_center'])
+            sheet.write(row + 2, 0, "M-3", wbf['data_center'])
+
+            sheet.write(row, 1, mandor_nik, wbf['data'])
+            sheet.write(row + 1, 1, asisten_mandor_nik, wbf['data'])
+            sheet.write(row + 2, 1, kerani_nik, wbf['data'])
+
+            sheet.write(row, 2, mandor_name, wbf['data'])
+            sheet.write(row + 1, 2, asisten_mandor_name, wbf['data'])
+            sheet.write(row + 2, 2, kerani_name, wbf['data'])
+
+            sheet.write(row, 3, "-", wbf['data'])
+            sheet.write(row + 1, 3, "-", wbf['data'])
+            sheet.write(row + 2, 3, "-", wbf['data'])
+
+            sheet.write(row, 4, "-", wbf['data'])
+            sheet.write(row + 1, 4, "-", wbf['data'])
+            sheet.write(row + 2, 4, "-", wbf['data'])
+
+            sheet.write(row, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row, total_hk_start, "-", wbf['data_center'])
+
+            sheet.write(row + 1, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row + 1, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row + 1, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row + 1, total_hk_start, "-", wbf['data_center'])
+
+            sheet.write(row + 2, hko_start, "-", wbf['biru_muda'])
+            sheet.write(row + 2, hko_start + 1, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 2, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 3, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 4, "-", wbf['data_center'])
+            sheet.write(row + 2, hko_start + 5, "-", wbf['data_center'])
+            sheet.write(row + 2, total_hk_start, "-", wbf['data_center'])
+
+            for i, date in enumerate(date_columns):
+                sheet.write(row, start_col + i, "-", wbf['header'])
+                sheet.write(row + 1, start_col + i, "-", wbf['header'])
+                sheet.write(row + 2, start_col + i, "-", wbf['header'])
+
+            row += 4
+
+            # Line Total Paling Bawah
+            sheet.merge_range(row, 0, row, 2, "JUMLAH TOTAL", wbf['jumlah_total'])
+            
+            # total_attendance = 0
+            # grandtotal_hasil_1 = 0 
+            # grandtotal_hasil_2 = 0 
+            # grandtotal_chasil_1 = 0 
+            # grandtotal_chasil_2 = 0 
+            # grandtotal_konversi = 0 
+            # for line in list_hasil_1:
+            #     attendance_count = line.get("attendance_count", 0)
+            #     total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0)
+            #     total_attendance += attendance_count
+
+            #     sheet.write(row, hko_start, total_attendance, wbf['hijau_tua'])
+            #     sheet.write(row, hko_start + 1, 0, wbf['hijau_tua'])
+            #     sheet.write(row, hko_start + 2, 0, wbf['hijau_tua'])
+            #     sheet.write(row, hko_start + 3, 0, wbf['hijau_tua'])
+            #     sheet.write(row, hko_start + 4, 0, wbf['hijau_tua'])
+            #     sheet.write(row, hko_start + 5, 0, wbf['hijau_tua'])
+            #     sheet.write(row, hko_start + 6, total_attendance, wbf['hijau_tua'])
+
+            # for i, date_str in enumerate(date_columns):
+            #     total_kj = total_kj_per_date.get(date_str, 0)
+            #     sheet.write(row, start_col + i, total_kj, wbf['kuning'])
+
+            # for i, date_str in enumerate(date_columns):
+            #     total_hasil_1 = total_hasil_1_per_tanggal.get(date_str, 0)
+            #     grandtotal_hasil_1 += total_hasil_1
+            #     sheet.write(row, second_date_start - 1, grandtotal_hasil_1, wbf['hijau_tua'])
+            #     sheet.write(row, second_date_start + i, total_hasil_1, wbf['kuning'])
+
+            # for i, date_str in enumerate(date_columns):
+            #     total_hasil_2 = total_hasil_2_per_tanggal.get(date_str, 0)
+            #     grandtotal_hasil_2 += total_hasil_2
+            #     sheet.write(row, third_date_start - 1, grandtotal_hasil_2, wbf['hijau_tua'])
+            #     sheet.write(row, third_date_start + i, total_hasil_2, wbf['kuning'])
+
+            # for i, date_str in enumerate(date_columns):
+            #     total_chasil_1 = total_chasil_1_per_tanggal.get(date_str, 0)
+            #     grandtotal_chasil_1 += total_chasil_1
+            #     sheet.write(row, sixth_date_start - 1, grandtotal_chasil_1, wbf['hijau_tua'])
+            #     sheet.write(row, sixth_date_start + i, total_chasil_1, wbf['kuning'])
+
+            # for i, date_str in enumerate(date_columns):
+            #     total_chasil_2 = total_chasil_2_per_tanggal.get(date_str, 0)
+            #     grandtotal_chasil_2 += total_chasil_2
+            #     sheet.write(row, seventh_date_start - 1, grandtotal_chasil_2, wbf['hijau_tua'])
+            #     sheet.write(row, seventh_date_start + i, total_chasil_2, wbf['kuning'])
+
+            # for i, date_str in enumerate(date_columns):
+            #     total_konversi = total_convert_per_tanggal.get(date_str, 0)
+            #     grandtotal_konversi += total_konversi
+            #     sheet.write(row, eighth_date_start - 1, grandtotal_konversi, wbf['hijau_tua'])
+            #     sheet.write(row, eighth_date_start + i, total_konversi, wbf['kuning'])
+            
+            # row += 5
+
     def generate_xlsx_report(self, workbook, datas, obj):
         workbook = self.add_workbook_format(workbook)
         wbf = self.wbf
@@ -326,7 +726,9 @@ class ReportSummaryAttendance(models.AbstractModel):
                         AND emp.active = TRUE
                 ),
                 trans_data AS (
-                    SELECT 
+                    SELECT
+                        trans_nap_line.hasil_1_nap, 
+                        trans_nap_line.hasil_2_nap, 
                         trans_nap_line.hasil_convert_latex,
                         trans_nap_line.hasil_convert_lump,  
                         trans.date, 
@@ -344,8 +746,8 @@ class ReportSummaryAttendance(models.AbstractModel):
                     employee_data.emp_id,
                     employee_data.employee_name,
                     employee_data.no_induk,
-                    SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex_bagi_2,
-                    SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
+                    SUM(COALESCE(trans_data.hasil_1_nap, 0) + COALESCE(trans_data.hasil_2_nap, 0)) AS bsh,
+                    SUM(COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0)) AS krg
                 FROM 
                     employee_data
                 LEFT JOIN 
@@ -371,12 +773,12 @@ class ReportSummaryAttendance(models.AbstractModel):
             kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
             kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, bsh, krg in karyawan_data:
                 sheet.write(row, 0, nomor, wbf['data_center'])
                 sheet.write(row, 1, no_induk, wbf['data'])
                 sheet.write(row, 2, employee_name, wbf['data'])
-                sheet.write(row, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
-                sheet.write(row, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
+                sheet.write(row, 3, bsh, wbf['data'])
+                sheet.write(row, 4, krg, wbf['data'])
 
                 current_col = 12
                 hko_count = 0
@@ -608,7 +1010,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             row += 1
             total_hko_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, bsh, krg in karyawan_data:
                 current_col = 12
                 for i in range(len(date_columns)):
                     attendance = self.env['hr.attendance.sheet'].search([
@@ -683,9 +1085,9 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_columns)
             total_m_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
-                total_bsh += total_hasil_convert_lump_bagi_2
-                total_krg += total_hasil_convert_latex_bagi_2
+            for emp_id, employee_name, no_induk, bsh, krg in karyawan_data:
+                total_bsh += bsh
+                total_krg += krg
                 current_col = 12
                 for i in range(len(date_columns)):
                     attendance = self.env['hr.attendance.sheet'].search([
@@ -909,7 +1311,9 @@ class ReportSummaryAttendance(models.AbstractModel):
                     SELECT date FROM hr_attendance_sheet WHERE is_holiday = TRUE
                 ),
                 trans_data AS (
-                    SELECT 
+                    SELECT
+                        trans_nap_line.hasil_1_nap, 
+                        trans_nap_line.hasil_2_nap, 
                         trans_nap_line.hasil_convert_latex,
                         trans_nap_line.hasil_convert_lump,  
                         trans.date, 
@@ -928,8 +1332,8 @@ class ReportSummaryAttendance(models.AbstractModel):
                     employee_data.emp_id,
                     employee_data.employee_name,
                     employee_data.no_induk,
-                    SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex_bagi_2,
-                    SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
+                    SUM(COALESCE(trans_data.hasil_1_nap, 0) + COALESCE(trans_data.hasil_2_nap, 0)) AS bsh,
+                    SUM(COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0)) AS krg
                 FROM 
                     employee_data
                 LEFT JOIN 
@@ -955,12 +1359,12 @@ class ReportSummaryAttendance(models.AbstractModel):
             kerani_name = kemandoran.assisten_id.name if kemandoran.assisten_id else ''
             kerani_nik = kemandoran.assisten_id.no_induk if kemandoran.assisten_id else ''
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, bsh, krg in karyawan_data:
                 sheet2.write(row2, 0, nomor, wbf['data_center'])
                 sheet2.write(row2, 1, no_induk, wbf['data'])
                 sheet2.write(row2, 2, employee_name, wbf['data'])
-                sheet2.write(row2, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
-                sheet2.write(row2, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
+                sheet2.write(row2, 3, bsh, wbf['data'])
+                sheet2.write(row2, 4, krg, wbf['data'])
 
                 hko_count = 0
                 l_count = 0
@@ -1201,7 +1605,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             row2 += 1
             total_hko_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
+            for emp_id, employee_name, no_induk, bsh, krg in karyawan_data:
                 for i, current_date in enumerate(holiday_dates):
                     attendances = self.env['hr.attendance.sheet'].search([
                         ('employee_id', '=', emp_id),
@@ -1290,9 +1694,9 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_columns)
             total_m_per_tanggal = [0] * len(date_columns)
 
-            for emp_id, employee_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data:
-                total_bsh += total_hasil_convert_lump_bagi_2
-                total_krg += total_hasil_convert_latex_bagi_2
+            for emp_id, employee_name, no_induk, bsh, krg in karyawan_data:
+                total_bsh += bsh
+                total_krg += krg
                 current_col = 12
                 for i, current_date in enumerate(holiday_dates):
                     attendance = self.env['hr.attendance.sheet'].search([
@@ -1517,7 +1921,9 @@ class ReportSummaryAttendance(models.AbstractModel):
                     WHERE is_correction = TRUE
                 ),
                 trans_data AS (
-                    SELECT 
+                    SELECT
+                        trans_nap_line.hasil_1_nap, 
+                        trans_nap_line.hasil_2_nap, 
                         trans_nap_line.hasil_convert_latex,
                         trans_nap_line.hasil_convert_lump,  
                         trans.date, 
@@ -1536,8 +1942,8 @@ class ReportSummaryAttendance(models.AbstractModel):
                     employee_data.emp_id,
                     employee_data.employee_name,
                     employee_data.no_induk,
-                    SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex_bagi_2,
-                    SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump_bagi_2
+                    SUM(COALESCE(trans_data.hasil_1_nap, 0) + COALESCE(trans_data.hasil_2_nap, 0)) AS bsh,
+                    SUM(COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0)) AS krg
                 FROM 
                     employee_data
                 JOIN 
@@ -1568,12 +1974,12 @@ class ReportSummaryAttendance(models.AbstractModel):
             ####### KARYAWAN ########
             #                       #
             #########################
-            for emp_correction_id, employee_correction_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data_correction:
+            for emp_correction_id, employee_correction_name, no_induk, bsh, krg in karyawan_data_correction:
                 sheet3.write(row3, 0, nomor, wbf['data_center'])
                 sheet3.write(row3, 1, no_induk, wbf['data'])
                 sheet3.write(row3, 2, employee_correction_name, wbf['data'])
-                sheet3.write(row3, 3, total_hasil_convert_lump_bagi_2, wbf['data'])
-                sheet3.write(row3, 4, total_hasil_convert_latex_bagi_2, wbf['data'])
+                sheet3.write(row3, 3, bsh, wbf['data'])
+                sheet3.write(row3, 4, krg, wbf['data'])
 
                 # Variabel untuk menghitung jumlah HKO, L, S, P, CT, M
                 hko_count = 0
@@ -1822,7 +2228,7 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_hko_per_tanggal = [0] * len(date_column_correction)
 
 
-            for emp_correction_id, employee_correction_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data_correction:
+            for emp_correction_id, employee_correction_name, no_induk, bsh, krg in karyawan_data_correction:
                 for i, current_date in enumerate(correction_dates):
                     attendances = self.env['hr.attendance.sheet'].search([
                         ('employee_id', '=', emp_correction_id),
@@ -1912,9 +2318,9 @@ class ReportSummaryAttendance(models.AbstractModel):
             total_ct_per_tanggal = [0] * len(date_column_correction)
             total_m_per_tanggal = [0] * len(date_column_correction)
 
-            for emp_correction_id, employee_correction_name, no_induk, total_hasil_convert_lump_bagi_2, total_hasil_convert_latex_bagi_2 in karyawan_data_correction:
-                total_bsh += total_hasil_convert_lump_bagi_2
-                total_krg += total_hasil_convert_latex_bagi_2
+            for emp_correction_id, employee_correction_name, no_induk, bsh, krg in karyawan_data_correction:
+                total_bsh += bsh
+                total_krg += krg
                 current_col = 12
                 for i, current_date in enumerate(correction_dates):
                     attendance = self.env['hr.attendance.sheet'].search([
