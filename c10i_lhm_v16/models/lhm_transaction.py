@@ -781,7 +781,7 @@ class lhm_transaction(models.Model):
                         'Nilai NAP belum terisi, silahkan melakukan proses Nota Angkut Panen!'
                     ))
 
-        self.state = 'confirmed'
+        self.sudo().state = 'confirmed'
 
     def button_approve(self):  
         # Kumpulkan nama karyawan dengan masalah gaji atau tipe absensi
