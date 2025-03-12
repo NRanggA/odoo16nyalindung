@@ -1382,12 +1382,15 @@ class TimbanganKebun(models.Model):
                 'timbangan_kebun_id': record.id,
             }
 
+            if record.product_id.name.lower() not in ["lateks", "lump"]:
+                pabrik_vals['product_qty'] = record.product_qty
             existing_pabrik = self.env['timbangan.pabrik'].search([
                 ('timbangan_kebun_id', '=', record.id),
             ], limit=1)
 
             if existing_pabrik:
-                existing_pabrik.write({key: value for key, value in pabrik_vals.items() if key != 'product_qty'})
+                update_vals = {key: value for key, value in pabrik_vals.items()}
+                existing_pabrik.write(update_vals)
             else:
                 self.env['timbangan.pabrik'].create(pabrik_vals)
 
