@@ -583,18 +583,23 @@ class ReportStockMutation(models.AbstractModel):
         location    = obj.location_id.name
 
 
+        # if obj.product_ids:
+        #     products = obj.product_ids
+        # else:
+
+        domain = []
+        
         if obj.product_ids:
-            products = obj.product_ids
-        else:
-            domain = []
-            
-            if obj.product_type:
-                domain.append(('detailed_type', '=', obj.product_type))
-            
-            if obj.inventory_valuation:
-                domain.append(('categ_id.property_valuation', '=', obj.inventory_valuation))
-            
-            products = self.env['product.product'].search(domain) if domain else self.env['product.product'].search([])
+            domain.append(('id', 'in', obj.product_ids.ids))
+
+        
+        if obj.product_type:
+            domain.append(('detailed_type', '=', obj.product_type))
+        
+        if obj.inventory_valuation:
+            domain.append(('categ_id.property_valuation', '=', obj.inventory_valuation))
+        
+        products = self.env['product.product'].search(domain) if domain else self.env['product.product'].search([])
 
         # Nama worksheet
         sheet = workbook.add_worksheet(f"{location}")
