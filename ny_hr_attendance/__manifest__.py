@@ -12,7 +12,8 @@
     # any module necessary for this one to work correctly
     'depends': [
         'c10i_attendance',
-        'c10i_base_api'
+        'c10i_base_api',
+        'c10i_lhm_v16'
     ],
     # always loaded
     'data': [
