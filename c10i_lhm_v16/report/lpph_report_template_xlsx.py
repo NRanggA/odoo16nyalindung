@@ -160,15 +160,15 @@ class ReportLpphExcel(models.AbstractModel):
             worksheet.merge_range(next_row + 1, 16, next_row + 1, 18, "HI", wbf['header'])
             worksheet.write(next_row + 2, 16, "HK", wbf['header'])
             worksheet.set_column(16, 16, 16)
-            worksheet.write(next_row + 2, 17, "PREMI/LEMBUR", wbf['header'])
-            worksheet.set_column(17, 17, 18)
+            worksheet.write(next_row + 2, 17, "BORONG/PREMI/LEMBUR", wbf['header'])
+            worksheet.set_column(17, 17, 23)
             worksheet.write(next_row + 2, 18, "TOTAL", wbf['header'])
             worksheet.set_column(18, 18, 18)
             worksheet.merge_range(next_row + 1, 19, next_row + 1, 21, "SHI", wbf['header'])
             worksheet.write(next_row + 2, 19, "HK", wbf['header'])
             worksheet.set_column(19, 19, 10)
-            worksheet.write(next_row + 2, 20, "PREMI/LEMBUR", wbf['header'])
-            worksheet.set_column(20, 20, 18)
+            worksheet.write(next_row + 2, 20, "BORONG/PREMI/LEMBUR", wbf['header'])
+            worksheet.set_column(20, 20, 23)
             worksheet.write(next_row + 2, 21, "TOTAL", wbf['header'])
             worksheet.set_column(21, 21, 18)
             worksheet.merge_range(next_row, 22, next_row, 29, "PEMAKAIAN MATERIAL", wbf['header'])
@@ -211,12 +211,23 @@ class ReportLpphExcel(models.AbstractModel):
                         'shi_subtotal_nilai_1': 0.0,
                         'shi_subtotal_workday': 0.0,
                         'shi_subtotal_premi': 0.0,
+                        'shi_subtotal_workdaypremi': 0.0,
                         'realization': 0.0,
                         'real_stock_qty': 0.0,
                         'shi_realization': 0.0,
+                        'subtotal_total': 0.0,
+                        'subtotal_workdaypremi': 0.0,
                     }
 
-    
+                transaction_line = self.env['lhm.transaction.line'].search([
+                    ('lhm_id', '=', line.lhm_id.id)
+                ], limit=1)
+                contract_wage_value = transaction_line.contract_wage_value if transaction_line else 0.0
+                premi_value = contract_wage_value if transaction_line and transaction_line.is_borong else line.premi
+                
+                work_day_adjusted = line.work_day * contract_wage_value
+                total_hk_premi = work_day_adjusted + premi_value
+
                 materials = self.env['lhm.transaction.material.line'].search([
                     ('progress_id', '=', line.id),
                     ('realization', '>', 0)
@@ -232,8 +243,9 @@ class ReportLpphExcel(models.AbstractModel):
                     existing_progress['real_stock_qty'] += real_stock_qty_sum
                     existing_progress['nilai'] += line.nilai
                     existing_progress['nilai2'] += line.nilai2
-                    existing_progress['work_day'] += line.work_day
-                    existing_progress['premi'] += line.premi
+                    existing_progress['work_day'] += work_day_adjusted
+                    existing_progress['premi'] += premi_value
+                    existing_progress['total'] += total_hk_premi
                 else:
                     grouped_lhm[key.id]['progress'].append({
                         'progress_id': line.id,
@@ -244,19 +256,22 @@ class ReportLpphExcel(models.AbstractModel):
                         'uom2_id': line.uom2_id,
                         'activity_id': line.activity_id,
                         'location_id': line.location_id,
-                        'work_day': line.work_day,
-                        'premi': line.premi,
+                        'work_day': work_day_adjusted,
+                        'premi': premi_value,
                         'realization': material_realization_sum,                        
                         'real_stock_qty': real_stock_qty_sum,
                         'nilai': line.nilai,
                         'nilai2': line.nilai2,
+                        'total': total_hk_premi,
                     })
                     grouped_lhm[key.id]['subtotal_realization'] += material_realization_sum
                     grouped_lhm[key.id]['subtotal_real_stock_qty'] += real_stock_qty_sum
                     grouped_lhm[key.id]['subtotal_nilai'] += line.nilai
                     grouped_lhm[key.id]['subtotal_nilai_1'] += line.nilai2
-                    grouped_lhm[key.id]['subtotal_workday'] += line.work_day
-                    grouped_lhm[key.id]['subtotal_premi'] += line.premi
+                    grouped_lhm[key.id]['subtotal_workday'] += work_day_adjusted
+                    grouped_lhm[key.id]['subtotal_premi'] += premi_value
+                    grouped_lhm[key.id]['subtotal_total'] += total_hk_premi
+                    grouped_lhm[key.id]['subtotal_workdaypremi'] += work_day_adjusted
 
             if lhm_transaction:
                 for line in shi_lhm_transaction.process_line_ids:
@@ -284,8 +299,18 @@ class ReportLpphExcel(models.AbstractModel):
                             'shi_subtotal_nilai_1': 0.0,
                             'shi_subtotal_workday': 0.0,
                             'shi_subtotal_premi': 0.0,
+                            'shi_subtotal_workdaypremi': 0.0,
                         }
+
+                    transaction_line = self.env['lhm.transaction.line'].search([
+                        ('lhm_id', '=', line.lhm_id.id)
+                    ], limit=1)
+                    contract_wage_value = transaction_line.contract_wage_value if transaction_line else 0.0
+                    premi_value = contract_wage_value if transaction_line and transaction_line.is_borong else line.premi
                     
+                    work_day_adjusted = line.work_day * contract_wage_value
+                    total_hk_premi = work_day_adjusted + premi_value
+
                     materials = self.env['lhm.transaction.material.line'].search([
                             ('progress_id', '=', line.id),
                             ('realization', '>', 0)
@@ -300,8 +325,9 @@ class ReportLpphExcel(models.AbstractModel):
                         existing_progress['shi_realization'] = existing_progress.get('shi_realization', 0.0) + material_realization_sum
                         existing_progress['shi_nilai'] = existing_progress.get('shi_nilai', 0.0) + line.nilai
                         existing_progress['shi_nilai_1'] = existing_progress.get('shi_nilai_1', 0.0) + line.nilai2
-                        existing_progress['shi_work_day'] = existing_progress.get('shi_work_day', 0.0) + line.work_day
-                        existing_progress['shi_premi'] = existing_progress.get('shi_premi', 0.0) + line.premi
+                        existing_progress['shi_work_day'] = existing_progress.get('shi_work_day', 0.0) + work_day_adjusted
+                        existing_progress['shi_premi'] = existing_progress.get('shi_premi', 0.0) + premi_value
+                        existing_progress['shi_workdaypremi'] = existing_progress.get('shi_workdaypremi', 0.0) + total_hk_premi
                     else:
                         grouped_lhm[key.id]['progress'].append({
                             'progress_id': line.id,
@@ -318,8 +344,9 @@ class ReportLpphExcel(models.AbstractModel):
                             'real_stock_qty': real_stock_qty_sum,
                             'nilai': line.nilai,
                             'nilai2': line.nilai2,
-                            'shi_work_day': line.work_day,
-                            'shi_premi': line.premi,
+                            'shi_work_day': work_day_adjusted,
+                            'shi_premi': premi_value,
+                            'shi_workdaypremi': total_hk_premi,
                             'shi_realization': material_realization_sum,
                             'shi_nilai': line.nilai,
                             'shi_nilai_1': line.nilai2,
@@ -328,14 +355,16 @@ class ReportLpphExcel(models.AbstractModel):
                         grouped_lhm[key.id]['subtotal_real_stock_qty'] += sum(m.real_stock_qty for m in materials)
                         grouped_lhm[key.id]['subtotal_nilai'] += line.nilai
                         grouped_lhm[key.id]['subtotal_nilai_1'] += line.nilai2
-                        grouped_lhm[key.id]['subtotal_workday'] += line.work_day
-                        grouped_lhm[key.id]['subtotal_premi'] += line.premi
+                        grouped_lhm[key.id]['subtotal_workday'] += work_day_adjusted
+                        grouped_lhm[key.id]['subtotal_premi'] += premi_value
+                        grouped_lhm[key.id]['subtotal_workdaypremi'] += total_hk_premi
                         
 
                 shi_subtotal_nilai = 0.0
                 shi_subtotal_nilai_1 = 0.0
                 shi_subtotal_workday = 0.0
                 shi_subtotal_premi = 0.0
+                shi_subtotal_workdaypremi = 0.0
                 shi_subtotal_realization = 0.0
                 
                 total_realization = 0.0
@@ -344,11 +373,13 @@ class ReportLpphExcel(models.AbstractModel):
                 total_nilai_1 = 0.0
                 total_workday = 0.0
                 total_premi = 0.0
+                total_workdaypremi = 0.0
                 total_shi_realization = 0.0
                 total_shi_total_nilai = 0.0
                 total_shi_total_nilai_1 = 0.0
                 total_shi_total_workday = 0.0
                 total_shi_total_premi = 0.0
+                total_shi_total_workdaypremi = 0.0
 
                 for key, data in grouped_lhm.items():
                     shi_subtotal_realization = sum(progress['shi_realization'] for progress in data['progress'])
@@ -356,18 +387,21 @@ class ReportLpphExcel(models.AbstractModel):
                     shi_subtotal_nilai_1 = sum(progress['shi_nilai_1'] for progress in data['progress'])
                     shi_subtotal_workday = sum(progress['shi_work_day'] for progress in data['progress'])
                     shi_subtotal_premi = sum(progress['shi_premi'] for progress in data['progress'])
+                    shi_subtotal_workdaypremi = sum(progress['shi_workdaypremi'] for progress in data['progress'])
 
                     grouped_lhm[key]['shi_subtotal_realization'] = shi_subtotal_realization
                     grouped_lhm[key]['shi_subtotal_nilai'] = shi_subtotal_nilai
                     grouped_lhm[key]['shi_subtotal_nilai_1'] = shi_subtotal_nilai_1
                     grouped_lhm[key]['shi_subtotal_workday'] = shi_subtotal_workday
                     grouped_lhm[key]['shi_subtotal_premi'] = shi_subtotal_premi
+                    grouped_lhm[key]['shi_subtotal_workdaypremi'] = shi_subtotal_workdaypremi
                     
                     total_realization += data.get('subtotal_realization', 0.0)
                     total_real_stock_qty += data.get('subtotal_real_stock_qty', 0.0)
                     total_nilai += data.get('subtotal_nilai', 0.0)
                     total_nilai_1 += data.get('subtotal_nilai_1', 0.0)
                     total_workday += data.get('subtotal_workday', 0.0)
+                    total_workdaypremi += data.get('subtotal_workdaypremi', 0.0)
                     total_premi += data.get('subtotal_premi', 0.0)
 
                     total_shi_realization += data.get('shi_subtotal_realization', 0.0)
@@ -375,6 +409,7 @@ class ReportLpphExcel(models.AbstractModel):
                     total_shi_total_nilai_1 += data.get('shi_subtotal_nilai_1', 0.0)
                     total_shi_total_workday += data.get('shi_subtotal_workday', 0.0)
                     total_shi_total_premi += data.get('shi_subtotal_premi', 0.0)
+                    total_shi_total_workdaypremi += data.get('shi_subtotal_workdaypremi', 0.0)
             
             row_data = next_row + 4
 
@@ -441,7 +476,7 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 17, line['premi'] if line['premi'] else 0.0, wbf['number_content'])
                     worksheet.set_column(17, 17, 18)
 
-                    worksheet.write(row_data, 18, '-', wbf['content'])
+                    worksheet.write(row_data, 18, line['total'] if line['total'] else 0.0, wbf['number_content'])
                     worksheet.set_column(18, 18, 18)
                     
                     worksheet.write(row_data, 19, line['shi_work_day'] if line['shi_work_day'] else 0.0, wbf['number_content'])
@@ -450,7 +485,7 @@ class ReportLpphExcel(models.AbstractModel):
                     worksheet.write(row_data, 20, line['shi_premi'] if line['shi_premi'] else 0.0, wbf['number_content'])
                     worksheet.set_column(20, 20, 18)
 
-                    worksheet.write(row_data, 21, '-', wbf['content'])
+                    worksheet.write(row_data, 21, line['shi_workdaypremi'] if line['shi_workdaypremi'] else 0.0, wbf['number_content'])
                     worksheet.set_column(21, 21, 18)
 
                     if get_material:
@@ -542,10 +577,10 @@ class ReportLpphExcel(models.AbstractModel):
                 worksheet.write(row_data, 15, "", wbf['total'])
                 worksheet.write(row_data, 16, lhm_data['subtotal_workday'], wbf['number_total'])
                 worksheet.write(row_data, 17, lhm_data['subtotal_premi'], wbf['number_total'])
-                worksheet.write(row_data, 18, "", wbf['total'])
+                worksheet.write(row_data, 18, lhm_data['subtotal_total'], wbf['number_total'])
                 worksheet.write(row_data, 19, lhm_data['shi_subtotal_workday'], wbf['number_total'])
                 worksheet.write(row_data, 20, lhm_data['shi_subtotal_premi'], wbf['number_total'])
-                worksheet.write(row_data, 21, "", wbf['total'])
+                worksheet.write(row_data, 21, lhm_data['shi_subtotal_workdaypremi'], wbf['number_total'])
                 worksheet.write(row_data, 22, "", wbf['total'])
                 worksheet.write(row_data, 23, "", wbf['total'])
                 worksheet.write(row_data, 24, lhm_data['subtotal_real_stock_qty'], wbf['number_total'])
@@ -575,10 +610,10 @@ class ReportLpphExcel(models.AbstractModel):
                 worksheet.write(row_data, 15, "", wbf['total'])
                 worksheet.write(row_data, 16, total_workday, wbf['number_total'])
                 worksheet.write(row_data, 17, total_premi, wbf['number_total'])
-                worksheet.write(row_data, 18, "", wbf['total'])
+                worksheet.write(row_data, 18, total_workdaypremi, wbf['number_total'])
                 worksheet.write(row_data, 19, total_shi_total_workday, wbf['number_total'])
                 worksheet.write(row_data, 20, total_shi_total_premi, wbf['number_total'])
-                worksheet.write(row_data, 21, "", wbf['total'])
+                worksheet.write(row_data, 21, total_shi_total_workdaypremi, wbf['number_total'])
                 worksheet.write(row_data, 22, "", wbf['total'])
                 worksheet.write(row_data, 23, "", wbf['total'])
                 worksheet.write(row_data, 24, total_real_stock_qty, wbf['number_total'])
