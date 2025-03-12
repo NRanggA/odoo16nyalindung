@@ -19,11 +19,11 @@
             </div>
 
             <button name="run_progress" position="attributes">
-                <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver</attribute>
+                <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver,ny_plantation.plantation_kepala_mandor_user</attribute>
             </button>
 
             <button name="button_confirm" position="attributes">
-                <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver</attribute>
+                <attribute name="groups">c10i_lhm_v16.plantation_lhm_approver,ny_plantation.plantation_kepala_mandor_user</attribute>
             </button>
 
             <button name="button_approve" position="before">

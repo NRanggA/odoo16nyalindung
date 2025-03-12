@@ -459,7 +459,7 @@ class lhm_transaction(models.Model):
         lhm_progress_list = []
         lhm_removed_list = []
         sequence_number = 1
-        progress_line_obj = self.env['lhm.transaction.process.line']
+        progress_line_obj = self.env['lhm.transaction.process.line'].sudo()
 
         if self.process_line_ids:
             for data in self.process_line_ids:
@@ -550,7 +550,7 @@ class lhm_transaction(models.Model):
                         'lhm_id': self.id,
                     }
                     if new_lines:
-                        self.env['lhm.transaction.process.line'].create(new_lines)
+                        self.env['lhm.transaction.process.line'].sudo().create(new_lines)
                         sequence_number += 1
             else:
                 new_lines = {
@@ -572,7 +572,7 @@ class lhm_transaction(models.Model):
                     'lhm_id': self.id,
                 }
                 if new_lines:
-                    self.env['lhm.transaction.process.line'].create(new_lines)
+                    self.env['lhm.transaction.process.line'].sudo().create(new_lines)
                     sequence_number += 1
 
         if len(lhm_removed_list) != len(lhm_progress_list):
@@ -1165,7 +1165,7 @@ class lhm_transaction_line(models.Model):
 
             # Panggil fungsi untuk mengecek apakah employee ini bulanan atau bukan
             record._check_employee_bulanan()
-            lhm_nap_line = self.env['lhm.transaction.nap.line'].search([('lhm_transaction_line_id', '=', record.id)])
+            lhm_nap_line = self.env['lhm.transaction.nap.line'].sudo().search([('lhm_transaction_line_id', '=', record.id)])
             
             # Hitung konversi menggunakan fungsi compute_conversion
             # convert_hasil_latex, convert_hasil_lump = record.compute_conversion(lhm_nap_line, record.is_hasil_2)
@@ -1174,8 +1174,8 @@ class lhm_transaction_line(models.Model):
             if record.is_hasil_2:
                 
                 # Dapatkan harga borongan berdasarkan DRC
-                price_1     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_latex_nap, product=record.product_id)
-                price_2     = record.activity_id.get_price_borongan(drc=lhm_nap_line.drc_lump_nap, product=record.product_id_2)
+                price_1     = record.activity_id.sudo().get_price_borongan(drc=lhm_nap_line.drc_latex_nap, product=record.product_id)
+                price_2     = record.activity_id.sudo().get_price_borongan(drc=lhm_nap_line.drc_lump_nap, product=record.product_id_2)
                 
                 # Menghitung hasil akhir
                 hasil_latex = convert_hasil_latex * price_1
@@ -1196,9 +1196,9 @@ class lhm_transaction_line(models.Model):
             if record.is_borong:
                 if not record.activity_id.is_nap:
                     # panggil fungsi untuk mengecek employee ini bulanan atau bukan
-                    record._check_employee_bulanan()
+                    record.sudo()._check_employee_bulanan()
                     
-                    wage_hasil = record.hasil_1 * record.activity_id.get_price_borongan()
+                    wage_hasil = record.hasil_1 * record.activity_id.sudo().get_price_borongan()
                     values = {
                         'contract_wage_value': wage_hasil
                     }
@@ -1244,7 +1244,7 @@ class lhm_transaction_line(models.Model):
             # Cek apakah aktivitas adalah panen
             if record.activity_id.is_nap:
                 # Periksa apakah record untuk employee dan lhm_id serta lhm_transaction_line_id sudah ada
-                existing_nap_line = self.env['lhm.transaction.nap.line'].search([
+                existing_nap_line = self.env['lhm.transaction.nap.line'].sudo().search([
                     ('lhm_id', '=', record.lhm_id.id),
                     ('lhm_transaction_line_id', '=', record.id),
                     ('employee_id', '=', record.employee_id.id),
@@ -1259,7 +1259,7 @@ class lhm_transaction_line(models.Model):
                         'sequence'               : record.sequence,
                     }
                     # Buat record baru di lhm.transaction.nap.line
-                    self.env['lhm.transaction.nap.line'].create(value)
+                    self.env['lhm.transaction.nap.line'].sudo().create(value)
 
     # Fungsi untuk mengecek jika borongan employee bulanan atau bukan
     def _check_employee_bulanan(self):
