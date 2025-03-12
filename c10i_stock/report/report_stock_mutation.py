@@ -411,6 +411,7 @@ class ReportStockMutation(models.AbstractModel):
                             FROM 
                                 stock_move_line sml, stock_location lsrc, stock_location ldest
                             WHERE sml.location_id = lsrc.id 
+                            AND sml.location_dest_id = ldest.id
                             AND lsrc.id != %(location_id)s
                             AND ldest.id = %(location_id)s
                             AND lsrc.usage = 'internal' 
@@ -425,6 +426,7 @@ class ReportStockMutation(models.AbstractModel):
                             FROM 
                                 stock_move_line sml, stock_location lsrc, stock_location ldest
                             WHERE sml.location_id = lsrc.id
+                            AND sml.location_dest_id = ldest.id
                             AND lsrc.usage = 'internal'
                             AND ldest.usage = 'internal'
                             AND lsrc.id = %(location_id)s
