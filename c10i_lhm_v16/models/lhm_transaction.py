@@ -494,7 +494,7 @@ class lhm_transaction(models.Model):
             activity_data = self.env['lhm.activity'].search([('id', '=', progres[0])])
 
             if lhm_progress_list:
-                progress_line = progress_line_obj.search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
+                progress_line = progress_line_obj.sudo().search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
                 if progress_line and len(progress_line) > 1:
                     raise ValidationError(_("Terjadi kesalahan (T.T), Error Code %s. \n"
                                             "Hubungi administrator untuk informasi lebih lanjut!"))
@@ -579,7 +579,7 @@ class lhm_transaction(models.Model):
             to_remove_list = []
             if len(lhm_progress_list) > len(lhm_removed_list):
                 to_remove_list = list(set(lhm_progress_list) ^ set(lhm_removed_list))
-            for removed_progress in progress_line_obj.search([('id', 'in', to_remove_list)]):
+            for removed_progress in progress_line_obj.sudo().search([('id', 'in', to_remove_list)]):
                 removed_progress.write({
                     'realization': 0.0,
                     'realization_date': 0.0,
@@ -589,16 +589,16 @@ class lhm_transaction(models.Model):
                 })
         if False in [isinstance(x.attendance_id.id, bool) for x in self.lhm_line_ids]:
             date_str = self.date.strftime('%Y-%m-%d')
-            self.name = self.kemandoran_id.code + "/" + datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+            self.sudo().name = self.kemandoran_id.code + "/" + datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
             if self.doc_type_id.approval:
-                self.state = 'in_progress'
+                self.sudo().state = 'in_progress'
             else:
-                self.state = 'done'
+                self.sudo().state = 'done'
         else:
             raise ValidationError(_("Minimal salah satu absensi di daftar karyawan harus terisi!"))
         for lhm_line in self.lhm_line_ids:
             if lhm_line.transfer_id:
-                lhm_line.transfer_id.write({'name': self.name})
+                lhm_line.transfer_id.sudo().write({'name': self.name})
 
         employee_ids = []
         for line in self.lhm_line_ids:
@@ -732,8 +732,8 @@ class lhm_transaction(models.Model):
             lhm.pending_nap_link = check
 
     def get_material(self):
-        move_obj            = self.env['stock.move']
-        material_line_obj   = self.env['lhm.transaction.material.line']
+        move_obj            = self.env['stock.move'].sudo()
+        material_line_obj   = self.env['lhm.transaction.material.line'].sudo()
         if self.material_line_ids:
             for material in self.material_line_ids:
                 material.unlink()
@@ -1160,6 +1160,7 @@ class lhm_transaction_line(models.Model):
 
     def get_wage_borong_panen(self):
         for record in self:
+            record = record.sudo()
             if not record.activity_id.is_nap:
                 continue
 
@@ -1202,7 +1203,7 @@ class lhm_transaction_line(models.Model):
                     values = {
                         'contract_wage_value': wage_hasil
                     }
-                    record.write(values)
+                    record.sudo().write(values)
 
     # Fungsi untuk mendapatkan gaji
     def get_wage_value_employee(self):
@@ -1236,7 +1237,7 @@ class lhm_transaction_line(models.Model):
                     # 'contract_wage_value'   : contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day,
                     'contract_wage_value'   : (contract.wage if contract.wage_type_id.name == 'Month' else contract.wage_day) * record.work_day,
                 }
-                record.write(values)
+                record.sudo().write(values)
 
     # Fungsi untuk menambahkan employee ke dalam NAP jika panen
     def get_employee_panen_nap(self):
