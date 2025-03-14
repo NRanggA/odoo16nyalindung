@@ -188,7 +188,7 @@ class ClosingLaboratory(models.Model):
                     closing.closing_move_id.button_draft()
             move_lines = []
             print("........closing journal", closing.incoming_fg_qty)
-            if closing.incoming_fg_qty:
+            if closing.incoming_fg_value:
                 vals_dest = {
                     'name': 'Lab Cost to Inventory',
                     'plantation_location_type_id': closing.lab_product_id.location_id.type_id.id,

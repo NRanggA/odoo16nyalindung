@@ -105,7 +105,8 @@ class ClosingPlantation(models.Model):
 
     accumulated_tbm_cost = fields.Float('Accumulated TBM Cost')
     accumulated_deferred_cost = fields.Float('Accumulated Deferred Cost')
-    current_period_cost = fields.Float('Cost on Current Period')
+    # current_period_cost = fields.Float('Cost on Current Period')
+    current_period_cost = fields.Float(compute='_compute_cost', store=True, string='Cost on Current Period')
     
     cost_line_ids = fields.One2many('closing.plantation.line', 'closing_id')
     cost_line_to_be_deferred_ids = fields.One2many('closing.plantation.line', 'closing_id', domain=[('to_be_deferred','=',True)], string="Cost to be Deferred")
@@ -142,6 +143,14 @@ class ClosingPlantation(models.Model):
                     new_mark_plant_block_period = 'tm'
 
             closing.mark_plant_block_period = new_mark_plant_block_period
+
+    @api.depends('status',
+            'cost_line_ids.total_cost', 
+            'cost_line_to_be_deferred_ids.total_cost', 
+            'cost_line_as_cost_ids.total_cost')
+    def _compute_cost(self):
+        for closing in self:
+            closing.current_period_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
 
     def init(self):
         _logger.info("Create SUMMARY CLOSING function...")

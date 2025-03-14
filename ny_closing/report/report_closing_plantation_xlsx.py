@@ -377,3 +377,49 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.repeat_rows(1, 4)
         worksheet.print_area(0, 0, next_row, 13)
         worksheet.set_print_scale(78)
+
+        ############################################################
+        #                     HARGA PEROLEHAN                      #
+        ############################################################
+        # HEADER
+        # header employee
+        worksheet = workbook.add_worksheet("Harga Perolehan")
+        
+        next_row = 1
+        worksheet.merge_range(next_row, 1, next_row+1, 1, 'ORG' , wbf['header'])
+        worksheet.set_column(1,1,15)
+        worksheet.merge_range(next_row, 2, next_row+1, 2, 'Blok Tanam' , wbf['header'])
+        worksheet.set_column(2,2,35)
+        worksheet.set_column(3,5,15)
+        worksheet.merge_range(next_row, 3, next_row, 5, 'Harga Perolehan' , wbf['header'])
+        worksheet.write(next_row+1, 3, 'Saldo Awal' , wbf['header'])
+        worksheet.write(next_row+1, 4, 'Bulan Ini' , wbf['header'])
+        worksheet.write(next_row+1, 5, 'Saldo Akhir' , wbf['header'])
+
+        next_row += 2
+        for c in range(5):
+            worksheet.write(next_row, c+1, c+1, wbf['header'])
+        next_row += 1
+        start_row = next_row
+        worksheet.freeze_panes(next_row, 2)
+
+        for line in obj.closing_plantation_ids.filtered(lambda l: l.status=='tbm'):
+            worksheet.write(next_row, 1, line.plant_block_id.varieties_id.name, wbf['content'])
+            worksheet.write(next_row, 2, line.plant_blocK_id.code, wbf['content'])
+            worksheet.write(next_row, 3, line.accumulated_tbm_cost or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 4, line.current_period_cost or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 5, line.accumulated_tbm_cost + line.current_period_cost, wbf['content_float'])
+            next_row += 1
+        
+        next_row += 1
+        worksheet.write(next_row, 1, "", wbf['total'])
+        worksheet.write(next_row, 2, "Total", wbf['total'])
+        worksheet.write_formula(next_row, 3, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,4)}:{xl_rowcol_to_cell(next_row-2,4)})", wbf['total_float'])
+        worksheet.write_formula(next_row, 4, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,5)}:{xl_rowcol_to_cell(next_row-2,5)})", wbf['total_float'])
+        worksheet.write_formula(next_row, 5, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,6)}:{xl_rowcol_to_cell(next_row-2,6)})", wbf['total_float'])
+        
+        worksheet.set_landscape()
+        worksheet.set_paper(9)  # A4
+        worksheet.repeat_rows(1, 4)
+        worksheet.print_area(0, 0, next_row, 13)
+        worksheet.set_print_scale(78)
