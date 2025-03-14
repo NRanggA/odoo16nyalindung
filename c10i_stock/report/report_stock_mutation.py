@@ -406,7 +406,7 @@ class ReportStockMutation(models.AbstractModel):
                                 stock_valuation_layer svl
                                 LEFT JOIN account_move am ON am.id=svl.account_move_id
                             WHERE svl.stock_move_id is NULL 
-                            AND (svl.account_move_id is NULL or COALSECE(am.state,'posted')!='cancel')
+                            AND (svl.account_move_id is NULL or COALESCE(am.state,'posted')!='cancel')
                             AND svl.product_id = %(product_id)s 
                             AND svl.create_date < %(date_from)s)
                         ) sub
@@ -585,7 +585,7 @@ class ReportStockMutation(models.AbstractModel):
                             FROM stock_valuation_layer svl
                                 LEFT JOIN account_move am ON am.id=svl.account_move_id
                             WHERE svl.stock_move_id is NULL 
-                                AND (svl.account_move_id is NULL or COALSECE(am.state,'posted')!='cancel')
+                                AND (svl.account_move_id is NULL or COALESCE(am.state,'posted')!='cancel')
                                 AND svl.product_id = %(product_id)s 
                                 AND svl.create_date BETWEEN %(date_from)s AND %(date_to)s)
                         ) sub
