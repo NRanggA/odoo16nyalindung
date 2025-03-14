@@ -403,7 +403,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         start_row = next_row
         worksheet.freeze_panes(next_row, 2)
 
-        for line in obj.closing_plantation_ids.filtered(lambda l: l.status=='tbm').sorted(key=lambda l: l.line.plant_block_id.varieties_id.id):
+        for line in obj.closing_plantation_ids.filtered(lambda l: l.status=='tbm').sorted(key=lambda l: l.plant_block_id.varieties_id.id):
             worksheet.write(next_row, 1, line.plant_block_id.varieties_id.name, wbf['content'])
             worksheet.write(next_row, 2, line.plant_block_id.code, wbf['content'])
             worksheet.write(next_row, 3, line.accumulated_tbm_cost or 0.0, wbf['content_float'])
