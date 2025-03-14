@@ -588,7 +588,6 @@ class ReportStockMutation(models.AbstractModel):
                                 AND (svl.account_move_id is NULL or COALSECE(am.state,'posted')!='cancel')
                                 AND svl.product_id = %(product_id)s 
                                 AND svl.create_date BETWEEN %(date_from)s AND %(date_to)s)
-                            )
                         ) sub
                         GROUP BY product_id
                     ) adjustment ON adjustment.product_id = pp.id
