@@ -397,6 +397,18 @@ class ReportStockMutation(models.AbstractModel):
                             AND sml.state = 'done'
                             AND sml.product_id = %(product_id)s 
                             AND sml.date < %(date_from)s)
+                            UNION ALL
+                            (SELECT 
+                                svl.product_id, 
+                                0 as qty,
+                                svl.value
+                            FROM 
+                                stock_valuation_layer svl
+                                LEFT JOIN account_move am ON am.id=svl.account_move_id
+                            WHERE svl.stock_move_id is NULL 
+                            AND (svl.account_move_id is NULL or COALSECE(am.state,'posted')!='cancel')
+                            AND svl.product_id = %(product_id)s 
+                            AND svl.create_date < %(date_from)s)
                         ) sub
                         GROUP BY product_id
                     ) opening ON opening.product_id = pp.id
@@ -533,8 +545,7 @@ class ReportStockMutation(models.AbstractModel):
                             (SELECT 
                                 sml.product_id, 
                                 sml.qty_done as qty,
-                                svl.value,
-                                sm.picking_type_id
+                                svl.value
                             FROM 
                                 stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl, stock_move sm
                             WHERE sml.location_id = lsrc.id
@@ -552,8 +563,7 @@ class ReportStockMutation(models.AbstractModel):
                             (SELECT 
                                 sml.product_id, 
                                 -sml.qty_done as qty,
-                                svl.value,
-                                sm.picking_type_id
+                                svl.value
                             FROM 
                                 stock_move_line sml, stock_location lsrc, stock_location ldest, stock_valuation_layer svl, stock_move sm
                             WHERE sml.location_id = lsrc.id
@@ -567,6 +577,18 @@ class ReportStockMutation(models.AbstractModel):
                             AND sml.state = 'done' 
                             AND sml.product_id = %(product_id)s 
                             AND sml.date BETWEEN %(date_from)s AND %(date_to)s)
+                            UNION ALL
+                            (SELECT
+                                svl.product_id,
+                                0 as qty,
+                                svl.value,
+                            FROM stock_valuation_layer svl
+                                LEFT JOIN account_move am ON am.id=svl.account_move_id
+                            WHERE svl.stock_move_id is NULL 
+                                AND (svl.account_move_id is NULL or COALSECE(am.state,'posted')!='cancel')
+                                AND svl.product_id = %(product_id)s 
+                                AND svl.create_date BETWEEN %(date_from)s AND %(date_to)s)
+                            )
                         ) sub
                         GROUP BY product_id
                     ) adjustment ON adjustment.product_id = pp.id
