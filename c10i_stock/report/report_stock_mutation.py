@@ -581,7 +581,7 @@ class ReportStockMutation(models.AbstractModel):
                             (SELECT
                                 svl.product_id,
                                 0 as qty,
-                                svl.value,
+                                svl.value
                             FROM stock_valuation_layer svl
                                 LEFT JOIN account_move am ON am.id=svl.account_move_id
                             WHERE svl.stock_move_id is NULL 
