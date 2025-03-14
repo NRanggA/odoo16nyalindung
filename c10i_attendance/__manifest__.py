@@ -25,6 +25,7 @@
     # always loaded
     'data': [
         # 'security/group_definitions.xml',
+        'security/attendance_security.xml',
         'security/ir.model.access.csv',
         'views/import_attendance_views.xml',
         'views/attendance_sheet_views.xml',
