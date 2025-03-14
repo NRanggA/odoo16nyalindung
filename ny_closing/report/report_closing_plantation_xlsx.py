@@ -403,7 +403,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         start_row = next_row
         worksheet.freeze_panes(next_row, 2)
 
-        for line in obj.closing_plantation_ids.filtered(lambda l: l.status=='tbm'):
+        for line in obj.closing_plantation_ids.filtered(lambda l: l.status=='tbm').sorted(key=lambda l: l.line.plant_block_id.varieties_id.id):
             worksheet.write(next_row, 1, line.plant_block_id.varieties_id.name, wbf['content'])
             worksheet.write(next_row, 2, line.plant_block_id.code, wbf['content'])
             worksheet.write(next_row, 3, line.accumulated_tbm_cost or 0.0, wbf['content_float'])
@@ -414,9 +414,9 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         next_row += 1
         worksheet.write(next_row, 1, "", wbf['total'])
         worksheet.write(next_row, 2, "Total", wbf['total'])
-        worksheet.write_formula(next_row, 3, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,4)}:{xl_rowcol_to_cell(next_row-2,4)})", wbf['total_float'])
-        worksheet.write_formula(next_row, 4, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,5)}:{xl_rowcol_to_cell(next_row-2,5)})", wbf['total_float'])
-        worksheet.write_formula(next_row, 5, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,6)}:{xl_rowcol_to_cell(next_row-2,6)})", wbf['total_float'])
+        worksheet.write_formula(next_row, 3, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,3)}:{xl_rowcol_to_cell(next_row-2,3)})", wbf['total_float'])
+        worksheet.write_formula(next_row, 4, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,4)}:{xl_rowcol_to_cell(next_row-2,4)})", wbf['total_float'])
+        worksheet.write_formula(next_row, 5, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,5)}:{xl_rowcol_to_cell(next_row-2,5)})", wbf['total_float'])
         
         worksheet.set_landscape()
         worksheet.set_paper(9)  # A4
