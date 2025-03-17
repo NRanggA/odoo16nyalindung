@@ -1073,6 +1073,8 @@ class ReportLpphExcel(models.AbstractModel):
         for data in data_report:
             if previous_location_type != data['type_location_code']:
                 if previous_location_type != 0:
+
+                    # menulis subtotal
                     col = 0
                     worksheet.write(row, col, 'Subtotal', wbf['header_total'])
                     col+=1
@@ -1172,6 +1174,7 @@ class ReportLpphExcel(models.AbstractModel):
 
                 previous_location_type = data['type_location_code']
 
+            # menulis datanya pada report
             col = 0
             worksheet.write(row, col, data['type_location_code'] if data['type_location_code'] else '-', wbf['content'])
             col+=1
@@ -1258,9 +1261,81 @@ class ReportLpphExcel(models.AbstractModel):
 
             row += 1 
 
+        # subtotal terakhir
+        if previous_location_type != 0:
+            col = 0
+            worksheet.write(row, col, 'Subtotal', wbf['header_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk_hi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk_shi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk2_hi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk2_shi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_hi_hk, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_hi_premi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_hi_kontraktor, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_shi_hk, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_shi_premi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_shi_kontraktor, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, material_total_hi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, material_total_shi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            row += 1
+
+            grand_hk_hi += hk_hi
+            grand_hk_shi += hk_shi
+            grand_hk2_hi += hk2_hi
+            grand_hk2_shi += hk2_shi
+            grand_biaya_hi_hk += biaya_hi_hk
+            grand_biaya_hi_premi += biaya_hi_premi
+            grand_biaya_hi_kontraktor += biaya_hi_kontraktor
+            grand_biaya_shi_hk += biaya_shi_hk
+            grand_biaya_shi_premi += biaya_shi_premi
+            grand_biaya_shi_kontraktor += biaya_shi_kontraktor
+            grand_material_total_hi += material_total_hi
+            grand_material_total_shi += material_total_shi
 
         # Grand total
-        row += 1
+        # row += 1
         col = 0
         worksheet.write(row, col, 'Grand Total', wbf['header_total'])
         col+=1
@@ -1338,6 +1413,7 @@ class ReportLpphExcel(models.AbstractModel):
         worksheet.set_print_scale(78)
 
 
+        ######### SHEET 2 untuk Store issue ########
         row = 1
         worksheet2.write(row, 0, (obj.company_id.name), wbf['title'])
         worksheet2.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
