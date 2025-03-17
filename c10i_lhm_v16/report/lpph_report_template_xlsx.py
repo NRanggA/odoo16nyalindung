@@ -923,21 +923,23 @@ class ReportLpphExcel(models.AbstractModel):
         workbook = self.add_workbook_format(workbook)
         wbf = self.wbf
 
-        worksheet = workbook.add_worksheet(f"Test")
+        worksheet = workbook.add_worksheet("Laporan Progress Kerja Harian")
+        worksheet2 = workbook.add_worksheet("Pending Store Issue")
         data_report = self.get_combined_report(obj.date_start, obj.date_end)
 
-        # print(f"===== {data_report}")
-        # print(f"===== {da}")
+        date_from = obj.date_start.strftime('%d-%m-%Y')
+        date_to = obj.date_end.strftime('%d-%m-%Y')
+        date = date_from if date_from == date_to else f"{(date_from) + ' s/d ' + (date_to)}"
 
         row = 1
-        worksheet.write(row, 0, '', wbf['title'])
+        worksheet.write(row, 0, (obj.company_id.name), wbf['title'])
         worksheet.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
         worksheet.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
         worksheet.write(row + 2, 1, ": " , wbf['title'])
         worksheet.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
-        worksheet.write(row + 3, 1, ": " , wbf['title'])
+        worksheet.write(row + 3, 1, ": %s" %(obj.type.upper()), wbf['title'])
         worksheet.write(row + 4, 0, "TANGGAL", wbf['title'])
-        worksheet.write(row + 4, 1, ": " , wbf['title'])
+        worksheet.write(row + 4, 1, ": %s" %(date), wbf['title'])
         worksheet.set_row(row, 18)
         worksheet.set_row(row + 1, 18)
         worksheet.set_row(row + 2, 18)
@@ -1326,9 +1328,6 @@ class ReportLpphExcel(models.AbstractModel):
         col+=1
 
         row += 1
-
-
-
     
         # Page Layout
         worksheet.set_landscape()
@@ -1337,5 +1336,138 @@ class ReportLpphExcel(models.AbstractModel):
         worksheet.repeat_rows(1, 4)
         worksheet.print_area(0, 0, row, 13)
         worksheet.set_print_scale(78)
+
+
+        row = 1
+        worksheet2.write(row, 0, (obj.company_id.name), wbf['title'])
+        worksheet2.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
+        worksheet2.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
+        worksheet2.write(row + 2, 1, ":", wbf['title'])
+        worksheet2.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
+        worksheet2.write(row + 3, 1, ": %s" %(obj.type.upper()), wbf['title'])
+        worksheet2.write(row + 4, 0, "TANGGAL", wbf['title'])
+        worksheet2.write(row + 4, 1, ": %s" %(date), wbf['title'])
+
+        worksheet2.merge_range(row, 6, row + 3, 6, "Diperiksa Oleh,", wbf['signature'])
+        worksheet2.write(row + 4, 6, "Ka. Afdeling/Kabag", wbf['header'])
+        worksheet2.merge_range(row, 7, row + 3, 7, "Disetujui Oleh,", wbf['signature'])
+        worksheet2.write(row + 4, 7, "Asisten Kepala", wbf['header'])
+
+        next_row = row + 6
+        worksheet2.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
+        worksheet2.set_column(0, 0, 18)
+        worksheet2.merge_range(next_row, 1, next_row + 1, 1, "LOKASI", wbf['header'])
+        worksheet2.write(next_row + 2, 1, "KODE", wbf['header'])
+        worksheet2.set_column(1, 1, 14)
+        worksheet2.merge_range(next_row, 2, next_row + 1, 3, "KEGIATAN", wbf['header'])
+        worksheet2.write(next_row + 2, 2, "COA", wbf['header'])
+        worksheet2.set_column(2, 2, 14)
+        worksheet2.write(next_row + 2, 3, "DESKRIPSI", wbf['header'])
+        worksheet2.set_column(3, 3, 40)
+        worksheet2.merge_range(next_row, 4, next_row, 8, "PEMAKAIAN MATERIAL", wbf['header'])
+        worksheet2.merge_range(next_row + 1, 4, next_row + 1, 6, "SKB", wbf['header'])
+        worksheet2.write(next_row + 2, 4, "NO. BPB", wbf['header'])
+        worksheet2.set_column(4, 4, 18)
+        worksheet2.write(next_row + 2, 5, "TANGGAL", wbf['header'])
+        worksheet2.set_column(5, 5, 18)
+        worksheet2.write(next_row + 2, 6, "QTY", wbf['header'])
+        worksheet2.set_column(6, 6, 18)
+        worksheet2.merge_range(next_row + 1, 7, next_row + 2, 7, "NAMA MATERIAL", wbf['header'])
+        worksheet2.set_column(7, 7, 40)
+        worksheet2.merge_range(next_row + 1, 8, next_row + 2, 8, "SATUAN", wbf['header'])
+        worksheet2.set_column(8, 8, 18)
+
+        stock_move_ids = self.env['stock.move'].search([
+                            ('picking_type_id.code', '=', 'issue'),
+                            # ('allocation_residual_qty', '>', 0),
+                            ('pending_material_allocation', '>', 0),
+                            ('state','=','done')
+                        ],order="date desc, plantation_activity_id asc")
+
+        row_data = next_row + 3
+        activity_ids = []
+        grand_total_qty = 0
+        subtotal_qty = 0
+        coa = False
+        activity_name = False
+        for move_id in stock_move_ids:
+            move_data = [
+                move_id.plantation_location_type_id.code,
+                move_id.plantation_location_id.code,
+                move_id.plantation_activity_id.code,
+                move_id.plantation_activity_name,
+                move_id.picking_id.name,
+                move_id.date,
+                move_id.product_uom_qty,
+                move_id.product_id.name,
+                move_id.product_uom.name
+            ]
+            coa = move_id.plantation_activity_id.code
+            activity_name = move_id.plantation_activity_name
+    
+
+            if move_id.plantation_activity_id.id not in activity_ids and activity_ids:
+                worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
+                worksheet2.write(row_data, 1, "", wbf['total'])
+                worksheet2.write(row_data, 2, move_data[1], wbf['total'])
+                worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
+
+                row_data += 1
+                subtotal_qty = 0  
+    
+
+            worksheet2.write(row_data, 0, move_data[0], wbf['content'])
+            worksheet2.set_column(0, 0, 18)
+
+            worksheet2.write(row_data, 1, move_data[1], wbf['content'])
+            worksheet2.set_column(1, 1, 14)
+
+            worksheet2.write(row_data, 2, move_data[2], wbf['content'])
+            worksheet2.set_column(2, 2, 14)
+
+            worksheet2.write(row_data, 3, move_data[3], wbf['content'])
+            worksheet2.set_column(3, 3, 40)
+
+            worksheet2.write(row_data, 4, move_data[4] or '-', wbf['content'])
+            worksheet2.set_column(4, 4, 14)
+
+            worksheet2.write(row_data, 5, move_data[5], wbf['content'])
+            worksheet2.set_column(5, 5, 14)
+
+            worksheet2.write(row_data, 6, move_data[6], wbf['content'])
+            worksheet2.set_column(6, 6, 14)
+
+            worksheet2.write(row_data, 7, move_data[7] or '-', wbf['content'])
+            worksheet2.set_column(7, 7, 40)
+
+            worksheet2.write(row_data, 8, move_data[8], wbf['content'])
+            worksheet2.set_column(8, 8, 14)
+
+            subtotal_qty += move_data[6]
+            grand_total_qty += move_data[6]
+
+            activity_ids.append(move_id.plantation_activity_id.id)
+            row_data += 1
+
+        worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
+        worksheet2.write(row_data, 1, "", wbf['total'])
+        worksheet2.write(row_data, 2, coa, wbf['total'])
+        worksheet2.write(row_data, 3, activity_name, wbf['total'])
+        worksheet2.write(row_data, 4, "", wbf['total'])
+        worksheet2.write(row_data, 5, "", wbf['total'])
+        worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
+        worksheet2.write(row_data, 7, "", wbf['total'])
+        worksheet2.write(row_data, 8, "", wbf['total'])
+        row_data += 1
+
+        worksheet2.write(row_data, 0, "Grand Total", wbf['total'])
+        worksheet2.write(row_data, 1, "", wbf['total'])
+        worksheet2.write(row_data, 2, "", wbf['total'])
+        worksheet2.write(row_data, 3, "", wbf['total'])
+        worksheet2.write(row_data, 4, "", wbf['total'])
+        worksheet2.write(row_data, 5, "", wbf['total'])
+        worksheet2.write(row_data, 6, grand_total_qty, wbf['total'])
+        worksheet2.write(row_data, 7, "", wbf['total'])
+        worksheet2.write(row_data, 8, "", wbf['total'])
 
 
