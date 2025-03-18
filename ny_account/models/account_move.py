@@ -87,9 +87,9 @@ class AccountMove(models.Model):
                     for line in rec.invoice_line_ids:
                         line.plantation_varieties_id = self.journal_id.varieties_id.id
 
-            if skip_efaktur_validation:
-                rec.l10n_id_tax_number = '%s0%013d' % (str(rec.l10n_id_kode_transaksi), 0)
-                continue
+                if skip_efaktur_validation:
+                    rec.l10n_id_tax_number = '%s0%013d' % (str(rec.l10n_id_kode_transaksi), 0)
+                    # continue
 
         return super(AccountMove, self).action_post()
 
