@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     
-    	<record id="c10i_move_line_form" model="ir.ui.view">
+    	<!-- <record id="c10i_move_line_form" model="ir.ui.view">
             <field name="name">c10i.account.move.line.form</field>
             <field name="model">account.move.line</field>
             <field name="inherit_id" ref="account.view_move_line_form" />
@@ -10,9 +10,9 @@
             		<field name="period_id" string="Accounting Period" readonly="1"/>
                 </field>
             </field>
-        </record>
+        </record> -->
 
-       	<record id="c10i_account_move_line_filter" model="ir.ui.view">
+       	<!-- <record id="c10i_account_move_line_filter" model="ir.ui.view">
             <field name="name">c10i.account.move.line.search</field>
             <field name="model">account.move.line</field>
             <field name="inherit_id" ref="account.view_account_move_line_filter" />
@@ -24,7 +24,7 @@
             		<filter string="Period" name="period" domain="[]" context="{'group_by': 'period_id'}"/>
             	</filter>
             </field>
-        </record>
+        </record> -->
 
         <record id="c10i_move_form" model="ir.ui.view">
             <field name="name">c10i.account.move.form</field>

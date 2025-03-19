@@ -56,6 +56,7 @@ class AccountMove(models.Model):
     #                     line.plantation_varieties_id = self.journal_id.varieties_id.id
 
     #     return super(AccountMove, self).action_post()
+
     
     def action_post(self):
         """Override action_post untuk menambahkan logika skip validasi e-Faktur."""
@@ -92,6 +93,38 @@ class AccountMove(models.Model):
                     # continue
 
         return super(AccountMove, self).action_post()
+
+    @api.onchange('l10n_id_tax_number')  
+    def _onchange_l10n_id_tax_number(self):  
+        param_obj = self.env['ir.config_parameter'].sudo()  
+        skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'  
+
+        for record in self:  
+            if skip_efaktur_validation:
+                continue
+            if record.l10n_id_tax_number and record.move_type not in self.get_purchase_types():  
+                raise UserError(_("You can only change the number manually for a Vendor Bills and Credit Notes"))
+
+    def write(self, vals):
+        """Memaksa update nomor e-Faktur jika skip e-Faktur aktif"""
+        param_obj = self.env['ir.config_parameter'].sudo()
+        skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
+
+        if skip_efaktur_validation and 'l10n_id_tax_number' in vals:
+            return super(AccountMove, self.sudo()).write(vals)  # Gunakan sudo agar bisa bypass restriksi
+
+        return super(AccountMove, self).write(vals)
+
+    @api.model
+    def create(self, vals):
+        """Pastikan saat create, nomor e-Faktur tetap bisa di-set jika skip e-Faktur aktif."""
+        param_obj = self.env['ir.config_parameter'].sudo()
+        skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
+
+        if skip_efaktur_validation and 'l10n_id_tax_number' in vals:
+            return super(AccountMove, self.sudo()).create(vals)
+
+        return super(AccountMove, self).create(vals)
 
     # gabisa super, karena private kali :(
     # @api.constrains('l10n_id_tax_number')
