@@ -502,7 +502,20 @@ class ClosingProcess(models.Model):
                         'pisang_with_grade_ids': [(6,0,prev_closing2.pisang_with_grade_ids.ids)] if prev_closing2.pisang_with_grade_ids else [],
                     })
                 rec.closing_production_ids = [(0,0,vals2)]
-            
+
+                # CREATE PRODUCTION MELON
+                vals2 = {
+                        'date_from': rec.date_from, 'date_to': rec.date_to,
+                        'varieties_type': 'melon', 
+                    }
+                prev_closing2 = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done'),
+                                                ('varieties_type','=','melon')], order='date_from desc', limit=1)
+                if prev_closing2:
+                    vals2.update({'prev_closing_id': prev_closing2.id,
+                        'melon_inventory_account_id': prev_closing2.melon_inventory_account_id.id if prev_closing2.melon_inventory_account_id else False,
+                        'melon_varieties_id': prev_closing2.melon_varieties_id.id,
+                    })
+                rec.closing_production_ids = [(0,0,vals2)]
             # CREATE PRODUCTION OTHER VARITAS
             rec.create_product_other_variant()
 
@@ -622,6 +635,17 @@ class ClosingProcess(models.Model):
         selection_key = list(map(lambda x: x[0], self.SELECTION))
         for rec in self:
             index_state = selection_key.index(rec.state)
+            if rec.state=='closing_laboratory':
+                rec.closing_laboratory_ids.action_cancel()
+            elif rec.state=='closing_project':
+                rec.closing_project_ids.action_cancel()
+            elif rec.state=='closing_nursery':
+                rec.closing_nursery_ids.action_cancel()
+            elif rec.state=='closing_plantation':
+                rec.closing_plantation_ids.action_cancel()
+            elif rec.state=='closing_production':
+                rec.closing_plantation_ids.button_cancel()
+            
             if index_state:
                 rec.write({'state': selection_key[index_state-1],
                     f"mark_{selection_key[index_state-1]}_is_done": False})

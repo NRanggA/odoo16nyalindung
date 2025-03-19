@@ -528,6 +528,7 @@
                     <!-- <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm" type="object" states="rm_valuation"/> -->
                     <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm_karet" type="object" attrs="{'invisible': ['|',('state','!=','rm_valuation'),('varieties_type','!=','karet')]}"/>
                     <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm_pisang" type="object" attrs="{'invisible': ['|',('state','!=','rm_valuation'),('varieties_type','!=','pisang')]}"/>
+                    <button string="Get Transaction and Cost" name="compute_initial_and_cost_rm_melon" type="object" attrs="{'invisible': ['|',('state','!=','rm_valuation'),('varieties_type','!=','melon')]}"/>
                     <button string="Confirm Valuation and Continue" name="button_continue_to_fg" type="object" class="oe_highlight" states="rm_valuation"/>
                     <!-- <button string="Get Transaction and Cost" name="compute_initial_and_cost_fg1" type="object" states="fg1_valuation"/> -->
                     <!-- <button string="Confirm Valuation and Continue" name="button_continue_to_fg2" type="object" class="oe_highlight" states="fg1_valuation"/> -->
@@ -538,6 +539,7 @@
                     <button string="Finish Process" name="action_done" type="object" class="oe_highlight" states="account_entry"/>
                     
                     <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="start,rm_valuation,fg_valuation,account_entry"/>
+                    <button string="Cancel" name="button_cancel_done" type="object" class="btn-danger" states="done" confirm="Apakah anda yakin ingin membatalkan jurnal yang telah dibuat?"/>
                     <button string="Back to Start" name="button_set_new" type="object" states="cancel"/>
 
                     <field name="state" widget="statusbar" statusbar_visible="start,rm_valuation,fg_valuation,account_entry,done" />
@@ -961,26 +963,26 @@
                         </page>
                         <page name="fg_valuation" string="Finish Good Valuation"
                                 attrs="{'invisible': ['|',('varieties_type','=','pisang'),('state','not in',['fg_valuation','account_entry','done'])]}">
-                            <field name="fg_karet_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_karet_form'}"/>
+                            <field name="fg_karet_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_karet_form'}" attrs="{'readonly': [('state','!=','fg_valuation')]}"/>
                         </page>
                         <page name="rm_valuation_pisang" string="Production Computation" 
                                     attrs="{'invisible': ['|',('varieties_type','!=','pisang'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
                             <group>
                                 <group>
-                                    <field name="pisang_varieties_id"/>
+                                    <field name="pisang_varieties_id" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
                                     <field name="pisang_other_product_ids" invisible="1" readonly="1"/>
-                                    <field name="pisang_non_grade_ids" domain="[('id','in',pisang_other_product_ids)]" widget="many2many_tags" attrs="{'required': [('varieties_type','=','pisang'),('state','=','rm_valuation')]}"/>
-                                    <field name="pisang_with_grade_ids" domain="[('id','in',pisang_other_product_ids)]" widget="many2many_tags" attrs="{'required': [('varieties_type','=','pisang'),('state','=','rm_valuation')]}"/>
+                                    <field name="pisang_non_grade_ids" domain="[('id','in',pisang_other_product_ids)]" widget="many2many_tags" attrs="{'required': [('varieties_type','=','pisang'),('state','=','rm_valuation')], 'readonly': [('state','!=','rm_valuation')]}"/>
+                                    <field name="pisang_with_grade_ids" domain="[('id','in',pisang_other_product_ids)]" widget="many2many_tags" attrs="{'required': [('varieties_type','=','pisang'),('state','=','rm_valuation')], 'readonly': [('state','!=','rm_valuation')]}"/>
                                 </group>
                                 <group>
                                     <field name="plantation_cost" />
                                     <label for="plantation_other_cost_account_ids" groups="ny_closing.plantation_closing_config"/>
                                     <div>
-                                        <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
+                                        <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
                                     </div>
                                     <label for="manufacturing_cost_account_ids" groups="ny_closing.plantation_closing_config" string="Ripening Cost Accounts"/>
                                     <div>
-                                        <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
+                                        <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
                                         <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation" groups="ny_closing.plantation_closing_config"/>
                                     </div>
                                     <field name="pisang_ripening_cost" groups="base.group_no_one" readonly="1"/>
@@ -989,7 +991,9 @@
                                 </group>
                             </group>
                             <label for="fg_pisang_valuation_ids" string="Inventory Status"/>
-                            <field name="fg_pisang_valuation_ids" context="{'form_view_ref': 'ny_closing.closing_production_fg_pisang_form', 'tree_view_ref': 'ny_closing.closing_production_fg_pisang_tree'}"/>
+                            <field name="fg_pisang_valuation_ids" 
+                                context="{'form_view_ref': 'ny_closing.closing_production_fg_pisang_form', 'tree_view_ref': 'ny_closing.closing_production_fg_pisang_tree'}"
+                                attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
                             
                             <label for="plantation_cost_ids" />
                             <field name="plantation_cost_ids" nolabel="1" readonly="1" >
@@ -1004,6 +1008,46 @@
                             </field>
                             <label for="mrp_cost_ids" string="Ripening Cost"/>
                             <field name="mrp_cost_ids" nolabel="1" readonly="1" >
+                                <tree>
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="account_id" />
+                                    <field name="total_cost" sum="total_cost" />
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="rm_valuation_melon" string="Production Computation" 
+                                    attrs="{'invisible': ['|',('varieties_type','!=','melon'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
+                            <group>
+                                <group>
+                                    <field name="melon_product_id" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
+                                    <field name="melon_other_product_ids" invisible="1" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="plantation_cost" />
+                                    <label for="plantation_other_cost_account_ids" groups="ny_closing.plantation_closing_config"/>
+                                    <div>
+                                        <field name="plantation_other_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
+                                    </div>
+                                    <!-- <label for="manufacturing_cost_account_ids" groups="ny_closing.plantation_closing_config" string="Ripening Cost Accounts"/>
+                                    <div>
+                                        <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
+                                        <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation" groups="ny_closing.plantation_closing_config"/>
+                                    </div> -->
+                                    <!-- <field name="melon_ripening_cost" groups="base.group_no_one" readonly="1"/> -->
+                                    <!-- <field name="melon_ripening_qty" groups="base.group_no_one" readonly="1"/> -->
+                                    <field name="melon_incoming_qty" groups="base.group_no_one" readonly="1"/>
+                                </group>
+                            </group>
+                            <label for="fg_melon_valuation_ids" string="Inventory Status"/>
+                            <field name="fg_melon_valuation_ids" 
+                                context="{'form_view_ref': 'ny_closing.closing_production_fg_view_form', 'tree_view_ref': 'ny_closing.closing_production_fg_view_tree'}"
+                                attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
+                            
+                            <label for="plantation_cost_ids" />
+                            <field name="plantation_cost_ids" nolabel="1" readonly="1" >
                                 <tree>
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />

@@ -60,6 +60,7 @@ class ClosingProductionFinishGood(models.Model):
 
     without_mrp = fields.Boolean()
     closing_process_id = fields.Many2one('closing.process', string='Closing Process')
+    parent_state = fields.Selection(related='closing_process_id.state', store=True)
     closing_id = fields.Many2one('closing.production', string='Closing Production')
     prev_closing_fg_id = fields.Many2one('closing.production.finishgood', string='Last Closing Production')
     varieties_id = fields.Many2one('plant.varieties', string='Varitas')
@@ -152,6 +153,8 @@ class ClosingProductionFinishGood(models.Model):
                 line.plantation_cost = sum(line.plantation_cost_ids.mapped('total_cost')) if line.plantation_cost_ids else 0.0
             elif line.closing_id and line.closing_id.varieties_type=='pisang':
                 line.plantation_cost = line.incoming_qty * (line.closing_id.plantation_cost / line.closing_id.pisang_incoming_qty) if line.closing_id.pisang_incoming_qty else 0.0
+            elif line.closing_id and line.closing_id.varieties_type=='melon':
+                line.plantation_cost = line.incoming_qty * (line.closing_id.plantation_cost / line.closing_id.melon_incoming_qty) if line.closing_id.melon_incoming_qty else 0.0
             else:
                 line.plantation_cost = 0.0
 
@@ -409,9 +412,9 @@ class ClosingProduction(models.Model):
     _description = 'Closing Production'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
-
+    parent_state = fields.Selection(related='closing_process_id.state', store=True)
     prev_closing_id = fields.Many2one('closing.production', string='Last Closing Production')
-    varieties_type = fields.Selection([('karet','Karet'),('pisang','Pisang')], string='Varitas')
+    varieties_type = fields.Selection([('karet','Karet'),('pisang','Pisang'),('melon','Melon')], string='Varitas')
     date_from = fields.Date()
     date_to = fields.Date()
     state = fields.Selection([('start','Start'),
@@ -569,8 +572,9 @@ class ClosingProduction(models.Model):
     compound_wip_account_id = fields.Many2one('account.account', 'Account WIP Compo')
     
     fg2_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Finish Goods Valuation')
-    fg_karet_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Finish Goods Valuation')
-    fg_pisang_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Finish Goods Valuation')
+    fg_karet_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Valuation Product Karet')
+    fg_pisang_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Valuation Product Pisang')
+    fg_melon_valuation_ids = fields.One2many('closing.production.finishgood', 'closing_id', string='Valuation Product Melon')
 
     ############################# PISANG ###########################
     # Pisang
@@ -586,6 +590,19 @@ class ClosingProduction(models.Model):
     pisang_ripening_qty = fields.Float(compute='_compute_incoming_qty_pisang', store=True, string='Ripening Qty of Pisang')
     pisang_non_grade_ids = fields.Many2many('product.product', 'plant_pisang_non_grade_rel', string='Pisang Non Grade')
     pisang_with_grade_ids = fields.Many2many('product.product', 'plant_pisang_with_grade_rel', string='Pisang with Grade')
+    ##############################
+
+    ############################# Melon ###########################
+    # Melon
+    melon_product_id = fields.Many2one('product.product', string='Product Melon', ondelete='restrict')
+    melon_inventory_account_id = fields.Many2one('account.account', 'Account Inventory Melon')
+    
+    # plantation_cost
+    melon_varieties_id = fields.Many2one('plant.varieties', string='Varitas Melon')
+    melon_other_product_ids = fields.Many2many(related='melon_varieties_id.other_product_ids')
+    melon_incoming_qty = fields.Float(compute='_compute_incoming_qty_melon', store=True, string='Incoming Qty of Melon')
+    # melon_ripening_cost = fields.Float('Melon Ripening Cost')
+    # melon_ripening_qty = fields.Float(compute='_compute_incoming_qty_pisang', store=True, string='Ripening Qty of Melon')
     ##############################
 
     ############ COMPUTED METHOD ###########
@@ -756,6 +773,14 @@ class ClosingProduction(models.Model):
                 closing.pisang_incoming_qty = 0.0
                 closing.pisang_ripening_qty = 0.0
   
+    @api.depends('varieties_type','fg2_valuation_ids.incoming_qty')
+    def _compute_incoming_qty_melon(self):
+        for closing in self:
+            if closing.varieties_type=='melon':
+                closing.melon_incoming_qty = sum(closing.fg2_valuation_ids.mapped('incoming_qty'))
+            else:
+                closing.melon_incoming_qty = 0.0
+  
     def _compute_plantation_cost_karet(self):
         closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
         self.ensure_one()
@@ -917,6 +942,85 @@ class ClosingProduction(models.Model):
         return plantation_cost_amt, plantation_cost_ids
         # return sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0, [(0,0,vals) for vals in plantation_cost_grouped.values()]
 
+    def _compute_plantation_cost_melon(self):
+        closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
+        self.ensure_one()
+        # Get Plantation Cost
+        varieties = self.env['plant.varieties'].search([('name','=','Melon')], limit=1)
+        domain_plantation = [('parent_state','=','posted'),
+            ('date','>=',self.date_from),('date','<=',self.date_to),
+            ('plantation_varieties_id.name','=','Melon'),
+            ('plantation_location_type_id.plantation','=',True),
+            ('plantation_location_id','!=',False),
+            ('journal_id','=',closing_journal.id),
+            # ('plantation_activity_id','!=',False),
+            ]
+        if varieties:
+            activities = self.env['lhm.activity']
+            activities |= varieties.harvest_activity_ids
+            activities |= varieties.upkeep_activity_ids
+            # activities |= varieties.general_charges_activity_ids
+            # activities |= varieties.indirect_cost_activity_ids
+            plantation_cost_account_ids = []
+            if activities:
+                plantation_cost_account_ids = activities.cost_account_id.ids
+            if plantation_cost_account_ids:
+                domain_plantation.append(('account_id','in',plantation_cost_account_ids))
+        # print("::::::::::::melon", domain_plantation)
+        plantation_cost = self.env['account.move.line'].search(domain_plantation)
+
+        # Grouping by Loc Type, Loc, Activity, Src Journal
+        plantation_cost_grouped = {}
+        for aml in plantation_cost:
+            key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+            if key not in plantation_cost_grouped.keys():
+                plantation_cost_grouped.update({key: {
+                        'plantation_location_type_id': aml.plantation_location_type_id.id,
+                        'plantation_location_id': aml.plantation_location_id.id,
+                        'plantation_activity_id': aml.plantation_activity_id.id,
+                        'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                        'account_id': aml.account_id.id,
+                        'total_cost': 0.0,
+                        'is_plantation_cost': True,
+                    }
+                })
+            plantation_cost_grouped[key]['total_cost'] += aml.balance
+        plantation_cost_amt = sum(plantation_cost.mapped('balance')) if plantation_cost else 0.0
+        plantation_cost_ids = [(0,0,vals) for vals in plantation_cost_grouped.values()]
+        
+        # Hitung Cost diluar Plantation Cost untuk spesific account tertentu
+        if self.plantation_other_cost_account_ids:
+            domain_plantation2 = [('parent_state','=','posted'),
+                ('date','>=',self.date_from),('date','<=',self.date_to),
+                ('plantation_varieties_id.name','=','Melon'),
+                ('journal_id','!=',closing_journal.id),
+                ]
+            if len(self.plantation_other_cost_account_ids.ids)==1:
+                domain_plantation2.append(('account_id','=',self.plantation_other_cost_account_ids.id))
+            else:
+                domain_plantation2.append(('account_id','in',self.plantation_other_cost_account_ids.ids))
+            plantation_cost2 = self.env['account.move.line'].search(domain_plantation2)
+            # Grouping by Loc Type, Loc, Activity, Src Journal
+            plantation_cost_grouped2 = {}
+            for aml in plantation_cost2:
+                key = (aml.plantation_location_type_id.id, aml.plantation_location_id.id, aml.plantation_activity_id.id, aml.plantation_src_journal_id.id, aml.account_id)
+                if key not in plantation_cost_grouped2.keys():
+                    plantation_cost_grouped2.update({key: {
+                            'plantation_location_type_id': aml.plantation_location_type_id.id,
+                            'plantation_location_id': aml.plantation_location_id.id,
+                            'plantation_activity_id': aml.plantation_activity_id.id,
+                            'plantation_src_journal_id': aml.plantation_src_journal_id.id,
+                            'account_id': aml.account_id.id,
+                            'total_cost': 0.0,
+                            'is_plantation_cost': True,
+                        }
+                    })
+                plantation_cost_grouped2[key]['total_cost'] += aml.balance
+                plantation_cost_amt += aml.balance
+            plantation_cost_ids.extend([(0,0,vals) for vals in plantation_cost_grouped2.values()])
+        
+        return plantation_cost_amt, plantation_cost_ids
+
     def _compute_manufacturing_cost(self):
         closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
         self.ensure_one()
@@ -1077,6 +1181,8 @@ class ClosingProduction(models.Model):
 
     def action_compute_plant_cost(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             if closing.plantation_cost_ids:
                 closing.plantation_cost_ids.unlink()
             plantation_cost, summerize_cost = closing._compute_plantation_cost_karet()
@@ -1086,6 +1192,8 @@ class ClosingProduction(models.Model):
     def action_compute_sheet_rm_cost(self):
         misc_journal = self.env.ref('ny_closing.plantation_closing_production')
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             purchases_in = self.env['account.move.line'].search([
                         ('account_id','=',closing.sheet_rm_purchase_account_id.id),
                         ('parent_state','=','posted'),('date','>=',closing.date_from),
@@ -1101,6 +1209,8 @@ class ClosingProduction(models.Model):
 
     def action_compute_mrp_cost(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             if closing.mrp_cost_ids:
                 closing.mrp_cost_ids.unlink()
             if closing.varieties_type=='pisang':
@@ -1126,6 +1236,8 @@ class ClosingProduction(models.Model):
 
     def compute_initial_and_cost_rm_karet(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             sheet_product = self.env['product.product'].search([('name','=','Sheet')], limit=1)
             closing.sheet_product_id = sheet_product.id
             compound_product = self.env['product.product'].search([('name','=','Compo')], limit=1)
@@ -1264,6 +1376,8 @@ class ClosingProduction(models.Model):
     
     def compute_initial_and_cost_rm_pisang(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             plantation_cost, summerize_cost = closing._compute_plantation_cost_pisang()
             if closing.plantation_cost_ids:
                 closing.plantation_cost_ids.unlink()
@@ -1400,10 +1514,118 @@ class ClosingProduction(models.Model):
                 closing.fg2_valuation_ids = list(map(lambda x: (0,0,x), to_create))
         return True
     
+    def compute_initial_and_cost_rm_melon(self):
+        for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
+            plantation_cost, summerize_cost = closing._compute_plantation_cost_melon()
+            if closing.plantation_cost_ids:
+                closing.plantation_cost_ids.unlink()
+            closing.plantation_cost = plantation_cost
+            closing.plantation_cost_ids = summerize_cost
+            
+            # mrp_cost, summerize_mrp_cost = closing._compute_manufacturing_cost_melon()
+            # if closing.mrp_cost_ids:
+            #     closing.mrp_cost_ids.unlink()
+            # print(">>>>>>>>>>>>>>>>>>>>mrp_cost", mrp_cost)
+            # print(">>>>>>>>>>>>>>>>>>>>", summerize_mrp_cost)
+            # closing.melon_ripening_cost = mrp_cost
+            # closing.mrp_cost_ids = summerize_mrp_cost
+            
+            # Get Pisang Receiving Qty from NAP
+            to_create = []
+            total_produced = 0.0
+            varietas_melon = self.env['plant.varieties'].search([('name','=','Melon')])
+            closing.melon_varieties_id = varietas_melon.id
+            closing.fg2_valuation_ids.unlink()
+            for product in varietas_melon.other_product_ids:
+                # Find Previous Valuation
+                prev_closing_fg = False
+                if closing.prev_closing_id:
+                    for line in closing.prev_closing_id.fg2_valuation_ids:
+                        if line.product_id.id==product.id:
+                            prev_closing_fg = line
+                
+                melon_in = self.env['timbangan.pabrik'].search([('product_id','=',product.id),
+                                ('lhm_nap_id.date_nap','>=',closing.date_from),
+                                ('lhm_nap_id.date_nap','<=',closing.date_to),
+                                ('lhm_nap_id.state','in',['confirmed','done'])])
+                incoming_qty = sum(melon_in.mapped('qty_received')) if melon_in else 0.0
+                total_produced += incoming_qty
+
+                # ripening_location = self.env.ref('ny_plantation.loc_ripening_loc_1')
+                # Find Delivery/Sales
+                delivery_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                # ('location_id','!=',ripening_location.id),
+                                ('location_dest_id.usage','=','customer'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                delivery_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_dest_id.usage','=','internal'),
+                                # ('location_dest_id','!=',ripening_location.id),
+                                ('location_id.usage','=','customer'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_qty = (sum(delivery_moves_out.mapped('qty_done')) if delivery_moves_out else 0.0) - (sum(delivery_moves_return.mapped('qty_done')) if delivery_moves_return else 0.0)
+                
+                # Find Scrap
+                scrap_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                # ('location_id','!=',ripening_location.id),
+                                ('location_dest_id.scrap_location','=',True),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                scrap_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.scrap_location','=',True),
+                                ('location_dest_id.usage','=','internal'),
+                                # ('location_dest_id','!=',ripening_location.id),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                scrap_qty = (sum(scrap_moves_out.mapped('qty_done')) if scrap_moves_out else 0.0) - (sum(scrap_moves_return.mapped('qty_done')) if scrap_moves_return else 0.0)
+
+                values_to_create = {
+                    'product_id': product.id,
+                    'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
+                    'opening_qty': prev_closing_fg.closing_qty if prev_closing_fg else 0.0,
+                    'opening_value': prev_closing_fg.closing_value if prev_closing_fg else 0.0,
+                    # 'ripening_opening_qty': prev_closing_fg.ripening_closing_qty if prev_closing_fg else 0.0,
+                    # 'ripening_opening_value': prev_closing_fg.ripening_closing_value if prev_closing_fg else 0.0,
+                    'incoming_qty': incoming_qty,
+                    'scrap_qty': scrap_qty,
+                    # 'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
+                    'outgoing_qty': outgoing_qty,
+                    # 'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
+                }
+                if prev_closing_fg:
+                    values_to_create.update({
+                        'inventory_account_id': prev_closing_fg.inventory_account_id.id if prev_closing_fg.inventory_account_id else False,
+                        'cogs_account_id': prev_closing_fg.cogs_account_id.id if prev_closing_fg.cogs_account_id else False,
+                        'scrap_account_id': prev_closing_fg.scrap_account_id.id if prev_closing_fg.scrap_account_id else False,
+                        'adjustment_account_id': prev_closing_fg.adjustment_account_id.id if prev_closing_fg.adjustment_account_id else False,
+                        # 'inventory_ripening_account_id': prev_closing_fg.inventory_ripening_account_id.id if prev_closing_fg.inventory_ripening_account_id else False,
+                    })
+                to_create.append(values_to_create)
+            for exvals in to_create:
+                exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
+            # Other Plantation Product
+            if to_create:
+                print(">>>>>>>>>>>>>>", to_create)
+                closing.fg2_valuation_ids = list(map(lambda x: (0,0,x), to_create))
+        return True
+    
     ############################### END VALUATION RAW MATERIAL ###################################
 
     def compute_initial_and_cost_fg2(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             closing.fg2_valuation_ids.unlink()
 
             # Manufactured Product : RSS 1, RSS 3, Cutting
@@ -1528,7 +1750,9 @@ class ClosingProduction(models.Model):
         for closing in self:
             if closing.varieties_type=='karet':
                 closing.compute_initial_and_cost_fg2()
-            closing.write({'state': 'fg_valuation'})
+                closing.write({'state': 'fg_valuation'})
+            else:
+                closing.write({'state': 'account_entry'})
         return True
 
     def button_continue_to_account_entry(self):
@@ -1542,6 +1766,7 @@ class ClosingProduction(models.Model):
         # 2. Journal Addition WIP (Inventory > WIP Lateks/Lump) 
         # 3. Journal Finished Sheet (WIP Lateks > WIP Sheet ) 
         self.ensure_one()
+        
         misc_journal = self.env.ref('ny_closing.plantation_closing_production')
         varieties = self.env['plant.varieties'].search([('name','=','Karet')], limit=1)
         
@@ -1549,7 +1774,7 @@ class ClosingProduction(models.Model):
         move_lines_wip = []
         move_lines_outgoing = []
         # BEGIN: Receiving from NAP
-        if self.latex_incoming_qty:
+        if self.latex_incoming_qty or self.latex_plantation_cost:
             vals_dest = {
                 'name': 'Inventory Receipt and Valuation Latex',
                 'plantation_varieties_id': varieties.id,
@@ -1577,7 +1802,7 @@ class ClosingProduction(models.Model):
                 }
                 move_lines_receiving.append((0,0,vals_src))
         
-        if self.lump_incoming_qty:
+        if self.lump_incoming_qty or self.lump_plantation_cost:
             vals_dest = {
                 'name': 'Inventory Receipt and Valuation Lump',
                 'plantation_location_type_id': False,
@@ -1606,7 +1831,7 @@ class ClosingProduction(models.Model):
         # END: Receiving from NAP
         
         # BEGIN: Inventory Lateks/Lump to WIP  
-        if self.latex_wip_incoming_qty:
+        if self.latex_wip_incoming_qty or self.latex_wip_incoming_value:
             vals_wip_in = {
                 'name': 'Work in Process Lateks',
                 'plantation_location_type_id': False,
@@ -1627,7 +1852,7 @@ class ClosingProduction(models.Model):
             })
             move_lines_wip.extend([(0,0,vals_wip_in),(0,0,vals_wip_in_src)])
         
-        if self.lump_wip_incoming_qty:
+        if self.lump_wip_incoming_qty or self.lump_wip_incoming_value:
             vals_wip_in = {
                 'name': 'Work in Process Lump',
                 'plantation_location_type_id': False,
@@ -1696,6 +1921,7 @@ class ClosingProduction(models.Model):
             for ll in self.mrp_cost_ids:
                 vals_wip_src = {
                     'name': 'Move Cost to WIP Lump',
+                    'plantation_varieties_id': varieties.id,
                     # 'plantation_location_type_id': ll.plantation_location_type_id.id,
                     # 'plantation_location_id': ll.plantation_location_id.id,
                     # 'plantation_activity_id': ll.plantation_activity_id.id,
@@ -1708,7 +1934,7 @@ class ClosingProduction(models.Model):
         # END: FOH to WIP Lateks/Lump
         
         # BEGIN: WIP Lateks to WIP Sheet
-        if self.latex_wip_outgoing_qty:
+        if self.latex_wip_outgoing_qty or self.latex_wip_outgoing_value:
             vals_mrp2 = {
                 'name': 'WIP Lateks to WIP Sheet',
                 'plantation_location_type_id': False,
@@ -1733,7 +1959,7 @@ class ClosingProduction(models.Model):
         # END: WIP Lateks to WIP Sheet
 
         # BEGIN: WIP Lump to WIP Compound
-        if self.lump_wip_outgoing_qty:
+        if self.lump_wip_outgoing_qty or self.lump_wip_outgoing_value:
             vals_mrp4 = {
                 'name': 'WIP Lump to WIP Compo',
                 'plantation_location_type_id': False,
@@ -1758,7 +1984,7 @@ class ClosingProduction(models.Model):
         # END: WIP Lump to WIP Compound
 
         # BEGIN: Sales Latex & Lump
-        if self.latex_delivered_qty:
+        if self.latex_delivered_qty or self.latex_delivered_value:
             vals_src9 = {
                 'name': 'Harga Pokok Penjualan Latex',
                 'plantation_location_type_id': False,
@@ -1780,7 +2006,7 @@ class ClosingProduction(models.Model):
             })
             move_lines_outgoing.append((0,0,vals_cogs9))
             
-        if self.lump_delivered_qty:
+        if self.lump_delivered_qty or self.lump_delivered_value:
             vals_src10 = {
                 'name': 'Harga Pokok Penjualan Lump',
                 'plantation_location_type_id': False,
@@ -1804,7 +2030,7 @@ class ClosingProduction(models.Model):
         # END: Sales Latex & Lump
 
         # BEGIN: Adjustment Latex & Lump
-        if self.latex_adjustment_qty:
+        if self.latex_adjustment_qty or self.latex_adjustment_value:
             vals_src11 = {
                 'name': 'Penyesuaian Stok Lateks',
                 'plantation_location_type_id': False,
@@ -1826,7 +2052,7 @@ class ClosingProduction(models.Model):
             })
             move_lines_outgoing.append((0,0,vals_adjs_11))
             
-        if self.lump_adjustment_qty:
+        if self.lump_adjustment_qty or self.lump_adjustment_value:
             vals_src12 = {
                 'name': 'Penyesuaian Stok Lump',
                 'plantation_location_type_id': False,
@@ -1850,7 +2076,7 @@ class ClosingProduction(models.Model):
         # END: Sales Adjustment & Lump
 
         # BEGIN: Purchase Asam Semut
-        if self.sheet_rm_incoming_qty:
+        if self.sheet_rm_incoming_qty or self.sheet_rm_incoming_value:
             vals_dest31 = {
                 'name': 'Pembelian Asam Semut pada Inventory',
                 'plantation_varieties_id': varieties.id,
@@ -1870,7 +2096,7 @@ class ClosingProduction(models.Model):
         # END: Purchase Asam Semut
 
         # BEGIN: Konsumsi Asam Semut
-        if self.sheet_rm_outgoing_qty:
+        if self.sheet_rm_outgoing_qty or self.sheet_rm_outgoing_value:
             vals_dest32 = {
                 'name': 'Konsumsi Asam Semut',
                 'plantation_varieties_id': varieties.id,
@@ -1968,7 +2194,6 @@ class ClosingProduction(models.Model):
             new_outgoing_moves = self.env['account.move'].create(values2)
             self.closing_move_ids = [(4,new_outgoing_moves.id)]
         
-
     def create_move_entries_fg_karet(self):
         self.ensure_one()
         misc_journal = self.env.ref('ny_closing.plantation_closing_production')
@@ -2086,7 +2311,7 @@ class ClosingProduction(models.Model):
             move_lines_production.append((0,0,vals_dest))
 
             # 2. Journal Transfer to Ripening
-            if line.ripening_qty:
+            if line.ripening_qty or line.ripening_value:
                 vals_ripening_tf = {
                     'name': f"{line.product_id.name} transfer to Ripening",
                     'plantation_location_type_id': False,
@@ -2109,7 +2334,7 @@ class ClosingProduction(models.Model):
                 move_lines_production2.append((0, 0, vals_src2))
 
             # 3. Journal Cost of Goods Sold (COGS > Inventory) from Gudang Mentah
-            if line.outgoing_qty:
+            if line.outgoing_qty or line.outgoing_value:
                 vals_cogs = {
                     'name': f"{line.product_id.name} Mentah Delivered",
                     'plantation_location_type_id': False,
@@ -2133,7 +2358,7 @@ class ClosingProduction(models.Model):
                 move_lines_cogs.append((0, 0, vals_src3))
 
             # 4. Journal Scrap
-            if line.scrap_qty:
+            if line.scrap_qty or line.scrap_value:
                 vals_cogs = {
                     'name': f"Scrap Cost {line.product_id.name} Mentah",
                     'plantation_location_type_id': False,
@@ -2172,7 +2397,7 @@ class ClosingProduction(models.Model):
                 move_lines_production2.append((0,0,vals_dest2))
             
             # 6. Journal Cost of Goods Sold (COGS > Inventory) from Ripening Location
-            if line.ripening_outgoing_qty:
+            if line.ripening_outgoing_qty or line.ripening_outgoing_value:
                 vals_cogs2 = {
                     'name': f"{line.product_id.name} Delivered",
                     'plantation_location_type_id': False,
@@ -2196,7 +2421,7 @@ class ClosingProduction(models.Model):
                 move_lines_cogs.append((0, 0, vals_src5))
             
             # 7. Journal Susut
-            if line.adjustment_qty:
+            if line.adjustment_qty or line.adjustment_value:
                 vals_adj = {
                     'name': f"Adjustment Cost {line.product_id.name} Mentah",
                     'plantation_location_type_id': False,
@@ -2272,8 +2497,156 @@ class ClosingProduction(models.Model):
             new_move2 = self.env['account.move'].create(values)
             self.closing_move_ids = [(4, new_move2.id)]
     
+    def create_move_entries_fg_melon(self):
+        self.ensure_one()
+        misc_journal = self.env.ref('ny_closing.plantation_closing_production')
+        varieties = self.env['plant.varieties'].search([('name','=','Melon')], limit=1)
+        
+        move_lines_production = []
+        move_lines_production2 = []
+        move_lines_cogs = []
+        check_bal = 0.0
+        for line in self.fg2_valuation_ids:
+            if any([line.ripening_qty>0,line.outgoing_qty>0,line.scrap_qty>0,line.adjustment_qty>0]) and not line.inventory_account_id:
+                raise ValidationError(f"Silahkan isi akun Inventory valuation untuk Product {line.product_id.name}")
+            # if line.ripening_qty and not line.inventory_ripening_account_id:
+            #     raise ValidationError(f"Silahkan isi akun Inventory valuation untuk proses Ripening Product {line.product_id.name}")
+            # if (line.ripening_outgoing_qty or line.outgoing_qty) and not line.cogs_account_id:
+            #     raise ValidationError(f"Silahkan isi akun COGS untuk Product {line.product_id.name}")
+            if line.scrap_qty and not line.scrap_account_id:
+                raise ValidationError(f"Silahkan isi akun Scrap untuk Product {line.product_id.name}")
+            if line.adjustment_qty and not line.adjustment_account_id:
+                raise ValidationError(f"Silahkan isi akun Susut untuk Product {line.product_id.name}")
+            # 1. Journal Receiving (Plantation/Manufacturing Cost > Inventory) 
+            vals_dest = {
+                'name': f"{line.product_id.name} Received",
+                'plantation_location_type_id': False,
+                'plantation_varieties_id': varieties.id,
+                'plantation_location_id': False,
+                'plantation_activity_id': False,
+                'plantation_src_journal_id': False,
+                'account_id': line.inventory_account_id.id,
+                'product_id': line.product_id.id,
+                'debit': round(line.plantation_cost, 2) if line.plantation_cost>0 else 0.0,
+                'credit': round(abs(line.plantation_cost), 2) if line.plantation_cost<0 else 0.0,
+            }
+            check_bal += vals_dest['debit'] - vals_dest['credit']
+            # print('................vals_dest', line.product_id.name, vals_dest['debit'], vals_dest['credit'])
+            move_lines_production.append((0,0,vals_dest))
+
+            # 3. Journal Cost of Goods Sold (COGS > Inventory) from Gudang Mentah
+            if line.outgoing_qty or line.outgoing_value:
+                vals_cogs = {
+                    'name': f"{line.product_id.name} Mentah Delivered",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.cogs_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(line.outgoing_value, 2) if line.outgoing_value>0 else 0.0,
+                    'credit': round(abs(line.outgoing_value), 2) if line.outgoing_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_cogs))
+                vals_src3 = vals_cogs.copy()
+                vals_src3.update({
+                    'name': f"Inventory to Cogs",
+                    'account_id': line.inventory_account_id.id,
+                    'debit': vals_cogs['credit'],
+                    'credit': vals_cogs['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src3))
+
+            # 4. Journal Scrap
+            if line.scrap_qty or line.scrap_value:
+                vals_cogs = {
+                    'name': f"Scrap Cost {line.product_id.name} Mentah",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.scrap_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(line.scrap_value, 2) if line.scrap_value>0 else 0.0,
+                    'credit': round(abs(line.scrap_value), 2) if line.scrap_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_cogs))
+                vals_src4 = vals_cogs.copy()
+                vals_src4.update({
+                    'name': f"Inventory Scrap",
+                    'account_id': line.inventory_account_id.id,
+                    'debit': vals_cogs['credit'],
+                    'credit': vals_cogs['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src4))
+            
+            # 7. Journal Susut
+            if line.adjustment_qty or line.adjustment_value:
+                vals_adj = {
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.adjustment_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
+                    'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_adj))
+                vals_src5 = vals_adj.copy()
+                vals_src5.update({
+                    'name': f"Inventory Scrap",
+                    'account_id': line.inventory_account_id.id,
+                    'debit': vals_adj['credit'],
+                    'credit': vals_adj['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src5))
+
+        for plt_cost in self.plantation_cost_ids:
+            vals_src = {
+                'name': f"Plantation Cost Melon to Inventory",
+                'plantation_varieties_id': varieties.id,
+                'plantation_location_type_id': plt_cost.plantation_location_type_id.id if plt_cost.plantation_location_type_id else False,
+                'plantation_location_id': plt_cost.plantation_location_id.id if plt_cost.plantation_location_id else False,
+                'plantation_activity_id': plt_cost.plantation_activity_id.id if plt_cost.plantation_activity_id else False,
+                'plantation_src_journal_id': plt_cost.plantation_src_journal_id.id if plt_cost.plantation_src_journal_id else False,
+                'account_id': plt_cost.account_id.id,
+                'debit': round(abs(plt_cost.total_cost), 2) if plt_cost.total_cost<0 else 0.0,
+                'credit': round(plt_cost.total_cost, 2) if plt_cost.total_cost>0 else 0.0,
+            }
+            check_bal += vals_src['debit'] - vals_src['credit']
+            # print('................vals_src', vals_src['debit'], vals_src['credit'])
+            move_lines_production.append((0,0,vals_src))
+        
+        if check_bal and check_bal>=-1.0 and check_bal<=1.0:
+            move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
+        if move_lines_production or move_lines_production2:
+            values = {
+                'date': self.date_to,
+                'journal_id': misc_journal.id,
+                'move_type': 'entry',
+                'line_ids': move_lines_production+move_lines_production2,
+            }
+            new_move = self.env['account.move'].create(values)
+            self.closing_move_ids = [(4, new_move.id)]
+        if move_lines_cogs:
+            values = {
+                'date': self.date_to,
+                'journal_id': misc_journal.id,
+                'move_type': 'entry',
+                'line_ids': move_lines_cogs,
+            }
+            new_move2 = self.env['account.move'].create(values)
+            self.closing_move_ids = [(4, new_move2.id)]
+    
     def create_move_entries(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_production':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             if closing.closing_move_ids:
                 for exmove in closing.closing_move_ids:
                     if exmove.state=='posted':
@@ -2293,11 +2666,15 @@ class ClosingProduction(models.Model):
                 closing.create_move_entries_fg_karet()
             elif closing.varieties_type=='pisang':
                 closing.create_move_entries_fg_pisang()
+            elif closing.varieties_type=='melon':
+                closing.create_move_entries_fg_melon()
         return True
 
     def action_done(self):
         for closing in self:
             closing.create_move_entries()
+            closing.closing_move_ids._post(soft=False)
+            closing.fg2_valuation_ids.mapped('closing_move_id')._post(soft=False)
             closing.write({'state': 'done'})
         return True
 
@@ -2316,9 +2693,33 @@ class ClosingProduction(models.Model):
         return True
     
     def button_cancel(self):
+        for closing in self:
+            if closing.state=='done':
+                raise ValidationError("Tidak bisa cancel data yang sudah di posting. Silahkan Cancel Manual terlebih dahulu")
+            
         self.filtered(lambda x: x.state in ('start','rm_valuation','fg1_valuation','fg2_valuation')).write({'state':'cancel'})
         return True
     
+    def button_cancel_done(self):
+        for closing in self:
+            if closing.varieties_type=='karet':
+                closing.closing_move_ids.button_cancel()
+                closing.closing_move_ids.button_draft()
+                closing.closing_move_ids.write({'name': ''})
+                closing.closing_move_ids.unlink()
+                for line in closing.fg2_valuation_ids:
+                    line.closing_move_id.button_cancel()
+                    line.closing_move_id.button_draft()
+                    line.closing_move_id.write({'name': ''})
+                    line.closing_move_id.unlink()
+            elif closing.varieties_type in ('pisang','melon'):
+                closing.closing_move_ids.button_cancel()
+                closing.closing_move_ids.button_draft()
+                closing.closing_move_ids.write({'name': ''})
+                closing.closing_move_ids.unlink()
+            closing.write({'state': 'account_entry'})
+        return True
+
     def button_set_new(self):
         self.filtered(lambda x: x.state=='cancel').write({'state':'start'})
         return True

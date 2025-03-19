@@ -89,10 +89,12 @@ class ClosingPlantation(models.Model):
     _rec_name = 'plant_block_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
+    parent_state = fields.Selection(related='closing_process_id.state', store=True)
     
     date_from = fields.Date('Date From', required=True)
     date_to = fields.Date('Date To', required=True)
     plant_block_id = fields.Many2one('lhm.plant.block', string='Blok Tanam', ondelete='restrict', required=True)
+    varieties_id = fields.Many2one(related='plant_block_id.varieties_id', store=True)
     type_of_plant = fields.Selection(related='plant_block_id.type_of_plant', store=True)
     status = fields.Selection(related='plant_block_id.status', store=True)
     plant_season_ids = fields.Many2many('plantation.season', 'closing_plantation_season_rel', string='Season', ondelete='restrict')
@@ -150,6 +152,8 @@ class ClosingPlantation(models.Model):
             'cost_line_as_cost_ids.total_cost')
     def _compute_cost(self):
         for closing in self:
+            # print("::::::::::::::::1", closing.cost_line_as_cost_ids)
+            # print("::::::::::::::::2", closing.cost_line_ids)
             closing.current_period_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
 
     def init(self):
@@ -194,7 +198,7 @@ class ClosingPlantation(models.Model):
                                 aml1.plantation_src_journal_id,
                                 aml1.journal_id
                 LOOP
-                    -- v_current_period_cost := v_current_period_cost + sums_cost_aml.cost;
+                    v_current_period_cost := v_current_period_cost + sums_cost_aml.cost;
                     INSERT INTO closing_plantation_line
                             (id, closing_id,  
                             date_from, date_to, 
@@ -362,6 +366,8 @@ class ClosingPlantation(models.Model):
 
     def summarize_move_line(self):
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_plantation':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             closing.cost_line_ids.unlink()
             closing.deferred_cost_line_ids.unlink()
             # source_moves_cost = self.env['account.move.line'].search(self._get_domain_source_move_lines())
@@ -461,7 +467,9 @@ class ClosingPlantation(models.Model):
                 # Jika masih fase TBM, maka Cost akan diakumulasikan ke Aset
                 # Jika sudah TM, maka Cost akan didistribusikan ke Akun Masing2
                 self.env.cr.execute(f"select procedure_summerize_cost({closing.id}, {closing.plant_block_id.id}, to_date('{closing.date_from.strftime('%Y-%m-%d')}','YYYY-MM-DD'), to_date('{closing.date_to.strftime('%Y-%m-%d')}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
-            closing.current_period_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
+            
+            # closing._compute_cost()
+            # closing.current_period_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
 
     def _prepare_move_lines_for_shorterm_block(self):
         self.ensure_one()
@@ -716,14 +724,13 @@ class ClosingPlantation(models.Model):
     def create_account_move(self):
         closing_journal = self.env.ref('ny_closing.plantation_closing_plantation')
         for closing in self:
+            if closing.closing_process_id and closing.parent_state!='closing_plantation':
+                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             if closing.closing_move_id:
-                if closing.closing_move_id.state!='posted':
-                    closing.closing_move_id.write({'name': ''})
-                    closing.closing_move_id.unlink()
-                else:
+                if closing.closing_move_id.state in ('posted','cancel'):
                     closing.closing_move_id.button_draft()
                     closing.closing_move_id.write({'name': ''})
-                    closing.closing_move_id.unlink()
+                    # closing.closing_move_id.unlink()
             if closing.type_of_plant=='shorterm':
                 move_lines = closing._prepare_move_lines_for_shorterm_block()
             elif closing.type_of_plant=='longterm_seasonal':
@@ -737,10 +744,20 @@ class ClosingPlantation(models.Model):
                     'move_type': 'entry',
                     'line_ids': move_lines,
                 }
-                new_move = self.env['account.move'].create(move_values)
-                
-                closing.closing_move_id = new_move.id
+                if closing.closing_move_id:
+                    move_values['line_ids'] = [(2, x.id) for x in closing.closing_move_id.line_ids] + move_values['line_ids']
+                    closing.closing_move_id.write(move_values)
+                    new_move = closing.closing_move_id
+                else:
+                    new_move = self.env['account.move'].create(move_values)
+                    closing.closing_move_id = new_move.id
+                # new_move._post(soft=False)
         return True
+
+    def action_cancel(self):
+        for closing in self:
+            if closing.closing_move_id:
+                closing.closing_move_id.button_cancel()
 
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")

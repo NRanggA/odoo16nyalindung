@@ -88,6 +88,7 @@ class ClosingProject(models.Model):
     _rec_name = 'project_id'
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
+    parent_state = fields.Selection(related='closing_process_id.state', store=True)
 
     date_from = fields.Date('Date From', required=True)
     date_to = fields.Date('Date To', required=True)
@@ -419,7 +420,7 @@ class ClosingProject(models.Model):
         project_journal = self.env.ref('ny_closing.plantation_closing_project_journal')
         for closing in self:
             if closing.closing_move_id:
-                if closing.closing_move_id.state=='posted':
+                if closing.closing_move_id.state in ('posted','cancel'):
                     closing.closing_move_id.button_draft()
             if closing.project_tanaman:
                 move_lines = closing._prepare_move_lines_for_project_tanaman()
@@ -450,7 +451,7 @@ class ClosingProject(models.Model):
                 'date': closing.date_to,
                 'journal_id': project_journal.id,
                 'move_type': 'entry',
-                'line_ids': move_lines,
+                'line_ids': ([(2, x.id) for x in closing.closing_move_id.line_ids] if closing.closing_move_id else []) + move_lines,
             }
             if closing.closing_move_id:
                 closing.closing_move_id.write(values)
@@ -460,6 +461,10 @@ class ClosingProject(models.Model):
         
         return True
 
+    def action_cancel(self):
+        for closing in self:
+            closing.closing_move_id.button_cancel()
+    
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
         action['domain'] = self._get_domain_source_move_lines()

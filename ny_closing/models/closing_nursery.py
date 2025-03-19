@@ -162,19 +162,20 @@ class ClosingNursery(models.Model):
                     'date': closing.date_to,
                     'journal_id': nursery_journal.id,
                     'move_type': 'entry',
-                    'line_ids': move_lines1,
+                    'line_ids': ([(2, x.id) for x in closing.closing_move_id.line_ids] if closing.closing_move_id else []) + move_lines1,
                 }
                 if closing.closing_move_id:
                     closing.closing_move_id.write(move_values1)
                 else:
                     new_move = self.env['account.move'].create(move_values1)
                     closing.closing_move_id = new_move.id
+                # closing.closing_move_id._post(soft=False)
                 
             if closing.closing_out_move_ids:
                 for xmove in closing.closing_out_move_ids:
-                    if xmove.state=='posted':
+                    if xmove.state in ('posted','draft'):
                         xmove.button_draft()
-                        xmove.write({'name': ''})
+                    xmove.write({'name': ''})
                     xmove.unlink()
                 
                 out_move_ids = [] # Journal Outoging Costing
@@ -216,9 +217,15 @@ class ClosingNursery(models.Model):
                     }
                     new_out_move = self.env['account.move'].create(move_values2)
                     out_move_ids.append(new_out_move.id)
+                    new_out_move._post(soft=False)
                 if out_move_ids:
                     closing.closing_out_move_ids = [(6,0,out_move_ids)]
         return True
+
+    def action_cancel(self):
+        for closing in self:
+            closing.closing_move_id.button_cancel()
+            closing.closing_out_move_ids.button_cancel()
 
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")

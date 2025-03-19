@@ -5,16 +5,18 @@
         <field name="model">closing.plantation</field>
         <field name="arch" type="xml">
             <form>
+                <field name="closing_process_id" invisible="1" />
+                <field name="parent_state" invisible="1" />
                 <header>
-                    <button string="Test Summarize" name="summarize_move_line" type="object" groups="base.group_no_one"/>
-                    <button string="Test Create Journal Entry" name="create_account_move" type="object" groups="base.group_no_one"/>
+                    <button string="Test Summarize" name="summarize_move_line" type="object" groups="base.group_no_one" attrs="{'invisible': [('parent_state','=','closing_plantation')]}"/>
+                    <button string="Test Create Journal Entry" name="create_account_move" type="object" groups="base.group_no_one" attrs="{'invisible': [('parent_state','=','closing_plantation')]}"/>
                 </header>
                 <sheet>
                     <group>
                         <group>
-                            <field name="plant_block_id"/>
-                            <field name="date_from" />
-                            <field name="date_to" />
+                            <field name="plant_block_id" attrs="{'readonly': [('parent_state','!=','closing_plantation')]}"/>
+                            <field name="date_from" attrs="{'readonly': [('parent_state','!=','closing_plantation')]}"/>
+                            <field name="date_to" attrs="{'readonly': [('parent_state','!=','closing_plantation')]}"/>
                         </group>
                         <group>
                             <label for="current_period_cost" />
@@ -27,27 +29,27 @@
                                 <field name="accumulated_deferred_cost" readonly="1" nolable="1"/>
                                 <button string="View Journals" name="action_view_deferred_move_lines" type="object" class="btn-info" icon="fa-search"/>
                             </div>
-                            <field name="tbm_account_id" attrs="{'invisible': [('type_of_plant','not in',['longterm_tbm_tm','longterm_seasonal'])]}"/>
-                            <field name="deferred_account_id" attrs="{'invisible': [('type_of_plant','not in',['shorterm','longterm_seasonal'])]}"/>
-                            <field name="closing_account_id"/>
+                            <field name="tbm_account_id" attrs="{'invisible': [('type_of_plant','not in',['longterm_tbm_tm','longterm_seasonal'])], 'readonly': [('parent_state','!=','closing_plantation')]}"/>
+                            <field name="deferred_account_id" attrs="{'invisible': [('type_of_plant','not in',['shorterm','longterm_seasonal'])], 'readonly': [('parent_state','!=','closing_plantation')]}"/>
+                            <field name="closing_account_id" attrs="{'readonly': [('parent_state','!=','closing_plantation')]}"/>
                             <field name="closing_move_id" readonly="1"/>
                         </group>
                     </group>
                     <field name="type_of_plant" invisible="1"/>
                     <field name="status" invisible="1"/>
                     <label for="plant_season_ids" attrs="{'invisible':[('plant_season_ids','=',[])]}"/>
-                    <field name="plant_season_ids" nolabel="1" attrs="{'invisible':[('plant_season_ids','=',[])]}"/>
+                    <field name="plant_season_ids" nolabel="1" attrs="{'invisible':[('plant_season_ids','=',[])], 'readonly': [('parent_state','!=','closing_plantation')]}"/>
                     <notebook>
                         <page name="deferred_cost_line" string="Deferred Cost" 
                                 attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}">
                             <group>
                                 <group>
-                                    <field name="pct_deferred_to_cost" />
+                                    <field name="pct_deferred_to_cost" attrs="{'readonly': [('parent_state','!=','closing_plantation')]}"/>
                                 </group>
                                 <group>
                                 </group>
                             </group>
-                            <field name="deferred_cost_line_ids">
+                            <field name="deferred_cost_line_ids" attrs="{'readonly': [('parent_state','!=','closing_plantation')]}">
                                 <tree create="false" delete="false" editable="bottom">
                                     <field name="plantation_location_type_id" readonly="1"/>
                                     <field name="plantation_location_id" readonly="1"/>
@@ -104,6 +106,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="plant_block_id" />
+                <field name="varieties_id" optional="hide"/>
                 <field name="date_from" />
                 <field name="date_to" />
                 <field name="current_period_cost" />
@@ -125,6 +128,12 @@
         <field name="arch" type="xml">
             <search>
                 <field name="plant_block_id" />
+                <field name="varieties_id" optional="hide"/>
+
+                <group name="name" string="Group By">
+                    <filter name="groupby_varieties_id" string="Varieties" context="{'group_by':'varieties_id'}"/>
+                    <filter name="groupby_type_of_plant" string="Crop Type" context="{'group_by': 'type_of_plant'}" />
+                </group>
             </search>
         </field>
     </record>
