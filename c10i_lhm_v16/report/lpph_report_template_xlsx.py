@@ -924,7 +924,7 @@ class ReportLpphExcel(models.AbstractModel):
         wbf = self.wbf
 
         worksheet = workbook.add_worksheet("Laporan Progress Kerja Harian")
-        worksheet2 = workbook.add_worksheet("Pending Store Issue")
+        worksheet2 = workbook.add_worksheet("Pending Store Issue Harian")
         data_report = self.get_combined_report(obj.date_start, obj.date_end)
 
         date_from = obj.date_start.strftime('%d-%m-%Y')
@@ -1457,8 +1457,13 @@ class ReportLpphExcel(models.AbstractModel):
                             ('picking_type_id.code', '=', 'issue'),
                             # ('allocation_residual_qty', '>', 0),
                             ('pending_material_allocation', '>', 0),
-                            ('state','=','done')
+                            ('state','=','done'),
+                            ('date', '>=', date_from),
+                            ('date', '<=', date_to)
                         ],order="date desc, plantation_activity_id asc")
+
+        # print(f"==== {len(stock_move_ids)}")
+        # print(f"==== {stos}")
 
         row_data = next_row + 3
         activity_ids = []
