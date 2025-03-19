@@ -123,15 +123,17 @@ class HrPayslipRun(models.Model):
     
     def action_map_cost_bill(self):
         self.cost_map_ids.sudo().filtered(lambda x: x.type=='bill').unlink()
+        print(">>>>>>>>>>>>>>>>")
         self.slip_ids.action_map_cost_bill()
     
     def done_payslip_run(self):
+        res = super().done_payslip_run()
         self.action_map_cost_bill()
-        return super().done_payslip_run()
+        return res
     
     def action_view_cost_map(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_hr_payroll_account.hr_payslip_cost_map_action")
-        action['domain'] = [('payslip_run_id','=',self.id),('type','=','bill')]
+        action['domain'] = [('payslip_run_id','=',self.id)]# ,('type','=','bill')
         return action
     
     def create_account_move(self):

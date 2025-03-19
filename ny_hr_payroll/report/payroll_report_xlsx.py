@@ -655,7 +655,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             # subtotal net
             worksheet.write(next_row, col_subtotal, subtotal_net, wbf['footer_total'])
 
-            next_row += 1
+            next_row += 2
 
         worksheet.set_landscape()
         worksheet.set_paper(9)
