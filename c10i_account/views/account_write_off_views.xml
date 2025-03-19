@@ -22,12 +22,12 @@
                     </div>
                     <group>
                         <group>
-                            <field name="date" />
-                            <field name="partner_id" />
+                            <field name="date" attrs="{'readonly': [('state','=','posted')]}"/>
+                            <field name="partner_id" attrs="{'readonly': [('state','=','posted')]}"/>
                         </group>
                         <group>
-                            <field name="write_off_account_id" />
-                            <field name="write_off_default_journal_id" />
+                            <field name="write_off_account_id" attrs="{'readonly': [('state','=','posted')]}"/>
+                            <field name="write_off_default_journal_id" attrs="{'readonly': [('state','=','posted')]}"/>
                             <field name="move_type" invisible="1"/>
                             <field name="move_id" readonly="1"/>
                             <field name="company_id" invisible="1"/>
@@ -35,8 +35,8 @@
                     </group>
                     <notebook>
                         <page string="Outstanding">
-                            <field name="line_ids" nolabel="1" context="{'default_write_off_account_id': write_off_account_id}">
-                                <tree editable="bottom">
+                            <field name="line_ids" nolabel="1" context="{'default_write_off_account_id': write_off_account_id}" attrs="{'readonly': [('state','=','posted')]}">
+                                <tree editable="bottom" create="0">
                                     <field name="move_id"/>
                                     <field name="move_line_id" invisible="0"/>
                                     <field name="date"/>
@@ -51,6 +51,11 @@
                         </page>
                     </notebook>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>
@@ -63,8 +68,27 @@
                 <field name="name" />
                 <field name="date" />
                 <field name="partner_id" />
-                <field name="state" />
+                <field name="state" decoration-info="state=='draft'" decoration-success="state=='posted'"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="account_write_off_view_search" model="ir.ui.view">
+        <field name="name">account.write.off.view.search</field>
+        <field name="model">account.write.off</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Name" filter_domain="['|',('name','ilike',self),('partner_id.name','ilike',self)]"/>
+                <field name="date" string="Date"/>
+                <field name="partner_id" string="Partner"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="Posted" name="posted" domain="[('state','=','posted')]"/>
+                <group name="name" string="string">
+                    <filter string="Status" name="groupby_state" context="{'group_by':'state'}"/>
+                    <filter string="Partner" name="groupby_partner_id" context="{'group_by':'partner_id'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
