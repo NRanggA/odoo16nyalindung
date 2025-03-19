@@ -12,6 +12,7 @@ class AccountWriteOff(models.Model):
     _name = 'account.write.off'
     _description = 'Account Write Off'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'date desc, id desc'
 
     name = fields.Char('Name', copy=False)
     move_type = fields.Selection([
