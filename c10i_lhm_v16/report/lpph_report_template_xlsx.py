@@ -1453,13 +1453,16 @@ class ReportLpphExcel(models.AbstractModel):
         worksheet2.merge_range(next_row + 1, 8, next_row + 2, 8, "SATUAN", wbf['header'])
         worksheet2.set_column(8, 8, 18)
 
+        date_start_stk = fields.Datetime.to_string(obj.date_start)
+        date_end_stk = fields.Datetime.to_string(obj.date_end)
+
         stock_move_ids = self.env['stock.move'].search([
                             ('picking_type_id.code', '=', 'issue'),
                             # ('allocation_residual_qty', '>', 0),
                             ('pending_material_allocation', '>', 0),
                             ('state','=','done'),
-                            ('date', '>=', date_from),
-                            ('date', '<=', date_to)
+                            ('date', '>=', date_start_stk),
+                            ('date', '<=', date_end_stk)
                         ],order="date desc, plantation_activity_id asc")
 
         # print(f"==== {len(stock_move_ids)}")
