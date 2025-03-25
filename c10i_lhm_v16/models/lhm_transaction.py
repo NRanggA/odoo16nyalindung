@@ -139,6 +139,13 @@ class lhm_transaction(models.Model):
                 not nap_line.lhm_nap_line_id for nap_line in record.lhm_nap_line_ids
             )
 
+    # @api.depends('lhm_nap_line_ids.lhm_nap_line_id')
+    # def _compute_nap_line_zero(self):
+    #     for record in self:
+    #         record.nap_line_zero = all(
+    #             not nap_line.lhm_nap_line_id for nap_line in record.lhm_nap_line_ids
+    #         ) if record.lhm_nap_line_ids else False
+
     @api.depends('lhm_line_ids.product_id')
     def _compute_nap_line_melon(self):
         for record in self:
@@ -517,8 +524,8 @@ class lhm_transaction(models.Model):
                         progress_line.write({'product_id': progres[2]})
                     if progress_line.product_id_2.id != progres[3]:
                         progress_line.write({'product_id_2': progres[3]})
-                    # if progres[7] is not None and progres[7] > 0: #(Punya kau error yan yang dibawah itu, td aku test di lokal gini bisa) 
-                    if progres[7] > 0:  # Jika ada hasil_2
+                    if progres[7] is not None and progres[7] > 0: #(Punya kau error yan yang dibawah itu, td aku test di lokal gini bisa) 
+                    # if progres[7] > 0:  # Jika ada hasil_2
                         if progress_line.uom_id.id != activity_data.uom_id.id:
                             progress_line.write({'uom_id': activity_data.uom_id.id})
                         if progress_line.uom2_id.id != activity_data.uom2_id.id:
