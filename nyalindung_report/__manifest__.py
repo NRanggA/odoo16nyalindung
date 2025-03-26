@@ -49,7 +49,9 @@
         "report/bukti_penerimaan_barang_template.xml",
         "report/bukti_penerimaan_barang_action.xml",
         "report/report_nota_angkut_panen_action.xml",
-        "wizard/wizard_report_nota_angkut_panen.xml"
+        "report/report_view.xml",
+        "wizard/wizard_report_nota_angkut_panen.xml",
+        "wizard/wizard_rekap_buku_kontraktor_view.xml",
     ],
     # only loaded in demonstration mode
     'demo': [

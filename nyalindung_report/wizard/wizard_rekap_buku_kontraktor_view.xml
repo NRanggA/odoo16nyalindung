@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_rekap_buku_kontraktor_view_form" model="ir.ui.view">
+        <field name="name">wizard.rekap.buku.kontraktor.view.form</field>
+        <field name="model">wizard.rekap.buku.kontraktor</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                    </group>
+                    <group>
+                        <field name="partner_ids" widget="many2many_tags" />
+                    </group>
+                </group>
+                <footer>
+                    <button name="print_excel" string="Export Excel" type="object" class="btn-primary"/>
+                    or
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wizard_rekap_buku_kontraktor" model="ir.actions.act_window">
+        <field name="name">Rekap Buku Kontraktor</field>
+        <field name="res_model">wizard.rekap.buku.kontraktor</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="menu_wizard_rekap_buku_kontraktor"
+        action="action_wizard_rekap_buku_kontraktor"
+        parent="c10i_lhm_v16.menu_plantation_report"
+        sequence="101"/>
+
+</odoo>

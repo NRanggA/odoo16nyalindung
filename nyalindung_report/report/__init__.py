@@ -4,3 +4,4 @@ from . import report_production
 from . import report_production_kebun
 from . import report_production_penyadap
 from . import report_nota_angkut_panen
+from . import report_rekap_buku_kontraktor_xlsx

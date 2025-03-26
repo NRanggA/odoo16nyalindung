@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_rekap_buku_kontraktor_xlsx" model="ir.actions.report">
+        <field name="name">Rekap Buku Kontraktor</field>
+        <field name="model">wizard.rekap.buku.kontraktor</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">nyalindung_report.rekap_buku_kontraktor_xlsx</field>
+        <field name="report_file">nyalindung_report.rekap_buku_kontraktor_xlsx</field>
+    </record>
+
+</odoo>
