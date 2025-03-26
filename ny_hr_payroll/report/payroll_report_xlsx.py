@@ -496,6 +496,12 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Dibayarkan (Net)', wbf['header'])
         worksheet.set_column(cur_col,cur_col,12)
         cur_col += 1
+        worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Rekening', wbf['header'])
+        worksheet.set_column(cur_col,cur_col,20)
+        cur_col += 1
+        worksheet.merge_range(next_row, cur_col, next_row+1, cur_col, 'Bank', wbf['header'])
+        worksheet.set_column(cur_col,cur_col,15)
+        cur_col += 1
         next_row += 2
 
         for c in range(1,cur_col):
@@ -603,6 +609,10 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 worksheet.write(next_row, l_cur_col, net_value, wbf['content_float'])
                 subtotal_net += net_value
                 l_cur_col += 1
+                worksheet.write(next_row, l_cur_col, payslip.employee_id.bank_account_id.acc_number or '', wbf['content'])
+                l_cur_col += 1
+                worksheet.write(next_row, l_cur_col, payslip.employee_id.bank_account_id.bank_id.name or '', wbf['content'])
+                l_cur_col += 1
 
                 next_row += 1
 
@@ -654,6 +664,10 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
 
             # subtotal net
             worksheet.write(next_row, col_subtotal, subtotal_net, wbf['footer_total'])
+            col_subtotal += 1
+            worksheet.write(next_row, col_subtotal, "", wbf['header_mandor'])
+            col_subtotal += 1
+            worksheet.write(next_row, col_subtotal, "", wbf['header_mandor'])
 
             next_row += 2
 
