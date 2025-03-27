@@ -110,6 +110,7 @@
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
                         <td class="right-align"><t t-esc="o.format_amount(total_discount)"/></td>
                     </tr>
+
                     <tr t-foreach="o.line_ids.filtered(lambda l: l.tax_ids)" t-as="line">
                         <t t-foreach="line.tax_ids" t-as="tax">
                             <tr>
@@ -128,6 +129,15 @@
                         <td class="right-align"><strong>Grand Total:</strong></td>
                         <td class="right-align"><strong><t t-esc="o.currency_id.symbol"/></strong></td>
                         <td class="right-align"><strong><t t-esc="o.format_amount(o.amount_total)"/></strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="padding-top: 10px; font-size: 14px;">
+                            Pembayaran dapat di transfer melalui no rekening di bawah ini:<br/>
+                            Atas Nama : <span t-esc="o.company_id.name"/><br/>
+                            No Rekening : <span t-esc="o.partner_bank_id.acc_number if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].acc_number or ''"/> <br/>
+                            Bank : <span t-esc="o.partner_bank_id.bank_id.name if o.partner_bank_id else o.partner_id.bank_ids and o.partner_id.bank_ids[0].bank_id.name or ''"/> Cab Kota Baru Parahyangan
+                        </td>
+                        <td colspan="3"></td>
                     </tr>
                 </table>
             </t>
