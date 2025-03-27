@@ -503,8 +503,9 @@ class lhm_transaction(models.Model):
             if lhm_progress_list:
                 progress_line = progress_line_obj.sudo().search([('activity_id', '=', progres[0]), ('location_id', '=', progres[1]), ('lhm_id', '=', self.id)])
                 if progress_line and len(progress_line) > 1:
-                    raise ValidationError(_("Terjadi kesalahan (T.T), Error Code %s. \n"
-                                            "Hubungi administrator untuk informasi lebih lanjut!"))
+                    # raise ValidationError(_("Terjadi kesalahan (T.T), Error Code %s. \n"
+                    #                         "Hubungi administrator untuk informasi lebih lanjut!"))
+                    progress_line = progress_line[0]
                 if progress_line and len(progress_line) == 1:
                     if progress_line.nilai != progres[6] and progress_line.activity_id:
                         progress_line.write({'nilai': progres[6], 'updated': True})
