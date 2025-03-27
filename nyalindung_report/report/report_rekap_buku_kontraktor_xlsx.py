@@ -278,19 +278,18 @@ class RekapBukuKontraktor(models.AbstractModel):
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"=SUM({';'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])})", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"={'+'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"=SUM({';'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])})", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"={';'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"=SUM({';'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])})", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"={'+'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
             col += 1
-            grand_total_rows.append(next_row)
             next_row += 1
 
         worksheet.set_landscape()
@@ -345,11 +344,11 @@ class RekapBukuKontraktor(models.AbstractModel):
             col += 1
             worksheet2.write(next_row, col, "Total", wbf['total'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{next_row-1, col})", wbf['total_float'])
+            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{next_row-1, col})", wbf['total_float'])
+            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{next_row-1, col})", wbf['total_float'])
+            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
             col += 1
             next_row += 1
         # Page Layout
