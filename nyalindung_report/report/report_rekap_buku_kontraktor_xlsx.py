@@ -282,7 +282,7 @@ class RekapBukuKontraktor(models.AbstractModel):
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"={';'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"={'+'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
