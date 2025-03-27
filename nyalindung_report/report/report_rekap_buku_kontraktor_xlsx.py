@@ -222,17 +222,17 @@ class RekapBukuKontraktor(models.AbstractModel):
             col += 1
             worksheet.write(next_row, col, line.get('supplier_id', [0,''])[1], wbf['content'])
             col += 1
-            worksheet.write(next_row, col, line.get('location_id', [0,''])[1], wbf['content'])
+            worksheet.write(next_row, col, line.get('location_id', [0,''])[1] if line.get('location_id') else '', wbf['content'])
             col += 1
-            worksheet.write(next_row, col, line.get('activity_id', [0,''])[1], wbf['content'])
+            worksheet.write(next_row, col, line.get('activity_id', [0,''])[1] if line.get('activity_id') else '', wbf['content'])
             col += 1
             worksheet.write(next_row, col, line.get('nilai', 0), wbf['content_float'])
             col += 1
-            worksheet.write(next_row, col, line.get('uom_id', [0,''])[1], wbf['content'])
+            worksheet.write(next_row, col, line.get('uom_id', [0,''])[1] if line.get('uom_id') else '', wbf['content'])
             col += 1
             worksheet.write(next_row, col, line.get('nilai2', 0), wbf['content_float'])
             col += 1
-            worksheet.write(next_row, col, line.get('uom2_id', [0,''])[1], wbf['content'])
+            worksheet.write(next_row, col, line.get('uom2_id', [0,''])[1] if line.get('uom2_id') else '', wbf['content'])
             col += 1
             worksheet.write(next_row, col, line.get('unit_price', 0), wbf['content_float'])
             col += 1
