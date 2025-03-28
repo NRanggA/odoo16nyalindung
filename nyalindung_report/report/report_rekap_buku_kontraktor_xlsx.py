@@ -1,5 +1,5 @@
 from odoo import api, models, fields, _
-from xlsxwriter.utility import xl_rowcol_to_cell
+from xlsxwriter.utility import xl_rowcol_to_cell, xl_col_to_name
 # from odoo.exceptions import Warning
 # from datetime import datetime, timedelta
 # from dateutil.relativedelta import relativedelta
@@ -17,6 +17,7 @@ class RekapBukuKontraktor(models.AbstractModel):
     #     return wizard.payslip_ids
 
     def add_workbook_format(self, workbook):
+        # FONT Settings
         font_color = '#000000'
         font_color_header = font_color
         font_color_subtotal = font_color
@@ -25,6 +26,9 @@ class RekapBukuKontraktor(models.AbstractModel):
         bg_color_header = '#FFFFDB'
         bg_color_subtotal = '#FFFFDB'
         bg_color_grandtotal = '#FFFFDB'
+
+        # BORDER
+        
         # HEADER STYLE
         self.wbf['header'] = workbook.add_format({'bold': 1,
                                 'align': 'center',
@@ -64,15 +68,17 @@ class RekapBukuKontraktor(models.AbstractModel):
         self.wbf['content_float'].set_left()
 
         self.wbf['content_center'] = workbook.add_format({'align': 'centre'})
-                
+        self.wbf['content_center'].set_right() 
+        self.wbf['content_center'].set_left()
+
         self.wbf['content_percent'] = workbook.add_format({'align': 'right','num_format': '0.00%'})
         self.wbf['content_percent'].set_right()
         self.wbf['content_percent'].set_left()
         
         # SUBTOTAL STYLE
-        self.wbf['subtotal_float'] = workbook.add_format({'bold':1,'bg_color': bg_color_header,
+        self.wbf['subtotal_float'] = workbook.add_format({'bold':1,'bg_color': bg_color_subtotal,
                         'align': 'right',
-                        'font_color': font_color_grandtotal,
+                        'font_color': font_color_subtotal,
                         'num_format': '#,##0.00'})
         self.wbf['subtotal_float'].set_top()
         self.wbf['subtotal_float'].set_bottom()            
@@ -80,16 +86,16 @@ class RekapBukuKontraktor(models.AbstractModel):
         self.wbf['subtotal_float'].set_right()         
         
         self.wbf['subtotal'] = workbook.add_format({'bold':1,
-                        'bg_color': bg_color_grandtotal,
-                        'font_color': font_color_grandtotal})
+                        'bg_color': bg_color_subtotal,
+                        'font_color': font_color_subtotal})
         self.wbf['subtotal'].set_left()
         self.wbf['subtotal'].set_right()
         self.wbf['subtotal'].set_top()
         self.wbf['subtotal'].set_bottom()
 
         self.wbf['subtotal_center'] = workbook.add_format({'bold':1,
-                        'bg_color': bg_color_grandtotal,
-                        'font_color': font_color_grandtotal,
+                        'bg_color': bg_color_subtotal,
+                        'font_color': font_color_subtotal,
                         'align':'center'})
         self.wbf['subtotal_center'].set_left()
         self.wbf['subtotal_center'].set_right()
@@ -97,7 +103,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         self.wbf['subtotal_center'].set_bottom()
 
         # GRAND TOTAL STYLE
-        self.wbf['total_float'] = workbook.add_format({'bold':1,'bg_color': bg_color_header,
+        self.wbf['total_float'] = workbook.add_format({'bold':1,'bg_color': bg_color_grandtotal,
                         'align': 'right',
                         'font_color': font_color_grandtotal,
                         'num_format': '#,##0.00'})
@@ -133,27 +139,38 @@ class RekapBukuKontraktor(models.AbstractModel):
         # header employee
         worksheet = workbook.add_worksheet("Detail")
         
+        grand_total_rows = []
+        rekap_contractors = {}
+        rekap_contractors2 = {}
+        rekap2_sumifs_rcond_col = [0,0,0]
+        rekap2_sumifs_rsum_col = []
+
         next_row = 1
         col = 1
         worksheet.write(next_row, col, 'Tanggal' , wbf['header'])
         worksheet.set_column(col,col,10)
         col += 1
         worksheet.write(next_row, col, 'Kontraktor / Pemborong' , wbf['header'])
+        rekap2_sumifs_rcond_col[2] = col
         worksheet.set_column(col,col,30)
         col += 1
         worksheet.write(next_row, col, "Lokasi", wbf['header'])
+        rekap2_sumifs_rcond_col[0] = col
         worksheet.set_column(col,col,15)
         col += 1
         worksheet.write(next_row, col, "Aktifitas", wbf['header'])
-        worksheet.set_column(col,col,30)
+        rekap2_sumifs_rcond_col[1] = col
+        worksheet.set_column(col,col,50)
         col += 1
         worksheet.write(next_row, col, "Hasil 1", wbf['header'])
+        rekap2_sumifs_rsum_col.append(col)
         worksheet.set_column(col,col,10)
         col += 1
         worksheet.write(next_row, col, "Satuan 1", wbf['header'])
         worksheet.set_column(col,col,10)
         col += 1
         worksheet.write(next_row, col, "Hasil 2", wbf['header'])
+        rekap2_sumifs_rsum_col.append(col)
         worksheet.set_column(col,col,10)
         col += 1
         worksheet.write(next_row, col, "Satuan 2", wbf['header'])
@@ -163,6 +180,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         worksheet.set_column(col,col,12)
         col += 1
         worksheet.write(next_row, col, "Jumlah", wbf['header'])
+        rekap2_sumifs_rsum_col.append(col)
         worksheet.set_column(col,col,15)
         col += 1
         next_row += 1
@@ -182,8 +200,6 @@ class RekapBukuKontraktor(models.AbstractModel):
         datas = self.env['lhm.contractor.line'].search_read(domain, fields=fields, order='supplier_id, date asc')
         prev_partner = False
         first_partner_row = next_row
-        grand_total_rows = []
-        rekap_contractors = {}
         for line in datas:
             # Write subtotal
             if prev_partner and prev_partner!=line.get('supplier_id',[0,'']):
@@ -217,6 +233,11 @@ class RekapBukuKontraktor(models.AbstractModel):
                 prev_partner = line.get('supplier_id',[0,''])
             
             # Write Detail
+            if line.get('location_id') not in rekap_contractors2.keys():
+                rekap_contractors2.update({line.get('location_id'): []})
+            if (line.get('activity_id'),line.get('supplier_id')) not in rekap_contractors2[line.get('location_id')]:
+                rekap_contractors2[line.get('location_id')].append((line.get('activity_id'),line.get('supplier_id')))
+
             col = 1
             worksheet.write(next_row, col, line.get('date', ''), wbf['content_date'])
             col += 1
@@ -278,17 +299,17 @@ class RekapBukuKontraktor(models.AbstractModel):
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"={'+'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"=SUM({','.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])})", wbf['total_float'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"={'+'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"=SUM({','.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])})", wbf['total_float'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
             worksheet.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet.write_formula(next_row, col, f"={'+'.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])}", wbf['total_float'])
+            worksheet.write_formula(next_row, col, f"=SUM({','.join([xl_rowcol_to_cell(grow,col) for grow in grand_total_rows])})", wbf['total_float'])
             col += 1
             next_row += 1
 
@@ -301,24 +322,133 @@ class RekapBukuKontraktor(models.AbstractModel):
         ########################################################### SHEET 2
         # HEADER
         # header employee
-        worksheet2 = workbook.add_worksheet("Rekap")
+        worksheet2 = workbook.add_worksheet("Per Lokasi")
         
+        rekap2_sumifs_cond_col = []
+
         next_row = 1
         col = 1
-        worksheet2.write(next_row, col, 'No.' , wbf['header'])
-        worksheet2.set_column(col,col,5)
+        worksheet2.write(next_row, col, 'Location' , wbf['header'])
+        rekap2_sumifs_cond_col.append(col)
+        worksheet2.set_column(col,col,15)
+        col += 1
+        worksheet2.write(next_row, col, 'Activity' , wbf['header'])
+        rekap2_sumifs_cond_col.append(col)
+        worksheet2.set_column(col,col,50)
         col += 1
         worksheet2.write(next_row, col, 'Kontraktor / Pemborong' , wbf['header'])
+        rekap2_sumifs_cond_col.append(col)
         worksheet2.set_column(col,col,30)
+        col += 1
+        worksheet2.write(next_row, col, 'Hasil 1' , wbf['header'])
+        worksheet2.set_column(col,col,10)
+        col += 1
+        worksheet2.write(next_row, col, 'Hasil 2' , wbf['header'])
+        worksheet2.set_column(col,col,10)
         col += 1
         worksheet2.write(next_row, col, 'Total' , wbf['header'])
         worksheet2.set_column(col,col,15)
+        
+        next_row += 1
+        grand_total_rows2 = [] 
+        for location2, list_act_contr in rekap_contractors2.items():
+            sub_first_row = next_row
+            for activity_kontraktor in list_act_contr:
+                activity2, kontraktor2 = activity_kontraktor
+                col = 1
+                worksheet2.write(next_row, col, location2[1] if location2 else '', wbf['content'])
+                col += 1
+                worksheet2.write(next_row, col, activity2[1] if activity2 else '', wbf['content'])
+                col += 1
+                worksheet2.write(next_row, col, kontraktor2[1] if kontraktor2 else '', wbf['content'])
+                col += 1
+                worksheet2.write_formula(next_row, col, f"""=SUMIFS(Detail!{xl_col_to_name(rekap2_sumifs_rsum_col[0])}:{xl_col_to_name(rekap2_sumifs_rsum_col[0])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[0])}:{xl_col_to_name(rekap2_sumifs_rcond_col[0])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[0])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[1])}:{xl_col_to_name(rekap2_sumifs_rcond_col[1])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[1])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[2])}:{xl_col_to_name(rekap2_sumifs_rcond_col[2])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[2])})""", wbf['content_float'])
+                col += 1
+                worksheet2.write_formula(next_row, col, f"""=SUMIFS(Detail!{xl_col_to_name(rekap2_sumifs_rsum_col[1])}:{xl_col_to_name(rekap2_sumifs_rsum_col[1])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[0])}:{xl_col_to_name(rekap2_sumifs_rcond_col[0])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[0])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[1])}:{xl_col_to_name(rekap2_sumifs_rcond_col[1])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[1])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[2])}:{xl_col_to_name(rekap2_sumifs_rcond_col[2])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[2])})""", wbf['content_float'])
+                col += 1
+                worksheet2.write_formula(next_row, col, f"""=SUMIFS(Detail!{xl_col_to_name(rekap2_sumifs_rsum_col[2])}:{xl_col_to_name(rekap2_sumifs_rsum_col[2])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[0])}:{xl_col_to_name(rekap2_sumifs_rcond_col[0])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[0])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[1])}:{xl_col_to_name(rekap2_sumifs_rcond_col[1])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[1])}, 
+                                        Detail!{xl_col_to_name(rekap2_sumifs_rcond_col[2])}:{xl_col_to_name(rekap2_sumifs_rcond_col[2])}, 
+                                        {xl_rowcol_to_cell(next_row, rekap2_sumifs_cond_col[2])})""", wbf['content_float'])
+                col += 1
+                next_row += 1
+            col = 1
+            worksheet2.write(next_row, col, f"Subtotal: {location2[1] if location2 else ''}", wbf['subtotal'])
+            col += 1
+            worksheet2.write(next_row, col, "", wbf['subtotal'])
+            col += 1
+            worksheet2.write(next_row, col, "", wbf['subtotal'])
+            col += 1
+            worksheet2.write(next_row, col, f"=SUM({xl_rowcol_to_cell(sub_first_row, col)})" if sub_first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(sub_first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['subtotal_float'])
+            col += 1
+            worksheet2.write(next_row, col, f"=SUM({xl_rowcol_to_cell(sub_first_row, col)})" if sub_first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(sub_first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['subtotal_float'])
+            col += 1
+            worksheet2.write(next_row, col, f"=SUM({xl_rowcol_to_cell(sub_first_row, col)})" if sub_first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(sub_first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['subtotal_float'])
+            col += 1
+            grand_total_rows2.append(next_row)
+            next_row += 1
+        
+        if grand_total_rows2:
+            col = 1
+            worksheet2.write(next_row, col, f"Total", wbf['total'])
+            col += 1
+            worksheet2.write(next_row, col, "", wbf['total'])
+            col += 1
+            worksheet2.write(next_row, col, "", wbf['total'])
+            col += 1
+            worksheet2.write(next_row, col, f"=SUM({','.join([xl_rowcol_to_cell(grow2, col) for grow2 in grand_total_rows2])})", wbf['total_float'])
+            col += 1
+            worksheet2.write(next_row, col, f"=SUM({','.join([xl_rowcol_to_cell(grow2, col) for grow2 in grand_total_rows2])})", wbf['total_float'])
+            col += 1
+            worksheet2.write(next_row, col, f"=SUM({','.join([xl_rowcol_to_cell(grow2, col) for grow2 in grand_total_rows2])})", wbf['total_float'])
+            col += 1
+            grand_total_rows2.append(next_row)
+            next_row += 1
+        
+        # Page Layout
+        worksheet2.set_landscape()
+        worksheet2.set_paper(9) # A4
+        # worksheet2.set_header()
+        worksheet2.repeat_rows(1, 2) #Repeat column header
+        worksheet2.print_area(0, 0, next_row, col+1)
+        worksheet2.set_print_scale(50)
+
+        ########################################################### SHEET 3
+        # HEADER
+        # header employee
+        worksheet3 = workbook.add_worksheet("Per Kontraktor")
+        
+        next_row = 1
+        col = 1
+        worksheet3.write(next_row, col, 'No.' , wbf['header'])
+        worksheet3.set_column(col,col,5)
         col += 1
-        worksheet2.write(next_row, col, 'GrossUp Upah' , wbf['header'])
-        worksheet2.set_column(col,col,15)
+        worksheet3.write(next_row, col, 'Kontraktor / Pemborong' , wbf['header'])
+        worksheet3.set_column(col,col,30)
         col += 1
-        worksheet2.write(next_row, col, 'PPH 21 Upah' , wbf['header'])
-        worksheet2.set_column(col,col,15)
+        worksheet3.write(next_row, col, 'Total' , wbf['header'])
+        worksheet3.set_column(col,col,15)
+        col += 1
+        worksheet3.write(next_row, col, 'GrossUp Upah' , wbf['header'])
+        worksheet3.set_column(col,col,15)
+        col += 1
+        worksheet3.write(next_row, col, 'PPH 21 Upah' , wbf['header'])
+        worksheet3.set_column(col,col,15)
         
         next_row += 1
 
@@ -327,34 +457,34 @@ class RekapBukuKontraktor(models.AbstractModel):
         for partner, subtotal_pos in rekap_contractors.items():
             indx += 1
             col = 1
-            worksheet2.write(next_row, col, indx, wbf['content_center'])
+            worksheet3.write(next_row, col, indx, wbf['content_center'])
             col += 1
-            worksheet2.write(next_row, col, partner[1], wbf['content'])
+            worksheet3.write(next_row, col, partner[1], wbf['content'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=Detail!{xl_rowcol_to_cell(subtotal_pos['row'], subtotal_pos['col'])}", wbf['content_float'])
+            worksheet3.write_formula(next_row, col, f"=Detail!{xl_rowcol_to_cell(subtotal_pos['row'], subtotal_pos['col'])}", wbf['content_float'])
             col += 1
-            worksheet2.write(next_row, col, 0, wbf['content_float'])
+            worksheet3.write_formula(next_row, col, f"={xl_rowcol_to_cell(next_row, col-1)}+({xl_rowcol_to_cell(next_row, col-1)}*2.5/97.5)", wbf['content_float'])
             col += 1
-            worksheet2.write(next_row, col, 0, wbf['content_float'])
+            worksheet3.write_formula(next_row, col, f"={xl_rowcol_to_cell(next_row, col-2)}*2.5/97.5", wbf['content_float'])
             col += 1
             next_row += 1
         if rekap_contractors:
             col = 1
-            worksheet2.write(next_row, col, "", wbf['total'])
+            worksheet3.write(next_row, col, "", wbf['total'])
             col += 1
-            worksheet2.write(next_row, col, "Total", wbf['total'])
+            worksheet3.write(next_row, col, "Total", wbf['total'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
+            worksheet3.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
+            worksheet3.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
             col += 1
-            worksheet2.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
+            worksheet3.write_formula(next_row, col, f"=SUM({xl_rowcol_to_cell(first_row, col)})" if first_row==(next_row-1) else f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row-1, col)})", wbf['total_float'])
             col += 1
             next_row += 1
         # Page Layout
-        worksheet2.set_landscape()
-        worksheet2.set_paper(9) # A4
-        # worksheet2.set_header()
-        worksheet2.repeat_rows(1, 2) #Repeat column header
-        worksheet2.print_area(0, 0, next_row, col+1)
-        worksheet2.set_print_scale(50)
+        worksheet3.set_landscape()
+        worksheet3.set_paper(9) # A4
+        # worksheet3.set_header()
+        worksheet3.repeat_rows(1, 2) #Repeat column header
+        worksheet3.print_area(0, 0, next_row, col+1)
+        worksheet3.set_print_scale(50)
