@@ -17,118 +17,142 @@ class RekapBukuKontraktor(models.AbstractModel):
     #     return wizard.payslip_ids
 
     def add_workbook_format(self, workbook):
-        # FONT Settings
-        font_color = '#000000'
-        font_color_header = font_color
-        font_color_subtotal = font_color
-        font_color_grandtotal = font_color
+        ### FONT props
+        bold = {'bold': 1} # True or False
+        italic = {'italic': 1} # True or False
+        font_name = {'font_name': 'Calibri'}
+        font_color = {'font_color': '#000000'} # can be 'black', 'white', or hex format ('#00000') color
+        font_size = {'font_size': 8}
+        font_color_header = {'font_color': '#000000'}
+        font_color_subtotal = {'font_color': '#000000'}
+        font_color_grandtotal = {'font_color': '#000000'}
+        # numeric
+        num_format = {'num_format': '#,##0.00'}
+        pct_format = {'num_format': '0.00%'}
+        date_format = {'num_format': 'dd/mm/yyyy'}
+        datetime_format = {'num_format': 'dd/mm/yyyy hh:mm:ss'}
 
-        bg_color_header = '#FFFFDB'
-        bg_color_subtotal = '#FFFFDB'
-        bg_color_grandtotal = '#FFFFDB'
+        ### ALIGNMENT props
+        text_wrap = {'text_wrap': 1} # True or False
+        indent_1 = {'indent': 1} # first indentation level
+        # set_text_h_align()
+        align_left = {'align': 'left'}
+        align_right = {'align': 'right'}
+        align_center = {'align': 'center'}
+        valign_top = {'valign': 'top'}
+        valign_bot = {'valign': 'bottom'}
+        valign_center = {'valign': 'vcenter'}
+        # set_text_v_align()
+        align_top = {'align': 'top'}
+        align_vcenter = {'align': 'vcenter'}
+        align_bottom = {'align': 'bottom'}
 
-        # BORDER
-        
+        ### PATTERN props
+        bg_color = {'bg_color': 'white'} # can be 'black', 'white', or hex format ('#00000') color
+        fg_color = {'fg_color': 'white'}
+        pattern = {'pattern': 1}
+        bg_color_header = {'bg_color': '#FFFFDB'}
+        bg_color_subtotal = {'bg_color': '#FFFFDB'}
+        bg_color_grandtotal = {'bg_color': '#FFFFDB'}
+
+        ### BORDER props
+        # there are 0 - 13 style that can be use
+        # see for more style https://xlsxwriter.readthedocs.io/format.html#format-set-border
+        border_all = {'border': 1} # 1 is the type of the border. will run set_border(1)
+        left_and_right = {'left': 1, 'right': 1} #. will run set_left(1) and set_right(1)
+        top_and_bot = {'top': 1, 'bot': 1} #. will run set_top(1) and set_bot(1)
+
         # HEADER STYLE
-        self.wbf['header'] = workbook.add_format({'bold': 1,
-                                'align': 'center',
-                                'bg_color': bg_color_header,
-                                'font_color': font_color_header})
-        self.wbf['header'].set_border()
-        self.wbf['header'].set_text_wrap()
-        self.wbf['header'].set_align('vcenter')
+        self.wbf['header'] = workbook.add_format({
+            **text_wrap,
+            **align_center,
+            **valign_center,
+            **bold,
+            **font_color_header,
+            **bg_color_header,
+            **border_all
+        })
 
-        self.wbf['header_no'] = workbook.add_format({'bold': 1,
-                                'align': 'center',
-                                'bg_color': bg_color_header,
-                                'font_color': font_color_header})
-        self.wbf['header_no'].set_border()
-        self.wbf['header_no'].set_font_size(8)
-        self.wbf['header_no'].set_align('vcenter')
-                
-        self.wbf['footer'] = workbook.add_format({'align':'left'})
-        self.wbf['footer'].set_bottom()
-        
+        self.wbf['header_filter'] = workbook.add_format({
+            **text_wrap,
+            **align_center,
+            **valign_center,
+            **bold,
+            **font_color_header,
+            **bg_color_header,
+            **border_all,
+            'font_size': 8,
+        })
+
         # CONTENT STYLE
-        self.wbf['content'] = workbook.add_format()
-        self.wbf['content'].set_left()
-        self.wbf['content'].set_right() 
-        self.wbf['content'].set_text_wrap()
+        self.wbf['content'] = workbook.add_format({
+            **text_wrap,
+            **left_and_right
+        })
         
-        self.wbf['content_date'] = workbook.add_format({'num_format': 'dd/mm/yyyy'})
-        self.wbf['content_date'].set_left()
-        self.wbf['content_date'].set_right()
+        self.wbf['content_date'] = workbook.add_format({
+            **date_format,
+            **left_and_right
+        })
         
-        self.wbf['content_datetime'] = workbook.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
-        self.wbf['content_datetime'].set_left()
-        self.wbf['content_datetime'].set_right()
-        
-        self.wbf['content_float'] = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
-        self.wbf['content_float'].set_right() 
-        self.wbf['content_float'].set_left()
+        self.wbf['content_float'] = workbook.add_format({
+            **align_right,
+            **num_format,
+            **left_and_right
+        })
 
-        self.wbf['content_center'] = workbook.add_format({'align': 'centre'})
-        self.wbf['content_center'].set_right() 
-        self.wbf['content_center'].set_left()
+        self.wbf['content_center'] = workbook.add_format({
+            **align_center,
+            **left_and_right
+        })
 
-        self.wbf['content_percent'] = workbook.add_format({'align': 'right','num_format': '0.00%'})
-        self.wbf['content_percent'].set_right()
-        self.wbf['content_percent'].set_left()
-        
         # SUBTOTAL STYLE
-        self.wbf['subtotal_float'] = workbook.add_format({'bold':1,'bg_color': bg_color_subtotal,
-                        'align': 'right',
-                        'font_color': font_color_subtotal,
-                        'num_format': '#,##0.00'})
-        self.wbf['subtotal_float'].set_top()
-        self.wbf['subtotal_float'].set_bottom()            
-        self.wbf['subtotal_float'].set_left()
-        self.wbf['subtotal_float'].set_right()         
+        self.wbf['subtotal_float'] = workbook.add_format({
+            **bold,
+            **bg_color_subtotal,
+            **align_right,
+            **font_color_subtotal,
+            **num_format,
+            **border_all
+        })
         
-        self.wbf['subtotal'] = workbook.add_format({'bold':1,
-                        'bg_color': bg_color_subtotal,
-                        'font_color': font_color_subtotal})
-        self.wbf['subtotal'].set_left()
-        self.wbf['subtotal'].set_right()
-        self.wbf['subtotal'].set_top()
-        self.wbf['subtotal'].set_bottom()
+        self.wbf['subtotal'] = workbook.add_format({
+            **bold,
+            **bg_color_subtotal,
+            **font_color_subtotal,
+            **border_all
+        })
 
-        self.wbf['subtotal_center'] = workbook.add_format({'bold':1,
-                        'bg_color': bg_color_subtotal,
-                        'font_color': font_color_subtotal,
-                        'align':'center'})
-        self.wbf['subtotal_center'].set_left()
-        self.wbf['subtotal_center'].set_right()
-        self.wbf['subtotal_center'].set_top()
-        self.wbf['subtotal_center'].set_bottom()
+        self.wbf['subtotal_center'] = workbook.add_format({
+            **bold,
+            **bg_color_subtotal,
+            **font_color_subtotal,
+            **align_center,
+            **border_all
+        })
 
         # GRAND TOTAL STYLE
-        self.wbf['total_float'] = workbook.add_format({'bold':1,'bg_color': bg_color_grandtotal,
-                        'align': 'right',
-                        'font_color': font_color_grandtotal,
-                        'num_format': '#,##0.00'})
-        self.wbf['total_float'].set_top()
-        self.wbf['total_float'].set_bottom()            
-        self.wbf['total_float'].set_left()
-        self.wbf['total_float'].set_right()         
+        self.wbf['total_float'] = workbook.add_format({
+            **bold,
+            **bg_color_grandtotal,
+            **align_right,
+            **font_color_grandtotal,
+            **num_format,
+            **border_all})
         
-        self.wbf['total'] = workbook.add_format({'bold':1,
-                        'bg_color': bg_color_grandtotal,
-                        'font_color': font_color_grandtotal})
-        self.wbf['total'].set_left()
-        self.wbf['total'].set_right()
-        self.wbf['total'].set_top()
-        self.wbf['total'].set_bottom()
+        self.wbf['total'] = workbook.add_format({
+            **bold,
+            **bg_color_grandtotal,
+            **font_color_grandtotal,
+            **border_all})
 
-        self.wbf['total_center'] = workbook.add_format({'bold':1,
-                        'bg_color': bg_color_grandtotal,
-                        'font_color': font_color_grandtotal,
-                        'align':'center'})
-        self.wbf['total_center'].set_left()
-        self.wbf['total_center'].set_right()
-        self.wbf['total_center'].set_top()
-        self.wbf['total_center'].set_bottom()
-        
+        self.wbf['total_center'] = workbook.add_format({
+            **bold,
+            **bg_color_grandtotal,
+            **font_color_grandtotal,
+            **align_center,
+            **border_all
+        })
         return workbook
  
     def generate_xlsx_report(self, workbook, data, obj):
@@ -156,7 +180,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         col += 1
         worksheet.write(next_row, col, "Lokasi", wbf['header'])
         rekap2_sumifs_rcond_col[0] = col
-        worksheet.set_column(col,col,15)
+        worksheet.set_column(col,col,25)
         col += 1
         worksheet.write(next_row, col, "Aktifitas", wbf['header'])
         rekap2_sumifs_rcond_col[1] = col
@@ -186,7 +210,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         next_row += 1
         
         for c in range(1,col):
-            worksheet.write(next_row, c, c, wbf['header_no'])
+            worksheet.write(next_row, c, c, wbf['header_filter'])
         next_row += 1
         worksheet.freeze_panes(next_row, 3)
 
@@ -328,11 +352,12 @@ class RekapBukuKontraktor(models.AbstractModel):
 
         next_row = 1
         col = 1
-        worksheet2.write(next_row, col, 'Location' , wbf['header'])
+        worksheet2.write(next_row, col, 'Lokasi' , wbf['header'])
         rekap2_sumifs_cond_col.append(col)
-        worksheet2.set_column(col,col,15)
+        worksheet2.set_column(col,col,25)
         col += 1
-        worksheet2.write(next_row, col, 'Activity' , wbf['header'])
+        worksheet.freeze_panes(next_row, col)
+        worksheet2.write(next_row, col, 'Aktifitas' , wbf['header'])
         rekap2_sumifs_cond_col.append(col)
         worksheet2.set_column(col,col,50)
         col += 1
