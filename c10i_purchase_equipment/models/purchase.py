@@ -12,20 +12,7 @@ class PurchaseOrder(models.Model):
     equipment_registered_status = fields.Selection([('no','Nothing to Register'),
         ('to_register', 'Need Equipment Register'),
         ('equipment_registered', 'Equipment Registered')], compute='_compute_equip_register_status', compute_sudo=True)
-    low_price_product_exists = fields.Boolean(compute='_compute_low_price_product_exists',string='Price under treshold')
     
-    
-    @api.depends('order_line.price_unit', 'equipment_registered_status')
-    def _compute_low_price_product_exists(self):
-        threshold_from = 500000.0  # Nilai threshold untuk price_unit
-        for order in self:
-            # Jika equipment_registered_status dalam kondisi 'no' atau 'equipment_registered'
-            # atau jika ada product dengan price_unit di bawah threshold
-            order.low_price_product_exists = (
-                order.equipment_registered_status in ('no', 'equipment_registered') or
-                any(line.price_unit < threshold_from for line in order.order_line)
-            )
-
     def _equipment_register_count(self):
         for order in self:
             registers =  self.env['equipment.register.line'].search([('purchase_line_id.order_id','=',order.id)])

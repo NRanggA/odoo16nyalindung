@@ -7,15 +7,8 @@
             <field name="invoice_status" position="after" >
                 <field name="equipment_registered_status" invisible="1"/>
             </field>
-            <field name="currency_id" position="after" >
-                <field name="low_price_product_exists" invisible="1"/>
-            </field>
             <button name="action_create_invoice" position="after">
-                <!-- <button name="action_create_equipment_register" string="Create Equipment Register" type="object" class="oe_highlight" attrs="{'invisible': [('equipment_registered_status', 'in', ('no', 'equipment_registered'))"/> -->
-                
-                <!-- Kondisi equipment_registered_status pada kode sebelumnya udah dipindahkan pada fungsi compute low_price_product_exists -->
-                <!-- <button name="action_create_equipment_register" string="Create Equipment Register" type="object" class="oe_highlight" attrs="{'invisible': [('low_price_product_exists', '=', True)]}"/> -->
-                <button name="action_create_equipment_register" string="Create Equipment Register" type="object" class="oe_highlight" attrs="{'invisible': ['|', '|' ,('low_price_product_exists', '=', True), ('state','not in', ('purchase','done')),('is_shipped', '=', False)]}"/>
+                <button name="action_create_equipment_register" string="Create Equipment Register" type="object" class="oe_highlight" attrs="{'invisible': [('equipment_registered_status', 'in', ('no', 'equipment_registered'))]}"/>
             </button>
             <div name="button_box" position="inside">
                 <button type="object"  name="action_view_equipment_register"

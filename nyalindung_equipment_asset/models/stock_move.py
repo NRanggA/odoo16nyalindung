@@ -55,9 +55,11 @@ class StockMove(models.Model):
 
             # Check if the order line price is below the threshold
             if asset_category and order_line_price < float(threshold):
-                expense_account_id = self.product_id.categ_id.property_account_expense_categ_id.id
+                # expense_account_id = self.product_id.categ_id.property_account_expense_categ_id.id
+                # expense_account_id = self.product_id.categ_id.property_account_expense_categ_id.id
+                expense_account = self.product_id.product_tmpl_id.with_company(self.company_id)._get_product_accounts()['expense']
                 asset_clearing_id = self.product_id.categ_id.asset_clearing_account_id.id
-                if not expense_account_id:
+                if not expense_account:
                     raise UserError(_('No expense account defined for this product category.'))
                 if not asset_clearing_id:
                     raise UserError(_('No Asset Clearing account defined for this product category.'))
@@ -71,7 +73,7 @@ class StockMove(models.Model):
                     'ref': description,
                     'partner_id': partner_id,
                     'balance': debit_value,
-                    'account_id': expense_account_id,
+                    'account_id': expense_account.id,
                 }
                 additional_credit_line_vals = {
                     'name': description,
