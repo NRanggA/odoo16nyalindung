@@ -103,7 +103,8 @@ class DirectPayment(models.Model):
                                 new_payment_state = 'paid'
                         elif move.journal_id.outbound_payment_method_line_ids.payment_account_id == line.account_id or move.journal_id.inbound_payment_method_line_ids.payment_account_id == line.account_id:
                             total_paid = 0.0
-                            for line_reconcile in line.matched_debit_ids:
+                            mathced_after_reconcile = line.matched_debit_ids or line.matched_credit_ids
+                            for line_reconcile in mathced_after_reconcile:
                                 if line.move_id == line_reconcile.credit_move_id.move_id or line.move_id == line_reconcile.debit_move_id.move_id:
                                     total_paid += line_reconcile.debit_amount_currency or line_reconcile.credit_amount_currency
                             amount_residual = payment.amount_total - total_paid
@@ -111,7 +112,7 @@ class DirectPayment(models.Model):
                                 new_payment_state = 'paid'
                             elif amount_residual > 0 and amount_residual < payment.amount_total:
                                 new_payment_state = 'partial'
-
+        
         payment.write({
             'payment_state': new_payment_state,
             'amount_residual': amount_residual,
