@@ -58,7 +58,14 @@ class HrPayslipRun(models.Model):
             allocated_cost = 0.0
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>remaining_cost", remaining_cost)
             for block_tanam in block_tanams:
-                if block_tanam.status != 'tbm':
+                if block_tanam.is_project:
+                    project_tanam = self.env['lhm.project'].search([('plant_block_id','=',block_tanam.id)], limit=1)
+                    if not project_tanam:
+                        continue
+                    elif project_tanam.harvest_date_schedule > self.date_end:
+                        # Brarti ini sudah lewat fase pre-harvest
+                        continue
+                elif block_tanam.status != 'tbm':
                     continue
 
                 if not block_tanam.payroll_gc_dest_activity_id:
