@@ -134,7 +134,8 @@ class ClosingLaboratory(models.Model):
 
             # Outgoing WIP
             out_prod_ordres = self.env['lab.production.order'].search([('lab_product_id','=',closing.lab_product_id.id),
-                                                            ('date_end','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00'))])
+                                                            ('date_end','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                                            ('date_end','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
             closing.outgoing_wip_qty = sum(out_prod_ordres.mapped('product_qty')) if out_prod_ordres else 0.0
 
             # Opening FG
