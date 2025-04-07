@@ -62,7 +62,7 @@ class HrPayslipRun(models.Model):
                     project_tanam = self.env['lhm.project'].search([('plant_block_id','=',block_tanam.id)], limit=1)
                     if not project_tanam:
                         continue
-                    elif project_tanam.harvest_date_schedule > self.date_end:
+                    elif self.date_end > project_tanam.harvest_date_schedule:
                         # Brarti ini sudah lewat fase pre-harvest
                         continue
                 elif block_tanam.status != 'tbm':
