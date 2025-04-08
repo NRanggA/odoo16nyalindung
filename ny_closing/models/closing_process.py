@@ -644,7 +644,7 @@ class ClosingProcess(models.Model):
             elif rec.state=='closing_plantation':
                 rec.closing_plantation_ids.action_cancel()
             elif rec.state=='closing_production':
-                rec.closing_plantation_ids.button_cancel()
+                rec.closing_plantation_ids.action_cancel()
             
             if index_state:
                 rec.write({'state': selection_key[index_state-1],
