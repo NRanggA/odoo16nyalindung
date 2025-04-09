@@ -1,4 +1,4 @@
-xfrom odoo import models, api, fields, Command, _
+from odoo import models, api, fields, Command, _
 from odoo.exceptions import ValidationError
 
 from dateutil.relativedelta import relativedelta
