@@ -1,4 +1,4 @@
-from odoo import models, api, fields, Command, _
+xfrom odoo import models, api, fields, Command, _
 from odoo.exceptions import ValidationError
 
 from dateutil.relativedelta import relativedelta
@@ -2144,7 +2144,7 @@ class ClosingProduction(models.Model):
                 if first_bal>0:
                     move_lines_receiving[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
-                    move_lines_receiving[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    move_lines_receiving[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
             values = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2164,7 +2164,7 @@ class ClosingProduction(models.Model):
                 if first_bal>0:
                     move_lines_wip[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
-                    move_lines_wip[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    move_lines_wip[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
             values2 = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2184,7 +2184,7 @@ class ClosingProduction(models.Model):
                 if first_bal>0:
                     move_lines_outgoing[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
-                    move_lines_outgoing[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    move_lines_outgoing[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
             values2 = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2263,7 +2263,7 @@ class ClosingProduction(models.Model):
                     if first_bal>0:
                         move_lines_production[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                     else:
-                        move_lines_production[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                        move_lines_production[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
                 values = {
                     'date': self.date_to,
                     'journal_id': misc_journal.id,
