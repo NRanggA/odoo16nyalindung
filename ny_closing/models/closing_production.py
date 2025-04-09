@@ -2140,8 +2140,8 @@ class ClosingProduction(models.Model):
                     first_bal = round(val['debit'] - val['credit'], 2)
                 check_balance += round(val['debit'] - val['credit'], 2)
             print("-------------- check balance receiving", check_balance)
-            if check_balance>0.0 or check_balance<0:
-                if first_bal>0:
+            if check_balance>0.0 or check_balance<0.0:
+                if first_bal>0.0:
                     move_lines_receiving[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
                     move_lines_receiving[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
@@ -2160,8 +2160,8 @@ class ClosingProduction(models.Model):
                     first_bal = round(val['debit'] - val['credit'],2)
                 check_balance += round(val['debit'] - val['credit'], 2)
             print("-------------- check balance wip", check_balance)
-            if check_balance>0.0 or check_balance<0:
-                if first_bal>0:
+            if check_balance>0.0 or check_balance<0.0:
+                if first_bal>0.0:
                     move_lines_wip[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
                     move_lines_wip[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
@@ -2180,8 +2180,8 @@ class ClosingProduction(models.Model):
                     first_bal = round(val['debit'] - val['credit'], 2)
                 check_balance += round(val['debit'] - val['credit'], 2)
             print("-------------- check balance outgoing", check_balance)
-            if check_balance>0.0 or check_balance<0:
-                if first_bal>0:
+            if check_balance>0.0 or check_balance<0.0:
+                if first_bal>0.0:
                     move_lines_outgoing[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                 else:
                     move_lines_outgoing[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
@@ -2257,10 +2257,11 @@ class ClosingProduction(models.Model):
             if move_lines_production:
                 first_bal = check_balance = 0.0
                 for x,y,val in move_lines_production:
-                    first_bal = val['debit'] - val['credit']
-                    check_balance += val['debit'] - val['credit']
-                if check_balance>0.0 or check_balance<0:
-                    if first_bal>0:
+                    if not first_bal:
+                        first_bal = round(val['debit'] - val['credit'], 2)
+                    check_balance += round(val['debit'] - val['credit'], 2)
+                if check_balance>0.0 or check_balance<0.0:
+                    if first_bal>0.0:
                         move_lines_production[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
                     else:
                         move_lines_production[0][2]['credit'] += (check_balance if check_balance>0.0 else -check_balance)
