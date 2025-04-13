@@ -26,6 +26,8 @@
         "security/ir.model.access.csv",
         "views/sale_order_view.xml",
         "views/purchase_order_view.xml",
+        "views/report_information_views.xml",
+
         "report/sales_quotation_karet.xml",
         "report/purchase_order_report_template.xml",
         "report/purchase_request_report_template.xml",

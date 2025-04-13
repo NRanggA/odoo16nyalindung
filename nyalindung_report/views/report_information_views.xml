@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="report_information_view_form" model="ir.ui.view">
+        <field name="name">report.information.view.form</field>
+        <field name="model">report.information</field>
+        <field name="arch" type="xml">
+            <form string="Report Infomation" create="false" delete="false">
+                <sheet>
+                    <group>
+                        <group name="dibuat_oleh" string="Pembuat">
+                            <field name="dibuat_oleh" />
+                            <field name="jabatan_pembuat" />
+                        </group>
+                        <group name="disetujui" string="Penyetuju">
+                            <field name="disetujui" />
+                            <field name="jabatan_penyetuju" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="report_information_view_tree" model="ir.ui.view">
+        <field name="name">report.information.view.tree</field>
+        <field name="model">report.information</field>
+        <field name="arch" type="xml">
+            <tree string="Report Information" create="false" delete="false">
+                <field name="dibuat_oleh" />
+                <field name="jabatan_pembuat" />
+                <field name="disetujui" />
+                <field name="jabatan_penyetuju" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="report_information_action" model="ir.actions.act_window">
+        <field name="name">Report Information</field>
+        <field name="res_model">report.information</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="report_information_menu"
+        name="Report Information Purchase"
+        action="report_information_action"
+        parent="purchase.purchase_report_main"
+        sequence="99"/>
+
+</odoo>

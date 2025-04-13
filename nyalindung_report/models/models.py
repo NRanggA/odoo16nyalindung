@@ -1,4 +1,20 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions
+
+
+class ReportInfomation(models.Model):
+    _name = 'report.information'
+    _description = 'Report Information'
+
+    dibuat_oleh = fields.Char('Dibuat Oleh')
+    jabatan_pembuat = fields.Char('Jabatan Pembuat')
+    disetujui = fields.Char('Disetujui Oleh')
+    jabatan_penyetuju = fields.Char('Jabatan Penyetuju')
+
+    @api.model
+    def create(self, vals):
+        if self.search_count([]) >= 1:
+            raise exceptions.UserError("Hanya boleh ada satu data Report Information.")
+        return super().create(vals)
 
 
 class SaleOrder(models.Model):
@@ -31,46 +47,30 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
 
-    dibuat_oleh = fields.Char('Dibuat Oleh', default="Wahyu Widianto")
-    jabatan_pembuat = fields.Char('Jabatan Pembuat', default="Manager Plantation")
-    disetujui = fields.Char('Disetujui Oleh', default="Irwan G Subrata")
-    jabatan_penyetuju = fields.Char('Jabatan Penyetuju', default="Direktur")
+    dibuat_oleh = fields.Char('Dibuat Oleh', default=lambda self: self._get_default_dibuat_oleh())
+    jabatan_pembuat = fields.Char('Jabatan Pembuat', default=lambda self: self._get_default_jabatan_pembuat())
+    disetujui = fields.Char('Disetujui Oleh', default=lambda self: self._get_default_disetujui())
+    jabatan_penyetuju = fields.Char('Jabatan Penyetuju', default=lambda self: self._get_default_jabatan_penyetuju())
 
-    @api.depends('dibuat_oleh')
-    def get_dibuat_oleh(self):
-        for record in self:
-            if not record.dibuat_oleh:
-                dibuat_oleh_record = self.search([('dibuat_oleh', '!=', False)], limit=1)
-                return dibuat_oleh_record.dibuat_oleh if dibuat_oleh_record else False
-            else:
-                return record.dibuat_oleh
-    
-    @api.depends('jabatan_pembuat')
-    def get_jabatan_pembuat(self):
-        for record in self:
-            if not record.jabatan_pembuat:
-                jabatan_pembuat_record = self.search([('jabatan_pembuat', '!=', False)], limit=1)
-                return jabatan_pembuat_record.jabatan_pembuat if jabatan_pembuat_record else False
-            else:
-                return record.jabatan_pembuat
-            
-    @api.depends('disetujui')
-    def get_disetujui(self):
-        for record in self:
-            if not record.disetujui:
-                disetujui_record = self.search([('disetujui', '!=', False)], limit=1)
-                return disetujui_record.disetujui if disetujui_record else False
-            else:
-                return record.disetujui
-    
-    @api.depends('jabatan_penyetuju')
-    def get_jabatan_penyetuju(self):
-        for record in self:
-            if not record.jabatan_penyetuju:
-                jabatan_penyetuju_record = self.search([('jabatan_penyetuju', '!=', False)], limit=1)
-                return jabatan_penyetuju_record.jabatan_penyetuju if jabatan_penyetuju_record else False
-            else:
-                return record.jabatan_penyetuju
+    @api.model
+    def _get_default_dibuat_oleh(self):
+        info = self.env['report.information'].search([], limit=1, order='id desc')
+        return info.dibuat_oleh if info else ''
+
+    @api.model
+    def _get_default_jabatan_pembuat(self):
+        info = self.env['report.information'].search([], limit=1, order='id desc')
+        return info.jabatan_pembuat if info else ''
+
+    @api.model
+    def _get_default_disetujui(self):
+        info = self.env['report.information'].search([], limit=1, order='id desc')
+        return info.disetujui if info else ''
+
+    @api.model
+    def _get_default_jabatan_penyetuju(self):
+        info = self.env['report.information'].search([], limit=1, order='id desc')
+        return info.jabatan_penyetuju if info else ''
 
     # def get_grouped_taxes(self):
     #     grouped_taxes = {}
