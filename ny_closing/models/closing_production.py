@@ -2139,12 +2139,18 @@ class ClosingProduction(models.Model):
                 if not first_bal:
                     first_bal = round(val['debit'] - val['credit'], 2)
                 check_balance += round(val['debit'] - val['credit'], 2)
-            print("-------------- check balance receiving", check_balance)
-            if check_balance>0.0 or check_balance<0:
-                if first_bal>0:
-                    move_lines_receiving[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+            print("-------------- check balance receiving", first_bal, check_balance)
+            if check_balance>0.0 or check_balance<0.0:
+                if first_bal>0.0:
+                    move_lines_receiving[0][2]['debit'] += (-check_balance if check_balance<0.0 else check_balance)
                 else:
-                    move_lines_receiving[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    move_lines_receiving[0][2]['credit'] += (check_balance if check_balance<0.0 else check_balance)
+            first_bal2 = check_balance2 = 0.0
+            for x,y,val in move_lines_receiving:
+                if not first_bal2:
+                    first_bal2 = round(val['debit'] - val['credit'], 2)
+                check_balance2 += round(val['debit'] - val['credit'], 2)
+            print("-------------- check balance receiving after", first_bal2, check_balance2)
             values = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2160,11 +2166,11 @@ class ClosingProduction(models.Model):
                     first_bal = round(val['debit'] - val['credit'],2)
                 check_balance += round(val['debit'] - val['credit'], 2)
             print("-------------- check balance wip", check_balance)
-            if check_balance>0.0 or check_balance<0:
-                if first_bal>0:
-                    move_lines_wip[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+            if check_balance>0.0 or check_balance<0.0:
+                if first_bal>0.0:
+                    move_lines_wip[0][2]['debit'] += (-check_balance if check_balance<0.0 else check_balance)
                 else:
-                    move_lines_wip[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    move_lines_wip[0][2]['credit'] += (check_balance if check_balance<0.0 else check_balance)
             values2 = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2180,11 +2186,11 @@ class ClosingProduction(models.Model):
                     first_bal = round(val['debit'] - val['credit'], 2)
                 check_balance += round(val['debit'] - val['credit'], 2)
             print("-------------- check balance outgoing", check_balance)
-            if check_balance>0.0 or check_balance<0:
-                if first_bal>0:
-                    move_lines_outgoing[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+            if check_balance>0.0 or check_balance<0.0:
+                if first_bal>0.0:
+                    move_lines_outgoing[0][2]['debit'] += (-check_balance if check_balance<0.0 else check_balance)
                 else:
-                    move_lines_outgoing[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    move_lines_outgoing[0][2]['credit'] += (check_balance if check_balance<0.0 else check_balance)
             values2 = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2257,13 +2263,14 @@ class ClosingProduction(models.Model):
             if move_lines_production:
                 first_bal = check_balance = 0.0
                 for x,y,val in move_lines_production:
-                    first_bal = val['debit'] - val['credit']
-                    check_balance += val['debit'] - val['credit']
-                if check_balance>0.0 or check_balance<0:
-                    if first_bal>0:
-                        move_lines_production[0][2]['debit'] += (-check_balance if check_balance>0.0 else check_balance)
+                    if not first_bal:
+                        first_bal = round(val['debit'] - val['credit'], 2)
+                    check_balance += round(val['debit'] - val['credit'], 2)
+                if check_balance>0.0 or check_balance<0.0:
+                    if first_bal>0.0:
+                        move_lines_production[0][2]['debit'] += (-check_balance if check_balance<0.0 else check_balance)
                     else:
-                        move_lines_production[0][2]['credit'] += (-check_balance if check_balance>0.0 else check_balance)
+                        move_lines_production[0][2]['credit'] += (check_balance if check_balance<0.0 else check_balance)
                 values = {
                     'date': self.date_to,
                     'journal_id': misc_journal.id,
