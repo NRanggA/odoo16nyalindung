@@ -281,7 +281,7 @@ class RekapBukuKontraktor(models.AbstractModel):
                                 ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         adjustment_qty = (sum(latex_adjustment_in_moves.mapped('qty_done')) if latex_adjustment_in_moves else 0.0) - (sum(latex_adjustment_out_moves.mapped('qty_done')) if latex_adjustment_out_moves else 0.0)
         
-        closing_qty = opening_qty + receiving_qty + production_qty - delivery_qty + adjustment_qty
+        closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
         datas.append({
             'product_id': product_latex.id,
             'product_name': product_latex.name,
@@ -360,7 +360,7 @@ class RekapBukuKontraktor(models.AbstractModel):
                                 ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         adjustment_qty = (sum(lump_adjustment_in_moves.mapped('qty_done')) if lump_adjustment_in_moves else 0.0) - (sum(lump_adjustment_out_moves.mapped('qty_done')) if lump_adjustment_out_moves else 0.0)
         
-        closing_qty = opening_qty + receiving_qty + production_qty - delivery_qty + adjustment_qty
+        closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
         datas.append({
             'product_id': product_lump.id,
             'product_name': product_lump.name,
@@ -425,7 +425,7 @@ class RekapBukuKontraktor(models.AbstractModel):
 
         adjustment_qty = 0.0 # TODO: harusnya ada adjustment asam semut juga
         
-        closing_qty = opening_qty + receiving_qty + production_qty - delivery_qty + adjustment_qty
+        closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
         datas.append({
             'product_id': product_asamsemut.id,
             'product_name': product_asamsemut.name,
