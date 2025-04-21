@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="spreadsheet_dashboard_group_plantation" model="spreadsheet.dashboard.group">
+        <field name="name">Plantation</field>
+        <field name="sequence">300</field>
+    </record>
+
+    <record id="spreadsheet_dashboard_estate" model="spreadsheet.dashboard">
+        <field name="name">Estate</field>
+        <field name="data" type="base64" file="c10i_spreadsheet_dashboard_plantation/data/files/estate_dashboard.json"/>
+        <field name="dashboard_group_id" ref="c10i_spreadsheet_dashboard_plantation.spreadsheet_dashboard_group_plantation"/>
+        <field name="group_ids" eval="[Command.link(ref('c10i_lhm_v16.plantation_manager'))]"/>
+        <field name="sequence">100</field>
+    </record>
+
+    <record id="spreadsheet_dashboard_factory" model="spreadsheet.dashboard">
+        <field name="name">Factory</field>
+        <field name="data" type="base64" file="c10i_spreadsheet_dashboard_plantation/data/files/factory_dashboard.json"/>
+        <field name="dashboard_group_id" ref="c10i_spreadsheet_dashboard_plantation.spreadsheet_dashboard_group_plantation"/>
+        <field name="group_ids" eval="[Command.link(ref('c10i_lhm_v16.plantation_manager'))]"/>
+        <field name="sequence">200</field>
+    </record>
+
+</odoo>
