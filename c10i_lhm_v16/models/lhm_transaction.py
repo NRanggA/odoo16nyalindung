@@ -955,7 +955,13 @@ class lhm_transaction_line(models.Model):
     #         if not line.doc_activity_ids:
     #             line.doc_activity_ids = [(6, 0, [])]
 
-    name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True, store=True)
+    # name                = fields.Char("NIK", related="employee_id.no_induk", readonly=True, store=True)
+    employee_id         = fields.Many2one("hr.employee", string="Nama", ondelete="restrict")
+    name                = fields.Char("NIK", compute='_get_nik', readonly=True, store=True)
+    @api.depends('employee_id')
+    def _get_nik(self):
+        for line in self:
+            line.name = line.employee_id.no_induk
     date                = fields.Date("Date")
     sequence            = fields.Integer()
     work_day            = fields.Float("HK")
@@ -980,7 +986,6 @@ class lhm_transaction_line(models.Model):
     contract_value_date = fields.Float(string="Upah Tanggal Contract")
     contract_value_hkne = fields.Float(string="Upah HKNE Contract")
     # relasi
-    employee_id         = fields.Many2one("hr.employee", string="Nama", ondelete="restrict")
     attendance_id       = fields.Many2one("hr.attendance.type", string="Absensi", ondelete="restrict")
     location_type_id    = fields.Many2one("lhm.location.type", string="Tipe", ondelete="restrict")
     no_line             = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
