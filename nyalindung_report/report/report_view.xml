@@ -9,4 +9,12 @@
         <field name="report_file">nyalindung_report.rekap_buku_kontraktor_xlsx</field>
     </record>
 
+    <record id="action_report_stock_report_production_xlsx" model="ir.actions.report">
+        <field name="name">Mutasi Stock Production</field>
+        <field name="model">wizard.stock.production</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">nyalindung_report.stock_report_production_xlsx</field>
+        <field name="report_file">nyalindung_report.stock_report_production_xlsx</field>
+    </record>
+
 </odoo>

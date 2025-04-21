@@ -5,3 +5,4 @@ from . import wizard_report_production_kebun
 from . import wizard_report_production_penyadap
 from . import wizard_report_nota_angkut_panen
 from . import wizard_rekap_buku_kontraktor
+from . import wizard_stock_production

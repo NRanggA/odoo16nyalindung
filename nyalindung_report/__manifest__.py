@@ -45,6 +45,7 @@
         "wizard/wizard_report_production_view.xml",
         "wizard/wizard_report_production_kebun_view.xml",
         "wizard/wizard_report_production_penyadap_view.xml",
+        "wizard/wizard_stock_production_view.xml",
         "report/report_production_action.xml",
         "report/report_production_kebun_action.xml",
         "report/report_production_penyadap_action.xml",
