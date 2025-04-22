@@ -83,8 +83,8 @@ class ClosingLaboratory(models.Model):
             closing.outgoing_fg_value = closing.outgoing_fg_qty * closing.new_fg_cost_price
             closing.adjustment_fg_qty_value = closing.adjustment_fg_qty * closing.new_fg_cost_price
             closing.adjustment_fg_value = closing.adjustment_fg_qty_value + closing.adjustment_fg_only_value
-            closing.closing_fg_qty = closing.onhand_fg_qty - closing.outgoing_fg_qty - closing.adjustment_fg_qty
-            closing.closing_fg_value = closing.onhand_fg_value - closing.outgoing_fg_value - closing.adjustment_fg_value
+            closing.closing_fg_qty = closing.onhand_fg_qty - closing.outgoing_fg_qty + closing.adjustment_fg_qty
+            closing.closing_fg_value = closing.onhand_fg_value - closing.outgoing_fg_value + closing.adjustment_fg_value
     
     def _get_domain_source_move_lines(self):
         src_account_ids = self.lab_product_id.location_id.type_id.activity_ids.account_id.ids
