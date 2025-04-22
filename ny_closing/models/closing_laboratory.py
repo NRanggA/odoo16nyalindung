@@ -77,7 +77,7 @@ class ClosingLaboratory(models.Model):
             closing.outgoing_fg_qty = sum(closing.outgoing_stock_move_ids.mapped('product_qty')) if closing.outgoing_stock_move_ids else 0.0
 
     @api.depends('onhand_fg_qty', 'onhand_fg_value',  'new_fg_cost_price', 
-            'outgoing_fg_qty')
+            'outgoing_fg_qty', 'adjustment_fg_qty', 'adjustment_fg_only_value')
     def _compute_closing_fg(self):
         for closing in self:
             closing.outgoing_fg_value = closing.outgoing_fg_qty * closing.new_fg_cost_price
