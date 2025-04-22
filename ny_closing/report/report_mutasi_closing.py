@@ -193,7 +193,8 @@ class ReportMutasiClosing(models.AbstractModel):
                 sheet.merge_range(start_row, 7, start_row, 8, 'Onhand qty', wbf['header'])
                 sheet.write(start_row, 9, 'New Cost Price', wbf['header'])
                 sheet.merge_range(start_row, 10, start_row, 11, 'Consumed', wbf['header'])
-                sheet.merge_range(start_row, 12, start_row, 13, 'Ending', wbf['header'])
+                sheet.merge_range(start_row, 12, start_row, 13, 'Adjustment', wbf['header'])
+                sheet.merge_range(start_row, 14, start_row, 15, 'Ending', wbf['header'])
             
             sheet.write(start_row + 1, 3, 'Qty', wbf['header'])
             sheet.write(start_row + 1, 4, 'Value', wbf['header'])
@@ -206,6 +207,9 @@ class ReportMutasiClosing(models.AbstractModel):
             sheet.write(start_row + 1, 11, 'Value', wbf['header'])
             sheet.write(start_row + 1, 12, 'Qty', wbf['header'])
             sheet.write(start_row + 1, 13, 'Value', wbf['header'])
+            if section != "WIP":
+                sheet.write(start_row + 1, 14, 'Qty', wbf['header'])
+                sheet.write(start_row + 1, 15, 'Value', wbf['header'])
             return start_row + 2
 
         # WIP LABORATORY
@@ -273,8 +277,10 @@ class ReportMutasiClosing(models.AbstractModel):
             sheet.write(row, 9, lab_fg.new_fg_cost_price, wbf['content_float'])
             sheet.write(row, 10, lab_fg.outgoing_fg_qty, wbf['content_float'])
             sheet.write(row, 11, lab_fg.outgoing_fg_value, wbf['content_float'])
-            sheet.write(row, 12, lab_fg.closing_fg_qty, wbf['content_float'])
-            sheet.write(row, 13, lab_fg.closing_fg_value, wbf['content_float'])
+            sheet.write(row, 12, lab_fg.adjustment_fg_qty, wbf['content_float'])
+            sheet.write(row, 13, lab_fg.adjustment_fg_value, wbf['content_float'])
+            sheet.write(row, 14, lab_fg.closing_fg_qty, wbf['content_float'])
+            sheet.write(row, 15, lab_fg.closing_fg_value, wbf['content_float'])
             row += 1
 
         # TOTAL FINISH GOOD LABORATORY
@@ -300,7 +306,10 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet.write_formula(row, 11, f"=SUM(L{start_fg_row}:L{row})", wbf['total_float'])  
 
         sheet.write_formula(row, 12, f"=SUM(M{start_fg_row}:M{row})", wbf['total_float'])  
-        sheet.write_formula(row, 13, f"=SUM(N{start_fg_row}:N{row})", wbf['total_float'])  
+        sheet.write_formula(row, 13, f"=SUM(N{start_fg_row}:N{row})", wbf['total_float'])
+        
+        sheet.write_formula(row, 14, f"=SUM(O{start_fg_row}:O{row})", wbf['total_float'])  
+        sheet.write_formula(row, 15, f"=SUM(P{start_fg_row}:P{row})", wbf['total_float'])  
         ###### END CLOSING LABORATORY ######
         
 
@@ -349,7 +358,7 @@ class ReportMutasiClosing(models.AbstractModel):
                 col += 2
 
                 sheet2.write(start_row, col, 'New Cost Price', wbf['header'])
-                sheet2.write(start_row + 1, col, 'Value', wbf['header'])
+                sheet2.write(start_row + 1, col, '', wbf['header'])
                 col += 1
 
                 sheet2.merge_range(start_row, col, start_row, col + 1, 'Production Inprogress', wbf['header'])
@@ -413,10 +422,14 @@ class ReportMutasiClosing(models.AbstractModel):
                 sheet2.write(start_row + 1, col + 1, 'Value', wbf['header_same_1'])
                 col += 2
 
-                sheet2.merge_range(start_row, col, start_row, col + 1, 'Other Factory Cost', wbf['header'])
-                sheet2.write(start_row + 1, col, 'Qty', wbf['header'])
+                sheet2.merge_range(start_row, col, start_row, col + 1, 'Factory Cost', wbf['header'])
+                sheet2.write(start_row + 1, col, '% Cost', wbf['header'])
                 sheet2.write(start_row + 1, col + 1, 'Value', wbf['header'])
                 col += 2
+
+                sheet2.merge_range(start_row, col, start_row, col + 1, 'Other Factory Cost', wbf['header'])
+                sheet2.write(start_row + 1, col, 'Value', wbf['header'])
+                col += 1
 
                 sheet2.write(start_row, col, 'Cost Asam Semut', wbf['header'])
                 sheet2.write(start_row + 1, col, 'Value', wbf['header_same_2'])
@@ -659,7 +672,7 @@ class ReportMutasiClosing(models.AbstractModel):
                 sheet2.write(row, col, getattr(karet_2, f"{product_2}_wip_incoming_value", '-'), wbf['content_float'])
                 col += 1
                 
-                # Other Factory Cost
+                # Factory Cost
                 if product_2 == 'latex':
                     sheet2.write(row, col, karet_2.pct_cost_for_sheet, wbf['content_float'])
                     col += 1
@@ -669,6 +682,14 @@ class ReportMutasiClosing(models.AbstractModel):
                     sheet2.write(row, col, karet_2.pct_cost_for_compound, wbf['content_float'])
                     col += 1
                     sheet2.write(row, col,  karet_2.compound_manufacturing_cost, wbf['content_float'])
+                    col += 1
+                
+                # Other Factory Cost
+                if product_2 == 'latex':
+                    sheet2.write(row, col,  karet_2.mrp_sheet_cost, wbf['content_float'])
+                    col += 1
+                else:
+                    sheet2.write(row, col,  karet_2.mrp_compound_cost, wbf['content_float'])
                     col += 1
                 
                 # Cost Asam Semut
@@ -721,6 +742,7 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet2.write_formula(row, 14, f"=SUM(O{start_row}:O{row})", wbf['total_float']) 
         sheet2.write_formula(row, 15, f"=SUM(P{start_row}:P{row})", wbf['total_float']) 
         sheet2.write_formula(row, 16, f"=SUM(Q{start_row}:Q{row})", wbf['total_float']) 
+        sheet2.write_formula(row, 17, f"=SUM(R{start_row}:R{row})", wbf['total_float']) 
 
         ######## Finish Good Valuation ########
         row += 3

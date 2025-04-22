@@ -37,6 +37,10 @@ class ClosingLaboratory(models.Model):
     outgoing_fg_qty = fields.Float(compute='_compute_outgoing_fg', store=True)
     outgoing_stock_move_ids = fields.Many2many('stock.move', 'closing_lab_stock_move_rel', string='Outgoing FG Stock Moves')
     outgoing_fg_value = fields.Float(compute='_compute_closing_fg', store=True)
+    adjustment_fg_qty = fields.Float(string='Adjustment Qty')
+    adjustment_fg_qty_value = fields.Float(compute='_compute_closing_fg', string='Adjustment Value based on Qty', store=True)
+    adjustment_fg_only_value = fields.Float(string='Adjustment Cost Price Value', readonly=False)
+    adjustment_fg_value = fields.Float(compute='_compute_closing_fg', string='Adjustment Value', store=True)
     closing_fg_qty = fields.Float(compute='_compute_closing_fg', store=True)
     closing_fg_value = fields.Float(compute='_compute_closing_fg', store=True)
 
@@ -77,8 +81,10 @@ class ClosingLaboratory(models.Model):
     def _compute_closing_fg(self):
         for closing in self:
             closing.outgoing_fg_value = closing.outgoing_fg_qty * closing.new_fg_cost_price
-            closing.closing_fg_qty = closing.onhand_fg_qty - closing.outgoing_fg_qty
-            closing.closing_fg_value = closing.onhand_fg_value - closing.outgoing_fg_value
+            closing.adjustment_fg_qty_value = closing.adjustment_fg_qty - closing.new_fg_cost_price
+            closing.adjustment_fg_value = closing.adjustment_fg_qty_value + closing.adjustment_fg_only_value
+            closing.closing_fg_qty = closing.onhand_fg_qty - closing.outgoing_fg_qty - closing.adjustment_fg_value
+            closing.closing_fg_value = closing.onhand_fg_value - closing.outgoing_fg_value - closing.adjustment_fg_qty
     
     def _get_domain_source_move_lines(self):
         src_account_ids = self.lab_product_id.location_id.type_id.activity_ids.account_id.ids
