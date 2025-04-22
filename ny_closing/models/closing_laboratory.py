@@ -81,7 +81,7 @@ class ClosingLaboratory(models.Model):
     def _compute_closing_fg(self):
         for closing in self:
             closing.outgoing_fg_value = closing.outgoing_fg_qty * closing.new_fg_cost_price
-            closing.adjustment_fg_qty_value = closing.adjustment_fg_qty - closing.new_fg_cost_price
+            closing.adjustment_fg_qty_value = closing.adjustment_fg_qty * closing.new_fg_cost_price
             closing.adjustment_fg_value = closing.adjustment_fg_qty_value + closing.adjustment_fg_only_value
             closing.closing_fg_qty = closing.onhand_fg_qty - closing.outgoing_fg_qty - closing.adjustment_fg_value
             closing.closing_fg_value = closing.onhand_fg_value - closing.outgoing_fg_value - closing.adjustment_fg_qty
