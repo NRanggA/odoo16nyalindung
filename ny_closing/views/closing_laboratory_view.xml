@@ -123,6 +123,27 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td style="font-weight: bold;">Adjustment</td>
+                                        <td style="text-align: right;"><field name="adjustment_fg_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="adjustment_fg_qty_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Adjustment Price</td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="adjustment_fg_only_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;"></td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="adjustment_fg_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td style="font-weight: bold;">Ending</td>
                                         <td style="text-align: right;"><field name="closing_fg_qty"/></td>
                                         <td></td>
