@@ -619,8 +619,8 @@ class ClosingProduction(models.Model):
             # closing.lump_wip_opening_qty = closing.prev_closing_id.lump_wip_qty if closing.prev_closing_id else closing.lump_wip_opening_qty_manual
             closing.lump_wip_opening_value = closing.prev_closing_id.lump_wip_value if closing.prev_closing_id else closing.lump_wip_opening_value_manual
 
-            closing.sheet_rm_opening_qty = closing.prev_closing_id.sheet_rm_opening_qty if closing.prev_closing_id else closing.sheet_rm_opening_qty_manual
-            closing.sheet_rm_opening_value = closing.prev_closing_id.sheet_rm_opening_value if closing.prev_closing_id else closing.sheet_rm_opening_value_manual
+            closing.sheet_rm_opening_qty = closing.prev_closing_id.sheet_rm_closing_qty if closing.prev_closing_id else closing.sheet_rm_closing_qty_manual
+            closing.sheet_rm_opening_value = closing.prev_closing_id.sheet_rm_closing_value if closing.prev_closing_id else closing.sheet_rm_closing_value_manual
 
     @api.onchange('latex_opening_qty', 'latex_opening_value',
             # 'latex_wip_opening_qty', 
