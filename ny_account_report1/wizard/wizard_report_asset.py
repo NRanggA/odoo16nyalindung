@@ -9,6 +9,7 @@ class WizardReportAsset(models.Model):
     # to_date             = fields.Date('To Date', required=True)
     date                = fields.Date('Date', required=True)
     asset_category_ids  = fields.Many2many('account.asset.category', string='Asset Categories')
+    asset_state = fields.Selection([('running_only', 'Running Asset'),('include_closed','Include Closed Asset')], string='Filter State', default='include_closed', required=True)
     company_id          = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
 
     def create_report(self):

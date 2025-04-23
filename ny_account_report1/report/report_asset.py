@@ -313,7 +313,7 @@ class ReportAsset(models.AbstractModel):
 
         # Header Kolom
         headers = [
-            "Nama", "Asset Category", "Tanggal", "Register Code", "Equipment Code", "Gross Value", 
+            "Nama", "Reference", "Asset Category", "Tanggal", "Register Code", "Equipment Code", "Gross Value", 
             "Akumulasi Penyusutan", "Residual Value", "Sisa Masa (Bulan)"
         ]
         for col, header in enumerate(headers):
@@ -324,7 +324,7 @@ class ReportAsset(models.AbstractModel):
 
         
         for asset_category in assets_categories:
-            for col in range(0, 9):  
+            for col in range(0, 10):  
                 value = f"{asset_category.name}" if col == 0 else "" 
                 sheet.write(row, col, value, wbf['header_category'])
             row += 1
@@ -333,37 +333,42 @@ class ReportAsset(models.AbstractModel):
             subtotal_accum_depreciation = 0.0
             subtotal_residual = 0.0
             
-            assets = self.env['account.asset.asset'].search([('category_id', '=', asset_category.id),('account_asset_id.account_type','=','asset_fixed')])
+            domain = [('category_id', '=', asset_category.id),('account_asset_id.account_type','=','asset_fixed')]
+            if obj.asset_state=='running_only':
+                domain.append(('state','=','open'))
+            elif obj.asset_state=='include_closed':
+                domain.append(('state','in',['open','close']))
+            assets = self.env['account.asset.asset'].search(domain)
 
             for asset in assets:
                 sheet.write(row, 0, asset.name, wbf['content'])
-                sheet.write(row, 1, asset.category_id.name, wbf['content'])
-                sheet.write(row, 2, asset.date, wbf['content_date'])
-                sheet.write(row, 3, asset.register_id.name if asset.register_id else '', wbf['content'])
-                sheet.write(row, 4, asset.equipment_code if asset.equipment_code else '', wbf['content'])
+                sheet.write(row, 1, asset.code or asset.equipment_code or '', wbf['content'])
+                sheet.write(row, 2, asset.category_id.name, wbf['content'])
+                sheet.write(row, 3, asset.date, wbf['content_date'])
+                sheet.write(row, 4, asset.register_id.name if asset.register_id else '', wbf['content'])
+                sheet.write(row, 5, asset.equipment_code if asset.equipment_code else '', wbf['content'])
                 # Gross Value
-                sheet.write(row, 5, asset.value, wbf['content_float'])
+                sheet.write(row, 6, asset.value, wbf['content_float'])
                 
                 sisa_umur = sum(1 for line in asset.depreciation_line_ids if not line.move_check)
 
                 accumulated_depreciation = residual_value = 0.0
-                if asset.state in ('open','close'):
-                    if not asset.depreciation_line_ids:
-                        accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
-                        residual_value = asset.value_residual
-                    else:
-                        for line in asset.depreciation_line_ids:
-                            if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
-                                accumulated_depreciation += line.depreciated_value
-                                residual_value += line.remaining_value
+                if not asset.depreciation_line_ids:
+                    accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
+                    residual_value = asset.value_residual
+                else:
+                    for line in asset.depreciation_line_ids:
+                        if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
+                            accumulated_depreciation += line.depreciated_value
+                            residual_value += line.remaining_value
                 
                 # Accumulated Depreciation
-                sheet.write(row, 6, accumulated_depreciation, wbf['content_float'])
+                sheet.write(row, 7, accumulated_depreciation, wbf['content_float'])
                 # Residual Value
-                sheet.write(row, 7, residual_value, wbf['content_float'])
+                sheet.write(row, 8, residual_value, wbf['content_float'])
                 
                 # Sisa Umur (Bulan)
-                sheet.write(row, 8, sisa_umur, wbf['content_number'])
+                sheet.write(row, 9, sisa_umur, wbf['content_number'])
                 
                 subtotal_value += asset.value
                 subtotal_accum_depreciation += accumulated_depreciation
@@ -376,10 +381,11 @@ class ReportAsset(models.AbstractModel):
             sheet.write(row, 2, '', wbf['header_category'])
             sheet.write(row, 3, '', wbf['header_category'])
             sheet.write(row, 4, '', wbf['header_category'])
-            sheet.write(row, 5, subtotal_value, wbf['total_float'])
-            sheet.write(row, 6, subtotal_accum_depreciation, wbf['total_float'])
-            sheet.write(row, 7, subtotal_residual, wbf['total_float'])
-            sheet.write(row, 8, '', wbf['header_category'])
+            sheet.write(row, 5, '', wbf['header_category'])
+            sheet.write(row, 6, subtotal_value, wbf['total_float'])
+            sheet.write(row, 7, subtotal_accum_depreciation, wbf['total_float'])
+            sheet.write(row, 8, subtotal_residual, wbf['total_float'])
+            sheet.write(row, 9, '', wbf['header_category'])
             row += 1 
             
         # Pengaturan Cetak

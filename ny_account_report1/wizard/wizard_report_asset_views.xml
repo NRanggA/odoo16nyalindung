@@ -17,6 +17,7 @@
                         </group> -->
                     </group>
                     <group name="asset_category_ids" string="Asset Category">
+                        <field name="asset_state" />
                         <field name="asset_category_ids" widget="many2many_tags"/>
                     </group>
                     <footer>
