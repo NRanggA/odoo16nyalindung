@@ -346,20 +346,21 @@ class ReportAsset(models.AbstractModel):
                 
                 sisa_umur = sum(1 for line in asset.depreciation_line_ids if not line.move_check)
 
-                for line in asset.depreciation_line_ids:
-                    if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
-                        # Accumulated Depreciation
-                        sheet.write(row, 6, line.depreciated_value, wbf['content_float'])
-                        # Residual Value
-                        sheet.write(row, 7, line.remaining_value, wbf['content_float'])
-
-                    # else:
-                    #     # cumulative depretiation value
-                    #     accum_depreciation = asset.value - asset.value_residual
-                    #     sheet.write(row, 6, accum_depreciation, wbf['content_float'])
-                        
-                    #     # residual value
-                    #     sheet.write(row, 7, asset.value_residual, wbf['content_float'])
+                accumulated_depreciation = residual_value = 0.0
+                if asset.state=='open':
+                    if not asset.depreciation_line_ids:
+                        accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
+                        residual_value = asset.value_residual
+                    else:
+                        for line in asset.depreciation_line_ids:
+                            if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
+                                accumulated_depreciation += line.depreciated_value
+                                residual_value += line.remaining_value
+                
+                # Accumulated Depreciation
+                sheet.write(row, 6, accumulated_depreciation, wbf['content_float'])
+                # Residual Value
+                sheet.write(row, 7, residual_value, wbf['content_float'])
                 
                 # Sisa Umur (Bulan)
                 sheet.write(row, 8, sisa_umur, wbf['content_number'])

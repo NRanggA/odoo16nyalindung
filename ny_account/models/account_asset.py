@@ -26,8 +26,8 @@ class AccountAssetAsset(models.Model):
     filtered_locations          = fields.Many2many('lhm.location', 'asset_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
     filtered_activities         = fields.Many2many('lhm.activity', 'asset_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
 
-    beginning_balance           = fields.Boolean('Beginning Balance', default=False)
-    accumulated_depreciation    = fields.Monetary('Accumulated Depreciation')
+    beginning_balance           = fields.Boolean('Beginning Balance', default=False, readonly=True, states={'draft': [('readonly', False)]})
+    accumulated_depreciation    = fields.Monetary('Accumulated Depreciation', readonly=True, states={'draft': [('readonly', False)]})
     value_residual              = fields.Monetary(compute='_amount_residual', string='Residual Value')
     value                       = fields.Monetary(string='Gross Value', required=True, readonly=True, states={'draft': [('readonly', False)]})
 
