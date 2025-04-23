@@ -360,6 +360,8 @@ class ReportAsset(models.AbstractModel):
                         if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
                             accumulated_depreciation += line.depreciated_value
                             residual_value += line.remaining_value
+                    if not residual_value:
+                        residual_value = line.remaining_value
                 
                 # Accumulated Depreciation
                 sheet.write(row, 7, accumulated_depreciation, wbf['content_float'])
