@@ -333,7 +333,7 @@ class ReportAsset(models.AbstractModel):
             subtotal_accum_depreciation = 0.0
             subtotal_residual = 0.0
             
-            assets = self.env['account.asset.asset'].search([('category_id', '=', asset_category.id)])
+            assets = self.env['account.asset.asset'].search([('category_id', '=', asset_category.id),('account_asset_id.account_type','=','asset_fixed')])
 
             for asset in assets:
                 sheet.write(row, 0, asset.name, wbf['content'])
@@ -347,7 +347,7 @@ class ReportAsset(models.AbstractModel):
                 sisa_umur = sum(1 for line in asset.depreciation_line_ids if not line.move_check)
 
                 accumulated_depreciation = residual_value = 0.0
-                if asset.state=='open':
+                if asset.state in ('open','close'):
                     if not asset.depreciation_line_ids:
                         accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
                         residual_value = asset.value_residual
