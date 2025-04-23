@@ -57,6 +57,14 @@ class AccountMove(models.Model):
 
     #     return super(AccountMove, self).action_post()
 
+    @api.depends('partner_id', 'line_ids.tax_ids')
+    def _compute_need_kode_transaksi(self):
+        for move in self:
+            # Modify efaktur l10in_id_faktur
+            # hilangin persyaratan nomor faktur ini. 
+            # Karena ada perubahan Coretax, jd blum tau 
+            # mekanismenya masih bisa upload dari Odoo atau tidak
+            move.l10n_id_need_kode_transaksi = False
     
     def action_post(self):
         """Override action_post untuk menambahkan logika skip validasi e-Faktur."""
@@ -88,43 +96,39 @@ class AccountMove(models.Model):
                     for line in rec.invoice_line_ids:
                         line.plantation_varieties_id = self.journal_id.varieties_id.id
 
-                if skip_efaktur_validation:
-                    rec.l10n_id_need_kode_transaksi = False
-                    # continue
-
         return super(AccountMove, self).action_post()
 
-    @api.onchange('l10n_id_tax_number')  
-    def _onchange_l10n_id_tax_number(self):  
-        param_obj = self.env['ir.config_parameter'].sudo()  
-        skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'  
+    # @api.onchange('l10n_id_tax_number')  
+    # def _onchange_l10n_id_tax_number(self):  
+    #     param_obj = self.env['ir.config_parameter'].sudo()  
+    #     skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'  
 
-        for record in self:  
-            if skip_efaktur_validation:
-                continue
-            if record.l10n_id_tax_number and record.move_type not in self.get_purchase_types():  
-                raise UserError(_("You can only change the number manually for a Vendor Bills and Credit Notes"))
+    #     for record in self:  
+    #         if skip_efaktur_validation:
+    #             continue
+    #         if record.l10n_id_tax_number and record.move_type not in self.get_purchase_types():  
+    #             raise UserError(_("You can only change the number manually for a Vendor Bills and Credit Notes"))
 
-    def write(self, vals):
-        """Memaksa update nomor e-Faktur jika skip e-Faktur aktif"""
-        param_obj = self.env['ir.config_parameter'].sudo()
-        skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
+    # def write(self, vals):
+    #     """Memaksa update nomor e-Faktur jika skip e-Faktur aktif"""
+    #     param_obj = self.env['ir.config_parameter'].sudo()
+    #     skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
 
-        if skip_efaktur_validation and 'l10n_id_tax_number' in vals:
-            return super(AccountMove, self.sudo()).write(vals)  # Gunakan sudo agar bisa bypass restriksi
+    #     if skip_efaktur_validation and 'l10n_id_tax_number' in vals:
+    #         return super(AccountMove, self.sudo()).write(vals)  # Gunakan sudo agar bisa bypass restriksi
 
-        return super(AccountMove, self).write(vals)
+    #     return super(AccountMove, self).write(vals)
 
-    @api.model
-    def create(self, vals):
-        """Pastikan saat create, nomor e-Faktur tetap bisa di-set jika skip e-Faktur aktif."""
-        param_obj = self.env['ir.config_parameter'].sudo()
-        skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
+    # @api.model
+    # def create(self, vals):
+    #     """Pastikan saat create, nomor e-Faktur tetap bisa di-set jika skip e-Faktur aktif."""
+    #     param_obj = self.env['ir.config_parameter'].sudo()
+    #     skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
 
-        if skip_efaktur_validation and 'l10n_id_tax_number' in vals:
-            return super(AccountMove, self.sudo()).create(vals)
+    #     if skip_efaktur_validation and 'l10n_id_tax_number' in vals:
+    #         return super(AccountMove, self.sudo()).create(vals)
 
-        return super(AccountMove, self).create(vals)
+    #     return super(AccountMove, self).create(vals)
 
     # gabisa super, karena private kali :(
     # @api.constrains('l10n_id_tax_number')
@@ -135,48 +139,14 @@ class AccountMove(models.Model):
     #         if len(record.l10n_id_tax_number) < 16:
     #             raise UserError(_('A tax number should have at least 16 digits'))
 
-    @api.constrains('l10n_id_tax_number')
-    def _constrains_l10n_id_tax_number(self):
-        for record in self.filtered('l10n_id_tax_number'):
-            if record.l10n_id_tax_number != re.sub(r'\D', '', record.l10n_id_tax_number):
-                record.l10n_id_tax_number = re.sub(r'\D', '', record.l10n_id_tax_number)
-            if len(record.l10n_id_tax_number) < 16:
-                raise UserError(_('A tax number should have at least 16 digits'))
-            elif record.l10n_id_tax_number[:2] not in dict(self._fields['l10n_id_kode_transaksi'].selection).keys():
-                raise UserError(_('A tax number must begin by a valid Kode Transaksi'))
-            elif record.l10n_id_tax_number[2] not in ('0', '1'):
-                raise UserError(_('The third digit of a tax number must be 0 or 1'))
-
-    # def _post(self, soft=True):
-    #     """Custom override untuk menonaktifkan validasi e-Faktur berdasarkan sistem parameter."""
-    #     param_obj = self.env['ir.config_parameter'].sudo()
-
-    #     # Pastikan kita membaca parameter terbaru
-    #     self.env.cr.commit()
-    #     skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
-
-    #     print("=== PARAMETER SKIP E-FAKTUR:", skip_efaktur_validation)
-
-    #     for move in self:
-    #         if move.l10n_id_need_kode_transaksi:
-    #             if not move.l10n_id_kode_transaksi:
-    #                 raise ValidationError(_('You need to put a Kode Transaksi for this partner.'))
-    #             if move.l10n_id_replace_invoice_id.l10n_id_tax_number:
-    #                 if not move.l10n_id_replace_invoice_id.l10n_id_attachment_id:
-    #                     raise ValidationError(_('Replacement invoice only for invoices on which the e-Faktur is generated. '))
-    #                 rep_efaktur_str = move.l10n_id_replace_invoice_id.l10n_id_tax_number
-    #                 move.l10n_id_tax_number = '%s1%s' % (move.l10n_id_kode_transaksi, rep_efaktur_str[3:])
-    #             else:
-    #                 # Jika parameter skip_efaktur_validation = True, langsung lanjut tanpa validasi
-    #                 if skip_efaktur_validation:
-    #                     print("=== VALIDASI E-FAKTUR DILEWATI ===")
-    #                     move.l10n_id_tax_number = '%s0%013d' % (str(move.l10n_id_kode_transaksi), 0)
-    #                     continue  # Lanjut ke move berikutnya tanpa validasi
-
-    #                 # Jika parameter False, tetap lakukan validasi seperti biasa
-    #                 efaktur = self.env['l10n_id_efaktur.efaktur.range'].pop_number(move.company_id.id)
-    #                 if not efaktur:
-    #                     raise ValidationError(_('There is no Efaktur number available.  Please configure the range you get from the government in the e-Faktur menu. '))
-    #                 move.l10n_id_tax_number = '%s0%013d' % (str(move.l10n_id_kode_transaksi), efaktur)
-
-    #     return super()._post(soft)
+    # @api.constrains('l10n_id_tax_number')
+    # def _constrains_l10n_id_tax_number(self):
+    #     for record in self.filtered('l10n_id_tax_number'):
+    #         if record.l10n_id_tax_number != re.sub(r'\D', '', record.l10n_id_tax_number):
+    #             record.l10n_id_tax_number = re.sub(r'\D', '', record.l10n_id_tax_number)
+    #         if len(record.l10n_id_tax_number) < 16:
+    #             raise UserError(_('A tax number should have at least 16 digits'))
+    #         elif record.l10n_id_tax_number[:2] not in dict(self._fields['l10n_id_kode_transaksi'].selection).keys():
+    #             raise UserError(_('A tax number must begin by a valid Kode Transaksi'))
+    #         elif record.l10n_id_tax_number[2] not in ('0', '1'):
+    #             raise UserError(_('The third digit of a tax number must be 0 or 1'))
