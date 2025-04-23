@@ -351,15 +351,12 @@ class ReportAsset(models.AbstractModel):
                 
                 sisa_umur = sum(1 for line in asset.depreciation_line_ids if not line.move_check)
 
-                accumulated_depreciation = residual_value = 0.0
-                if not asset.depreciation_line_ids:
-                    accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
-                    residual_value = asset.value_residual
-                else:
-                    for line in asset.depreciation_line_ids:
-                        if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
-                            accumulated_depreciation += line.depreciated_value
-                            residual_value += line.remaining_value
+                accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
+                residual_value = asset.value_residual
+                for line in asset.depreciation_line_ids:
+                    if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
+                        accumulated_depreciation += line.depreciated_value
+                        residual_value += line.remaining_value
                 
                 # Accumulated Depreciation
                 sheet.write(row, 7, accumulated_depreciation, wbf['content_float'])
