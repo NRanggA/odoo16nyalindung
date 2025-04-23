@@ -354,6 +354,7 @@ class HrEmployeeExpense(models.Model):
                 move_id = payment.account_move_id.id
                 if move_id:
                     payment.account_move_id.button_draft()
+                    payment.account_move_id.button_cancel()
                     # payment.account_move_id = False
                     # self.env['account.move'].browse(move_id).unlink()
                 # raise ValidationError(_('You cannot set Cancel payment that is already create a journal entry'))
@@ -483,6 +484,7 @@ class HrEmployeeExpense(models.Model):
             else:
                 payment.account_move_id.line_ids.unlink()
                 move_lines = [l._prepare_move_line() for l in payment.line_ids]
+                move_lines = self.direct_payment_hook(move_lines)
                 total = sum([ml['debit'] - ml['credit'] for ml in move_lines])
                 if total:
                     payable_move_lines = self._prepare_payable_move_line(-1*total)
@@ -493,8 +495,11 @@ class HrEmployeeExpense(models.Model):
                     move_lines.append(payable_move_lines)
                 payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
                 # payment.account_move_id._post()
-                payment.account_move_id.action_post()
-
+                # payment.account_move_id.action_post()
+                if payment.account_move_id.state == 'cancel':
+                    payment.account_move_id.button_draft()
+                payment.account_move_id._post()
+                # payment.account_move_id.action_post()
 
             this_um = abs(self.advance_amount_settle)
             this_settelement = self.amount_total
