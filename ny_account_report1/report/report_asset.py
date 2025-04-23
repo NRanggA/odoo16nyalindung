@@ -366,8 +366,8 @@ class ReportAsset(models.AbstractModel):
                 sheet.write(row, 8, sisa_umur, wbf['content_number'])
                 
                 subtotal_value += asset.value
-                # subtotal_accum_depreciation += accum_depreciation
-                subtotal_residual += asset.value_residual
+                subtotal_accum_depreciation += accumulated_depreciation
+                subtotal_residual += residual_value
 
                 row += 1
             
@@ -377,8 +377,7 @@ class ReportAsset(models.AbstractModel):
             sheet.write(row, 3, '', wbf['header_category'])
             sheet.write(row, 4, '', wbf['header_category'])
             sheet.write(row, 5, subtotal_value, wbf['total_float'])
-            # sheet.write(row, 6, subtotal_accum_depreciation, wbf['total_float'])
-            sheet.write(row, 6, '', wbf['total_float'])
+            sheet.write(row, 6, subtotal_accum_depreciation, wbf['total_float'])
             sheet.write(row, 7, subtotal_residual, wbf['total_float'])
             sheet.write(row, 8, '', wbf['header_category'])
             row += 1 
