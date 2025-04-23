@@ -320,9 +320,7 @@ class ReportAsset(models.AbstractModel):
             sheet.write(row, col, header, wbf['header'])
         row += 1
 
-        assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([])
-
-        
+        assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([('account_asset_id.account_type','=','asset_fixed')])
         for asset_category in assets_categories:
             for col in range(0, 10):  
                 value = f"{asset_category.name}" if col == 0 else "" 
@@ -333,7 +331,7 @@ class ReportAsset(models.AbstractModel):
             subtotal_accum_depreciation = 0.0
             subtotal_residual = 0.0
             
-            domain = [('category_id', '=', asset_category.id),('account_asset_id.account_type','=','asset_fixed')]
+            domain = [('category_id', '=', asset_category.id)]
             if obj.asset_state=='running_only':
                 domain.append(('state','=','open'))
             elif obj.asset_state=='include_closed':
