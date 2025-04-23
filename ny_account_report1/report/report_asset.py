@@ -331,7 +331,7 @@ class ReportAsset(models.AbstractModel):
             subtotal_accum_depreciation = 0.0
             subtotal_residual = 0.0
             
-            domain = [('category_id', '=', asset_category.id)]
+            domain = [('category_id', '=', asset_category.id),('date','<=',obj.date)]
             if obj.asset_state=='running_only':
                 domain.append(('state','=','open'))
             elif obj.asset_state=='include_closed':
