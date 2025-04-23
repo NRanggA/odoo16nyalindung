@@ -320,7 +320,8 @@ class ReportAsset(models.AbstractModel):
             sheet.write(row, col, header, wbf['header'])
         row += 1
 
-        assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([('account_asset_id.account_type','=','asset_fixed')])
+        # assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([('account_asset_id.account_type','=','asset_fixed')])
+        assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([])
         for asset_category in assets_categories:
             for col in range(0, 10):  
                 value = f"{asset_category.name}" if col == 0 else "" 
