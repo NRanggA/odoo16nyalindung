@@ -53,6 +53,7 @@
                                 <tr style="text-align : center" height="34px">
                                     <td>NO</td>
                                     <td>NAMA BARANG</td>
+                                    <td>KETERANGAN</td>
                                     <td>QTY</td>
                                     <td>SATUAN</td>
                                     <td>HARGA</td>
@@ -61,6 +62,7 @@
                                 <tr height="34px" t-foreach="o.order_line" t-as="item">
                                     <td style="text-align : center"> <t t-esc="seq"/> </td>
                                     <td style="padding-left: 8px"><t t-esc="item.product_id.name"/></td>
+                                    <td style="padding-left: 8px"><t t-esc="item.name"/></td>
                                     <td style="text-align: center"><t t-esc="item.product_qty" t-options='{"widget": "float", "precision": 2}'/></td>
                                     <td style="text-align: center"><t t-esc="item.product_uom.name"/></td>
                                     <td style="text-align: center"><t t-esc="item.price_unit" t-options='{"widget": "float", "precision": 0}'/></td>
@@ -72,9 +74,10 @@
                                     <t t-foreach="grouped_taxes.values()" t-as="tax">
                                         <tr>
                                             <td></td>
-                                            <td style="padding-left: 8px; font-weight: bold">
+                                            <td style="padding-left: 6px; font-weight: bold">
                                                 <t t-esc="tax['name']"/>
                                             </td>
+                                            <td style="text-align: center"></td>
                                             <td style="text-align: center"></td>
                                             <td style="text-align: center"></td>
                                             <td style="text-align: center"></td>
@@ -92,6 +95,7 @@
                                 <tr height="34px" style="font-weight : bold">
                                     <td style=""></td>
                                     <td style="text-align : center">JUMLAH</td>
+                                    <td style="text-align: center"></td>
                                     <td style="text-align: center"></td>
                                     <td style="text-align: center"></td>
                                     <td style="text-align: center"></td>
