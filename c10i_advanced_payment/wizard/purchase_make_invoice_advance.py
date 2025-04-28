@@ -79,6 +79,8 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
         self.ensure_one()
         account_move = self.env['account.move']
         type_location = self.env['lhm.location.type'].search([('code', '=', '-')], limit=1)
+        taxes = self.purchase_order_ids.mapped('order_line.taxes_id')
+        tax_ids = list(set(taxes.ids))
         move = account_move.create({
             'move_type': 'in_invoice',
             'partner_id': self.purchase_order_ids[0].partner_id.id,
@@ -88,7 +90,9 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
                 'name': 'Advanced Payment',
                 'plantation_location_type_id': type_location.id,
                 'account_id': self.account_id.id,
+                'tax_ids': self.account_id.id,
                 'price_unit': self.get_amount(),
+                'tax_ids': [(6, 0, tax_ids)],
             })]
         })
 
