@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 class ClosingProjectPlantDeferred(models.Model):
     _name = 'closing.project.plant.deferred' 
     _description = 'Closing Project - Plantation Deffered Cost'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     closing_id = fields.Many2one('closing.project', string='Closing Plantation')
     plantation_location_type_id = fields.Many2one('lhm.location.type', string='Tipe Lokasi', ondelete='restrict')

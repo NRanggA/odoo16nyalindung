@@ -87,6 +87,7 @@ class ClosingPlantation(models.Model):
     _name = 'closing.plantation' 
     _description = 'Closing Plantation'
     _rec_name = 'plant_block_id'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
     parent_state = fields.Selection(related='closing_process_id.state', store=True)
@@ -215,6 +216,84 @@ class ClosingPlantation(models.Model):
                             sums_cost_aml.plantation_location_id,
                             sums_cost_aml.plantation_activity_id,
                             sums_cost_aml.plantation_src_journal_id,
+                            p_to_be_deferred,
+                            sums_cost_aml.cost,
+                            p_user_id, p_user_id, (now() at time zone 'UTC'), (now() at time zone 'UTC'));
+                END LOOP;                            
+
+                UPDATE closing_plantation SET 
+                        current_period_cost = v_current_period_cost,
+                        write_uid=p_user_id, 
+                        write_date=(now() at time zone 'UTC')
+                    WHERE id=p_closing_plantation_id;
+            END;
+            $BODY$
+            LANGUAGE plpgsql VOLATILE
+            COST 100;
+            """)
+
+        self.env.cr.execute("""CREATE OR REPLACE FUNCTION public.procedure_summerize_cost_v2(
+                        p_closing_plantation_id integer, p_planted_block_id integer, 
+                        p_date_from date, p_date_to date, p_to_be_deferred boolean,
+                        p_user_id integer, p_company_id integer) 
+            RETURNS void AS
+            $BODY$
+            DECLARE
+                v_closing_plantation_date_from date;
+                v_closing_plantation_date_to date;
+                v_location_type integer;
+                v_location integer;
+                sums_cost_aml record;
+                v_current_period_cost numeric := 0.0;
+            BEGIN
+                v_closing_plantation_date_from := p_date_from;
+                v_closing_plantation_date_to := p_date_to;
+                           
+                select location_type_id from lhm_plant_block where id=p_planted_block_id INTO v_location_type;
+                select location_id from lhm_plant_block where id=p_planted_block_id INTO v_location;
+            
+                FOR sums_cost_aml IN SELECT 
+                                aml1.plantation_location_type_id,
+                                aml1.plantation_location_id,
+                                aml1.plantation_activity_id,
+                                coalesce(aml1.plantation_src_journal_id, aml1.journal_id) as plantation_src_journal_id,
+                                aml1.account_id as src_account_id,
+                                SUM(aml1.debit - aml1.credit) as cost 
+                            FROM account_move_line aml1
+                                inner join account_account saa  ON saa.id=aml1.account_id 
+                                    and saa.account_type='expense_direct_cost'
+                            WHERE 
+                                aml1.date>=v_closing_plantation_date_from 
+                                and aml1.date<=v_closing_plantation_date_to 
+                                and aml1.parent_state='posted'
+                                and aml1.plantation_location_type_id=v_location_type
+                                and aml1.plantation_location_id=v_location
+                            GROUP BY aml1.plantation_location_type_id,
+                                aml1.plantation_location_id,
+                                aml1.plantation_activity_id,
+                                aml1.plantation_src_journal_id,
+                                aml1.account_id,
+                                aml1.journal_id
+                LOOP
+                    v_current_period_cost := v_current_period_cost + sums_cost_aml.cost;
+                    INSERT INTO closing_plantation_line
+                            (id, closing_id,  
+                            date_from, date_to, 
+                            plantation_location_type_id, plantation_location_id, 
+                            plantation_activity_id, plantation_src_journal_id,
+                            src_account_id, 
+                            to_be_deferred, total_cost,
+                            create_uid, write_uid, create_date, write_date) 
+                        VALUES (
+                            nextval('closing_plantation_line_id_seq'),
+                            p_closing_plantation_id,
+                            v_closing_plantation_date_from, 
+                            v_closing_plantation_date_to,
+                            sums_cost_aml.plantation_location_type_id,
+                            sums_cost_aml.plantation_location_id,
+                            sums_cost_aml.plantation_activity_id,
+                            sums_cost_aml.plantation_src_journal_id,
+                            sums_cost_aml.dest_account_id,
                             p_to_be_deferred,
                             sums_cost_aml.cost,
                             p_user_id, p_user_id, (now() at time zone 'UTC'), (now() at time zone 'UTC'));
@@ -691,6 +770,7 @@ class ClosingPlantation(models.Model):
                 cost_account_id = False
                 if self.plant_block_id.owner_type=='inti':
                     cost_account_id = line1.plantation_activity_id.get_plantation_cost_account(line1.plantation_src_journal_id) 
+                    # cost_account_id = line1.dest_account_id.id 
                 else:
                     cost_account_id = self.plant_block_id.plasma_account_id.id
 

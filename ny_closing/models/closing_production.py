@@ -410,6 +410,7 @@ class ClosingProductionFinishGood(models.Model):
 class ClosingProduction(models.Model):
     _name = 'closing.production'
     _description = 'Closing Production'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
     parent_state = fields.Selection(related='closing_process_id.state', store=True)

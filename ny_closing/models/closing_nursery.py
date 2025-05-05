@@ -8,6 +8,7 @@ class ClosingNursery(models.Model):
     _name = 'closing.nursery' 
     _description = 'Running Vehicle Procedure'
     _rec_name = 'nursery_id'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
 

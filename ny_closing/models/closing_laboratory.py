@@ -8,6 +8,7 @@ class ClosingLaboratory(models.Model):
     _name = 'closing.laboratory' 
     _description = 'Closing Laboratorium Procedure'
     _rec_name = 'lab_product_id'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     closing_process_id = fields.Many2one('closing.process', string='Closing Process', ondelete='cascade')
     
@@ -182,6 +183,24 @@ class ClosingLaboratory(models.Model):
             closing.outgoing_stock_move_ids = [(6, 0, out_moves.ids)]
             # closing.outgoing_fg_qty = sum(out_moves.mapped('product_qty')) if out_moves else 0.0
             
+            # Adjustment
+            adj_in_moves = self.env['stock.move'].search([('product_id','=',closing.lab_product_id.product_id.id),
+                                                          ('location_dest_id.usage','=','internal'),
+                                                          ('location_id.usage','=','inventory'),
+                                                          ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                                          ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                                          ('state','=','done')])
+            adj_out_moves = self.env['stock.move'].search([('product_id','=',closing.lab_product_id.product_id.id),
+                                                          ('location_id.usage','=','internal'),
+                                                          ('location_dest_id.usage','=','inventory'),
+                                                          ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                                          ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                                          ('state','=','done')])
+            closing.adjustment_fg_qty = (sum(adj_in_moves.mapped('product_qty')) if adj_in_moves else 0.0) \
+                            - sum(adj_out_moves.mapped('product_qty')) if adj_out_moves else 0.0
+            
+            closing.adjustment_fg_only_value = 0.0
+
     def create_account_move(self):
         lab_journal = self.env.ref('ny_closing.plantation_closing_laboratory_journal')
         for closing in self:
