@@ -19,20 +19,33 @@ class ClosingProjectPlantDeferred(models.Model):
     deferred_cost = fields.Float('Deferred')
     new_deferred_cost = fields.Float('New Deferred')
     accumulated_cost = fields.Float('Consumed Cost')
-    residual_deferred = fields.Float(compute='_compute_cost', store=True, string="Residual")
+    residual_deferred = fields.Float(compute='_compute_residual', store=True, string="Residual")
     pct_cost_to_post = fields.Float("Pct (%)")
-    cost_to_post = fields.Float(compute='_compute_cost', store=True, string="Cost to Consume")
-    new_residual_deferred = fields.Float(compute='_compute_cost', store=True, string="New Residual")
+    cost_to_post = fields.Float(compute='_compute_cost', inverse='_set_percentage', store=True, string="Cost to Consume", readonly=False)
+    new_residual_deferred = fields.Float(compute='_compute_residual2', store=True, string="New Residual")
 
     @api.depends('new_deferred_cost', 
             'deferred_cost', 
             'accumulated_cost', 
             'pct_cost_to_post', 
             'closing_id.pct_deferred_to_cost')
-    def _compute_cost(self):
+    def _compute_residual(self):
         for line in self:
             line.residual_deferred = line.deferred_cost + line.new_deferred_cost - line.accumulated_cost
+    
+    @api.depends('pct_cost_to_post', 'deferred_cost', 'new_deferred_cost', 'accumulated_cost')
+    def _compute_cost(self):
+        for line in self:
             line.cost_to_post = ((line.deferred_cost + line.new_deferred_cost) - line.accumulated_cost) * line.pct_cost_to_post / 100.0
+    
+    @api.onchange('cost_to_post')
+    def _set_percentage(self):
+        for line in self:
+            line.pct_cost_to_post = line.cost_to_post / ((line.deferred_cost + line.new_deferred_cost) - line.accumulated_cost) * 100.0
+    
+    @api.depends('residual_deferred','cost_to_post')
+    def _compute_residual2(self):
+        for line in self:
             line.new_residual_deferred = line.residual_deferred - line.cost_to_post
     
     def _get_domain_deferred_move_lines(self):
@@ -81,6 +94,27 @@ class ClosingProjectPlantLine(models.Model):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
         action['domain'] = self._get_domain_source_move_lines()
         return action
+    
+    def mark_as_tobe_deferred(self):
+        self.ensure_one()
+        if not self.to_be_deferred:
+            line_found = False
+            for dline in self.closing_id.deferred_cost_line_ids:
+                if dline.plantation_location_type_id.id==self.plantation_location_type_id.id and dline.plantation_location_id.id==self.plantation_location_id.id and dline.plantation_activity_id.id==self.plantation_activity_id.id and dline.plantation_src_journal_id.id==self.plantation_src_journal_id.id:
+                    line_found = True
+                    dline.new_deferred_cost += self.total_cost
+            if not line_found:
+                self.closing_id.deferred_cost_line_ids = [(0, 0, {
+                    # 'closing_id': self.closing_id.id,
+                    'plantation_location_type_id': self.plantation_location_type_id.id,
+                    'plantation_location_id': self.plantation_location_id.id,
+                    'plantation_activity_id': self.plantation_activity_id.id,
+                    'plantation_src_journal_id': self.plantation_src_journal_id.id,
+                    'deferred_cost': 0.0,
+                    'new_deferred_cost': self.total_cost,
+                    'accumulated_cost': 0.0,
+                })]
+            self.to_be_deferred = True
 
 class ClosingProject(models.Model):
     _name = 'closing.project' 
@@ -156,7 +190,7 @@ class ClosingProject(models.Model):
                                 aml1.plantation_location_type_id,
                                 aml1.plantation_location_id,
                                 aml1.plantation_activity_id,
-                                aml1.plantation_src_journal_id,
+                                coalesce(aml1.plantation_src_journal_id, aml1.journal_id) as plantation_src_journal_id,
                                 SUM(aml1.debit - aml1.credit) as cost 
                             FROM account_move_line aml1
                             WHERE 
@@ -170,7 +204,8 @@ class ClosingProject(models.Model):
                             GROUP BY aml1.plantation_location_type_id,
                                 aml1.plantation_location_id,
                                 aml1.plantation_activity_id,
-                                aml1.plantation_src_journal_id
+                                aml1.plantation_src_journal_id,
+                                aml1.journal_id
                 LOOP
                     -- v_current_period_cost := v_current_period_cost + sums_cost_aml.cost;
                     INSERT INTO closing_project_plant_line

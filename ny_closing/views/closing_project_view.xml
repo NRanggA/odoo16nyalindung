@@ -66,8 +66,9 @@
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
-                                    <field name="to_be_deferred" />
+                                    <!-- <field name="to_be_deferred"/> -->
                                     <field name="total_cost" sum="total_cost"/>
+                                    <button name="mark_as_tobe_deferred" type="object" string="To be Deferred" class="btn-warning" icon="fa-minus-circle" attrs="{'invisible': [('to_be_deferred','=',True)]}"/>
                                 </tree>
                             </field>
                             <label for="cost_line_to_be_deferred_ids"/>
@@ -79,7 +80,7 @@
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
                                     <field name="plantation_src_journal_id" />
-                                    <field name="to_be_deferred" />
+                                    <!-- <field name="to_be_deferred" /> -->
                                     <field name="total_cost" sum="total_cost"/>
                                 </tree>
                             </field>
