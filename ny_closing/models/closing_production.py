@@ -2617,7 +2617,7 @@ class ClosingProduction(models.Model):
                         'plantation_location_id': False,
                         'plantation_activity_id': False,
                         'plantation_src_journal_id': False,
-                        'account_id': smi.plantation_activity_id.cost_account_id.id,
+                        'account_id': smi.plantation_activity_id.account_id.id,
                         'product_id': line.product_id.id,
                         'debit': issue_value if issue_value>0 else 0.0,
                         'credit': issue_value if issue_value<0 else 0.0,
