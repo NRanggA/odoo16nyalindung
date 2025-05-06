@@ -1600,7 +1600,7 @@ class ClosingProduction(models.Model):
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
-                outgoing_issue_stock_move_ids = [(6, 0, issued_moves_out.move_id.ids + issue_move_return.move_id.ids)]
+                outgoing_issue_stock_move_ids = [(6, 0, issued_moves_out.move_id.ids + issued_moves_return.move_id.ids)]
                 outgoing_issue_qty = (sum(issued_moves_out.mapped('qty_done')) if issued_moves_out else 0.0) - (sum(issued_moves_return.mapped('qty_done')) if issued_moves_return else 0.0)
 
                 # Find Scrap
