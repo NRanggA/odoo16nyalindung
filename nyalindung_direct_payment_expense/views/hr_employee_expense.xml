@@ -196,6 +196,7 @@
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="employee_expense_state" widget="badge" decoration-danger="employee_expense_state=='reject'" decoration-warning="employee_expense_state=='submit'" decoration-success="employee_expense_state=='approved'"/>
                 <field name="payment_state" widget="badge" optional="show" decoration-warning="payment_state=='not_paid'" decoration-info="payment_state=='in_payment'" decoration-success="payment_state=='paid'" decoration-primary="payment_state=='partial'"/>
+                <field name="payment_date" />
             </tree>
         </field>
     </record>
