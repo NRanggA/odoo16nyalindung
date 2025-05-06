@@ -456,7 +456,6 @@
                                     <field name="plantation_location_type_id" />
                                     <field name="plantation_location_id" />
                                     <field name="plantation_activity_id" />
-                                    <field name="plantation_src_journal_id" />
                                     <field name="quantity_done" sum="quantity_done"/>
                                     <field name="state" />
                                 </tree>
