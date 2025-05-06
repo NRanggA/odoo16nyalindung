@@ -1598,14 +1598,14 @@ class ClosingProduction(models.Model):
                     'opening_value': prev_closing_fg.closing_value if prev_closing_fg else 0.0,
                     # 'ripening_opening_qty': prev_closing_fg.ripening_closing_qty if prev_closing_fg else 0.0,
                     # 'ripening_opening_value': prev_closing_fg.ripening_closing_value if prev_closing_fg else 0.0,
-                    'onhand_temp_qty': (prev_closing_fg.closing_value if prev_closing_fg else 0.0) + incoming_qty,
+                    'onhand_qty': (prev_closing_fg.closing_value if prev_closing_fg else 0.0) + incoming_qty,
                     'incoming_qty': incoming_qty,
                     'scrap_qty': scrap_qty,
                     # 'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'outgoing_qty': outgoing_qty,
                     # 'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                 }
-                total_onhand += values_to_create['onhand_temp_qty']
+                total_onhand += values_to_create['onhand_qty']
                 if prev_closing_fg:
                     values_to_create.update({
                         'inventory_account_id': prev_closing_fg.inventory_account_id.id if prev_closing_fg.inventory_account_id else False,
@@ -1617,7 +1617,7 @@ class ClosingProduction(models.Model):
                 to_create.append(values_to_create)
             for exvals in to_create:
                 # exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
-                exvals['plantation_cost'] = (exvals['onhand_temp_qty'] / total_onhand if total_onhand else 0.0) * closing.plantation_cost
+                exvals['plantation_cost'] = (exvals['onhand_qty'] / total_onhand if total_onhand else 0.0) * closing.plantation_cost
                 
             # Other Plantation Product
             if to_create:
