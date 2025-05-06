@@ -92,6 +92,10 @@ class ClosingProductionFinishGood(models.Model):
     outgoing_qty = fields.Float(string='Delivered Qty')
     outgoing_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Delivered Value')
 
+    outgoing_issue_qty = fields.Float(string='Other Issued Qty')
+    outgoing_issue_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Other Issued Value')
+    outgoing_issue_stock_move_ids = fields.Many2many('stock.move', 'closing_prod_fg_stock_move_rel', string='Issued Stock Moves')
+
     scrap_qty = fields.Float(string='Scrap Qty')
     scrap_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Scrap Value')
 
@@ -172,6 +176,7 @@ class ClosingProductionFinishGood(models.Model):
     def _compute_outgoing_value(self):
         for line in self:
             line.outgoing_value = line.outgoing_qty * line.new_cost_price
+            line.outgoing_issue_value = line.outgoing_issue_qty * line.new_cost_price
             line.ripening_value = line.ripening_qty * line.new_cost_price
             line.scrap_value = line.scrap_qty * line.new_cost_price
             line.adjustment_value = line.adjustment_qty * line.new_cost_price
@@ -186,8 +191,8 @@ class ClosingProductionFinishGood(models.Model):
             )
     def _compute_closing(self):
         for line in self:
-            line.closing_qty = line.onhand_qty - line.ripening_qty - line.outgoing_qty - line.scrap_qty + line.adjustment_qty
-            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.scrap_value + line.adjustment_value
+            line.closing_qty = line.onhand_qty - line.ripening_qty - line.outgoing_qty - line.outgoing_issue_qty - line.scrap_qty + line.adjustment_qty
+            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.outgoing_issue_value - line.scrap_value + line.adjustment_value
     
     @api.depends('closing_id', 'closing_id.varieties_type', 
         'ripening_incoming_qty', 'closing_id.pisang_ripening_cost', 
@@ -1578,6 +1583,26 @@ class ClosingProduction(models.Model):
                                 ])
                 outgoing_qty = (sum(delivery_moves_out.mapped('qty_done')) if delivery_moves_out else 0.0) - (sum(delivery_moves_return.mapped('qty_done')) if delivery_moves_return else 0.0)
                 
+                # Find Material Request Issue
+                issued_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                ('mr_line_id','!=',False),
+                                ('location_dest_id.usage','=','inventory'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                issued_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_id.usage','=','inventory'),
+                                ('mr_line_id','!=',False),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_issue_stock_move_ids = [(6, 0, issued_moves_out.ids + issue_move_return.ids)]
+                outgoing_issue_qty = (sum(issued_moves_out.mapped('qty_done')) if issued_moves_out else 0.0) - (sum(issued_moves_return.mapped('qty_done')) if issued_moves_return else 0.0)
+
                 # Find Scrap
                 scrap_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),('state','=','done'),
                                 ('location_id.usage','=','internal'),
@@ -1607,6 +1632,8 @@ class ClosingProduction(models.Model):
                     'scrap_qty': scrap_qty,
                     # 'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'outgoing_qty': outgoing_qty,
+                    'outgoing_issue_qty': outgoing_issue_qty,
+                    'outgoing_issue_stock_move_ids': outgoing_issue_stock_move_ids,
                     # 'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                 }
                 total_onhand += values_to_create['onhand_qty']
@@ -2554,7 +2581,7 @@ class ClosingProduction(models.Model):
             # 3. Journal Cost of Goods Sold (COGS > Inventory) from Gudang Mentah
             if line.outgoing_qty or line.outgoing_value:
                 vals_cogs = {
-                    'name': f"{line.product_id.name} Mentah Delivered",
+                    'name': f"{line.product_id.name} Delivered",
                     'plantation_location_type_id': False,
                     'plantation_varieties_id': varieties.id,
                     'plantation_location_id': False,
@@ -2575,6 +2602,41 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_cogs.append((0, 0, vals_src3))
 
+            if line.outgoing_issue_stock_move_ids:
+                remaining_issue_value = round(line.outgoing_issue_value, 2)
+                for smi in line.outgoing_issue_stock_move_ids:
+                    if smi.location_id.usage=='internal' and smi.location_dest_id.usage!='internal':
+                        issue_value = round(smi.quantity_done * line.new_cost_price, 2)
+                    elif smi.location_id.usage!='internal' and smi.location_dest_id.usage=='internal':
+                        issue_value = round(-1 * smi.quantity_done * line.new_cost_price, 2)
+                    remaining_issue_value -= issue_value
+                    vals_issues = {
+                        'name': f"{line.product_id.name} Issued",
+                        'plantation_location_type_id': False,
+                        'plantation_varieties_id': varieties.id,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'plantation_src_journal_id': False,
+                        'account_id': smi.plantation_activity_id.cost_account_id.id,
+                        'product_id': line.product_id.id,
+                        'debit': issue_value if issue_value>0 else 0.0,
+                        'credit': issue_value if issue_value<0 else 0.0,
+                    }
+                    move_lines_cogs.append((0, 0, vals_issues))
+                vals_src4.update({
+                    'name': f"{smi.product_id.name} Issued",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': False,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.inventory_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
+                    'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
+                })
+                move_lines_cogs.append((0, 0, vals_src4))
+            
             # 4. Journal Scrap
             if line.scrap_qty or line.scrap_value:
                 vals_cogs = {

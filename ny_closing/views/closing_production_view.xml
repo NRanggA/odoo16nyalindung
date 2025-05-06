@@ -411,6 +411,13 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td style="font-weight: bold;">Delivery</td>
+                                        <td style="text-align: right;"><field name="outgoing_issue_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="outgoing_issue_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td style="font-weight: bold;">Adjustment</td>
                                         <td style="text-align: right;"><field name="adjustment_qty"/></td>
                                         <td></td>
@@ -440,6 +447,20 @@
                                     <field name="total_cost" sum="total_cost"/>
                                 </tree>
                             </field>
+
+                            <label for="outgoing_issue_stock_move_ids" groups="base.group_no_one" attrs="{'invisible': [('outgoing_issue_stock_move_ids','=',[])]}"/>
+                            <field name="outgoing_issue_stock_move_ids" groups="base.group_no_one" attrs="{'invisible': [('outgoing_issue_stock_move_ids','=',[])]}" readonly="1">
+                                <tree>
+                                    <field name="date" />
+                                    <field name="product_id" />
+                                    <field name="plantation_location_type_id" />
+                                    <field name="plantation_location_id" />
+                                    <field name="plantation_activity_id" />
+                                    <field name="plantation_src_journal_id" />
+                                    <field name="quantity_done" sum="quantity_done"/>
+                                    <field name="state" />
+                                </tree>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -464,6 +485,8 @@
                 <field name="new_cost_price" optional="hide" />
                 <field name="outgoing_qty" sum="outgoing_qty" />
                 <field name="outgoing_value" sum="outgoing_value" optional="hide"/>
+                <field name="outgoing_issue_qty" sum="outgoing_issue_qty" />
+                <field name="outgoing_issue_value" sum="outgoing_issue_value" optional="hide"/>
                 <field name="adjustment_qty" sum="adjustment_qty" />
                 <field name="adjustment_value" sum="adjustment_value" optional="hide"/>
                 <field name="closing_qty" sum="closing_qty" />
