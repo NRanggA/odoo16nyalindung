@@ -185,11 +185,11 @@ class HrEmployeeExpense(models.Model):
                             elif amount_residual > 0 and amount_residual < payment.amount_total:
                                 new_payment_state = 'partial'
 
-        payment.write({
-            'payment_state': new_payment_state,
-            'amount_residual': amount_residual,
-            'payment_date': new_payment_date,
-            })
+            payment.write({
+                'payment_state': new_payment_state,
+                'amount_residual': amount_residual,
+                'payment_date': new_payment_date,
+                })
     
     
     def unlink(self):
