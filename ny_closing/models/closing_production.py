@@ -776,11 +776,11 @@ class ClosingProduction(models.Model):
                 closing.pisang_incoming_qty = 0.0
                 closing.pisang_ripening_qty = 0.0
   
-    @api.depends('varieties_type','fg2_valuation_ids.incoming_qty')
+    @api.depends('varieties_type','fg_melon_valuation_ids.incoming_qty')
     def _compute_incoming_qty_melon(self):
         for closing in self:
             if closing.varieties_type=='melon':
-                closing.melon_incoming_qty = sum(closing.fg2_valuation_ids.mapped('incoming_qty'))
+                closing.melon_incoming_qty = sum(closing.fg_melon_valuation_ids.mapped('incoming_qty'))
             else:
                 closing.melon_incoming_qty = 0.0
   
