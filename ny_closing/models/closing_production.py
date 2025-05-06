@@ -1587,7 +1587,7 @@ class ClosingProduction(models.Model):
                 issued_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),
                                 ('state','=','done'),
                                 ('location_id.usage','=','internal'),
-                                ('mr_line_id','!=',False),
+                                ('move_id.mr_line_id','!=',False),
                                 ('location_dest_id.usage','=','inventory'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
@@ -1596,7 +1596,7 @@ class ClosingProduction(models.Model):
                                 ('state','=','done'),
                                 ('location_dest_id.usage','=','internal'),
                                 ('location_id.usage','=','inventory'),
-                                ('mr_line_id','!=',False),
+                                ('move_id.mr_line_id','!=',False),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
