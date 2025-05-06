@@ -1022,7 +1022,7 @@
                                     attrs="{'invisible': ['|',('varieties_type','!=','melon'),('state','not in',['rm_valuation','fg_valuation','account_entry','done'])]}">
                             <group>
                                 <group>
-                                    <field name="melon_product_id" attrs="{'readonly': [('state','!=','rm_valuation')]}"/>
+                                    <!-- <field name="melon_product_id" attrs="{'readonly': [('state','!=','rm_valuation')]}"/> -->
                                     <field name="melon_other_product_ids" invisible="1" readonly="1"/>
                                 </group>
                                 <group>

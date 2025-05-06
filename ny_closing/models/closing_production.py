@@ -1535,7 +1535,7 @@ class ClosingProduction(models.Model):
             
             # Get Pisang Receiving Qty from NAP
             to_create = []
-            total_produced = 0.0
+            total_produced = total_onhand = 0.0
             varietas_melon = self.env['plant.varieties'].search([('name','=','Melon')])
             closing.melon_varieties_id = varietas_melon.id
             closing.fg2_valuation_ids.unlink()
@@ -1604,6 +1604,7 @@ class ClosingProduction(models.Model):
                     'outgoing_qty': outgoing_qty,
                     # 'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                 }
+                total_onhand += values_to_create['opening_qty'] + values_to_create['incoming_qty']
                 if prev_closing_fg:
                     values_to_create.update({
                         'inventory_account_id': prev_closing_fg.inventory_account_id.id if prev_closing_fg.inventory_account_id else False,
@@ -1614,7 +1615,9 @@ class ClosingProduction(models.Model):
                     })
                 to_create.append(values_to_create)
             for exvals in to_create:
-                exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
+                # exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
+                exvals['plantation_cost'] = (exvals['incoming_qty'] / total_onhand if total_onhand else 0.0) * closing.plantation_cost
+                
             # Other Plantation Product
             if to_create:
                 print(">>>>>>>>>>>>>>", to_create)
