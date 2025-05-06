@@ -2623,7 +2623,7 @@ class ClosingProduction(models.Model):
                         'credit': issue_value if issue_value<0 else 0.0,
                     }
                     move_lines_cogs.append((0, 0, vals_issues))
-                vals_src4.update({
+                vals_src4 = {
                     'name': f"{smi.product_id.name} Issued",
                     'plantation_location_type_id': False,
                     'plantation_varieties_id': False,
@@ -2634,7 +2634,7 @@ class ClosingProduction(models.Model):
                     'product_id': line.product_id.id,
                     'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
                     'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
-                })
+                }
                 move_lines_cogs.append((0, 0, vals_src4))
             
             # 4. Journal Scrap
