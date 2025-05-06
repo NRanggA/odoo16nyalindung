@@ -54,6 +54,7 @@ class HrEmployeeExpense(models.Model):
         ('partial', 'Partially Paid'),
         ('paid', 'Paid')], compute='_payment_state', compute_sudo=True, 
         string='Payment Status', store=True)
+    payment_date = fields.Date(compute='_payment_state', store=True, string='Payment Date')
     
     amount_residual = fields.Monetary(compute='_payment_state', string='Amount to Pay', store=True, compute_sudo=True)
     company_id = fields.Many2one("res.company", string="Company", 
@@ -160,18 +161,20 @@ class HrEmployeeExpense(models.Model):
         for payment in self:
             new_payment_state = 'no'
             amount_residual = payment.amount_total if payment.is_advance else payment.amount_total2
-            move = payment.account_direct_payment_id.account_move_id
+            new_payment_date = False
             if payment.employee_expense_state == 'approved':
                 currency = payment.currency_id
                 new_payment_state = 'not_paid'
-                if move and move.state=='posted':
+                payment_move = payment.account_direct_payment_id.account_move_id
+                if payment_move and payment_move.state=='posted':
                     new_payment_state = 'in_payment'
-                    for line in move.line_ids:
-                        if move.journal_id.default_account_id == line.account_id:
+                    new_payment_date = payment_move.date
+                    for line in payment_move.line_ids:
+                        if payment_move.journal_id.default_account_id == line.account_id:
                             amount_residual += line.balance
                             if currency.is_zero(amount_residual):
                                 new_payment_state = 'paid'
-                        elif move.journal_id.outbound_payment_method_line_ids.payment_account_id == line.account_id or move.journal_id.inbound_payment_method_line_ids.payment_account_id == line.account_id:
+                        elif payment_move.journal_id.outbound_payment_method_line_ids.payment_account_id == line.account_id or payment_move.journal_id.inbound_payment_method_line_ids.payment_account_id == line.account_id:
                             total_paid = 0.0
                             for line_reconcile in line.matched_debit_ids:
                                 if line.move_id == line_reconcile.credit_move_id.move_id or line.move_id == line_reconcile.debit_move_id.move_id:
@@ -185,6 +188,7 @@ class HrEmployeeExpense(models.Model):
         payment.write({
             'payment_state': new_payment_state,
             'amount_residual': amount_residual,
+            'payment_date': new_payment_date,
             })
     
     
