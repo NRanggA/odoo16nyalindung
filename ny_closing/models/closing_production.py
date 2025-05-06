@@ -2276,7 +2276,7 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_production.append((0,0,vals_src))
             
-            if line.outgoing_qty ot linr.outgoing_value:
+            if line.outgoing_qty or linr.outgoing_value:
                 vals_src = {
                     'name': 'Cost of Goods Sold',
                     'plantation_location_type_id': False,
