@@ -70,7 +70,8 @@ class DirectPayment(models.Model):
             credit_account = self.journal_id.inbound_payment_method_line_ids.payment_account_id
         return {
             'partner_id': partner.id if partner else False,
-            'name': _("Request of Direct Payment"),
+            # 'name': _("Request of Direct Payment"),
+            'name': self.description,
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
             'account_id': credit_account.id,
             # 'analytic_account_id': self.analytic_account_id.id,

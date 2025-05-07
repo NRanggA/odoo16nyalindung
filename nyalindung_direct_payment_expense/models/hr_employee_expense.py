@@ -221,7 +221,8 @@ class HrEmployeeExpense(models.Model):
 
         return {
             'partner_id': partner.id if partner else False,
-            'name': _("Request of Direct Payment"),
+            # 'name': _("Request of Direct Payment"),
+            'name': self.description,
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
             'account_id': self.contra_account_for_advance.id,
             # 'analytic_account_id': self.analytic_account_id.id,
@@ -416,6 +417,11 @@ class HrEmployeeExpense(models.Model):
         if self.employee_id:
             self.partner_id = self.employee_id.address_home_id.id or self.employee_id.user_id.partner_id.id
 
+    @api.onchange('description')
+    def _onchange_description(self):
+        for line in self.line_ids:
+            line.name = self.description or ''
+            
     @api.onchange('is_advance')
     def onchange_is_advance(self):
         if self.is_advance:
@@ -426,6 +432,7 @@ class HrEmployeeExpense(models.Model):
                 'name': 'Request of Employee Advance',
                 'account_id': account.id,
                 })]
+    
     @api.constrains('date','settelement_date')
     def _constrains_settelement_date(self):
         for record in self:
@@ -639,8 +646,9 @@ class HrEmployeeExpenseLine(models.Model):
             line.varieties_validator = validator
     filtered_activities = fields.Many2many('lhm.activity', 'lhm_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
     filtered_locations = fields.Many2many('lhm.location', 'lhm_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
-
     
+
+
     @api.depends('varieties_id','location_type_id')
     def _filter_locations(self):
         # biar tidak di run setiap saat
@@ -709,7 +717,6 @@ class HrEmployeeExpenseLine(models.Model):
     def _onchange_activity_id(self):
         if self.activity_id:
             self.account_id = self.activity_id.account_id.id
-
 
     @api.onchange('product_id')
     def onchange_product(self):

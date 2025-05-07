@@ -16,6 +16,7 @@
       <xpath expr="//field[@name='date']" position="after">
         <field name="direct_state" widget="radio" string="Payment Type"/>
       </xpath>
+
       <xpath expr="//field[@name='company_id']" position="after">
         <field name="general" invisible="1"/>
         <field name="partner_bank_id" 
@@ -25,6 +26,9 @@
               />
         <field name="partner_bank_name" attrs="{'invisible' : [('general','=', False)]}"/>
         <field name="partner_bank_number" attrs="{'invisible' : [('general','=', False)]}"/>
+
+        <field name="employee_expense_id" readonly="1"
+            attrs="{'invisible': [('employee_expense_id', '=', False)]}"/>
       </xpath>
       <xpath expr="//field[@name='line_ids']/tree/field[@name='name']" position="after">
         <field name="plantation_location_type_id" 
