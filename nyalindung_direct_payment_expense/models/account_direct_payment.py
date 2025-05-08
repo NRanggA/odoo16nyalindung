@@ -71,7 +71,7 @@ class DirectPayment(models.Model):
         return {
             'partner_id': partner.id if partner else False,
             # 'name': _("Request of Direct Payment"),
-            'name': self.description,
+            'name': self.description if self.description else _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
             'account_id': credit_account.id,
             # 'analytic_account_id': self.analytic_account_id.id,
