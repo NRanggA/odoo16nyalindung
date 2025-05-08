@@ -38,4 +38,18 @@
         </field>
     </record>
 
+
+    <!-- Inherit View Form Wizard -->
+    <record id="view_mrp_consumption_warning_form_inherit_ny_mrp" model="ir.ui.view">
+        <field name="name">Consumption Warning - Hide Set Qty Button</field>
+        <field name="model">mrp.consumption.warning</field>
+        <field name="inherit_id" ref="mrp.view_mrp_consumption_warning_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//footer/button[@name='action_set_qty']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
 </odoo>
