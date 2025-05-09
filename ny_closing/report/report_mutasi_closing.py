@@ -1131,43 +1131,43 @@ class ReportMutasiClosing(models.AbstractModel):
         row += 1
         row = write_table_headers(row, "Stock Location")
 
-        for pisang in melon_fg_items:
-            sheet4.write(row, 0, pisang.product_id.default_code if pisang.product_id.default_code else '-', wbf['content'])
-            sheet4.write(row, 1, pisang.product_id.name, wbf['content'])
-            sheet4.write(row, 2, pisang.product_id.uom_id.name, wbf['content'])
+        for melon in melon_fg_items:
+            sheet4.write(row, 0, melon.product_id.default_code if melon.product_id.default_code else '-', wbf['content'])
+            sheet4.write(row, 1, melon.product_id.name, wbf['content'])
+            sheet4.write(row, 2, melon.product_id.uom_id.name, wbf['content'])
             
-            sheet4.write(row, 3, pisang.opening_qty, wbf['content_float'])
-            sheet4.write(row, 4, pisang.opening_value, wbf['content_float'])
+            sheet4.write(row, 3, melon.opening_qty, wbf['content_float'])
+            sheet4.write(row, 4, melon.opening_value, wbf['content_float'])
             
-            sheet4.write(row, 5, pisang.incoming_qty, wbf['content_float'])
-            sheet4.write(row, 6, pisang.plantation_cost, wbf['content_float'])
+            sheet4.write(row, 5, melon.incoming_qty, wbf['content_float'])
+            sheet4.write(row, 6, melon.plantation_cost, wbf['content_float'])
             
-            sheet4.write(row, 7, pisang.onhand_qty, wbf['content_float'])
-            sheet4.write(row, 8, pisang.onhand_value, wbf['content_float'])
+            sheet4.write(row, 7, melon.onhand_qty, wbf['content_float'])
+            sheet4.write(row, 8, melon.onhand_value, wbf['content_float'])
             
-            sheet4.write(row, 9, pisang.new_cost_price, wbf['content_float'])
+            sheet4.write(row, 9, melon.new_cost_price, wbf['content_float'])
             
-            # sheet4.write(row, 10, pisang.ripening_qty, wbf['content_float'])
-            # sheet4.write(row, 11, pisang.ripening_value, wbf['content_float'])
+            # sheet4.write(row, 10, melon.ripening_qty, wbf['content_float'])
+            # sheet4.write(row, 11, melon.ripening_value, wbf['content_float'])
 
-            # sheet4.write(row, 12, pisang.scrap_qty, wbf['content_float'])
-            # sheet4.write(row, 13, pisang.scrap_value, wbf['content_float'])
+            # sheet4.write(row, 12, melon.scrap_qty, wbf['content_float'])
+            # sheet4.write(row, 13, melon.scrap_value, wbf['content_float'])
 
             # Delivery
-            sheet4.write(row, 10, pisang.outgoing_qty, wbf['content_float'])
-            sheet4.write(row, 11, pisang.outgoing_value, wbf['content_float'])
+            sheet4.write(row, 10, melon.outgoing_qty, wbf['content_float'])
+            sheet4.write(row, 11, melon.outgoing_value, wbf['content_float'])
             
             # other issued
-            sheet4.write(row, 12, pisang.outgoing_issue_qty, wbf['content_float'])
-            sheet4.write(row, 13, pisang.outgoing_issue_value, wbf['content_float'])
+            sheet4.write(row, 12, melon.outgoing_issue_qty, wbf['content_float'])
+            sheet4.write(row, 13, melon.outgoing_issue_value, wbf['content_float'])
 
             # Adjustment
-            sheet4.write(row, 14, pisang.adjustment_qty, wbf['content_float'])
-            sheet4.write(row, 15, pisang.adjustment_value, wbf['content_float'])
+            sheet4.write(row, 14, melon.adjustment_qty, wbf['content_float'])
+            sheet4.write(row, 15, melon.adjustment_value, wbf['content_float'])
 
             # Ending
-            sheet4.write(row, 16, pisang.closing_qty, wbf['content_float'])
-            sheet4.write(row, 17, pisang.closing_value, wbf['content_float'])
+            sheet4.write(row, 16, melon.closing_qty, wbf['content_float'])
+            sheet4.write(row, 17, melon.closing_value, wbf['content_float'])
             
             row += 1
         
