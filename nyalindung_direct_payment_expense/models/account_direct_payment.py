@@ -179,7 +179,17 @@ class DirectPayment(models.Model):
                         rounding_move_lines = self._prepare_rounding_move_line(total + payable_move_lines['debit'] - payable_move_lines['credit'])
                         move_lines.append(rounding_move_lines)
                     move_lines.append(payable_move_lines)
-                payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
+                # payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
+                move_dict = self._prepare_move()
+
+                if payment.account_move_id.posted_before:
+                    move_dict.pop('journal_id', None)
+                    move_dict.pop('name', None)
+
+                move_dict.update({
+                    'line_ids': list(map(lambda l: (0, 0, l), move_lines))
+                })
+                payment.account_move_id.write(move_dict)
 
             if payment.account_move_id and payment.account_move_id.state == 'cancel':
                 payment.account_move_id.action_post()
