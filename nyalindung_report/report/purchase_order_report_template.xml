@@ -151,7 +151,8 @@
                                 <tr>
                                     <td width="28%" height="40px" style="vertical-align : top">Pemilik Rekening</td>
                                     <td width="1%" height="40px" style="vertical-align : top">:</td>
-                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-esc="o.partner_id.name"/></td>
+                                    <!-- <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-esc="o.partner_id.name"/></td> -->
+                                    <td height="40px" style="padding-left : 8px; padding-right: 8px; vertical-align: top"><t t-esc="o.partner_id.bank_ids and o.partner_id.bank_ids[0].acc_holder_name or ''"/></td>
                                 </tr>
                             </tbody>
                         </table>
