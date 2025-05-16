@@ -163,6 +163,7 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet = workbook.add_worksheet("Laboratory Closing")
         sheet2 = workbook.add_worksheet("Karet Closing")
         sheet3 = workbook.add_worksheet("Pisang Closing")
+        sheet4 = workbook.add_worksheet("Melon Closing")
 
         ###### CLOSING LABORATORY ######
         # Lebar kolom
@@ -1029,6 +1030,243 @@ class ReportMutasiClosing(models.AbstractModel):
 
 
 
+        ############## CLOSING MELON ##############
+        sheet4.set_column('A:A', 20)
+        sheet4.set_column('B:B', 30)
+        sheet4.set_column('C:C', 10)
+        sheet4.set_column('D:V', 15)
+
+        # Judul Laporan
+        sheet4.merge_range('E2:J2', 'REPORT MELON CLOSING', wbf['title_doc'])
+        sheet4.merge_range('E3:J3', f'{date_from} s/d {date_to}', wbf['title_doc'])
+        
+        def write_table_headers(start_row, section):
+            sheet4.merge_range(start_row, 0, start_row + 1, 0, 'Kode', wbf['header'])
+            sheet4.merge_range(start_row, 1, start_row + 1, 1, 'Nama Product', wbf['header'])
+            sheet4.merge_range(start_row, 2, start_row + 1, 2, 'Satuan', wbf['header'])
+            
+            if section == "Stock Location":
+                sheet4.merge_range(start_row, 3, start_row, 4, 'Beginning', wbf['header'])
+                sheet4.merge_range(start_row, 5, start_row, 6, 'Incoming', wbf['header'])
+                sheet4.merge_range(start_row, 7, start_row, 8, 'Onhand Qty', wbf['header'])
+                sheet4.write(start_row, 9, 'New Cost Price', wbf['header'])
+                # sheet4.merge_range(start_row, 10, start_row, 11, 'Ripening', wbf['header'])
+                # sheet4.merge_range(start_row, 12, start_row, 13, 'Scrap', wbf['header'])
+                sheet4.merge_range(start_row, 10, start_row, 11, 'Delivery', wbf['header'])
+                sheet4.merge_range(start_row, 12, start_row, 13, 'Other Issued', wbf['header'])
+                sheet4.merge_range(start_row, 14, start_row, 15, 'Adjustment', wbf['header'])
+                sheet4.merge_range(start_row, 16, start_row, 17, 'Ending', wbf['header'])
+                
+                # Body value
+                # Beginning
+                sheet4.write(start_row + 1, 3, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 4, 'Value', wbf['header'])
+                # Incoming
+                sheet4.write(start_row + 1, 5, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 6, 'Production Cost', wbf['header'])
+
+                # Onhand Qty
+                sheet4.write(start_row + 1, 7, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 8, 'Value', wbf['header'])
+                # New Cost Price
+                sheet4.write(start_row + 1, 9, 'Value', wbf['header'])
+                
+                # # Repening
+                # sheet4.write(start_row + 1, 10, 'Qty', wbf['header'])
+                # sheet4.write(start_row + 1, 11, 'Value', wbf['header'])
+                # # Scrap
+                # sheet4.write(start_row + 1, 12, 'Qty', wbf['header'])
+                # sheet4.write(start_row + 1, 13, 'Value', wbf['header'])
+                
+                # Delivery
+                sheet4.write(start_row + 1, 10, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 11, 'Value', wbf['header'])
+                
+                # Other Issued
+                sheet4.write(start_row + 1, 12, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 13, 'Value', wbf['header'])
+                
+                # Adjustment
+                sheet4.write(start_row + 1, 14, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 15, 'Value', wbf['header'])
+                # Ending
+                sheet4.write(start_row + 1, 16, 'Qty', wbf['header'])
+                sheet4.write(start_row + 1, 17, 'Value', wbf['header'])
+
+            # else:  # Repening Location
+            #     sheet4.merge_range(start_row, 3, start_row, 4, 'Beginning', wbf['header'])
+            #     sheet4.merge_range(start_row, 5, start_row, 7, 'Incoming', wbf['header'])
+            #     sheet4.merge_range(start_row, 8, start_row, 9, 'Onhand qty', wbf['header'])
+            #     sheet4.write(start_row, 10, 'New Cost Price', wbf['header'])
+            #     sheet4.merge_range(start_row, 11, start_row, 12, 'Delivery', wbf['header'])
+            #     sheet4.merge_range(start_row, 13, start_row, 14, 'Ending', wbf['header'])
+                
+            #     # Body value
+            #     sheet4.write(start_row + 1, 3, 'Qty', wbf['header'])
+            #     sheet4.write(start_row + 1, 4, 'Value', wbf['header'])
+
+            #     sheet4.write(start_row + 1, 5, 'Qty', wbf['header'])
+            #     sheet4.write(start_row + 1, 6, 'Value', wbf['header'])
+            #     sheet4.write(start_row + 1, 7, 'Ripening Cost', wbf['header'])
+                
+            #     sheet4.write(start_row + 1, 8, 'Qty', wbf['header'])
+            #     sheet4.write(start_row + 1, 9, 'Value', wbf['header'])
+                
+            #     sheet4.write(start_row + 1, 10, 'Value', wbf['header'])
+                
+            #     sheet4.write(start_row + 1, 11, 'Qty', wbf['header'])
+            #     sheet4.write(start_row + 1, 12, 'Value', wbf['header'])
+                
+            #     sheet4.write(start_row + 1, 13, 'Qty', wbf['header'])
+            #     sheet4.write(start_row + 1, 14, 'Value', wbf['header'])
+            
+            return start_row + 2
+        
+        # Ambil data untuk yang pisang saja
+        melon_fg_items = obj.closing_production_ids.filtered(lambda r: r.varieties_type == "melon").fg_karet_valuation_ids
+
+        # Stock Location
+        row = 5
+        sheet4.write(row, 0, "Stock Location", wbf['title_doc'])
+        row += 1
+        row = write_table_headers(row, "Stock Location")
+
+        for melon in melon_fg_items:
+            sheet4.write(row, 0, melon.product_id.default_code if melon.product_id.default_code else '-', wbf['content'])
+            sheet4.write(row, 1, melon.product_id.name, wbf['content'])
+            sheet4.write(row, 2, melon.product_id.uom_id.name, wbf['content'])
+            
+            sheet4.write(row, 3, melon.opening_qty, wbf['content_float'])
+            sheet4.write(row, 4, melon.opening_value, wbf['content_float'])
+            
+            sheet4.write(row, 5, melon.incoming_qty, wbf['content_float'])
+            sheet4.write(row, 6, melon.plantation_cost, wbf['content_float'])
+            
+            sheet4.write(row, 7, melon.onhand_qty, wbf['content_float'])
+            sheet4.write(row, 8, melon.onhand_value, wbf['content_float'])
+            
+            sheet4.write(row, 9, melon.new_cost_price, wbf['content_float'])
+            
+            # sheet4.write(row, 10, melon.ripening_qty, wbf['content_float'])
+            # sheet4.write(row, 11, melon.ripening_value, wbf['content_float'])
+
+            # sheet4.write(row, 12, melon.scrap_qty, wbf['content_float'])
+            # sheet4.write(row, 13, melon.scrap_value, wbf['content_float'])
+
+            # Delivery
+            sheet4.write(row, 10, melon.outgoing_qty, wbf['content_float'])
+            sheet4.write(row, 11, melon.outgoing_value, wbf['content_float'])
+            
+            # other issued
+            sheet4.write(row, 12, melon.outgoing_issue_qty, wbf['content_float'])
+            sheet4.write(row, 13, melon.outgoing_issue_value, wbf['content_float'])
+
+            # Adjustment
+            sheet4.write(row, 14, melon.adjustment_qty, wbf['content_float'])
+            sheet4.write(row, 15, melon.adjustment_value, wbf['content_float'])
+
+            # Ending
+            sheet4.write(row, 16, melon.closing_qty, wbf['content_float'])
+            sheet4.write(row, 17, melon.closing_value, wbf['content_float'])
+            
+            row += 1
+        
+        # TOTAL STOCK LOCATION
+        start_row = row - len(melon_fg_items)
+        sheet4.write(row, 0, '', wbf['header'])
+        sheet4.write(row, 1, "TOTAL", wbf['header'])
+        sheet4.write(row, 2, '', wbf['header'])
+        sheet4.write_formula(row, 3, f"=SUM(D{start_row}:D{row})", wbf['total_float'])  
+        sheet4.write_formula(row, 4, f"=SUM(E{start_row}:E{row})", wbf['total_float'])  
+
+        sheet4.write_formula(row, 5, f"=SUM(F{start_row}:F{row})", wbf['total_float'])  
+        sheet4.write_formula(row, 6, f"=SUM(G{start_row}:G{row})", wbf['total_float'])  
+
+        sheet4.write_formula(row, 7, f"=SUM(H{start_row}:H{row})", wbf['total_float']) 
+        sheet4.write_formula(row, 8, f"=SUM(I{start_row}:I{row})", wbf['total_float']) 
+
+        # sheet4.write_formula(row, 9, f"=SUM(J{start_row}:J{row})", wbf['total_float'])  
+        sheet4.write(row, 9, "", wbf['total_float'])  
+
+        # sheet4.write_formula(row, 10, f"=SUM(K{start_row}:K{row})", wbf['total_float']) 
+        # sheet4.write_formula(row, 11, f"=SUM(L{start_row}:L{row})", wbf['total_float']) 
+        
+        # sheet4.write_formula(row, 12, f"=SUM(M{start_row}:M{row})", wbf['total_float']) 
+        # sheet4.write_formula(row, 13, f"=SUM(N{start_row}:N{row})", wbf['total_float']) 
+
+        # Delivery
+        sheet4.write_formula(row, 10, f"=SUM(O{start_row}:O{row})", wbf['total_float']) 
+        sheet4.write_formula(row, 11, f"=SUM(P{start_row}:P{row})", wbf['total_float']) 
+        
+        # Other Issued
+        sheet4.write_formula(row, 12, f"=SUM(O{start_row}:O{row})", wbf['total_float']) 
+        sheet4.write_formula(row, 13, f"=SUM(P{start_row}:P{row})", wbf['total_float']) 
+
+        # Adjustment
+        sheet4.write_formula(row, 14, f"=SUM(Q{start_row}:Q{row})", wbf['total_float']) 
+        sheet4.write_formula(row, 15, f"=SUM(R{start_row}:R{row})", wbf['total_float']) 
+
+        # Ending
+        sheet4.write_formula(row, 16, f"=SUM(S{start_row}:S{row})", wbf['total_float']) 
+        sheet4.write_formula(row, 17, f"=SUM(T{start_row}:T{row})", wbf['total_float']) 
+
+
+        # Repening Location
+        # row += 2 
+        # sheet4.write(row, 0, "Ripening Location", wbf['title_doc'])
+        # row += 1
+        # row = write_table_headers(row, "Ripening Location")
+        
+        # for pisang in pisang_fg2_items:
+        #     sheet4.write(row, 0, pisang.product_id.default_code if pisang.product_id.default_code else '-', wbf['content'])
+        #     sheet4.write(row, 1, pisang.product_id.name, wbf['content'])
+        #     sheet4.write(row, 2, pisang.product_id.uom_id.name, wbf['content'])
+            
+        #     sheet4.write(row, 3, pisang.ripening_opening_qty, wbf['content_float'])
+        #     sheet4.write(row, 4, pisang.ripening_opening_value, wbf['content_float'])
+            
+        #     sheet4.write(row, 5, pisang.ripening_incoming_qty, wbf['content_float'])
+        #     sheet4.write(row, 6, pisang.ripening_incoming_value, wbf['content_float'])
+        #     sheet4.write(row, 7, pisang.ripening_cost, wbf['content_float'])
+            
+        #     sheet4.write(row, 8, pisang.ripening_onhand_qty, wbf['content_float'])
+        #     sheet4.write(row, 9, pisang.ripening_onhand_value, wbf['content_float'])
+            
+        #     sheet4.write(row, 10, pisang.new_cost_price_ripening, wbf['content_float'])
+            
+        #     sheet4.write(row, 11, pisang.ripening_outgoing_qty, wbf['content_float'])
+        #     sheet4.write(row, 12, pisang.ripening_outgoing_value, wbf['content_float'])
+            
+        #     sheet4.write(row, 13, pisang.ripening_closing_qty, wbf['content_float'])
+        #     sheet4.write(row, 14, pisang.ripening_closing_value, wbf['content_float'])
+
+        #     row += 1
+        
+        # # TOTAL REPENING LOCATION
+        # start_repening_row = row - len(pisang_fg2_items)  
+        # sheet4.write(row, 0, "", wbf['header'])
+        # sheet4.write(row, 1, "TOTAL", wbf['header'])
+        # sheet4.write(row, 2, '', wbf['header'])
+        # sheet4.write_formula(row, 3, f"=SUM(D{start_repening_row}:D{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 4, f"=SUM(E{start_repening_row}:E{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 5, f"=SUM(F{start_repening_row}:F{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 6, f"=SUM(G{start_repening_row}:G{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 7, f"=SUM(H{start_repening_row}:H{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 8, f"=SUM(I{start_repening_row}:I{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 9, f"=SUM(J{start_repening_row}:J{row})", wbf['total_float'])
+        # # sheet4.write_formula(row, 10, f"=SUM(K{start_repening_row}:K{row})", wbf['total_float'])
+        # sheet4.write(row, 10, "", wbf['total_float'])
+        # sheet4.write_formula(row, 11, f"=SUM(L{start_repening_row}:L{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 12, f"=SUM(M{start_repening_row}:M{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 13, f"=SUM(N{start_repening_row}:N{row})", wbf['total_float'])
+        # sheet4.write_formula(row, 14, f"=SUM(O{start_repening_row}:O{row})", wbf['total_float'])
+        
+        ############# CLOSING MELON #############
+
+
+
+
+
         # Page Layout Sheet 
         sheet.set_landscape()
         sheet.set_paper(9)  # A4
@@ -1037,16 +1275,16 @@ class ReportMutasiClosing(models.AbstractModel):
         sheet.set_print_scale(78)
         
         # Page Layout Sheeet2
-        sheet.set_landscape()
-        sheet.set_paper(9)  # A4
-        sheet.repeat_rows(1, 4)
-        sheet.print_area(0, 0, row, 13)
-        sheet.set_print_scale(78)
+        sheet2.set_landscape()
+        sheet2.set_paper(9)  # A4
+        sheet2.repeat_rows(1, 4)
+        sheet2.print_area(0, 0, row, 13)
+        sheet2.set_print_scale(78)
 
         # Page Layout Sheeet3
-        sheet.set_landscape()
-        sheet.set_paper(9)  # A4
-        sheet.repeat_rows(1, 4)
-        sheet.print_area(0, 0, row, 13)
-        sheet.set_print_scale(78)
+        sheet3.set_landscape()
+        sheet3.set_paper(9)  # A4
+        sheet3.repeat_rows(1, 4)
+        sheet3.print_area(0, 0, row, 13)
+        sheet3.set_print_scale(78)
 

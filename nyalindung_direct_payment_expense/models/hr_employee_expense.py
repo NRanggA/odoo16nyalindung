@@ -221,7 +221,8 @@ class HrEmployeeExpense(models.Model):
 
         return {
             'partner_id': partner.id if partner else False,
-            'name': _("Request of Direct Payment"),
+            # 'name': _("Request of Direct Payment"),
+            'name': self.description if self.description else _("Request of Direct Payment"),
             # 'account_id': self.company_id.partner_id.property_account_payable_id.id,
             'account_id': self.contra_account_for_advance.id,
             # 'analytic_account_id': self.analytic_account_id.id,
@@ -416,6 +417,11 @@ class HrEmployeeExpense(models.Model):
         if self.employee_id:
             self.partner_id = self.employee_id.address_home_id.id or self.employee_id.user_id.partner_id.id
 
+    @api.onchange('description')
+    def _onchange_description(self):
+        for line in self.line_ids:
+            line.name = self.description or ''
+            
     @api.onchange('is_advance')
     def onchange_is_advance(self):
         if self.is_advance:
@@ -426,6 +432,7 @@ class HrEmployeeExpense(models.Model):
                 'name': 'Request of Employee Advance',
                 'account_id': account.id,
                 })]
+    
     @api.constrains('date','settelement_date')
     def _constrains_settelement_date(self):
         for record in self:
@@ -497,13 +504,21 @@ class HrEmployeeExpense(models.Model):
                         rounding_move_lines = self._prepare_rounding_move_line(total + payable_move_lines['debit'] - payable_move_lines['credit'])
                         move_lines.append(rounding_move_lines)
                     move_lines.append(payable_move_lines)
-                payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
-                # payment.account_move_id._post()
-                # payment.account_move_id.action_post()
+                # payment.account_move_id.write({'line_ids': list(map(lambda l: (0,0,l), move_lines)) })
+                move_dict = self._prepare_move()
+                
+                if payment.account_move_id.posted_before:
+                    move_dict.pop('journal_id', None)
+                    move_dict.pop('name', None)
+
+                move_dict.update({
+                    'line_ids': list(map(lambda l: (0, 0, l), move_lines))
+                })
+                payment.account_move_id.write(move_dict)
+
                 if payment.account_move_id.state == 'cancel':
                     payment.account_move_id.button_draft()
                 payment.account_move_id._post()
-                # payment.account_move_id.action_post()
 
             this_um = abs(self.advance_amount_settle)
             this_settelement = self.amount_total
@@ -515,25 +530,47 @@ class HrEmployeeExpense(models.Model):
                 else:
                     payment.account_direct_payment_id.action_draft()
                     payment.account_direct_payment_id.line_ids.unlink()
-                    if payment.expense_report:
-                        payment.account_direct_payment_id.write({
-                                'line_ids' : [Command.create({
-                                    'product_id' : line.product_id.id,
-                                    'name' : line.name,
-                                    'account_id' : payment.contra_account_for_advance.id,
-                                    'amount' : abs(payment.amount_total2),
-                                }) for line in payment.line_ids[0]]
-                        })
-                    else:
-                        payment.account_direct_payment_id.write({
-                                'line_ids' : [Command.create({
-                                    'product_id' : line.product_id.id,
-                                    'name' : line.name,
-                                    'account_id' : payment.contra_account_for_advance.id,
-                                    'amount' : line.amount if (payment.is_advance and not payment.expense_report) else payment.amount_total2,
-                                }) for line in payment.line_ids]
-                        })
 
+                    # siapkan data baris
+                    if payment.expense_report:
+                        line_vals = [
+                            Command.create({
+                                'product_id': line.product_id.id,
+                                'name': line.name,
+                                'account_id': payment.contra_account_for_advance.id,
+                                'amount': abs(payment.amount_total2),
+                            }) for line in payment.line_ids[0]
+                        ]
+                    else:
+                        line_vals = [
+                            Command.create({
+                                'product_id': line.product_id.id,
+                                'name': line.name,
+                                'account_id': payment.contra_account_for_advance.id,
+                                'amount': line.amount if (payment.is_advance and not payment.expense_report) else payment.amount_total2,
+                            }) for line in payment.line_ids
+                        ]
+
+                    update_vals = payment._prepare_direct_payment_update_vals()
+                    update_vals.update({'line_ids': line_vals})
+                    payment.account_direct_payment_id.write(update_vals)
+                    
+
+    # Fungsi untuk mengupdate header direct payment jika ada perubahan dari my expense
+    def _prepare_direct_payment_update_vals(self):
+        self.ensure_one()
+        return {
+            'partner_id': self.partner_id.id,
+            'date': self.date,
+            'requested_by': self.requested_by.id,
+            'description': self.description,
+            'journal_id': self.journal_id.id,
+            'currency_id': self.currency_id.id,
+            'is_advance': self.is_advance,
+            'expense_report': self.expense_report,
+            'employee_expense_id': self.id,
+            'direct_state': self.action_get_direct_state(),
+        }
 
     def employee_reject(self):
         for payment in self:
@@ -639,8 +676,9 @@ class HrEmployeeExpenseLine(models.Model):
             line.varieties_validator = validator
     filtered_activities = fields.Many2many('lhm.activity', 'lhm_filtered_activities_rel', compute='_filter_activities', string='Filter Activities')
     filtered_locations = fields.Many2many('lhm.location', 'lhm_filtered_locations_rel', compute='_filter_locations', string='Filter Lokasi')
-
     
+
+
     @api.depends('varieties_id','location_type_id')
     def _filter_locations(self):
         # biar tidak di run setiap saat
@@ -709,7 +747,6 @@ class HrEmployeeExpenseLine(models.Model):
     def _onchange_activity_id(self):
         if self.activity_id:
             self.account_id = self.activity_id.account_id.id
-
 
     @api.onchange('product_id')
     def onchange_product(self):
