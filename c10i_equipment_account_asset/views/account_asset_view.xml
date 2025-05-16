@@ -6,6 +6,19 @@
             <field name="model">account.asset.asset</field>
             <field name="inherit_id" ref="om_account_asset.view_account_asset_asset_form" />
             <field name="arch" type="xml">
+                <field name="date_first_depreciation" position="before">
+                    <field name="parent_id" invisible="0"/>
+                </field>
+                <div name="button_box" position="inside">
+                    <button name="open_child" type="object" class="oe_stat_button" 
+                        icon="fa-sitemap" attrs="{'invisible' : [('child_ids','=',[])]}">
+                        <field name="child_count" widget="statinfo"/>
+                        <field name="child_ids" invisible="1"/>
+                    </button>
+                    <button name="open_parent" string="Parent Asset" type="object" class="oe_stat_button" 
+                        icon="fa-sitemap" attrs="{'invisible' : [('parent_id','=',False)]}">
+                    </button>
+                </div>
                 <xpath expr="//notebook" position="inside">
                     <page name="acquisition" string="Acquisition Lines">
                         <field name="acquisition_line_ids" readonly="1">
@@ -24,6 +37,22 @@
                             </tree>
                         </field>
                     </page>
+                </xpath>
+
+                <xpath expr="//field[@name='depreciation_line_ids']/form/group/group[1]/field[@name='move_check']" position="after">
+                    <field name="parent_depr_id" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='depreciation_line_ids']/form" position="inside">
+                    <field name="child_depr_ids" attrs="{'invisible': [('child_depr_ids','=',[])]}">
+                        <tree>
+                            <field name="asset_id"/>
+                            <field name="amount" sum="amount"/>
+                            <field name="depreciated_value" optional="hide"/>
+                            <field name="remaining_value" optional="hide" sum="amount"/>
+                            <field name="move_id"/>
+                            <field name="move_check"/>
+                        </tree>
+                    </field>
                 </xpath>
             </field>
         </record>

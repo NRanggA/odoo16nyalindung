@@ -43,16 +43,29 @@
                     <notebook>
                         <page string="Lines">
                             <field name="line_ids">
-                                <tree editable="bottom" create="false" delete="false">
+                                <tree editable="bottom" create="true" delete="false">
                                     <field name="product_id"/>
                                     <field name="name"/>
-                                    <field name="product_qty" readonly="1"/>
+                                    <field name="product_qty" readonly="0"/>
                                     <field name="product_uom" readonly="1"/>
-                                    <field name="price_unit" readonly="1"/>
+                                    <field name="price_unit" readonly="0"/>
                                     <field name="price_subtotal" />
-                                    <field name="asset_category_id" required="1"/>
-                                    <field name="creation_mode" required="1"/>
-                                    <field name="group_mark" attrs="{'required': [('creation_mode','=','code_group')]}"/>
+                                    <field name="acquisition_type" required="1"/>
+                                    <!-- For Create -->
+                                    <field name="asset_category_id" attrs="{'required': [('acquisition_type','=','create')], 
+                                            'readonly': [('acquisition_type','!=','create')]}"/>
+                                    <field name="creation_mode" attrs="{'required': [('acquisition_type','=','create')], 
+                                            'readonly': [('acquisition_type','!=','create')]}"/>
+                                    <field name="group_mark" attrs="{'required': [('creation_mode','=','code_group')],
+                                            'readonly': [('acquisition_type','!=','create')]}"/>
+                                    <!-- For Merge -->
+                                    <field name="merge_mode" attrs="{'required': [('acquisition_type','=','merge')], 
+                                            'readonly': [('acquisition_type','!=','merge')]}"/>
+                                    <field name="existing_asset_id" attrs="{'required': [('acquisition_type','=','merge')], 
+                                            'readonly': [('acquisition_type','!=','merge')]}"/>
+                                    <field name="remaining_period" attrs="{'readonly': [('acquisition_type','!=','merge')]}"/>
+                                    
+
                                     <field name="equipment_register_line_id" invisible="1"/>
                                     <field name="purchase_line_id" invisible="1"/>
                                     <field name="purchase_id" invisible="1"/>

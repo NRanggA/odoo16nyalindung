@@ -41,20 +41,24 @@ class AssetAcquisition(models.Model):
 	def action_submit(self):
 		for acquisition in self:
 			# seq.name = '{}-{}/DPKS/DIT.{}/{}'.format(res.type.upper(), self.env['ir.sequence'].next_by_code('bpdpks.spp'), res.operating_unit_id.code, year)
-			if any(not l.asset_category_id for l in acquisition.line_ids):
-				raise ValidationError("Please input Asset Model for each line.")
+			if any(l.acquisition_type=='create' and not l.asset_category_id for l in acquisition.line_ids):
+				raise ValidationError("Please input Asset Model for creating a new Asset.")
+			if any(l.acquisition_type=='merge' and not l.existing_asset_id for l in acquisition.line_ids):
+				raise ValidationError("Please input Existing Asset for merging to existing Asset.")
 			acquisition.name = self.env['ir.sequence'].next_by_code(self._name)
 			acquisition.action_done()
 
 	def action_done(self):
 		for acquisition in self:
-			if any(not l.asset_category_id for l in acquisition.line_ids):
-				raise ValidationError("Please input Asset Model for each line.")
+			if any(l.acquisition_type=='create' and not l.asset_category_id for l in acquisition.line_ids):
+				raise ValidationError("Please input Asset Model for creating a new Asset.")
+			if any(l.acquisition_type=='merge' and not l.existing_asset_id for l in acquisition.line_ids):
+				raise ValidationError("Please input Existing Asset for merging to existing Asset.")
 
 			AccountAsset = self.env['account.asset.asset']
 			list_assets = self.env['account.asset.asset']
 			dict_asset_grouped = {}
-			for line in acquisition.line_ids:
+			for line in acquisition.line_ids.filtered(lambda l: l.acquisition_type=='create'):
 				# Hitung ulang price_unit jika non_credit aktif
 				price_unit = line.price_unit
 				if line.purchase_line_id.order_id.non_credit:
@@ -85,6 +89,7 @@ class AssetAcquisition(models.Model):
 									'asset_values': {
 										'name': f"{line.name}",
 										'value': price_unit,
+										'date': acquisition.date,
 										'acquisition_date': acquisition.date,
 										'salvage_value': 0.0,
 										'method': line.asset_category_id.method,
@@ -110,6 +115,7 @@ class AssetAcquisition(models.Model):
 								'asset_values': {
 									'name': f"{line.name}",
 									'value': price_unit,
+									'date': acquisition.date,
 									'acquisition_date': acquisition.date,
 									'salvage_value': 0.0,
 									'method': line.asset_category_id.method,
@@ -125,49 +131,165 @@ class AssetAcquisition(models.Model):
 						if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
 							dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
 						dict_asset_grouped[key]['purchase_account_values'][key_account] += price_unit
+			
+			# parent_assets = self.env['account.asset.asset']
+			new_parent = []
+			to_recompute_parent = self.env['account.asset.asset']
+			existing_asset_dict = {}
+			for line in acquisition.line_ids.filtered(lambda l: l.acquisition_type=='merge'):
+				first_depreciation_date = acquisition.date
+				if line.existing_asset_id.child_ids:
+					parent_asset = line.existing_asset_id
+					first_depreciation_date = min(x.depreciation_date for x in parent_asset.child_ids.depreciation_line_ids.filtered(lambda d: not d.move_id))
+					if line.merge_mode=='remaining_period':
+						# new_asset_method_number = max([(x.method_number - x.entry_count) for x in parent_asset.child_ids])
+						new_asset_method_number = parent_asset.entry_count
+					else:
+						new_asset_method_number = parent_asset.category_id.method_number
+						if line.merge_mode=='prolong_old_asset':
+							for child in line.existing_asset_id.child_ids:
+								if child not in existing_asset_dict.keys():
+									existing_asset_dict.update({child: {
+										'method_number': child.entry_count + new_asset_method_number,
+										'method_period': child.method_period,
+										'method_end': child.method_end,
+									}})
+				else:
+					parent_vals = line.existing_asset_id.copy_data({
+						'depreciation_line_ids': False,
+						'state': 'open',
+					})[0]
+					# parent_vals['name'] = line.existing_asset_id.name
+					parent_vals['name'] = f"Merge: {line.existing_asset_id.name}"
+					parent_asset = self.env['account.asset.asset'].create(parent_vals)
+					new_parent.append((parent_asset.id, line.existing_asset_id))
+					first_depreciation_date = min(x.depreciation_date for x in line.existing_asset_id.depreciation_line_ids.filtered(lambda d: not d.move_id))
+					if line.merge_mode=='remaining_period':
+						new_asset_method_number = line.existing_asset_id.method_number - line.existing_asset_id.entry_count
+					else:
+						new_asset_method_number = line.existing_asset_id.category_id.method_number
+						if line.merge_mode=='prolong_old_asset':
+							if line.existing_asset_id not in existing_asset_dict.keys():
+								existing_asset_dict.update({line.existing_asset_id: {
+									'method_number': line.existing_asset_id.entry_count + new_asset_method_number,
+									'method_period': line.existing_asset_id.method_period,
+									'method_end': line.existing_asset_id.method_end,
+								}})
+				
+				price_unit = line.price_unit
+				if line.purchase_line_id.order_id.non_credit:
+					if line.purchase_line_id.taxes_id:
+						qty = line.purchase_line_id.product_qty or 1
+						price_unit_prec = self.env['decimal.precision'].precision_get('Product Price')
+						tax_result = line.purchase_line_id.taxes_id.with_context(round=False).compute_all(
+							price_unit,
+							currency=line.purchase_line_id.order_id.currency_id,
+							quantity=qty,
+						)
+						price_unit_including_tax = tax_result['total_included'] / qty
+						price_unit = float_round(price_unit_including_tax, precision_digits=price_unit_prec)
+					if line.purchase_line_id.product_uom.id != line.purchase_line_id.product_id.uom_id.id:
+						price_unit *= line.purchase_line_id.product_uom.factor / line.purchase_line_id.product_id.uom_id.factor
+
+				to_recompute_parent |= parent_asset
+				
+				key_asset_model_id = line.existing_asset_id.category_id.id
+				key_line_group = False
+				key_code_group = False
+				for qty in range(int(line.product_qty)):
+					key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:False:{qty}"
+					if key not in dict_asset_grouped.keys():
+						dict_asset_grouped.update({key: {
+							'purchase_account_values': {},
+							'asset_values': {
+								'name': f"{line.name}",
+								'parent_id': parent_asset.id,
+								'value': price_unit,
+								'date': acquisition.date,
+								'acquisition_date': acquisition.date,
+								'salvage_value': 0.0,
+								'method': parent_asset.method,
+								'method_number': new_asset_method_number,
+								'method_period': parent_asset.method_period,
+								'prorata': parent_asset.prorata,
+								'first_depreciation_manual_date': first_depreciation_date,
+								'category_id': parent_asset.category_id.id,
+								'acquisition_line_ids': [(4, line.id)],
+							},
+						}})
+					key_account = line._get_computed_account()
+					if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
+						dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
+					dict_asset_grouped[key]['purchase_account_values'][key_account] += price_unit
 
 			for key, values in dict_asset_grouped.items():
 				asset_vals = values['asset_values']
 				purchase_account_dict = values['purchase_account_values']
-				# Create Original Move
+				if purchase_account_dict and line.product_id:
+					asset_category = self.env['account.asset.category'].browse(asset_vals['category_id'])
+					# Create Original Move
 
-				journal = self.account_journal_id
-				move_lines = []
-				move_vals = {
-					'journal_id': journal.id if journal else False,
-					'date': acquisition.date,
-					'acquisition_line_ids': asset_vals['acquisition_line_ids'],
-				}
-
-				asset_category = self.env['account.asset.category'].browse(asset_vals['category_id'])
-				# debit_lines
-				move_line_vals_asset = {
-					'account_id': asset_category.account_asset_id.id,
-					'name': 'Reclass Asset to SPM',
-					'debit': sum(purchase_account_dict.values()),
-					'credit': 0.0,
-				}
-				move_lines.append((0, 0, move_line_vals_asset))
-				# credit_lines
-				credit_account = line.product_id.categ_id.asset_clearing_account_id
-				for account, amount in purchase_account_dict.items():
-					move_line_vals = {
-						'account_id': credit_account.id if credit_account else account.id,
-						'name': 'Reclass SPM to Asset',
-						'credit': amount,
-						'debit': 0.0,
+					journal = self.account_journal_id
+					move_lines = []
+					move_vals = {
+						'journal_id': journal.id if journal else False,
+						'date': acquisition.date,
+						'acquisition_line_ids': asset_vals['acquisition_line_ids'],
 					}
-					move_lines.append((0, 0, move_line_vals))
-				# create move
-				move_vals.update({'line_ids': move_lines})
-				self.env['account.move'].create(move_vals)
+					# debit_lines
+					move_line_vals_asset = {
+						'account_id': asset_category.account_asset_id.id,
+						'name': 'Reclass Asset to SPM',
+						'debit': sum(purchase_account_dict.values()),
+						'credit': 0.0,
+					}
+					move_lines.append((0, 0, move_line_vals_asset))
+					# credit_lines
+					credit_account = line.product_id.categ_id.asset_clearing_account_id
+					for account, amount in purchase_account_dict.items():
+						move_line_vals = {
+							'account_id': credit_account.id if credit_account else account.id,
+							'name': 'Reclass SPM to Asset',
+							'credit': amount,
+							'debit': 0.0,
+						}
+						move_lines.append((0, 0, move_line_vals))
+					# create move
+					move_vals.update({'line_ids': move_lines})
+					self.env['account.move'].create(move_vals)
 				# new_move._post()
 
 				# Create Asset
+				# print(">>>>>>>>>>>", asset_vals)
 				new_asset = AccountAsset.create(asset_vals)
 				new_asset.validate()
 				list_assets |= new_asset
 
+			for exs_asset, values in existing_asset_dict.items():
+				old_values = {
+					'method_number': exs_asset.method_number,
+					'method_period': exs_asset.method_period,
+					'method_end': exs_asset.method_end,
+				}
+				# print("::::::::::::::::::old_values", old_values)
+				# print("::::::::::::::::::new_values", values)
+				exs_asset.write(values)
+				exs_asset.compute_depreciation_board()
+				tracked_fields = self.env['account.asset.asset'].fields_get(['method_number', 'method_period', 'method_end'])
+				changes, tracking_value_ids = exs_asset._mail_track(tracked_fields, old_values)
+				if changes:
+					exs_asset.message_post(subject=_('Asset Merge: Depreciation board modified'), body=self.name, tracking_value_ids=tracking_value_ids)
+			
+			for parent_id, existing_asset in new_parent:
+				existing_asset.write({
+					'parent_id': parent_id,
+					# 'name': f"Merge: {existing_asset.name}",
+				})
+			
+			# TODO: Recompute Parent Depreciation Board
+			if to_recompute_parent:
+				to_recompute_parent.compute_parent_depreciation_board()
+			
 			acquisition.write({
 				'state': 'done',
 			})

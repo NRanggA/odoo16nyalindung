@@ -73,14 +73,43 @@ class AssetAcquisition(models.Model):
 			list_assets = self.env['account.asset.asset']
 			dict_asset_grouped = {}
 			for line in acquisition.line_ids:
-				key_asset_model_id = line.asset_category_id.id
-				key_line_group = f"line_{line.id}" if line.creation_mode=='line_group' else False
-				key_code_group = line.group_mark if line.creation_mode=='code_group' else False
-				if line.creation_mode=='each_equipment':
-					for equip in line.equipment_register_line_id.equipment_ids:
-						key_equip = f"equip_id_{equip.id}"
-						key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:{key_equip}"
+				if line.acquisition_type=='create':
+					key_asset_model_id = line.asset_category_id.id
+					key_line_group = f"line_{line.id}" if line.creation_mode=='line_group' else False
+					key_code_group = line.group_mark if line.creation_mode=='code_group' else False
+					if line.creation_mode=='each_equipment':
+						for equip in line.equipment_register_line_id.equipment_ids:
+							key_equip = f"equip_id_{equip.id}"
+							key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:{key_equip}"
 
+							if key not in dict_asset_grouped.keys():
+								first_depreciation_date = acquisition.date
+								dict_asset_grouped.update({key: {
+									'purchase_account_values': {},
+									'asset_values': {
+										'name': line.name,
+										'value' : 0.0,
+										'acquisition_date': acquisition.date,
+										'salvage_value': 0.0,
+										'method': line.asset_category_id.method,
+										'method_number': line.asset_category_id.method_number,
+										'method_period': line.asset_category_id.method_period,
+										'prorata': line.asset_category_id.prorata,
+										'first_depreciation_manual_date': first_depreciation_date,
+										'category_id': line.asset_category_id.id,
+										'acquisition_line_ids': [],
+										# 'equipment_ids'
+									},
+								}})
+							dict_asset_grouped[key]['asset_values']['original_value'] += line.price_subtotal / line.product_qty
+							dict_asset_grouped[key]['asset_values']['acquisition_line_ids'].append((4,line.id))
+
+							key_account = line._get_computed_account()
+							if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
+								dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
+							dict_asset_grouped[key]['purchase_account_values'][key_account] += line.price_subtotal / line.product_qty
+					else:
+						key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:False"
 						if key not in dict_asset_grouped.keys():
 							first_depreciation_date = acquisition.date
 							dict_asset_grouped.update({key: {
@@ -97,44 +126,17 @@ class AssetAcquisition(models.Model):
 									'first_depreciation_manual_date': first_depreciation_date,
 									'category_id': line.asset_category_id.id,
 									'acquisition_line_ids': [],
-									# 'equipment_ids'
 								},
 							}})
-						dict_asset_grouped[key]['asset_values']['original_value'] += line.price_subtotal / line.product_qty
+						dict_asset_grouped[key]['asset_values']['value'] += line.price_subtotal
 						dict_asset_grouped[key]['asset_values']['acquisition_line_ids'].append((4,line.id))
 
 						key_account = line._get_computed_account()
 						if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
 							dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
-						dict_asset_grouped[key]['purchase_account_values'][key_account] += line.price_subtotal / line.product_qty
-				else:
-					key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:False"
-					if key not in dict_asset_grouped.keys():
-						first_depreciation_date = acquisition.date
-						dict_asset_grouped.update({key: {
-							'purchase_account_values': {},
-							'asset_values': {
-								'name': line.name,
-								'value' : 0.0,
-								'acquisition_date': acquisition.date,
-								'salvage_value': 0.0,
-								'method': line.asset_category_id.method,
-								'method_number': line.asset_category_id.method_number,
-								'method_period': line.asset_category_id.method_period,
-								'prorata': line.asset_category_id.prorata,
-								'first_depreciation_manual_date': first_depreciation_date,
-								'category_id': line.asset_category_id.id,
-								'acquisition_line_ids': [],
-							},
-						}})
-					dict_asset_grouped[key]['asset_values']['value'] += line.price_subtotal
-					dict_asset_grouped[key]['asset_values']['acquisition_line_ids'].append((4,line.id))
-
-					key_account = line._get_computed_account()
-					if not dict_asset_grouped[key]['purchase_account_values'].get(key_account, False):
-						dict_asset_grouped[key]['purchase_account_values'].update({key_account: 0.0})
-					dict_asset_grouped[key]['purchase_account_values'][key_account] += line.price_subtotal
-
+						dict_asset_grouped[key]['purchase_account_values'][key_account] += line.price_subtotal
+				elif line.acquisition_type=='merge':
+					continue
 			for keyx, valuesx in dict_asset_grouped.items():
 				asset_vals = valuesx['asset_values']
 				purchase_account_dict = valuesx['purchase_account_values']
@@ -228,6 +230,10 @@ class AssetAcquisitionLine(models.Model):
 
 	acquisition_id = fields.Many2one('account.asset.acquisition', string="Reference", ondelete='cascade')
 	asset_model_id = fields.Many2one('account.asset.asset', string="Asset Model", ondelete='restrict', domain=[('state', '!=', 'close')])
+
+	acquisition_type = fields.Selection([('create','New Asset'), ('merge', 'Merge Asset')], string="Acquisition Type", 
+			default='create')
+	# For Creation
 	asset_category_id = fields.Many2one('account.asset.category', string='Asset Category', ondelete='restrict')
 	product_id = fields.Many2one('product.product', string="Product", ondelete='restrict')
 	name = fields.Char(string="Desription")
@@ -252,8 +258,29 @@ Group Mark only work if you put the same Asset Model
 	group_mark = fields.Char('Group Mark')
 	asset_ids = fields.Many2many('account.asset.asset', 'acquisition_line_account_asset_rel', 
 						'acquisition_line_id', 'asset_id', string='Assets')
+	# For Merge
+	merge_mode = fields.Selection([
+		('remaining_period', 'Merge only Asset Remaining Value'),
+		('prolong_old_asset', 'Prolong Old Asset To'),
+		('prolong_only_new_asset', 'Prolong only the New Asset')
+	])
+	existing_asset_id = fields.Many2one('account.asset.asset', string="Existing Asset", ondelete='restrict', domain="[('state', '=', 'open'),('parent_id','=',False)]")
+	remaining_period = fields.Integer(string="Remaining Period", compute='_compute_remaining_period')
+	
 	asset_move_ids = fields.Many2many('account.move', 'acquisition_line_account_move_rel', 
 						'acquisition_line_id', 'move_id', string='Moves')
+
+	@api.depends('merge_mode', 'existing_asset_id')
+	def _compute_remaining_period(self):
+		for line in self:
+			if line.existing_asset_id:
+				remaining_depr_lines = line.existing_asset_id.depreciation_line_ids.filtered(lambda x: not x.move_check)
+				if remaining_depr_lines:
+					line.remaining_period = len(remaining_depr_lines.ids)
+				else:
+					line.remaining_period = 0
+			else:
+				line.remaining_period = 0
 
 	def _amount_line(self):
 		for line in self:
