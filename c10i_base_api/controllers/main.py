@@ -43,6 +43,10 @@ class ApiBase(http.Controller):
         elif added_addrs.number_of_error_half_hour_allowed<=0:
             return False, 'Temporary Blocked, You have failed authorization proceess several times. Please wait for 30 minutes or contact the admin for further details.'
         auth_header = request.httprequest.headers.get('Authorization')
+        scope = request.httprequest.headers.get('service-name')
+        if not scope:
+            return False, 'Invalid API Service'
+
         # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth auth_header", auth_header)
         if not auth_header or not auth_header.startswith('Bearer '):
             added_addrs.write({
@@ -52,7 +56,7 @@ class ApiBase(http.Controller):
             return False, 'Unauthorized, please contact the admin for further details.'
         token = auth_header.split(' ')[-1]
         # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth token", token)
-        check_user = request.env['res.users.apikeys']._check_credentials(scope='rpc', key=token)
+        check_user = request.env['res.users.apikeys']._check_credentials(scope=scope, key=token)
         
         if not check_user:
             # Add to Client List

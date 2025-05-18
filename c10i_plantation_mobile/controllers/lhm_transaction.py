@@ -51,8 +51,8 @@ class ProfileApi(ApiBase):
                         'work_day': line_vals.get('work_day', 0.0),
                         'attendance_id': line_vals.get('attendance_id', False),
                         # 'non_work_day': line_vals.get(' 'non_work_day', False),
-                        'location_type_id': line_vals.get('location_type_id', False),
                         'varieties_id': line_vals.get('varieties_id', False),
+                        'location_type_id': line_vals.get('location_type_id', False),
                         'location_id': line_vals.get('location_id', False),
                         'activity_id': line_vals.get('activity_id', False),
                         # 'work_result': line_vals.get(' 'work_result', False),
@@ -79,7 +79,6 @@ class ProfileApi(ApiBase):
                     'lhm_line_ids': lhm_lines,
                     # emp_out_ids
                     # emp_in_ids
-                    # 'doc_type_id'
                     'note': vals['note'],
                     # 'lhm_nap_line_ids'
                 }
@@ -128,7 +127,7 @@ class ProfileApi(ApiBase):
             fields = ['id','name','kemandoran_id','date','state']
             limit = datas.get('limit', 10)
             offset = datas.get('offset', 0)
-            lhm_records = request.env['lhm.transaction'].search_read(domain=domain, fields=fields, order="date desc", limit=limit, offset=offset)
+            lhm_records = request.env['lhm.transaction'].with_user(check_user).search_read(domain=domain, fields=fields, order="date desc", limit=limit, offset=offset)
             if not lhm_records:
                 raise MissingError("Data LHM not found")
             fields2 = ['employee_id','name','date','work_day','attendance_id',
@@ -136,7 +135,7 @@ class ProfileApi(ApiBase):
                        'hasil_1','satuan_1','product_id',
                        'hasil_2','satuan_2','product_id_2']
             for lhm in lhm_records:
-                lhm_line_records = request.env['lhm.transaction.line'].search_read(domain=[('lhm_id','=',lhm['id'])], fields=fields2)
+                lhm_line_records = request.env['lhm.transaction.line'].with_user(check_user).search_read(domain=[('lhm_id','=',lhm['id'])], fields=fields2)
                 lhm.update({
                     'lhm_line_ids': lhm_line_records
                 })
