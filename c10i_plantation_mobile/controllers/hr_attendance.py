@@ -34,14 +34,27 @@ class Attendance(ApiBase):
             today = utc.localize(fields.Datetime.now()).astimezone(jakarta)
             today_att = request.env['hr.attendance.sheet'].sudo().search([('date','=',today),
                                             ('employee_id','=',employee_found.id)])
-            checkin = checkout = ""
+            
+            checkin = checkout = breakin = breakout = overtimein = overtimeout = ""
             if today_att.check_in:
                 checkin = today_att.check_in.astimezone(timezone('Asia/Jakarta'))
             if today_att.check_out:
                 checkout = today_att.check_out.astimezone(timezone('Asia/Jakarta'))
+            if today_att.break_in:
+                breakin = today_att.break_in.astimezone(timezone('Asia/Jakarta'))
+            if today_att.break_out:
+                breakout = today_att.break_out.astimezone(timezone('Asia/Jakarta'))
+            if today_att.overtime_in:
+                overtimein = today_att.overtime_in.astimezone(timezone('Asia/Jakarta'))
+            if today_att.overtime_out:
+                overtimeout = today_att.overtime_out.astimezone(timezone('Asia/Jakarta'))
             result = {
                 'check_in': checkin.strftime('%H:%M') if checkin else '',
-                'check_out': checkout.strftime('%H:%M') if checkout else ''
+                'check_out': checkout.strftime('%H:%M') if checkout else '',
+                'break_out': breakout.strftime('%H:%M') if breakout else '',
+                'break_in': breakin.strftime('%H:%M') if breakin else '',
+                'overtime_in': overtimein.strftime('%H:%M') if overtimein else '',
+                'overtime_out': overtimeout.strftime('%H:%M') if overtimeout else '',
             }
             return Response(json.dumps(result, cls=DateEncoder), headers=HEADERS, status=201)
         except Exception as error:
@@ -52,7 +65,7 @@ class Attendance(ApiBase):
     _base_url = ""
     def _get_attendance_info(self, attendance):
         checkin_picture_url = ketmasuk = ketkeluar = ""
-        checkin = checkout = ""
+        checkin = checkout = overtimein = overtimeout = ""
 
         if attendance.att_log_ids:
             if len(attendance.att_log_ids.ids)>1:
@@ -74,6 +87,10 @@ class Attendance(ApiBase):
             checkin = attendance.check_in.astimezone(timezone('Asia/Jakarta'))
         if attendance.check_out:
             checkout = attendance.check_out.astimezone(timezone('Asia/Jakarta'))
+        if attendance.overtime_in:
+            overtimein = attendance.overtime_in.astimezone(timezone('Asia/Jakarta'))
+        if attendance.overtime_out:
+            overtimeout = attendance.overtime_out.astimezone(timezone('Asia/Jakarta'))
         
         return {
             # "date": attendance.date.strftime("%d %b %Y") if attendance.date else "",
@@ -82,6 +99,8 @@ class Attendance(ApiBase):
             "check_in_picture": checkin_picture_url,
             "check_in": f"{checkin.strftime('%H:%M')}{', '+str(round(attendance.distance_in,2))+' km' if attendance.distance_in else ''}{', '+ketmasuk}" if checkin else '', #"15:15, Jarak :0.05 Km, Keterangan: keterangan",
             "check_out": f"{checkout.strftime('%H:%M')}{', '+str(round(attendance.distance_out,2))+' km' if attendance.distance_out else ''}{', '+ketkeluar}" if checkout else '', #"15:16, Jarak :0.05 Km, Keterangan: keterangan",
+            "overtime_in": overtimein.strftime('%H:%M') if overtimein else '',
+            "overtime_out": overtimeout.strftime('%H:%M') if overtimeout else '',
         }
 
     @http.route(ROUTES, auth='public', website=False, csrf=False, type='http', methods=['GET'])
@@ -128,12 +147,12 @@ class Attendance(ApiBase):
             return self._handle_exception(error)
     
     
-    @http.route([f"{ROUTES}/checkin",
-                f"{ROUTES}/checkout", 
-                f"{ROUTES}/breakin", 
-                f"{ROUTES}/breakout", 
-                f"{ROUTES}/overtimein", 
-                f"{ROUTES}/overtimeout"],
+    @http.route([f"{ROUTES}/check-in",
+                f"{ROUTES}/check-out", 
+                f"{ROUTES}/break-in", 
+                f"{ROUTES}/break-out", 
+                f"{ROUTES}/overtime-in", 
+                f"{ROUTES}/overtime-out"],
                 auth='public', website=False, csrf=False, type='http', methods=['POST'])
     def set_attendance(self):
         check_user, message = self._verify_auth()
@@ -150,12 +169,12 @@ class Attendance(ApiBase):
             # INSERT ATTENDANCE
             type = request.httprequest.base_url.split('/')[-1]
             message_mark = {
-                'checkin': "Check In",
-                'checkout': "Check Out",
-                'breakin': "Break In",
-                'breakout': "Break Out",
-                'overtimein': "Overtime In",
-                'overtimeout': "Overtime Out"
+                'check-in': "Check In",
+                'check-out': "Check Out",
+                'break-in': "Break In",
+                'break-out': "Break Out",
+                'overtime-in': "Overtime In",
+                'overtime-out': "Overtime Out"
             }
             
             value_to_insert = {
@@ -166,8 +185,7 @@ class Attendance(ApiBase):
                 # 'date': fields.Datetime.now(),
                 'keterangan': datas.get('note',''),
                 # 'statusmasuk': datas.get('statusmasuk',''),
-                # 'type': 
-
+                'type': type
             }
             new_att_log = request.env['ny.attendance.log'].with_user(check_user).create(value_to_insert)
             if datas.get('image'):
