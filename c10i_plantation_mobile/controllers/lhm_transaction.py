@@ -115,10 +115,13 @@ class ProfileApi(ApiBase):
         datas = self._get_payload() or {}
         try:
             result = {'data': [], 'count': 0}
-            if not datas.get('kemandoran_id'):
+            if not datas.get('kemandoran_id', []):
                 raise ValidationError("Field 'kemandoran_id' is mandatory field.")
             
-            domain = [('kemandoran_id','=',datas['kemandoran_id'])]
+            if len(datas['kemandoran_id']) > 1:
+                domain = [('kemandoran_id','in',datas['kemandoran_id'])]
+            else:
+                domain = [('kemandoran_id','=',datas['kemandoran_id'][0])]
             if lhm_id:
                 domain.append(('id','=',int(lhm_id)))
             else:
