@@ -1,6 +1,9 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
+from odoo.tools.misc import OrderedSet
+from odoo.tools.float_utils import float_is_zero
+
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
@@ -134,3 +137,74 @@ class PurchaseOrder(models.Model):
                         self.env['account.move.line'].create(ppn_line_vals)
 
         return res
+    
+
+    # Override button cancel jika sudah di return bisa di cancel / qty_recived sudah 0 maka akan bisa di cancel
+    def button_cancel(self):
+        order_lines_ids = OrderedSet()
+        pickings_to_cancel_ids = OrderedSet()
+        for order in self:
+            # Bawaan Odoo
+            # for move in order.order_line.mapped('move_ids'):
+            #     if move.state == 'done':
+            #         raise UserError(_('Unable to cancel purchase order %s as some receptions have already been done.') % (order.name))
+
+            #Cek Received Qty == 0
+            for line in order.order_line:
+                if any(move.state == 'done' for move in line.move_ids):
+                    if not float_is_zero(line.qty_received, precision_rounding=line.product_uom.rounding):
+                        raise UserError(_('Cannot cancel PO %s: Items already received.') % order.name)
+
+            #Cek Vendor Bill harus cancelled
+            bills = order.invoice_ids.filtered(lambda x: x.move_type in ['in_invoice', 'in_refund'])
+            if any(bill.state not in ['cancel', 'draft'] for bill in bills):
+                raise UserError(_('Cannot cancel PO %s: Vendor bill is still active or posted.') % order.name)
+
+            # Cek Advance harus cancelled
+            advances = order.advanced_vendor_move_ids.filtered(lambda move: move.is_advanced)
+            if any(move.state != 'cancel' for move in advances):
+                raise UserError(_('Cannot cancel PO %s: There are advance payments that are not cancelled.') % order.name)
+
+            # If the product is MTO, change the procure_method of the closest move to purchase to MTS.
+            # The purpose is to link the po that the user will manually generate to the existing moves's chain.
+            if order.state in ('draft', 'sent', 'to approve', 'purchase'):
+                order_lines_ids.update(order.order_line.ids)
+
+            pickings_to_cancel_ids.update(order.picking_ids.filtered(lambda r: r.state not in  ['done', 'cancel']).ids)
+
+        order_lines = self.env['purchase.order.line'].browse(order_lines_ids)
+
+        moves_to_cancel_ids = OrderedSet()
+        moves_to_recompute_ids = OrderedSet()
+        for order_line in order_lines:
+            # moves_to_cancel_ids.update(order_line.move_ids.ids)
+
+            # Override dari fungsi odoo agar tidak memasukkan semua move_ids nya
+            valid_moves = order_line.move_ids.filtered(lambda move: move.state not in ['done', 'cancel'])
+            moves_to_cancel_ids.update(valid_moves.ids)
+            if order_line.move_dest_ids:
+                move_dest_ids = order_line.move_dest_ids.filtered(lambda move: move.state != 'done' and not move.scrapped)
+                if order_line.propagate_cancel:
+                    moves_to_cancel_ids.update(move_dest_ids.ids)
+                else:
+                    moves_to_recompute_ids.update(move_dest_ids.ids)
+
+
+        if moves_to_cancel_ids:
+            moves_to_cancel = self.env['stock.move'].browse(moves_to_cancel_ids)
+            moves_to_cancel._action_cancel()
+
+        if moves_to_recompute_ids:
+            moves_to_recompute = self.env['stock.move'].browse(moves_to_recompute_ids)
+            moves_to_recompute.write({'procure_method': 'make_to_stock'})
+            moves_to_recompute._recompute_state()
+
+        if pickings_to_cancel_ids:
+            pikings_to_cancel = self.env['stock.picking'].browse(pickings_to_cancel_ids)
+            pikings_to_cancel.action_cancel()
+
+        if order_lines:
+            order_lines.write({'move_dest_ids': [(5, 0, 0)]})
+
+        self.write({'state': 'cancel', 'mail_reminder_confirmed': False})
+        # return super(PurchaseOrder, self).button_cancel()
