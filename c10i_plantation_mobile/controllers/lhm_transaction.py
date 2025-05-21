@@ -119,9 +119,9 @@ class ProfileApi(ApiBase):
                 raise ValidationError("Field 'kemandoran_ids' is mandatory field.")
             
             if len(datas['kemandoran_ids']) > 1:
-                domain = [('kemandoran_ids','in',datas['kemandoran_ids'])]
+                domain = [('kemandoran_id','in',datas['kemandoran_ids'])]
             else:
-                domain = [('kemandoran_ids','=',datas['kemandoran_ids'][0])]
+                domain = [('kemandoran_id','=',datas['kemandoran_ids'][0])]
             if lhm_id:
                 domain.append(('id','=',int(lhm_id)))
             else:
