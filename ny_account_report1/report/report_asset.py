@@ -320,6 +320,9 @@ class ReportAsset(models.AbstractModel):
             sheet.write(row, col, header, wbf['header'])
         row += 1
 
+        # Tambahkan ini untuk freeze header
+        sheet.freeze_panes(row, 0)
+
         # assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([('account_asset_id.account_type','=','asset_fixed')])
         assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([])
         for asset_category in assets_categories:
@@ -332,12 +335,15 @@ class ReportAsset(models.AbstractModel):
             subtotal_accum_depreciation = 0.0
             subtotal_residual = 0.0
             
-            domain = [('category_id', '=', asset_category.id),('date','<=',obj.date)]
+            # domain = [('category_id', '=', asset_category.id),('date','<=',obj.date), ('parent_id', '=', False)]
+            domain = [('category_id', '=', asset_category.id), ('parent_id', '=', False)]
             if obj.asset_state=='running_only':
                 domain.append(('state','=','open'))
             elif obj.asset_state=='include_closed':
                 domain.append(('state','in',['open','close']))
-            assets = self.env['account.asset.asset'].search(domain)
+            
+            # tampabhakan pada domain untuk filter asset -> parent = 0/false
+            assets = self.env['account.asset.asset'].search(domain, order="date asc")
 
             for asset in assets:
                 sheet.write(row, 0, asset.name, wbf['content'])
@@ -346,34 +352,72 @@ class ReportAsset(models.AbstractModel):
                 sheet.write(row, 3, asset.date, wbf['content_date'])
                 sheet.write(row, 4, asset.register_id.name if asset.register_id else '', wbf['content'])
                 sheet.write(row, 5, asset.equipment_code if asset.equipment_code else '', wbf['content'])
+                
+
                 # Gross Value
-                sheet.write(row, 6, asset.value, wbf['content_float'])
+                gross_value = asset.value if obj.date >= asset.date else 0.0
+                sheet.write(row, 6, gross_value, wbf['content_float'])
                 
                 sisa_umur = sum(1 for line in asset.depreciation_line_ids if not line.move_check)
 
-                accumulated_depreciation = residual_value = 0.0
-                if not asset.depreciation_line_ids:
-                    accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
-                    residual_value = asset.value_residual
+                ################################################## UBAH ######################################################
+                # kalo dia tanggal nya kurang dari tanggal yang ada di odoo, maka kasih nilai 0 sebagai default
+                # accumulated_depreciation = residual_value = 0.0
+                # if not asset.depreciation_line_ids:
+                #     accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
+                #     residual_value = asset.value_residual
+                # else:
+                #     for line in asset.depreciation_line_ids:
+                #         if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
+
+                #             accumulated_depreciation += line.depreciated_value
+                #             residual_value += line.remaining_value
+                #     if not residual_value:
+                #         residual_value = line.remaining_value
+
+                accumulated_depreciation = 0.0
+                residual_value = 0.0
+                # Ambil semua line penyusutannya sesuai dengan tanggal dulu
+                depreciation_lines = asset.depreciation_line_ids.sorted(key=lambda l: l.depreciation_date)
+
+                if depreciation_lines:
+                    first_depr_date = depreciation_lines[0].depreciation_date
+
+                    if obj.date < first_depr_date:
+                        # Bugs yang dibilang pak hndra
+                        # accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
+                        accumulated_depreciation = 0.0
+
+                    else:
+                        # Ambil semua line penyusutan yang tanggalnya <= tanggal pada wizard
+                        valid_lines = depreciation_lines.filtered(lambda l: l.depreciation_date <= obj.date)
+                        penyusutan_lanjutan = sum(valid_lines.mapped('amount'))
+
+                        # Kalau ada beginning balance, tambahkan penyusutannya dengan accumulated_depreciation
+                        accumulated_depreciation = penyusutan_lanjutan
+                        if asset.beginning_balance:
+                            accumulated_depreciation += asset.accumulated_depreciation or 0.0
                 else:
-                    for line in asset.depreciation_line_ids:
-                        if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
-                            accumulated_depreciation += line.depreciated_value
-                            residual_value += line.remaining_value
-                    if not residual_value:
-                        residual_value = line.remaining_value
-                
+                    # kalau Tidak ada penyusutan line, hanya pakai saldo awal jika ada
+                    accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
+
+                # Hitung residual value menggunakan rumus perhitugan gross value - accumulated depreciation
+                # residual_value = max(asset.value - accumulated_depreciation, 0.0)
+                residual_value = gross_value - accumulated_depreciation
+                ################################################ UBAH ######################################################
+
                 # Accumulated Depreciation
-                sheet.write(row, 7, accumulated_depreciation, wbf['content_float'])
+                sheet.write(row, 7, accumulated_depreciation if obj.date >= asset.date else 0.0, wbf['content_float'])
                 # Residual Value
-                sheet.write(row, 8, residual_value, wbf['content_float'])
-                
+                sheet.write(row, 8, residual_value if obj.date >= asset.date else 0.0, wbf['content_float'])
+
                 # Sisa Umur (Bulan)
-                sheet.write(row, 9, sisa_umur, wbf['content_number'])
-                
-                subtotal_value += asset.value
-                subtotal_accum_depreciation += accumulated_depreciation
-                subtotal_residual += residual_value
+                sheet.write(row, 9, sisa_umur if obj.date >= asset.date else 0.0, wbf['content_number'])
+
+                if obj.date >= asset.date:
+                    subtotal_value += asset.value
+                    subtotal_accum_depreciation += accumulated_depreciation
+                    subtotal_residual += residual_value
 
                 row += 1
             
