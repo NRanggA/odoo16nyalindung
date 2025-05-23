@@ -95,7 +95,8 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 SUM(CASE WHEN cp.status='tm' and caa.name->>'en_US'~'BIAYA PANEN' THEN cpl.total_cost ELSE 0 END) as cost_panen,
                 SUM(CASE WHEN cp.status='tm' and caa.name->>'en_US'~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_rawat,
                 SUM(CASE WHEN cp.status='tm' and caa.name->>'en_US'!~'BIAYA PANEN' and caa.name->>'en_US'!~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_other1,
-                SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') THEN cpl.total_cost ELSE 0 END) as cost_manpower,
+                SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA PANEN' THEN cpl.total_cost ELSE 0 END) as cost_manpower_panen,
+                SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_manpower_rawat,
                 SUM(CASE WHEN caj.name->>'en_US'='INVENTORY JOURNAL' THEN cpl.total_cost ELSE 0 END) as cost_material,
                 SUM(CASE WHEN caj.name->>'en_US' NOT IN ('LHM Payroll','Buku Kontraktor','INVENTORY JOURNAL') THEN cpl.total_cost ELSE 0 END) as cost_other2,
                 SUM(cpl.total_cost) as total_cost
@@ -130,7 +131,8 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 SUM(CASE WHEN cp.status='tm' and cpl.to_be_deferred=false and caa.name->>'en_US'~'BIAYA PANEN' THEN cpl.total_cost ELSE 0 END) as cost_panen1,
                 SUM(CASE WHEN cp.status='tm' and cpl.to_be_deferred=false and caa.name->>'en_US'~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_rawat1,
                 SUM(CASE WHEN cp.status='tm' and cpl.to_be_deferred=false and caa.name->>'en_US'!~'BIAYA PANEN' and caa.name->>'en_US'!~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_other1,
-                SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') THEN cpl.total_cost ELSE 0 END) as cost_manpower,
+                SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA PANEN' THEN cpl.total_cost ELSE 0 END) as cost_manpower_panen1,
+                SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_manpower_rawat1,
                 SUM(CASE WHEN caj.name->>'en_US'='INVENTORY JOURNAL' THEN cpl.total_cost ELSE 0 END) as cost_material,
                 SUM(CASE WHEN caj.name->>'en_US' NOT IN ('LHM Payroll','Buku Kontraktor','INVENTORY JOURNAL') THEN cpl.total_cost ELSE 0 END) as cost_other2,
                 SUM(cpl.total_cost) as total_cost1,
@@ -166,7 +168,8 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 SUM(0) as cost_panen1,
                 SUM(0) as cost_rawat1,
                 SUM(0) as cost_other1,
-                SUM(0) as cost_manpower,
+                SUM(0) as cost_manpower_panen1,
+                SUM(0) as cost_manpower_rawat1,
                 SUM(0) as cost_material,
                 SUM(0) as cost_other2,
                 SUM(0) as total_cost1,
@@ -198,7 +201,8 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
                 sum(cost_panen1) as cost_panen1,
                 sum(cost_rawat1) as cost_rawat1,
                 sum(cost_other1) as cost_other1,
-                sum(cost_manpower) as cost_manpower,
+                sum(cost_manpower_panen1) as cost_manpower_panen1,
+                sum(cost_manpower_rawat1) as cost_manpower_rawat1,
                 sum(cost_material) as cost_material,
                 sum(cost_other2) as cost_other2,
                 sum(total_cost1) as total_cost1,
@@ -214,7 +218,6 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             GROUP BY org_id, org, location_id, location, status
             ORDER BY org_id, status, location_id
         """
-        print("::::::::::::::::::::::::::::::::;", query)
         return query
  
 
@@ -236,21 +239,22 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.set_column(2,2,35)
         worksheet.merge_range(next_row, 3, next_row+1, 3, 'Status' , wbf['header'])
         worksheet.set_column(3,3,7)
-        worksheet.set_column(4,12,15)
+        worksheet.set_column(4,13,15)
         worksheet.merge_range(next_row, 4, next_row, 7, 'Hasil Alokasi' , wbf['header'])
         worksheet.write(next_row+1, 4, 'Harga Perolehan' , wbf['header'])
         worksheet.write(next_row+1, 5, 'Biaya Panen' , wbf['header'])
         worksheet.write(next_row+1, 6, 'Biaya Rawat' , wbf['header'])
         worksheet.write(next_row+1, 7, 'Biaya Lainnya' , wbf['header'])
         worksheet.merge_range(next_row, 8, next_row+1, 8, 'Total' , wbf['header'])
-        worksheet.merge_range(next_row, 9, next_row, 11, 'Asal Biaya' , wbf['header'])
-        worksheet.write(next_row+1, 9, 'Biaya Pekerja' , wbf['header'])
-        worksheet.write(next_row+1, 10, 'Biaya Material' , wbf['header'])
-        worksheet.write(next_row+1, 11, 'Biaya Lainnya' , wbf['header'])
-        worksheet.merge_range(next_row, 12, next_row+1, 12, 'Total' , wbf['header'])
+        worksheet.merge_range(next_row, 9, next_row, 12, 'Asal Biaya' , wbf['header'])
+        worksheet.write(next_row+1, 9, 'Biaya Pekerja Panen' , wbf['header'])
+        worksheet.write(next_row+1, 10, 'Biaya Pekerja Rawat' , wbf['header'])
+        worksheet.write(next_row+1, 11, 'Biaya Material' , wbf['header'])
+        worksheet.write(next_row+1, 12, 'Biaya Lainnya' , wbf['header'])
+        worksheet.merge_range(next_row, 13, next_row+1, 13, 'Total' , wbf['header'])
 
         next_row += 2
-        for c in range(12):
+        for c in range(13):
             worksheet.write(next_row, c+1, c+1, wbf['header'])
         next_row += 1
         start_row = next_row
@@ -266,10 +270,11 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             worksheet.write(next_row, 6, line.get('cost_rawat',0.0), wbf['content_float'])
             worksheet.write(next_row, 7, line.get('cost_other1',0.0), wbf['content_float'])
             worksheet.write(next_row, 8, line.get('total_cost',0.0), wbf['content_float'])
-            worksheet.write(next_row, 9, line.get('cost_manpower',0.0), wbf['content_float'])
-            worksheet.write(next_row,10, line.get('cost_material',0.0), wbf['content_float'])
-            worksheet.write(next_row,11, line.get('cost_other2',0.0), wbf['content_float'])
-            worksheet.write(next_row,12, line.get('total_cost',0.0), wbf['content_float'])
+            worksheet.write(next_row, 9, line.get('cost_manpower_panen',0.0), wbf['content_float'])
+            worksheet.write(next_row,10, line.get('cost_manpower_rawat',0.0), wbf['content_float'])
+            worksheet.write(next_row,11, line.get('cost_material',0.0), wbf['content_float'])
+            worksheet.write(next_row,12, line.get('cost_other2',0.0), wbf['content_float'])
+            worksheet.write(next_row,13, line.get('total_cost',0.0), wbf['content_float'])
             next_row += 1
         
         next_row += 1
@@ -285,11 +290,12 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.write_formula(next_row,10, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,10)}:{xl_rowcol_to_cell(next_row-2,10)})", wbf['total_float'])
         worksheet.write_formula(next_row,11, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,11)}:{xl_rowcol_to_cell(next_row-2,11)})", wbf['total_float'])
         worksheet.write_formula(next_row,12, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,12)}:{xl_rowcol_to_cell(next_row-2,12)})", wbf['total_float'])
+        worksheet.write_formula(next_row,13, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,13)}:{xl_rowcol_to_cell(next_row-2,13)})", wbf['total_float'])
         
         worksheet.set_landscape()
         worksheet.set_paper(9)  # A4
         worksheet.repeat_rows(1, 4)
-        worksheet.print_area(0, 0, next_row, 13)
+        worksheet.print_area(0, 0, next_row, 14)
         worksheet.set_print_scale(78)
 
         ############################################################
@@ -306,7 +312,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.set_column(2,2,35)
         worksheet.merge_range(next_row, 3, next_row+1, 3, 'Status' , wbf['header'])
         worksheet.set_column(3,3,7)
-        worksheet.set_column(4,17,15)
+        worksheet.set_column(4,18,15)
         worksheet.merge_range(next_row, 4, next_row, 8, 'Hasil Alokasi' , wbf['header'])
         worksheet.write(next_row+1, 4, 'Harga Perolehan' , wbf['header'])
         worksheet.write(next_row+1, 5, 'Prepaid Biaya' , wbf['header'])
@@ -314,19 +320,20 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.write(next_row+1, 7, 'Biaya Rawat' , wbf['header'])
         worksheet.write(next_row+1, 8, 'Biaya Lainnya' , wbf['header'])
         worksheet.merge_range(next_row, 9, next_row+1, 9, 'Total' , wbf['header'])
-        worksheet.merge_range(next_row, 10, next_row, 12, 'Asal Biaya' , wbf['header'])
-        worksheet.write(next_row+1, 10, 'Biaya Pekerja' , wbf['header'])
-        worksheet.write(next_row+1, 11, 'Biaya Material' , wbf['header'])
-        worksheet.write(next_row+1, 12, 'Biaya Lainnya' , wbf['header'])
-        worksheet.merge_range(next_row, 13, next_row+1, 13, 'Total' , wbf['header'])
-        worksheet.merge_range(next_row, 14, next_row, 16, 'Prepaid yang dibiayakan' , wbf['header'])
-        worksheet.write(next_row+1, 14, 'Biaya Panen' , wbf['header'])
-        worksheet.write(next_row+1, 15, 'Biaya Rawat' , wbf['header'])
-        worksheet.write(next_row+1, 16, 'Biaya Lainnya' , wbf['header'])
-        worksheet.merge_range(next_row, 17, next_row+1, 17, 'Total' , wbf['header'])
+        worksheet.merge_range(next_row, 10, next_row, 13, 'Asal Biaya' , wbf['header'])
+        worksheet.write(next_row+1, 10, 'Biaya Pekerja Panen' , wbf['header'])
+        worksheet.write(next_row+1, 11, 'Biaya Pekerja Rawat' , wbf['header'])
+        worksheet.write(next_row+1, 12, 'Biaya Material' , wbf['header'])
+        worksheet.write(next_row+1, 13, 'Biaya Lainnya' , wbf['header'])
+        worksheet.merge_range(next_row, 14, next_row+1, 14, 'Total' , wbf['header'])
+        worksheet.merge_range(next_row, 15, next_row, 17, 'Prepaid yang dibiayakan' , wbf['header'])
+        worksheet.write(next_row+1, 15, 'Biaya Panen' , wbf['header'])
+        worksheet.write(next_row+1, 16, 'Biaya Rawat' , wbf['header'])
+        worksheet.write(next_row+1, 17, 'Biaya Lainnya' , wbf['header'])
+        worksheet.merge_range(next_row, 18, next_row+1, 18, 'Total' , wbf['header'])
 
         next_row += 2
-        for c in range(17):
+        for c in range(18):
             worksheet.write(next_row, c+1, c+1, wbf['header'])
         next_row += 1
         start_row = next_row
@@ -343,14 +350,15 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
             worksheet.write(next_row, 7, line.get('cost_rawat1',0.0), wbf['content_float'])
             worksheet.write(next_row, 8, line.get('cost_other1',0.0), wbf['content_float'])
             worksheet.write(next_row, 9, line.get('total_cost1',0.0), wbf['content_float'])
-            worksheet.write(next_row,10, line.get('cost_manpower',0.0), wbf['content_float'])
-            worksheet.write(next_row,11, line.get('cost_material',0.0), wbf['content_float'])
-            worksheet.write(next_row,12, line.get('cost_other2',0.0), wbf['content_float'])
-            worksheet.write(next_row,13, line.get('total_cost1',0.0), wbf['content_float'])
-            worksheet.write(next_row,14, line.get('cost_panen2',0.0), wbf['content_float'])
-            worksheet.write(next_row,15, line.get('cost_rawat2',0.0), wbf['content_float'])
-            worksheet.write(next_row,16, line.get('cost_other3',0.0), wbf['content_float'])
-            worksheet.write(next_row,17, line.get('total_cost2',0.0), wbf['content_float'])
+            worksheet.write(next_row,10, line.get('cost_manpower_panen1',0.0), wbf['content_float'])
+            worksheet.write(next_row,11, line.get('cost_manpower_rawat1',0.0), wbf['content_float'])
+            worksheet.write(next_row,12, line.get('cost_material',0.0), wbf['content_float'])
+            worksheet.write(next_row,13, line.get('cost_other2',0.0), wbf['content_float'])
+            worksheet.write(next_row,14, line.get('total_cost1',0.0), wbf['content_float'])
+            worksheet.write(next_row,15, line.get('cost_panen2',0.0), wbf['content_float'])
+            worksheet.write(next_row,16, line.get('cost_rawat2',0.0), wbf['content_float'])
+            worksheet.write(next_row,17, line.get('cost_other3',0.0), wbf['content_float'])
+            worksheet.write(next_row,18, line.get('total_cost2',0.0), wbf['content_float'])
             next_row += 1
         
         next_row += 1
@@ -371,11 +379,12 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.write_formula(next_row,15, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,15)}:{xl_rowcol_to_cell(next_row-2,15)})", wbf['total_float'])
         worksheet.write_formula(next_row,16, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,16)}:{xl_rowcol_to_cell(next_row-2,16)})", wbf['total_float'])
         worksheet.write_formula(next_row,17, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,17)}:{xl_rowcol_to_cell(next_row-2,17)})", wbf['total_float'])
+        worksheet.write_formula(next_row,18, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,18)}:{xl_rowcol_to_cell(next_row-2,18)})", wbf['total_float'])
         
         worksheet.set_landscape()
         worksheet.set_paper(9)  # A4
         worksheet.repeat_rows(1, 4)
-        worksheet.print_area(0, 0, next_row, 13)
+        worksheet.print_area(0, 0, next_row, 19)
         worksheet.set_print_scale(78)
 
         ############################################################
