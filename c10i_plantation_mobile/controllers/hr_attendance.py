@@ -187,7 +187,7 @@ class Attendance(ApiBase):
                 # 'statusmasuk': datas.get('statusmasuk',''),
                 'type': type
             }
-            new_att_log = request.env['ny.attendance.log'].with_user(check_user).create(value_to_insert)
+            new_att_log = request.env['ny.attendance.log'].sudo().create(value_to_insert)
             if datas.get('image'):
                 request.env['ir.attachment'].sudo().create({
                     'name': 'Attendance.jpeg',
