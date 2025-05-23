@@ -260,12 +260,16 @@ Group Mark only work if you put the same Asset Model
 						'acquisition_line_id', 'asset_id', string='Assets')
 	# For Merge
 	merge_mode = fields.Selection([
-		('remaining_period', 'Merge only Asset Remaining Value'),
-		('prolong_old_asset', 'Prolong Old Asset To'),
-		('prolong_only_new_asset', 'Prolong only the New Asset')
-	])
-	existing_asset_id = fields.Many2one('account.asset.asset', string="Existing Asset", ondelete='restrict', domain="[('state', '=', 'open'),('parent_id','=',False)]")
+		('no_extension', 'Merge Without Extension'),
+		('extend_merged_asset', 'Extend Merged Asset Life'),
+		('extend_child_asset', 'Extend Child Asset Only')
+		# ('remaining_period', 'Merge only Asset Remaining Value'),
+		# ('prolong_old_asset', 'Prolong Old Asset To'),
+		# ('prolong_only_new_asset', 'Prolong only the New Asset')
+	], default='no_extension', string="Merge Mode")
 	remaining_period = fields.Integer(string="Remaining Period", compute='_compute_remaining_period')
+	extend_period = fields.Integer(string="Extend Period")
+	existing_asset_id = fields.Many2one('account.asset.asset', string="Existing Asset", ondelete='restrict', domain="[('state', '=', 'open'),('parent_id','=',False)]")
 	
 	asset_move_ids = fields.Many2many('account.move', 'acquisition_line_account_move_rel', 
 						'acquisition_line_id', 'move_id', string='Moves')

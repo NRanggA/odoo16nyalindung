@@ -63,6 +63,8 @@
                                             'readonly': [('acquisition_type','!=','merge')]}"/>
                                     <field name="existing_asset_id" attrs="{'required': [('acquisition_type','=','merge')], 
                                             'readonly': [('acquisition_type','!=','merge')]}"/>
+                                    <field name="extend_period" attrs="{'required': [('acquisition_type','=','merge'),('merge_mode','!=','no_extension')], 
+                                            'readonly': [('acquisition_type','!=','merge')]}"/>
                                     <field name="remaining_period" attrs="{'readonly': [('acquisition_type','!=','merge')]}"/>
                                     
 

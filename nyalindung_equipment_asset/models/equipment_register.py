@@ -42,7 +42,8 @@ class EquipmentRegister(models.Model):
 					'equip_register_id': register.id,
 				}
 
-				amount = line.purchase_line_id.price_unit * line.purchase_line_id.product_qty
+				# amount = line.purchase_line_id.price_unit * line.purchase_line_id.product_qty
+				amount = line.purchase_line_id.price_unit # TODO : musti pertimbangkan juga harga ppn tidak dikreditkan
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': line.account_id.id,
@@ -62,8 +63,8 @@ class EquipmentRegister(models.Model):
 				move_lines.append((0, 0, move_line_vals))
 				# create move
 				move_vals.update({'line_ids': move_lines})
-				self.env['account.move'].create(move_vals)
-				# new_move._post()
+				new_move = self.env['account.move'].create(move_vals)
+				new_move._post()
 
 		return True
 	

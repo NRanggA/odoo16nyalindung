@@ -140,17 +140,27 @@ class AssetAcquisition(models.Model):
 				first_depreciation_date = acquisition.date
 				if line.existing_asset_id.child_ids:
 					parent_asset = line.existing_asset_id
-					first_depreciation_date = min(x.depreciation_date for x in parent_asset.child_ids.depreciation_line_ids.filtered(lambda d: not d.move_id))
-					if line.merge_mode=='remaining_period':
-						# new_asset_method_number = max([(x.method_number - x.entry_count) for x in parent_asset.child_ids])
-						new_asset_method_number = parent_asset.entry_count
+					# first_depreciation_date = min(x.depreciation_date for x in parent_asset.child_ids.depreciation_line_ids.filtered(lambda d: not d.move_id))
+					first_depreciation_date = min([d.depreciation_date for d in parent_asset.depreciation_line_ids.filtered(lambda d: not d.move_check)])
+					remaining_depr = len(parent_asset.depreciation_line_ids.filtered(lambda d: not d.move_check).ids)
+					if line.merge_mode=='no_extension':
+						new_asset_method_number = remaining_depr
 					else:
-						new_asset_method_number = parent_asset.category_id.method_number
-						if line.merge_mode=='prolong_old_asset':
+						if not line.extend_period:
+							raise ValidationError("Please input Extend Period")
+						if line.merge_mode=='extend_merged_asset' and not line.remaining_period:
+							raise ValidationError("You try to Merge New Asset with Old Asset that doenst have Remaining Depreciation Period.\n Please change it to Extend Child Asset Only")
+						
+						# new_asset_method_number = parent_asset.category_id.method_number
+						new_asset_method_number = remaining_depr + line.extend_period
+						
+						# if line.merge_mode=='prolong_old_asset':
+						if line.merge_mode=='extend_merged_asset':
 							for child in line.existing_asset_id.child_ids:
 								if child not in existing_asset_dict.keys():
 									existing_asset_dict.update({child: {
-										'method_number': child.entry_count + new_asset_method_number,
+										# 'method_number': child.entry_count + new_asset_method_number,
+										'method_number': child.method_number + line.extend_period,
 										'method_period': child.method_period,
 										'method_end': child.method_end,
 									}})
@@ -163,15 +173,17 @@ class AssetAcquisition(models.Model):
 					parent_vals['name'] = f"Merge: {line.existing_asset_id.name}"
 					parent_asset = self.env['account.asset.asset'].create(parent_vals)
 					new_parent.append((parent_asset.id, line.existing_asset_id))
-					first_depreciation_date = min(x.depreciation_date for x in line.existing_asset_id.depreciation_line_ids.filtered(lambda d: not d.move_id))
-					if line.merge_mode=='remaining_period':
-						new_asset_method_number = line.existing_asset_id.method_number - line.existing_asset_id.entry_count
+					first_depreciation_date = min(x.depreciation_date for x in line.existing_asset_id.depreciation_line_ids.filtered(lambda d: not d.move_check))
+					remaining_depr = len(line.existing_asset_id.depreciation_line_ids.filtered(lambda d: not d.move_check).ids)
+					if line.merge_mode=='no_extension':
+						new_asset_method_number = remaining_depr
 					else:
-						new_asset_method_number = line.existing_asset_id.category_id.method_number
-						if line.merge_mode=='prolong_old_asset':
+						new_asset_method_number = remaining_depr + line.extend_period
+						# if line.merge_mode=='prolong_old_asset':
+						if line.merge_mode=='extend_merged_asset':
 							if line.existing_asset_id not in existing_asset_dict.keys():
 								existing_asset_dict.update({line.existing_asset_id: {
-									'method_number': line.existing_asset_id.entry_count + new_asset_method_number,
+									'method_number': line.existing_asset_id.method_number + line.extend_period,
 									'method_period': line.existing_asset_id.method_period,
 									'method_end': line.existing_asset_id.method_end,
 								}})
@@ -256,8 +268,8 @@ class AssetAcquisition(models.Model):
 						move_lines.append((0, 0, move_line_vals))
 					# create move
 					move_vals.update({'line_ids': move_lines})
-					self.env['account.move'].create(move_vals)
-				# new_move._post()
+					new_move = self.env['account.move'].create(move_vals)
+					new_move._post()
 
 				# Create Asset
 				# print(">>>>>>>>>>>", asset_vals)
