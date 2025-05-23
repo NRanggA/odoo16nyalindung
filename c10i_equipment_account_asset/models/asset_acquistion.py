@@ -266,7 +266,7 @@ Group Mark only work if you put the same Asset Model
 		# ('remaining_period', 'Merge only Asset Remaining Value'),
 		# ('prolong_old_asset', 'Prolong Old Asset To'),
 		# ('prolong_only_new_asset', 'Prolong only the New Asset')
-	], default='no_extension', string="Merge Mode")
+	], string="Merge Mode")
 	remaining_period = fields.Integer(string="Remaining Period", compute='_compute_remaining_period')
 	extend_period = fields.Integer(string="Extend Period")
 	existing_asset_id = fields.Many2one('account.asset.asset', string="Existing Asset", ondelete='restrict', domain="[('state', '=', 'open'),('parent_id','=',False)]")
