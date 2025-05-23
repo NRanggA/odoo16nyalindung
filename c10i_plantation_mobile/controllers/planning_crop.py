@@ -115,6 +115,7 @@ class ProfileApi(ApiBase):
                     'planted_block_id': (planning.plant_block_id.id, planning.plant_block_id.display_name),
                     'task_ids': [{
                         'plan_work_day': task.plan_work_day,
+                        'activity_id': (task.activity_id.id, task.activity_id.display_name) if task.activity_id else False,
                         'product_id': (task.product_id.id, task.product_id.display_name) if task.product_id else False,
                         'product_id_2': (task.product_id_2.id, task.product_id_2.display_name) if task.product_id_2 else False,
                         'plan_result': task.plan_result,
@@ -124,7 +125,7 @@ class ProfileApi(ApiBase):
                         'act_emp_result_2': task.act_emp_result_2,
                         'act_partner_result': task.act_partner_result,
                         'act_partner_result_2': task.act_partner_result_2,
-                        'plan_material_ids': [(0, 0, {
+                        'plan_material_ids': [{
                             'product_id': (material.product_id.id, material.product_id.display_name) if material.product_id else False,
                             'uom_id': (material.uom_id.id, material.uom_id.display_name) if material.uom_id else False,
                             'plan_qty': material.plan_qty,
@@ -132,7 +133,7 @@ class ProfileApi(ApiBase):
                             'plan_cost': material.plan_cost
                             # 'actual_qty': material.actual_qty,
                             # 'actual_cost': material.actual_cost,
-                        }) for material in task.plan_material_ids],
+                        } for material in task.plan_material_ids],
                     } for task in planning.task_ids]
                 }
                 planning_records.append(plan_vals)
