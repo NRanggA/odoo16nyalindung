@@ -11,7 +11,8 @@
     'depends': [
         'c10i_base_api',
         'c10i_lhm_v16',
-        'ny_hr_attendance'
+        'c10i_plantation_planning',
+        'ny_hr_attendance',
     ],
     # always loaded
     'data': [

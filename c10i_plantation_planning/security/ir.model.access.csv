@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_planning_crop_task_manpower_user,planning.crop.task.material user,model_planning_crop_task_material,c10i_plantation_planning.group_planning_user,1,1,1,1
+access_planning_crop_task_material_user,planning.crop.task.manpower user,model_planning_crop_task_manpower,c10i_plantation_planning.group_planning_user,1,1,1,1
+access_planning_crop_task_user,planning.crop.task user,model_planning_crop_task,c10i_plantation_planning.group_planning_user,1,1,1,1
+access_planning_crop_user,planning.crop user,model_planning_crop,c10i_plantation_planning.group_planning_user,1,1,1,0
+access_planning_crop_admin,planning.crop admin,model_planning_crop,c10i_plantation_planning.group_planning_admin,1,1,1,1

@@ -14,3 +14,4 @@ from . import hr_attendance_type
 from . import lhm_transaction
 from . import material_request
 from . import hr_attendance
+from . import planning_crop

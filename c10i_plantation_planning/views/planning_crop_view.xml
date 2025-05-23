@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="planning_crop_view_form" model="ir.ui.view">
+        <field name="name">planning.crop.view.form</field>
+        <field name="model">planning.crop</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <header>
+                    <button name="action_confirm" type="object" states="draft" string="Confirm" class="btn-primary"/>
+                    <button name="action_set_draft" type="object" states="confirm" string="Done"/>
+                    <button name="action_done" type="object" states="confirm" string="Mark as Done" class="btn-warning"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
+                </header>
+                <sheet>
+                    <field name="type" invisible="1"/>
+                    <group>
+                        <field name="plant_block_id" options="{'no_create': True}" attrs="{'readonly': [('state','!=','draft')]}"/>
+                    </group>
+                    <group>
+                        <field name="date_from" attrs="{'readonly': [('state','!=','draft')]}"/>
+                        <field name="date_to" attrs="{'readonly': [('state','!=','draft')]}"/>
+                    </group>
+                    <notebook>
+                        <page name="task" string="Tasks">
+                            <field name="task_ids" attrs="{'readonly': [('state','=','done')]}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="planning_crop_view_tree" model="ir.ui.view">
+        <field name="name">planning.crop.view.tree</field>
+        <field name="model">planning.crop</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state=='done'">
+                <field name="plant_block_id" />
+                <field name="create_uid" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="state" widget="badge" decoration-warning="state=='confirm'" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="planning_crop_view_search" model="ir.ui.view">
+        <field name="name">planning.crop.view.search</field>
+        <field name="model">planning.crop</field>
+        <field name="arch" type="xml">
+            <search string="">
+                <field name="plant_block_id" string="Blok Tanam"/>
+                <field name="create_uid" string="User"/>
+                
+                <separator/>
+                <filter name="state_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="state_confirm" string="Confirm" domain="[('state','=','confirm')]"/>
+                <filter name="state_done" string="Done" domain="[('state','=','done')]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter name="groupby_plant_block" string="Blok Tanam" domain="" context="{'group_by':'plant_block_id'}"/>
+                    <filter name="groupby_date_to" string="Date End" domain="" context="{'group_by':'date_to'}"/>
+                    <filter name="groupby_state" string="Status" domain="" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_planning_crop_weekly" model="ir.actions.act_window">
+        <field name="name">Weekly</field>
+        <field name="res_model">planning.crop</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('type','=','weekly')]</field>
+        <field name="context">{'default_type': 'weekly'}</field>
+    </record>
+
+    <record id="action_planning_crop_monthly" model="ir.actions.act_window">
+        <field name="name">Monthly</field>
+        <field name="res_model">planning.crop</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('type','=','monthly')]</field>
+        <field name="context">{'default_type': 'monthly'}</field>
+    </record>
+
+</odoo>

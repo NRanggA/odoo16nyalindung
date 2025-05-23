@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="planning_crop_task_view_form" model="ir.ui.view">
+        <field name="name">planning.crop.task.view.form</field>
+        <field name="model">planning.crop.task</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="parent_state" invisible="1"/>
+                    <field name="filtered_activities" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="activity_id" string="Activity" class="oe_edit_only"/>
+                        <h1>
+                            <field name="activity_id" 
+                                domain="[('id','in',filtered_activities)]"
+                                placeholder="Activity.." 
+                                options="{'no_create': True}"  
+                                attrs="{'readonly': [('parent_state','!=','draft')]}"/>
+                        </h1>
+                    </div>
+                    <group string="Planning">
+                        <group>
+                            <field name="plan_work_day" attrs="{'readonly': [('parent_state','!=','draft')]}"/>
+                        </group>
+                        <group>
+                            <field name="product_id" options="{'no_create': True}" attrs="{'readonly': [('parent_state','!=','draft')]}"/>
+                            <field name="plan_result" attrs="{'readonly': [('parent_state','!=','draft')]}"/>
+                            <field name="product_id_2" options="{'no_create': True}" attrs="{'readonly': [('parent_state','!=','draft')]}"/>
+                            <field name="plan_result_2" attrs="{'readonly': [('parent_state','!=','draft')]}"/>
+                        </group>
+                    </group>
+                    <group string="Actual" attrs="{'invisible': [('parent_state','!=','confirm')]}">
+                        <group>
+                            <field name="act_emp_work_day"/>
+                            <field name="act_emp_result"/>
+                            <field name="act_partner_result"/>
+                            <field name="act_result"/>
+                        </group>
+                        <group>
+                            <field name="act_emp_result_2"/>
+                            <field name="act_partner_result_2"/>
+                            <field name="act_result_2"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="manpower_planning" string="Manpower">
+                            <field name="plan_manpower_ids">
+                                <tree editable="bottom">
+                                    <field name="employee_id" options="{'no_create': True}"/>
+                                    <field name="plan_qty" sum="plan_qty"/>
+                                    <field name="cost_per_uom"/>
+                                    <field name="uom"/>
+                                    <field name="plan_cost" sum="plan_cost" />
+                                    <field name="plan_hectare"/>
+                                    <field name="plan_cost_per_hectare" sum="plan_cost_per_hectare"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="material_planning" string="Material">
+                            <field name="plan_material_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id" options="{'no_create': True}"/>
+                                    <field name="uom_id" options="{'no_create': True}"/>
+                                    <field name="base_uom_id" invisible="1"/>
+                                    <field name="base_uom_categ_id" invisible="1"/>
+                                    <field name="plan_qty" sum="plan_qty"/>
+                                    <field name="cost_price"/>
+                                    <field name="plan_cost" sum="plan_cost"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="planning_crop_task_view_tree" model="ir.ui.view">
+        <field name="name">planning.crop.task.view.tree</field>
+        <field name="model">planning.crop.task</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="activity_id"/>
+                <field name="plan_work_day"/>
+                <field name="plan_result"/>
+                <field name="plan_result_2"/>
+                <field name="act_result"/>
+                <field name="act_result_2"/>
+                <field name="act_emp_work_day"/>
+                <field name="act_emp_result" optional="hide"/>
+                <field name="act_emp_result_2" optional="hide"/>
+                <field name="act_partner_result" optional="hide"/>
+                <field name="act_partner_result_2" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>
