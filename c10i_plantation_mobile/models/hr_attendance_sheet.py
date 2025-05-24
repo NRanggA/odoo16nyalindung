@@ -32,14 +32,19 @@ class AttendanceSheet(models.Model):
                         long_in = float(tt.longitude)
                         continue
                     
-                    if not check_out and check_in:
+                    if tt.type == 'check-out':
                         check_out = tt.waktu
                         lat_out = float(tt.latitude)
                         long_out = float(tt.longitude)
-                    elif check_out < tt.waktu:
-                        check_out = tt.waktu
-                        lat_out = float(tt.latitude)
-                        long_out = float(tt.longitude)
+                    else:
+                        if not check_out and check_in:
+                            check_out = tt.waktu
+                            lat_out = float(tt.latitude)
+                            long_out = float(tt.longitude)
+                        elif check_out < tt.waktu:
+                            check_out = tt.waktu
+                            lat_out = float(tt.latitude)
+                            long_out = float(tt.longitude)
             self.write({'check_in': check_in, 
                     'latitude_in': lat_in, 
                     'longitude_in': long_in,
