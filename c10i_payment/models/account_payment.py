@@ -68,6 +68,7 @@ class AccountPayment(models.Model):
 
                     bill_line = pline.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')
                     line_vals = {
+                        'name': pline.move_id.name,
                         'account_id': bill_line.account_id.id,
                         'debit': debit,
                         'credit': credit,
@@ -87,6 +88,7 @@ class AccountPayment(models.Model):
                             wo_kredit = abs(write_off_amount)
                         
                         write_off_vals = {
+                            'name': pline.description,
                             'account_id': pline.write_off_account_id.id,
                             'debit': wo_debit,
                             'credit': wo_kredit,
@@ -106,6 +108,7 @@ class AccountPayment(models.Model):
                 
             bank_line_vals = {
                 # 'account_id': self.journal_id.default_account_id.id,
+                'name' : self.ref,
                 'account_id': self.outstanding_account_id.id,
                 'debit': debit_tot,
                 'credit': credit_tot,
@@ -114,7 +117,10 @@ class AccountPayment(models.Model):
 
             payment_lines.append((0, 0, bank_line_vals))
 
-            self.move_id.write({'line_ids': payment_lines})            
+            self.move_id.write({
+                'ref': '',
+                'line_ids': payment_lines
+                })            
             
             self.move_id._post(soft=False)
 
@@ -139,6 +145,7 @@ class AccountPayment(models.Model):
                     bill_line = pline.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
                     
                     line_vals = {
+                        'name': pline.move_id.name,
                         'account_id': bill_line.account_id.id,
                         'debit': debit,
                         'credit': credit,
@@ -177,6 +184,7 @@ class AccountPayment(models.Model):
                 
             bank_line_vals = {
                 # 'account_id': self.journal_id.default_account_id.id,
+                'name' : self.ref,
                 'account_id': self.outstanding_account_id.id,
                 'debit': debit_tot,
                 'credit': credit_tot,
@@ -185,7 +193,11 @@ class AccountPayment(models.Model):
 
             payment_lines.append((0, 0, bank_line_vals))
 
-            self.move_id.write({'line_ids': payment_lines})            
+            # self.move_id.write({'line_ids': payment_lines})  
+            self.move_id.write({
+                'ref': '',
+                'line_ids': payment_lines
+                })             
             
             self.move_id._post(soft=False)
 

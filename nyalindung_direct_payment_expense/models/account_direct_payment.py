@@ -90,7 +90,8 @@ class DirectPayment(models.Model):
             'name': '/',
             'date': account_date,
             'journal_id' : journal.id,
-            'ref': self.name,
+            # 'ref': self.name,
+            'ref': '',
             'company_id': self.company_id.id,
             'is_payment' : True,
         }
