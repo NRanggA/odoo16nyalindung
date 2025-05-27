@@ -78,7 +78,7 @@ class ReportSalaryDepartment(models.Model):
             WHERE sm.state in ('done','assigned')
             GROUP BY pt.name
             ORDER BY pt.name;
-            """ % (obj.period_from.strftime('%d-%m-%Y'), obj.period_to.strftime('%d-%m-%Y'),obj.period_from.strftime('%d-%m-%Y'), obj.period_to.strftime('%d-%m-%Y'), obj.period_to.strftime('%d-%m-%Y')))
+            """ % (obj.period_from.strftime('%Y-%m-%d'), obj.period_to.strftime('%Y-%m-%d'),obj.period_from.strftime('%Y-%m-%d'), obj.period_to.strftime('%Y-%m-%d'), obj.period_to.strftime('%Y-%m-%d')))
         data4 = self._cr.dictfetchall()
         header  = ['Product','Beginning Balance (Qty)','Ending Balance (Qty)',
                     'COGS/Usage (Qty)','DOI (Days)','ITO','Stock Availability (Days)']
