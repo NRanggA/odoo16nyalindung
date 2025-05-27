@@ -112,6 +112,16 @@ class MaterialRequest(models.Model):
         for request in self:
             if not request.state == 'cancel':
                 raise UserError(_('In order to delete a material request, you must cancel it first.'))
+            
+            pickings = request.line_ids.mapped('move_ids.picking_id')
+
+            if any(picking.state not in ('done', 'cancel') for picking in pickings):
+                raise UserError(_('You cannot delete a material request that has open pickings. Please cancel the related pickings first.'))
+
+            if pickings:
+                raise UserError(_('You cannot delete a material request that has related stock pickings.'))
+
+
         return super(MaterialRequest, self).unlink()
 
     ##########################
