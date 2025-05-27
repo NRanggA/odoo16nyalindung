@@ -19,8 +19,8 @@ class ReportSalaryDepartment(models.Model):
         num_style = workbook.add_format({'font_size': 11,  'align': 'left', 'valign': 'vright', 'text_wrap': True , 'num_format':'_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)' })
         text_style_heading = workbook.add_format({'font_size': 12,  'align': 'center', 'valign': 'vcenter', 'text_wrap': True, 'bold': True })
         worksheet = workbook.add_worksheet('Sheet 1')
-        date_from = '01-01-%s'%(obj.period_from.year)
-        date_to = '31-12-%s'%(obj.period_to.year)
+        date_from = '%s-01-01'%(obj.period_from.year)
+        date_to = '%s-12-31'%(obj.period_to.year)
         days = (obj.period_to - obj.period_from).days
         self._cr.execute("""
                 select 

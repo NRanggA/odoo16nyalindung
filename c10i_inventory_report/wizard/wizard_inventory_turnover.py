@@ -35,7 +35,7 @@ class WizardInventoryTurnover(models.TransientModel):
             WHERE sm.state in ('done','assigned')
             GROUP BY pt.name
             ORDER BY pt.name;
-            """ % (self.period_from.strftime('%d-%m-%Y'), self.period_to.strftime('%d-%m-%Y'),self.period_from.strftime('%d-%m-%Y'), self.period_to.strftime('%d-%m-%Y')))
+            """ % (self.period_from.strftime('%Y-%m-%d'), self.period_to.strftime('%Y-%m-%d'),self.period_from.strftime('%Y-%m-%d'), self.period_to.strftime('%Y-%m-%d')))
         data4 = self._cr.dictfetchall()
         model = self.env['inventory.turnover.line']
 
