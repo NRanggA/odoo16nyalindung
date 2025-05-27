@@ -118,7 +118,8 @@ class AccountPayment(models.Model):
             payment_lines.append((0, 0, bank_line_vals))
 
             self.move_id.write({
-                'ref': '',
+                # 'ref': '',
+                'ref': self.ref,
                 'line_ids': payment_lines
                 })            
             
@@ -195,7 +196,8 @@ class AccountPayment(models.Model):
 
             # self.move_id.write({'line_ids': payment_lines})  
             self.move_id.write({
-                'ref': '',
+                # 'ref': '',
+                'ref': self.ref,
                 'line_ids': payment_lines
                 })             
             
