@@ -1,4 +1,4 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request, Response
 from odoo.exceptions import MissingError, ValidationError
 import json
