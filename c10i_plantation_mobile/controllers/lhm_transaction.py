@@ -46,7 +46,8 @@ class ProfileApi(ApiBase):
                         line_validation_error.append("Karyawan {employee.name} ({employee.no_induk or ''}) tidak memiliki Kontrak Aktif")
                         continue
                     lhm_lines.append((0,0,{
-                        'date': line_vals.get('date', False),
+                        'date': vals['date'],
+                        # 'date': line_vals.get('date', False),
                         'employee_id': line_vals.get('employee_id', False),
                         'work_day': line_vals.get('work_day', 0.0),
                         'attendance_id': line_vals.get('attendance_id', False),
@@ -72,11 +73,26 @@ class ProfileApi(ApiBase):
                         # 'contract_wage_value': round(contract.wage / contract.wage_day, 2)
                         'contract_wage_value': round(employee.contract_id.wage / employee.contract_id.wage_day, 2)
                     }))
+                
+                material_lines = []
+                for material_vals in vals.get('material_line_ids',[]):
+                    material_lines.append((0,0,{
+                        'date': vals['date'],
+                        'from_mobile_apps': True,
+                        'product_id': material_vals.get('product_id', False),
+                        'activity_id': material_vals.get('activity_id', False),
+                        'location_id': material_vals.get('location_id', False),
+                        'product_id': material_vals.get('product_id', False),
+                        'product_uom_id': material_vals.get('product_uom_id', False),
+                        'realization': material_vals.get('realization', 0.0)
+                    }))
+
                 lhm_transaction = {
                     # 'name'
                     'date': vals['date'],
                     'kemandoran_id': vals['kemandoran_id'],
                     'lhm_line_ids': lhm_lines,
+                    'material_line_ids': material_lines,
                     # emp_out_ids
                     # emp_in_ids
                     'note': vals['note'],
@@ -137,10 +153,15 @@ class ProfileApi(ApiBase):
                        'location_type_id','location_id','activity_id',
                        'hasil_1','satuan_1','product_id',
                        'hasil_2','satuan_2','product_id_2']
+            fields3 = ['product_id',
+                       'location_id','activity_id',
+                       'product_id','product_uom_id','realization']
             for lhm in lhm_records:
                 lhm_line_records = request.env['lhm.transaction.line'].with_user(check_user).search_read(domain=[('lhm_id','=',lhm['id'])], fields=fields2)
+                material_line_records = request.env['lhm.transaction.material.line'].with_user(check_user).search_read(domain=[('lhm_id','=',lhm['id'])], fields=fields3)
                 lhm.update({
-                    'lhm_line_ids': lhm_line_records
+                    'lhm_line_ids': lhm_line_records,
+                    'material_line_ids': material_line_records
                 })
             
             result['data'] = lhm_records
