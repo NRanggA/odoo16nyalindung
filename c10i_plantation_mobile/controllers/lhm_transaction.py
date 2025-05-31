@@ -3,7 +3,6 @@ from odoo.http import request, Response
 from odoo.exceptions import MissingError, ValidationError
 import json
 from datetime import datetime, time
-import pytz
 from pytz import timezone, utc
 
 from odoo.addons.c10i_base_api.controllers.main import ApiBase, HEADERS, DateEncoder, BASE_ROUTE
@@ -168,6 +167,35 @@ class ProfileApi(ApiBase):
             result['count'] = len(lhm_records)
             return Response(json.dumps({
                     'message': f"Successfully get data Laporan Harian Mandor (LHM)",
+                    'data': result
+                }, cls=DateEncoder), headers=HEADERS, status=201)
+        except Exception as error:
+            return self._handle_exception(error)
+        
+    
+    @http.route(f"{ROUTES}/attendance/<kemandoran_id>", auth='public', website=False, csrf=False, type='http', methods=['GET'])
+    def get_attendance_member(self, kemandoran_id=None):
+        # check token
+        check_user, message = self._verify_auth()
+        if not check_user:
+            return Response(json.dumps({'message': message}), headers=HEADERS, status=400)
+        
+        datas = self._get_payload() or {}
+        try:
+            result = {'data': [], 'count': 0}
+            if not kemandoran_id:
+                raise ValidationError("Parameter 'kemandoran_id' is mandatory attribute.")
+            jakarta = timezone('Asia/Jakarta')
+            today = utc.localize(fields.Datetime.now()).astimezone(jakarta)
+            domain = [('employee_id.kemandoran_id','=',int(kemandoran_id)),('date','=',today)]
+            fields = ['id','employee_id','check_in','longitude_in','latitude_in']
+            attendance_records = request.env['hr.attendance.sheet'].sudo().search_read(domain=domain, fields=fields)
+            # if not attendance_records:
+            #     raise MissingError("Attendance not found")
+            result['data'] = attendance_records
+            result['count'] = len(attendance_records)
+            return Response(json.dumps({
+                    'message': f"Successfully get data Attendance for Mandor (LHM)",
                     'data': result
                 }, cls=DateEncoder), headers=HEADERS, status=201)
         except Exception as error:
