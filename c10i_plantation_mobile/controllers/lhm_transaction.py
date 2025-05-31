@@ -142,10 +142,10 @@ class ProfileApi(ApiBase):
             else:
                 if datas.get('date_from') and datas.get('date_to'):
                     domain.extend([('date','>=',datas['date_from']),('date','<=',datas['date_to'])])
-            fields = ['id','name','kemandoran_id','date','state']
+            fields1 = ['id','name','kemandoran_id','date','state']
             limit = datas.get('limit', 10)
             offset = datas.get('offset', 0)
-            lhm_records = request.env['lhm.transaction'].with_user(check_user).search_read(domain=domain, fields=fields, order="date desc", limit=limit, offset=offset)
+            lhm_records = request.env['lhm.transaction'].with_user(check_user).search_read(domain=domain, fields=fields1, order="date desc", limit=limit, offset=offset)
             if not lhm_records:
                 raise MissingError("Data LHM not found")
             fields2 = ['employee_id','name','date','work_day','attendance_id',
@@ -188,8 +188,8 @@ class ProfileApi(ApiBase):
             jakarta = timezone('Asia/Jakarta')
             today = utc.localize(fields.Datetime.now()).astimezone(jakarta)
             domain = [('employee_id.kemandoran_id','=',int(kemandoran_id)),('date','=',today)]
-            fields = ['id','employee_id','check_in','longitude_in','latitude_in']
-            attendance_records = request.env['hr.attendance.sheet'].sudo().search_read(domain=domain, fields=fields)
+            fields1 = ['id','employee_id','check_in','longitude_in','latitude_in']
+            attendance_records = request.env['hr.attendance.sheet'].sudo().search_read(domain=domain, fields=fields1)
             # if not attendance_records:
             #     raise MissingError("Attendance not found")
             result['data'] = attendance_records
