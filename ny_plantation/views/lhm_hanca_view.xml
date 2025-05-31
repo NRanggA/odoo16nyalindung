@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="lhm_hanca_view_form" model="ir.ui.view">
+        <field name="name">lhm.hanca.view.form</field>
+        <field name="model">lhm.hanca</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="description"/>
+                            <field name="plant_block_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="geo_map_center"/>
+                            <field name="geo_map_border"/>
+                            <field name="perimeter"/>
+                            <field name="area"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="lhm_hanca_view_tree" model="ir.ui.view">
+        <field name="name">lhm.hanca.view.tree</field>
+        <field name="model">lhm.hanca</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="plant_block_id" />
+                <field name="perimeter"/>
+                <field name="area"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="lhm_hanca_view_search" model="ir.ui.view">
+        <field name="name">lhm.hanca.view.search</field>
+        <field name="model">lhm.hanca</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="plant_block_id"/>
+                
+                <group expand="0" string="Search">
+                    <filter name="groupby_name" string="Blok Hanca" context="{'group_by': 'name'}" />
+                    <filter name="groupby_plant_block" string="Blok Tanam" context="{'group_by': 'plant_block_id'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lhm_hanca" model="ir.actions.act_window">
+        <field name="name">Blok Hanca</field>
+        <field name="res_model">lhm.hanca</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_lhm_hanca" action="action_lhm_hanca" parent="c10i_lhm_v16.menu_lhm_master" sequence="61"/>
+
+</odoo>
