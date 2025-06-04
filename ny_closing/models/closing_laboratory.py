@@ -177,6 +177,7 @@ class ClosingLaboratory(models.Model):
             out_moves = self.env['stock.move'].search([('product_id','=',closing.lab_product_id.product_id.id),
                                                           ('location_id.usage','=','internal'),
                                                           ('location_dest_id.usage','!=','internal'),
+                                                          ('picking_type_id.code','=','issue'),
                                                           ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                                           ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
                                                           ('state','=','done')])
@@ -187,12 +188,14 @@ class ClosingLaboratory(models.Model):
             adj_in_moves = self.env['stock.move'].search([('product_id','=',closing.lab_product_id.product_id.id),
                                                           ('location_dest_id.usage','=','internal'),
                                                           ('location_id.usage','=','inventory'),
+                                                          ('picking_type_id','=',False),
                                                           ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                                           ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
                                                           ('state','=','done')])
             adj_out_moves = self.env['stock.move'].search([('product_id','=',closing.lab_product_id.product_id.id),
                                                           ('location_id.usage','=','internal'),
                                                           ('location_dest_id.usage','=','inventory'),
+                                                          ('picking_type_id','=',False),
                                                           ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                                           ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
                                                           ('state','=','done')])
