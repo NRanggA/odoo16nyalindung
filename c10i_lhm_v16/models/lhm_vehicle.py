@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, time
 import pandas as pd
 import numpy as np
 import io
+from datetime import datetime, date
 
 from decimal import Decimal, getcontext
 
@@ -326,37 +327,63 @@ class lhm_vehicle_line(models.Model):
                     else:
                         line.filtered_activities = [(6, 0, activities.ids)] if activities else []
     
+
     @api.model
     def default_get(self, default_fields):
         #default_get should only do the following:
         #   -propose the next amount in start_value in order to reduce user input mistake
-        lhm_vehicle_obj = self.env['lhm.vehicle']
-        period_obj = self.env['account.period']
-        context = self._context
+        # lhm_vehicle_obj = self.env['lhm.vehicle']
+        # period_obj = self.env['account.period']
 
+        # Fungsi untuk mengamankan parsing tanggal
+        def _safe_parse_date(val):
+            if isinstance(val, str):
+                try:
+                    return datetime.strptime(val, "%Y-%m-%d").date()
+                except ValueError:
+                    return None
+            elif isinstance(val, datetime):
+                return val.date()
+            elif isinstance(val, date):
+                return val
+            return None
+
+        context = self._context
         data = super(lhm_vehicle_line, self).default_get(default_fields)
-        if not context.get('line_ids') and context.get('vehicle_id') and context.get('period_id'):
-            period = period_obj.browse(context.get('period_id'))
+        if not context.get('line_ids') and context.get('vehicle_id'):
+            # period = period_obj.browse(context.get('period_id'))
+            date_start = context.get('date_start')
             prev_lhm = self.search([('lhm_vehicle_id.vehicle_id', '=', context['vehicle_id']),
                                                        ('lhm_vehicle_id.state', 'in', ['done','confirmed']),
-                                                       ('date','<=',period.date_start)],
-                                                       order='date desc', limit=1)
+                                                    #    ('date','<=',period.date_start)
+                                                       ('date','<=',date_start)
+                                                       ],order='date desc', limit=1)
             if prev_lhm:
                 last_end_value = prev_lhm.end_value
-                default_date = period.date_start
+                # default_date = period.date_start
+                default_date = date_start
 
                 data['start_value'] = last_end_value
                 data['date'] = default_date
         elif context.get('line_ids'):
             line_ids = context.get('line_ids')
             if isinstance(line_ids, list):
-                if all(isinstance(i, tuple) and len(i) == 3 for i in line_ids):
-                    lines_with_values = [x[2] for x in line_ids if x[0] == 0]
-                    last_end_value = max([x['end_value'] for x in lines_with_values if 'end_value' in x])
-                    default_date = max([x['date'] for x in lines_with_values if 'date' in x])
 
-                    data['start_value'] = last_end_value
-                    data['date'] = default_date
+                new_lines = [x[2] for x in line_ids if x[0] == 0 and isinstance(x[2], dict)]
+
+                existing_ids = [x[1] for x in line_ids if x[0] == 4]
+                existing_lines = self.browse(existing_ids)
+
+                
+                end_values = [x['end_value'] for x in new_lines if 'end_value' in x] + existing_lines.mapped('end_value')
+                # dates = [x['date'] for x in new_lines if 'date' in x] + existing_lines.mapped('date')
+                dates_raw = [x['date'] for x in new_lines if 'date' in x] + existing_lines.mapped('date')
+                dates = [_safe_parse_date(d) for d in dates_raw if _safe_parse_date(d)]
+
+                if end_values and dates:
+                    data['start_value'] = max(end_values)
+                    data['date'] = max(dates)
+
         return data
         # elif context.get('line_ids'):
         #     line_dict = lhm_vehicle_obj.resolve_2many_commands('line_ids', context.get('line_ids'))
@@ -366,6 +393,7 @@ class lhm_vehicle_line(models.Model):
         #     data['start_value'] = last_end_value
         #     data['date'] = default_date
         # return data
+
 
     @api.onchange('activity_id')
     def _onchange_activity_id(self):

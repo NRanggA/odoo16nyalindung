@@ -122,14 +122,20 @@ class AccountMoveLine(models.Model):
     @api.onchange('plantation_location_type_id')
     def _onchange_plantation_location_type_id(self):
         if self.plantation_location_type_id:
+            if self.plantation_location_type_id.code == '-'and self.move_id.journal_id:
+                self.plantation_varieties_id = self.move_id.journal_id.varieties_id.id
+            else:
+                # # Menambahkan onchage ORG ketika memilih tipe lokasi
+                self.plantation_varieties_id = self.plantation_location_type_id.varieties_id.id
+            
+            
             self.plantation_location_id = False
             self.plantation_activity_id = False
             
-            # # Menambahkan onchage ORG ketika memilih tipe lokasi
-            self.plantation_varieties_id = self.plantation_location_type_id.varieties_id.id
             
             if self.plantation_location_type_id.no_line and (self.plantation_location_type_id.general_charge or self.plantation_location_type_id.indirect):
                 self.account_id = False
+            
             # else:
             #     # self.account_id = self.plantation_location_type_id.account_id.id if self.plantation_location_type_id.account_id else False
             #     self.account_id = self.plantation_activity_id.account_id.id if self.plantation_activity_id.account_id else False

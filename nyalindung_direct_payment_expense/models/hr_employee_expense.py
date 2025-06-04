@@ -403,6 +403,15 @@ class HrEmployeeExpense(models.Model):
                     residual_company += line.amount_residual
             payment.advance_residual = residual_company
 
+            if payment.settlement_ids.id:
+                for settle in payment.settlement_ids:
+                    if settle.account_move_id:
+                        for line in settle.account_move_id.line_ids:
+                            if line.account_id == advance_account:
+                                residual_company += line.amount_residual
+            payment.advance_residual = residual_company
+
+
     @api.depends('amount_total', 'advance_to_settle_ids')
     def _compute_settlement_amount(self):
         for payment in self:
@@ -606,6 +615,7 @@ class HrEmployeeExpense(models.Model):
             direct_count = self.env['account.direct.payment'].search_count([('employee_expense_id', '=', record.id)])
             record.employee_expense_journal_count = journal_count
             record.employee_expense_direct_payment_count = direct_count
+    
     def _get_count_employee_expense_settlement(self):
         for record in self:
             record.employee_expense_settlement_count = len(record.settlement_ids.ids)
