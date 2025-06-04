@@ -49,8 +49,11 @@ class AccountMoveLine(models.Model):
         if context.get('account_ids'):
             domain += [('account_id', 'in', context['account_ids'].ids)]
         
-        if context.get('varieties_id') and context.get('is_pnl'):
-            domain += [('plantation_varieties_id', '=', context['varieties_id'])]
+        if context.get('pnl_per_org'):
+            if context.get('varieties_id'):
+                domain += [('plantation_varieties_id', '=', context['varieties_id'])]
+            elif context.get('not_varieties_ids'):
+                domain += [('plantation_varieties_id', 'not in', context['not_varieties_ids'])]
 
         if context.get('analytic_tag_ids'):
             domain += [('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]

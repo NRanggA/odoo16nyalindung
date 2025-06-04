@@ -451,6 +451,14 @@ class ClosingPlantation(models.Model):
             closing.deferred_cost_line_ids.unlink()
             # source_moves_cost = self.env['account.move.line'].search(self._get_domain_source_move_lines())
             # closing.current_period_cost = sum(source_moves_cost.mapped('balance')) if source_moves_cost else 0.0
+            
+            if closing.status=='tbm':
+                prev_tbm_move_lines = self.env['account.move.line'].search([('account_id','=',closing.plant_block_id.tbm_account_id.id),
+                    ('plantation_location_id','=',closing.plant_block_id.location_id.id),
+                    ('parent_state','=','posted'),
+                    ('date','<',closing.date_from)])
+                closing.accumulated_tbm_cost = sum(prev_tbm_move_lines.mapped('balance')) if prev_tbm_move_lines else 0.0
+            
             # deferred_moves_cost = self.env['account.move.line'].search(self._get_domain_deferred_move_lines())
             # closing.accumulated_cost = sum(deferred_moves_cost.mapped('balance')) if deferred_moves_cost else 0.0
             if closing.type_of_plant in ['shorterm','longterm_seasonal']:

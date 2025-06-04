@@ -15,3 +15,4 @@ from . import lhm_transaction
 from . import material_request
 from . import hr_attendance
 from . import planning_crop
+from . import lhm_hanca

@@ -102,95 +102,176 @@ class ReportFinancialXlsx(models.Model):
             worksheet.write(next_row, 1, "Date To", wbf['title_doc'])
             worksheet.write(next_row, 2, data['form']['date_to'])
             next_row += 1
+        next_row += 1
         
         max_level = max([int(x.get('level',0)) for x in report_lines])
-        if data['form']['debit_credit']:
-            worksheet.write(next_row, 1, "Name", wbf['header'])
-            worksheet.set_column(1,1,60) # width number
-            worksheet.write(next_row, 2, "Debit", wbf['header'])
-            worksheet.write(next_row, 3, "Credit", wbf['header'])
-            worksheet.write(next_row, 4, "Balance", wbf['header'])
-            worksheet.set_column(2,4,15) # width number
-            next_row += 1
-            for a in report_lines:
-                if int(a.get('level',0)) in (1,0):
-                    content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format({'font_color': '#000000','bold': 1})
-                elif not a.get('is_child',False):
-                    content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
-                else:
-                    content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format()
-                content_style.set_left()
-                content_style.set_right()
-                content_style.set_text_wrap()
-                content_style.set_indent(int(a.get('level',0)))
-                content_float_style.set_right()
-                    
-                worksheet.write(next_row, 1, a.get('name', ''), content_style)
-                worksheet.write(next_row, 2, a.get('debit', 0.0), content_float_style)
-                worksheet.write(next_row, 3, a.get('credit', 0.0), content_float_style)
-                worksheet.write(next_row, 4, a.get('balance', 0.0), content_float_style)
-                next_row += 1
-            worksheet.merge_range(next_row, 1, next_row, 4, "", wbf['total_float'])
-        elif not data['form']['enable_filter'] and not data['form']['debit_credit']:
-            worksheet.write(next_row, 1, "Name", wbf['header'])
-            worksheet.set_column(1,1,60) # width number
-            worksheet.write(next_row, 2, "Balance", wbf['header'])
-            worksheet.set_column(2,2,15) # width number
-            next_row += 1
-            for a in report_lines:
-                if int(a.get('level',0)) in (1,0):
-                    content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format({'font_color': '#000000','bold': 1})
-                elif not a.get('is_child',False):
-                    content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
-                else:
-                    content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format()
-                content_style.set_left()
-                content_style.set_right() 
-                content_style.set_text_wrap()
-                content_style.set_indent(int(a.get('level',0)))
-                content_float_style.set_right()
-                    
-                worksheet.write(next_row, 1, a.get('name', ''), content_style)
-                worksheet.write(next_row, 2, a.get('balance', 0.0), content_float_style)
-                next_row += 1
-            worksheet.merge_range(next_row, 1, next_row, 2, "", wbf['total_float'])
-        elif data['form']['enable_filter'] == 1 and not data['form']['debit_credit']:
-            worksheet.write(next_row, 1, "Name", wbf['header'])
-            worksheet.set_column(1,1,60) # width number
-            worksheet.write(next_row, 2, "Balance", wbf['header'])
-            worksheet.write(next_row, 3, data['form']['label_filter'], wbf['header'])
-            worksheet.set_column(2,3,15) # width number
-            next_row += 1
-            # # Freeze
-            # worksheet.freeze_panes(next_row, 1)
-            for a in report_lines:
-                if int(a.get('level',0)) in (1,0):
-                    content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format({'font_color': '#000000','bold': 1})
-                elif not a.get('is_child',False):
-                    content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
-                else:
-                    content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
-                    content_style = workbook.add_format()
-                content_style.set_left()
-                content_style.set_right() 
-                content_style.set_text_wrap()
-                content_style.set_indent(int(a.get('level',0)))
-                content_float_style.set_right()
-                    
-                worksheet.write(next_row, 1, a.get('name', ''), content_style)
-                worksheet.write(next_row, 2, a.get('balance', 0.0), content_float_style)
-                worksheet.write(next_row, 3, a.get('balance_cmp', 0.0), content_float_style)
-                next_row += 1
-            worksheet.merge_range(next_row, 1, next_row, 3, "", wbf['total_float'])
         
+        # if data['form']['debit_credit']:
+        #     worksheet.write(next_row, 1, "Name", wbf['header'])
+        #     worksheet.set_column(1,1,60) # width number
+        #     worksheet.write(next_row, 2, "Debit", wbf['header'])
+        #     worksheet.write(next_row, 3, "Credit", wbf['header'])
+        #     worksheet.write(next_row, 4, "Balance", wbf['header'])
+        #     worksheet.set_column(2,4,15) # width number
+        #     next_row += 1
+        #     for a in report_lines:
+        #         if int(a.get('level',0)) in (1,0):
+        #             content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format({'font_color': '#000000','bold': 1})
+        #         elif not a.get('is_child',False):
+        #             content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
+        #         else:
+        #             content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format()
+        #         content_style.set_left()
+        #         content_style.set_right()
+        #         content_style.set_text_wrap()
+        #         content_style.set_indent(int(a.get('level',0)))
+        #         content_float_style.set_right()
+                    
+        #         worksheet.write(next_row, 1, a.get('name', ''), content_style)
+        #         worksheet.write(next_row, 2, a.get('debit', 0.0), content_float_style)
+        #         worksheet.write(next_row, 3, a.get('credit', 0.0), content_float_style)
+        #         worksheet.write(next_row, 4, a.get('balance', 0.0), content_float_style)
+        #         next_row += 1
+        #     worksheet.merge_range(next_row, 1, next_row, 4, "", wbf['total_float'])
+        # elif not data['form']['enable_filter'] and not data['form']['debit_credit']:
+        #     worksheet.write(next_row, 1, "Name", wbf['header'])
+        #     worksheet.set_column(1,1,60) # width number
+        #     worksheet.write(next_row, 2, "Balance", wbf['header'])
+        #     worksheet.set_column(2,2,15) # width number
+        #     next_row += 1
+        #     for a in report_lines:
+        #         if int(a.get('level',0)) in (1,0):
+        #             content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format({'font_color': '#000000','bold': 1})
+        #         elif not a.get('is_child',False):
+        #             content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
+        #         else:
+        #             content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format()
+        #         content_style.set_left()
+        #         content_style.set_right() 
+        #         content_style.set_text_wrap()
+        #         content_style.set_indent(int(a.get('level',0)))
+        #         content_float_style.set_right()
+                    
+        #         worksheet.write(next_row, 1, a.get('name', ''), content_style)
+        #         worksheet.write(next_row, 2, a.get('balance', 0.0), content_float_style)
+        #         next_row += 1
+        #     worksheet.merge_range(next_row, 1, next_row, 2, "", wbf['total_float'])
+        # elif data['form']['enable_filter'] == 1 and not data['form']['debit_credit']:
+        #     worksheet.write(next_row, 1, "Name", wbf['header'])
+        #     worksheet.set_column(1,1,60) # width number
+        #     worksheet.write(next_row, 2, "Balance", wbf['header'])
+        #     worksheet.write(next_row, 3, data['form']['label_filter'], wbf['header'])
+        #     worksheet.set_column(2,3,15) # width number
+        #     next_row += 1
+        #     # # Freeze
+        #     # worksheet.freeze_panes(next_row, 1)
+        #     for a in report_lines:
+        #         if int(a.get('level',0)) in (1,0):
+        #             content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format({'font_color': '#000000','bold': 1})
+        #         elif not a.get('is_child',False):
+        #             content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
+        #         else:
+        #             content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
+        #             content_style = workbook.add_format()
+        #         content_style.set_left()
+        #         content_style.set_right() 
+        #         content_style.set_text_wrap()
+        #         content_style.set_indent(int(a.get('level',0)))
+        #         content_float_style.set_right()
+                    
+        #         worksheet.write(next_row, 1, a.get('name', ''), content_style)
+        #         worksheet.write(next_row, 2, a.get('balance', 0.0), content_float_style)
+        #         worksheet.write(next_row, 3, a.get('balance_cmp', 0.0), content_float_style)
+        #         next_row += 1
+        #     worksheet.merge_range(next_row, 1, next_row, 3, "", wbf['total_float'])
+        
+        next_col = 1
+        worksheet.write(next_row, next_col, "Name", wbf['header'])
+        worksheet.set_column(next_col,next_col,60) # width number
+        next_col += 1
+        if data['form']['pnl_per_org'] and data['form']['comparison_org_ctx']:
+            for comparison_org_ctx in data['form']['comparison_org_ctx']:
+                org_title = comparison_org_ctx.get('title', "Other")
+                worksheet.merge_range(next_row-1, next_col, next_row-1, next_col+2, org_title, wbf['header'])
+                worksheet.write(next_row, next_col, "Debit", wbf['header'])
+                worksheet.set_column(next_col,next_col,15) # width number
+                next_col += 1
+                worksheet.write(next_row, next_col, "Credit", wbf['header'])
+                worksheet.set_column(next_col,next_col,15) # width number
+                next_col += 1
+                worksheet.write(next_row, next_col, "Balance", wbf['header'])
+                worksheet.set_column(next_col,next_col,15) # width number
+                next_col += 1
+        else:
+            if data['form']['debit_credit']:
+                worksheet.write(next_row, next_col, "Debit", wbf['header'])
+                worksheet.set_column(next_col,next_col,15) # width number
+                next_col += 1
+                worksheet.write(next_row, next_col, "Credit", wbf['header'])
+                worksheet.set_column(next_col,next_col,15) # width number
+                next_col += 1
+            worksheet.write(next_row, next_col, "Balance", wbf['header'])
+            worksheet.set_column(next_col,next_col,15)
+            next_col += 1
+            if data['form']['enable_filter']:
+                worksheet.write(next_row, next_col, data['form']['label_filter'], wbf['header'])
+                worksheet.set_column(next_col,next_col,15)
+                next_col += 1
+        
+        next_row += 1
+        last_col = 1
+        for a in report_lines:
+            if int(a.get('level',0)) in (1,0):
+                content_float_style = workbook.add_format({'font_color': '#000000', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+                content_style = workbook.add_format({'font_color': '#000000','bold': 1})
+            elif not a.get('is_child',False):
+                content_float_style = workbook.add_format({'font_color': '#0d578c', 'bold': 1, 'align': 'right','num_format': '#,##0.00'})
+                content_style = workbook.add_format({'font_color': '#0d578c','bold': 1})
+            else:
+                content_float_style = workbook.add_format({'align': 'right','num_format': '#,##0.00'})
+                content_style = workbook.add_format()
+            content_style.set_left()
+            content_style.set_right()
+            content_style.set_text_wrap()
+            content_style.set_indent(int(a.get('level',0)))
+            content_float_style.set_right()
+            
+            next_col = 1
+            worksheet.write(next_row, next_col, a.get('name', ''), content_style)
+            next_col += 1
+            if data['form']['pnl_per_org'] and data['form']['comparison_org_ctx']:
+                for comparison_org_ctx in data['form']['comparison_org_ctx']:
+                    varieties_id = comparison_org_ctx.get('varieties_id', 0)
+                    worksheet.write(next_row, next_col, a.get(f"debit_cmp_{varieties_id}", 0.0), content_float_style)
+                    next_col += 1
+                    worksheet.write(next_row, next_col, a.get(f"credit_cmp_{varieties_id}", 0.0), content_float_style)
+                    next_col += 1
+                    worksheet.write(next_row, next_col, a.get(f"balance_cmp_{varieties_id}", 0.0), content_float_style)
+                    next_col += 1
+            else:
+                if data['form']['debit_credit']:
+                    worksheet.write(next_row, next_col, a.get('debit', 0.0), content_float_style)
+                    next_col += 1
+                    worksheet.write(next_row, next_col, a.get('credit', 0.0), content_float_style)
+                    next_col += 1
+                worksheet.write(next_row, next_col, a.get('balance', 0.0), content_float_style)
+                next_col += 1
+                if data['form']['enable_filter']:
+                    worksheet.write(next_row, next_col, a.get('balance_cmp', 0.0), content_float_style)
+                    next_col += 1
+            next_row += 1
+            if last_col==1:
+                last_col = next_col-1
+        worksheet.merge_range(next_row, 1, next_row, last_col, "", wbf['total_float'])
+
         # Page Layout
         worksheet.set_landscape()
         worksheet.set_paper(9) # A4

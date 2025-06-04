@@ -12,14 +12,20 @@
             <field name="display_detail" position="attributes">
                 <attribute name="attrs">{'invisible': [('type','not in',['accounts','account_type','code'])]}</attribute>
             </field>
+            <field name="parent_id" position="before">
+                <field name="fna_type"/>
+            </field>
+            <field name="type" position="after">
+                <field name="domain" attrs="{'invisible': [('type','!=','domain')], 'required': [('type','=','domain')]}"/>
+            </field>
             <field name="display_detail" position="before">
                 <field name="account_code" attrs="{'invisible': [('type','!=','code')], 'required': [('type','=','code')]}"/>
             </field>
         </field>
     </record>
 
-    <record id="accounting_pdf_reports.action_account_financial_report_tree" model="ir.actions.act_window">
+    <!-- <record id="accounting_pdf_reports.action_account_financial_report_tree" model="ir.actions.act_window">
         <field name="domain">[('parent_id','=',False)]</field>
-    </record>
+    </record> -->
 
 </odoo>

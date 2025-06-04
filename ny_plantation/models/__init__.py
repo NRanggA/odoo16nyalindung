@@ -6,3 +6,4 @@ from . import lhm_drc
 from . import lhm_nap
 from . import hr_employee_type
 from . import stock_ripening_pisang
+from . import lhm_hanca

@@ -73,8 +73,23 @@
         <field name="model">accounting.report</field>
         <field name="inherit_id" ref="accounting_pdf_reports.accounting_report_view"/>
         <field name="arch" type="xml">
-            <field name="enable_filter" position="after">
-                <field name="varieties_id" />
+            <xpath expr="//form" position="inside">
+                <field name="fna_type" invisible="1"/>
+            </xpath>
+            <field name="date_from" position="replace">
+                <field name="date_from" attrs="{'invisible': [('fna_type','=','bs')], 'required': [('fna_type','=','pnl')]}"/>
+            </field>
+            <field name="date_to" position="replace">
+                <field name="date_to" attrs="{'required': [('fna_type','in',['bs','pnl'])]}"/>
+            </field>
+            <field name="target_move" position="after">
+                <field name="pnl_per_org" attrs="{'invisible': [('fna_type','!=','pnl')]}"/>
+                <field name="varieties_ids" widget="many2many_tags" 
+                    attrs="{'invisible': [('pnl_per_org','=',False)]}"
+                    options="{'no_create': True}"/>
+            </field>
+            <field name="enable_filter" position="attributes">
+                <attribute name="attrs">{'invisible': [('pnl_per_org','=',True)]}</attribute>
             </field>
             <field name="journal_ids" position="attributes" >
                 <attribute name="invisible" >1</attribute>
