@@ -406,7 +406,7 @@ class HrEmployeeExpense(models.Model):
             # if payment.settlement_ids.id:
             if payment.settlement_ids:
                 # for settle in payment.settlement_ids:
-                for settle in payment.settlement_ids.filtered(lambda s: s.employee_advance_state == 'approve'):
+                for settle in payment.settlement_ids.filtered(lambda s: s.employee_expense_state == 'approve'):
                     if settle.account_move_id:
                         for line in settle.account_move_id.line_ids:
                             if line.account_id == advance_account:
