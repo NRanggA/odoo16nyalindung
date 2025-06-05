@@ -403,8 +403,10 @@ class HrEmployeeExpense(models.Model):
                     residual_company += line.amount_residual
             payment.advance_residual = residual_company
 
-            if payment.settlement_ids.id:
-                for settle in payment.settlement_ids:
+            # if payment.settlement_ids.id:
+            if payment.settlement_ids:
+                # for settle in payment.settlement_ids:
+                for settle in payment.settlement_ids.filtered(lambda s: s.employee_expense_state == 'approve'):
                     if settle.account_move_id:
                         for line in settle.account_move_id.line_ids:
                             if line.account_id == advance_account:
