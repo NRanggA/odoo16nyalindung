@@ -27,7 +27,7 @@ class ReportFinancial(report_financial.ReportFinancial):
                         report_acc[account_id]['comp_bal'] = val['balance']
         if data.get('pnl_per_org', False) and data.get('comparison_org_ctx', []):
             for comparison_org_ctx in data['comparison_org_ctx']:
-                print("................", comparison_org_ctx)
+                comparison_org_ctx.update({**data.get('used_context')})
                 varieties_id = comparison_org_ctx.get('varieties_id', 0)
                 comparison_org_pnl = self.with_context(comparison_org_ctx)._compute_report_balance(child_reports)
                 for report_id, value in comparison_org_pnl.items():
