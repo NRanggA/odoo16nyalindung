@@ -197,7 +197,7 @@ class ReportFinancialXlsx(models.Model):
         worksheet.write(next_row, next_col, "Name", wbf['header'])
         worksheet.set_column(next_col,next_col,60) # width number
         next_col += 1
-        if data['form']['pnl_per_org'] and data['form']['comparison_org_ctx']:
+        if data['form'].get('pnl_per_org', False) and data['form'].get('comparison_org_ctx',[]):
             for comparison_org_ctx in data['form']['comparison_org_ctx']:
                 org_title = comparison_org_ctx.get('title', "Other")
                 worksheet.merge_range(next_row-1, next_col, next_row-1, next_col+2, org_title, wbf['header'])
@@ -247,7 +247,7 @@ class ReportFinancialXlsx(models.Model):
             next_col = 1
             worksheet.write(next_row, next_col, a.get('name', ''), content_style)
             next_col += 1
-            if data['form']['pnl_per_org'] and data['form']['comparison_org_ctx']:
+            if data['form'].get('pnl_per_org', False) and data['form'].get('comparison_org_ctx',[]):
                 for comparison_org_ctx in data['form']['comparison_org_ctx']:
                     varieties_id = comparison_org_ctx.get('varieties_id', 0)
                     worksheet.write(next_row, next_col, a.get(f"debit_cmp_{varieties_id}", 0.0), content_float_style)

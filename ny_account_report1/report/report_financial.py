@@ -25,10 +25,9 @@ class ReportFinancial(report_financial.ReportFinancial):
                 if report_acc:
                     for account_id, val in comparison_res[report_id].get('account').items():
                         report_acc[account_id]['comp_bal'] = val['balance']
-        print("::::::::::::::::::", data['pnl_per_org'], data['comparison_org_ctx'])
-        if data['pnl_per_org'] and data['comparison_org_ctx']:
+        if data.get('pnl_per_org', False) and data.get('comparison_org_ctx', []):
             for comparison_org_ctx in data['comparison_org_ctx']:
-                print("................", comparison_org_ctx)
+                comparison_org_ctx.update({**data.get('used_context')})
                 varieties_id = comparison_org_ctx.get('varieties_id', 0)
                 comparison_org_pnl = self.with_context(comparison_org_ctx)._compute_report_balance(child_reports)
                 for report_id, value in comparison_org_pnl.items():
@@ -56,7 +55,7 @@ class ReportFinancial(report_financial.ReportFinancial):
 
             if data['enable_filter']:
                 vals['balance_cmp'] = res[report.id]['comp_bal'] * float(report.sign)
-            if data['pnl_per_org'] and data['comparison_org_ctx']:
+            if data.get('pnl_per_org', False) and data.get('comparison_org_ctx', []):
                 for comparison_org_ctx in data['comparison_org_ctx']:
                     varieties_id = comparison_org_ctx.get('varieties_id', 0)
                     vals[f"debit_cmp_{varieties_id}"] = res[report.id][f"comp_dr_{varieties_id}"] * float(report.sign)
@@ -95,7 +94,7 @@ class ReportFinancial(report_financial.ReportFinancial):
                         vals['balance_cmp'] = value['comp_bal'] * float(report.sign)
                         if not account.company_id.currency_id.is_zero(vals['balance_cmp']):
                             flag = True
-                    if data['pnl_per_org'] and data['comparison_org_ctx']:
+                    if data.get('pnl_per_org', False) and data.get('comparison_org_ctx', []):
                         for comparison_org_ctx in data['comparison_org_ctx']:
                             varieties_id = comparison_org_ctx.get('varieties_id', 0)
                             vals[f"debit_cmp_{varieties_id}"] = value[f"comp_dr_{varieties_id}"] * float(report.sign)
@@ -137,7 +136,6 @@ class ReportFinancial(report_financial.ReportFinancial):
     def _compute_report_balance(self, reports):
         report_type_code = reports.filtered(lambda r: r.type=='code')
         report_type_domain = reports.filtered(lambda r: r.type=='domain')
-        print(":::::::::::::_compute_report_balance:::::::::::: context", self._context)
         res = super(ReportFinancial, self)._compute_report_balance(reports - report_type_code - report_type_domain)
         fields = ['credit', 'debit', 'balance']
         for report in report_type_code:
