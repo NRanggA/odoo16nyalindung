@@ -10,8 +10,8 @@ class lhm_transaction_material_line(models.Model):
 
     @api.depends('realization')
     def _get_residual(self):
-        from_mobile_apps = self.filtered(lambda l: l.from_mobile_apps)
-        for line in from_mobile_apps:
-            residual = line.real_stock_qty - line.stock_qty - line.realization
+        line_from_mobile_apps = self.filtered(lambda l: l.from_mobile_apps)
+        for line in line_from_mobile_apps:
+            # residual = line.real_stock_qty - line.stock_qty - line.realization
             line.residual_qty = 0.0
-        super(lhm_transaction_material_line, self - from_mobile_apps)._get_residual()
+        super(lhm_transaction_material_line, self - line_from_mobile_apps)._get_residual()
