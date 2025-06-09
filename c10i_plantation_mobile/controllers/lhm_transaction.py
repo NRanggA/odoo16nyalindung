@@ -81,7 +81,6 @@ class ProfileApi(ApiBase):
                         'product_id': material_vals.get('product_id', False),
                         'activity_id': material_vals.get('activity_id', False),
                         'location_id': material_vals.get('location_id', False),
-                        'product_id': material_vals.get('product_id', False),
                         'product_uom_id': material_vals.get('product_uom_id', False),
                         'realization': material_vals.get('realization', 0.0)
                     }))
