@@ -81,7 +81,6 @@ class ProfileApi(ApiBase):
                         'product_id': material_vals.get('product_id', False),
                         'activity_id': material_vals.get('activity_id', False),
                         'location_id': material_vals.get('location_id', False),
-                        'product_id': material_vals.get('product_id', False),
                         'product_uom_id': material_vals.get('product_uom_id', False),
                         'realization': material_vals.get('realization', 0.0)
                     }))
@@ -188,7 +187,7 @@ class ProfileApi(ApiBase):
             jakarta = timezone('Asia/Jakarta')
             today = utc.localize(fields.Datetime.now()).astimezone(jakarta)
             domain = [('employee_id.kemandoran_id','=',int(kemandoran_id)),('date','=',today)]
-            fields1 = ['id','employee_id','check_in','longitude_in','latitude_in']
+            fields1 = ['id','employee_id','type_id','check_in','longitude_in','latitude_in']
             attendance_records = request.env['hr.attendance.sheet'].sudo().search_read(domain=domain, fields=fields1)
             # if not attendance_records:
             #     raise MissingError("Attendance not found")
