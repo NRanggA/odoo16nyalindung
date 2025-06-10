@@ -777,6 +777,10 @@ class HrEmployeeExpenseLine(models.Model):
             'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
             'credit': abs(amount) if amount < 0 else 0.0,
+            'plantation_location_type_id': self.location_type_id.id,
+            'plantation_varieties_id': self.varieties_id.id,
+            'plantation_location_id': self.location_id.id,
+            'plantation_activity_id': self.activity_id.id,
         }
 
     def unlink(self):
