@@ -29,7 +29,7 @@ class ActivityApi(ApiBase):
                 if last_sync_date:
                     domain.extend(['|',('create_date','>',last_sync_date),('write_date','>',last_sync_date)])
             
-            fields = ['id','name','code','type_id','create_date','write_date']
+            fields = ['id','name','code','type_id','skb','create_date','write_date']
             result['data'] = request.env['lhm.activity'].sudo().search_read(domain=domain, fields=fields)
             result['count'] = request.env['lhm.activity'].sudo().search_count(domain=domain)
 
