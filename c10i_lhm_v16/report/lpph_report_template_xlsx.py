@@ -64,6 +64,838 @@ class ReportLpphExcel(models.AbstractModel):
 
         return workbook
 
+    def get_combined_report(self, date_start, date_end):
+
+
+        query = """
+            SELECT 
+                main.location_type_id,
+                ltp.code as type_location_code,
+                main.location_id,
+                ll.name as location_name,
+                main.activity_id,
+                la.name as activity_name,
+                la.code as activity_code,
+                main.product_id,
+                pt.name->>'en_US' as product1_name,
+                main.product_id_2,
+                pt2.name->>'en_US' as product2_name,
+                main.uom_id,
+                uu1.name->>'en_US' as uom1_name,
+                main.uom2_id,
+                uu2.name->>'en_US' as uom2_name,
+                main.hasil1,
+                main.hasil1_shi,
+                main.hasil2,
+                main.hasil2_shi,
+                main.hk_value,
+                main.hk_value_shi,
+                main.borong_value,
+                main.borong_value_shi,
+                main.kontraktor_value,
+                main.kontraktor_value_shi,
+                
+                -- Pemakaian Material
+                COALESCE(mat.total_consumed_hi, 0) AS total_consumed_hi,
+                COALESCE(mat.total_consumed_shi, 0) AS total_consumed_shi,
+                mat.product_id as product_material,
+                pt3.name->>'en_US' as product_material_name,
+                mat.product_uom_id as product_uom_material,
+                uu3.name->>'en_US' as uom_material_name
+                
+            FROM (
+                -- Query Pak hendra get hasil
+                SELECT
+                    sub.location_type_id,
+                    sub.location_id,
+                    sub.activity_id,
+                    sub.product_id,
+                    sub.product_id_2,
+                    sub.uom_id,
+                    sub.uom2_id,
+                    SUM(sub.hasil1) AS hasil1,
+                    SUM(sub.hasil1_shi) AS hasil1_shi,
+                    SUM(sub.hasil2) AS hasil2,
+                    SUM(sub.hasil2_shi) AS hasil2_shi,
+                    SUM(sub.hk_value) AS hk_value,
+                    SUM(sub.hk_value_shi) AS hk_value_shi,
+                    SUM(sub.borong_value) AS borong_value,
+                    SUM(sub.borong_value_shi) AS borong_value_shi,
+                    SUM(sub.kontraktor_value) AS kontraktor_value,
+                    SUM(sub.kontraktor_value_shi) AS kontraktor_value_shi
+                FROM (
+                    SELECT
+                        ltl.location_type_id,
+                        ltl.location_id,
+                        ltl.activity_id,
+                        ltl.product_id,
+                        ltl.product_id_2,
+                        ltl.satuan_1 AS uom_id,
+                        ltl.satuan_2 AS uom2_id,
+                        SUM(CASE WHEN ltl.date = %s THEN ltl.hasil_1 ELSE 0 END) AS hasil1,
+                        SUM(ltl.hasil_1) AS hasil1_shi,
+                        SUM(CASE WHEN ltl.date = %s THEN ltl.hasil_2 ELSE 0 END) AS hasil2,
+                        SUM(ltl.hasil_2) AS hasil2_shi,
+                        SUM(CASE WHEN ltl.is_borong = FALSE AND ltl.date = %s THEN ltl.contract_wage_value ELSE 0 END) AS hk_value,
+                        SUM(CASE WHEN ltl.is_borong = FALSE THEN ltl.contract_wage_value ELSE 0 END) AS hk_value_shi,
+                        SUM(CASE WHEN ltl.is_borong = TRUE AND ltl.date = %s THEN ltl.contract_wage_value ELSE 0 END) AS borong_value,
+                        SUM(CASE WHEN ltl.is_borong = TRUE THEN ltl.contract_wage_value ELSE 0 END) AS borong_value_shi,
+                        SUM(0) AS kontraktor_value,
+                        SUM(0) AS kontraktor_value_shi
+                    FROM lhm_transaction_line ltl
+                    WHERE ltl.date BETWEEN %s AND %s AND ltl.state = 'done'
+                    GROUP BY ltl.location_type_id, ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, ltl.satuan_1, ltl.satuan_2
+                    
+                    UNION ALL
+                    
+                    SELECT
+                        lcl.location_type_id,
+                        lcl.location_id,
+                        lcl.activity_id,
+                        lcl.product_id,
+                        lcl.product_id_2,
+                        lcl.uom_id AS uom_id,
+                        lcl.uom2_id AS uom2_id,
+                        SUM(CASE WHEN lcl.date = %s THEN lcl.nilai ELSE 0 END) AS hasil1,
+                        SUM(lcl.nilai) AS hasil1_shi,
+                        SUM(CASE WHEN lcl.date = %s THEN lcl.nilai2 ELSE 0 END) AS hasil2,
+                        SUM(lcl.nilai2) AS hasil2_shi,
+                        SUM(0) AS hk_value,
+                        SUM(0) AS hk_value_shi,
+                        SUM(0) AS borong_value,
+                        SUM(0) AS borong_value_shi,
+                        SUM(CASE WHEN lcl.date = %s THEN lcl.total ELSE 0 END) AS kontraktor_value,
+                        SUM(lcl.total) AS kontraktor_value_shi
+                    FROM lhm_contractor_line lcl
+                    WHERE lcl.date BETWEEN %s AND %s AND lcl.state = 'confirmed'
+                    GROUP BY lcl.location_type_id, lcl.activity_id, lcl.location_id, lcl.product_id, lcl.product_id_2, lcl.uom_id, lcl.uom2_id
+                ) sub
+                GROUP BY sub.location_type_id, sub.location_id, sub.activity_id, sub.product_id, sub.product_id_2, sub.uom_id, sub.uom2_id
+            ) main 
+
+            -- Query pemakaian material
+            LEFT JOIN (
+                SELECT
+                    lml.location_id,
+                    lml.activity_id,
+                    lml.product_id,
+                    lml.product_uom_id,
+                    SUM(CASE WHEN lt.date = %s THEN lml.realization ELSE 0 END) AS total_consumed_hi,
+                    SUM(lml.realization) AS total_consumed_shi
+                FROM lhm_transaction_material_line lml
+                JOIN lhm_transaction lt ON lml.lhm_id = lt.id
+                WHERE lt.date BETWEEN %s AND %s
+                AND lml.realization > 0
+                GROUP BY lml.location_id, lml.activity_id, lml.product_id, lml.product_uom_id
+                
+                UNION ALL
+                
+                SELECT
+                    lcl.location_id,
+                    lcl.activity_id,
+                    lcl.product_id,
+                    lcl.product_uom_id,
+                    SUM(CASE WHEN lcl.date = %s THEN lcl.realization ELSE 0 END) AS total_consumed_hi,
+                    SUM(lcl.realization) AS total_consumed_shi
+                FROM lhm_contractor_material_line lcl
+                WHERE lcl.date BETWEEN %s AND %s
+                AND lcl.realization > 0
+                GROUP BY lcl.location_id, lcl.activity_id, lcl.product_id, lcl.product_uom_id
+            ) mat ON main.location_id = mat.location_id AND main.activity_id = mat.activity_id
+            LEFT JOIN lhm_activity la on la.id = main.activity_id
+            LEFT JOIN lhm_location_type ltp on ltp.id = main.location_type_id
+            LEFT JOIN lhm_location ll on ll.id = main.location_id
+            
+            LEFT JOIN uom_uom uu1 on uu1.id = main.uom_id
+            LEFT JOIN uom_uom uu2 on uu2.id = main.uom2_id
+            
+            LEFT JOIN product_product pp on pp.id = main.product_id
+            LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
+            LEFT JOIN product_product pp2 on pp2.id = main.product_id_2
+            LEFT JOIN product_template pt2 on pt2.id = pp2.product_tmpl_id
+            
+            LEFT JOIN product_product pp3 on pp3.id = mat.product_id
+            LEFT JOIN product_template pt3 on pt3.id = pp3.product_tmpl_id
+            LEFT JOIN uom_uom uu3 on uu3.id = mat.product_uom_id
+            ORDER BY location_type_id, location_id;
+        """
+
+        self.env.cr.execute(query, (date_end, date_end, date_end, date_end, date_start, date_end, 
+                                    date_end, date_end, date_end, date_start, date_end, 
+                                    date_end, date_start, date_end, date_end, date_start, date_end))
+        # return self.env.cr.fetchall()
+        columns = [desc[0] for desc in self.env.cr.description]
+        result = [dict(zip(columns, row)) for row in self.env.cr.fetchall()]
+        return result
+
+    def generate_xlsx_report(self, workbook, datas, obj):
+        workbook = self.add_workbook_format(workbook)
+        wbf = self.wbf
+
+        worksheet = workbook.add_worksheet("Laporan Progress Kerja Harian")
+        worksheet2 = workbook.add_worksheet("Pending Store Issue Harian")
+        
+        date_start = obj.date.replace(day=1)
+        data_report = self.get_combined_report(date_start, obj.date)
+        date = obj.date.strftime('%d-%m-%Y')
+        # date_from = obj.date_start.strftime('%d-%m-%Y')
+        # date_to = obj.date_end.strftime('%d-%m-%Y')
+        # date = date_from if date_from == date_to else f"{(date_from) + ' s/d ' + (date_to)}"\
+
+
+        row = 1
+        worksheet.write(row, 0, (obj.company_id.name), wbf['title'])
+        worksheet.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
+        worksheet.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
+        worksheet.write(row + 2, 1, ": " , wbf['title'])
+        worksheet.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
+        worksheet.write(row + 3, 1, ": %s" %(obj.type.upper()), wbf['title'])
+        worksheet.write(row + 4, 0, "TANGGAL", wbf['title'])
+        worksheet.write(row + 4, 1, ": %s" %(date), wbf['title'])
+        worksheet.set_row(row, 18)
+        worksheet.set_row(row + 1, 18)
+        worksheet.set_row(row + 2, 18)
+        worksheet.set_column(row + 2, 0, 20)
+        worksheet.set_row(row + 3, 18)
+        worksheet.set_row(row + 4, 18)
+        
+        worksheet.merge_range(row, 25, row + 3, 26, "Diperiksa Oleh,", wbf['signature'])
+        worksheet.merge_range(row + 4, 25, row + 4, 26, "Ka. Afdeling/Kabag", wbf['header'])
+        worksheet.merge_range(row, 27, row + 3, 29, "Disetujui Oleh,", wbf['signature'])
+        worksheet.merge_range(row + 4, 27, row + 4, 29, "Asisten Kepala", wbf['header'])
+
+        next_row = row + 6
+        worksheet.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
+        worksheet.set_column(0, 0, 18)
+
+        worksheet.merge_range(next_row, 1, next_row + 1, 3, "LOKASI", wbf['header'])
+        worksheet.write(next_row + 2, 1, "KODE", wbf['header'])
+        worksheet.set_column(1, 1, 14)
+        worksheet.write(next_row + 2, 2, "SATUAN", wbf['header'])
+        worksheet.set_column(2, 2, 14)
+        worksheet.write(next_row + 2, 3, "QTY", wbf['header'])
+        worksheet.set_column(3, 3, 14)
+
+        worksheet.merge_range(next_row, 4, next_row + 1, 5, "KEGIATAN", wbf['header'])
+        worksheet.write(next_row + 2, 4, "COA", wbf['header'])
+        worksheet.set_column(4, 4, 14)
+        worksheet.write(next_row + 2, 5, "DESKRIPSI", wbf['header'])
+        worksheet.set_column(5, 5, 40)
+
+        worksheet.merge_range(next_row, 6, next_row + 2, 6, "PRODUCT 1", wbf['header'])
+        worksheet.set_column(6, 6, 18)
+        worksheet.merge_range(next_row, 7, next_row + 2, 7, "SATUAN 1", wbf['header'])
+        worksheet.set_column(7, 7, 18)
+
+        worksheet.merge_range(next_row, 8, next_row + 1, 9, "HASIL KERJA", wbf['header'])
+        worksheet.write(next_row + 2, 8, "HI", wbf['header'])
+        worksheet.set_column(8, 8, 14)
+        worksheet.write(next_row + 2, 9, "SHI", wbf['header'])
+        worksheet.set_column(9, 9, 14)
+
+        worksheet.merge_range(next_row, 10, next_row + 2, 10, "VARIANCE\n(+/-)", wbf['header'])
+        worksheet.set_column(10, 10, 18)
+        worksheet.merge_range(next_row, 11, next_row + 2, 11, "PRODUCT 2", wbf['header'])
+        worksheet.set_column(11, 11, 18)
+        worksheet.merge_range(next_row, 12, next_row + 2, 12, "SATUAN 2", wbf['header'])
+        worksheet.set_column(12, 12, 18)
+
+        worksheet.merge_range(next_row, 13, next_row + 1, 14, "HASIL KERJA", wbf['header'])
+        worksheet.write(next_row + 2, 13, "HI", wbf['header'])
+        worksheet.set_column(13, 13, 14)
+        worksheet.write(next_row + 2, 14, "SHI", wbf['header'])
+        worksheet.set_column(14, 14, 14)
+
+        worksheet.merge_range(next_row, 15, next_row + 2, 15, "VARIANCE\n(+/-)", wbf['header'])
+        worksheet.set_column(15, 15, 18)
+
+        worksheet.merge_range(next_row, 16, next_row, 23, "BIAYA", wbf['header'])
+        worksheet.merge_range(next_row + 1, 16, next_row + 1, 19, "HI", wbf['header'])
+        worksheet.write(next_row + 2, 16, "HK", wbf['header'])
+        worksheet.set_column(16, 16, 16)
+        worksheet.write(next_row + 2, 17, "BORONG/PREMI/LEMBUR", wbf['header'])
+        worksheet.set_column(17, 17, 23)
+        worksheet.write(next_row + 2, 18, "Kontraktor", wbf['header'])
+        worksheet.set_column(17, 17, 23)
+        worksheet.write(next_row + 2, 19, "TOTAL", wbf['header'])
+        worksheet.set_column(18, 18, 18)
+
+        worksheet.merge_range(next_row + 1, 20, next_row + 1, 23, "SHI", wbf['header'])
+        worksheet.write(next_row + 2, 20, "HK", wbf['header'])
+        worksheet.set_column(19, 19, 10)
+        worksheet.write(next_row + 2, 21, "BORONG/PREMI/LEMBUR", wbf['header'])
+        worksheet.set_column(20, 20, 23)
+        worksheet.write(next_row + 2, 22, "Kontraktor", wbf['header'])
+        worksheet.set_column(20, 20, 23)
+        worksheet.write(next_row + 2, 23, "TOTAL", wbf['header'])
+        worksheet.set_column(21, 21, 18)
+        
+        worksheet.merge_range(next_row, 24, next_row, 31, "PEMAKAIAN MATERIAL", wbf['header'])
+        worksheet.merge_range(next_row + 1, 24, next_row + 1, 26, "SKB", wbf['header'])
+        worksheet.write(next_row + 2, 24, "NO. BPB", wbf['header'])
+        worksheet.set_column(22, 22, 18)
+        worksheet.write(next_row + 2, 25, "TANGGAL", wbf['header'])
+        worksheet.set_column(23, 23, 18)
+        worksheet.write(next_row + 2, 26, "QTY", wbf['header'])
+        worksheet.set_column(24, 24, 18)
+        worksheet.merge_range(next_row + 1, 27, next_row + 2, 27, "NAMA MATERIAL", wbf['header'])
+        worksheet.set_column(25, 25, 40)
+        worksheet.merge_range(next_row + 1, 28, next_row + 2, 28, "SATUAN", wbf['header'])
+        worksheet.set_column(26, 26, 18)
+        worksheet.merge_range(next_row + 1, 29, next_row + 1, 30, "TOTAL", wbf['header'])
+        worksheet.write(next_row + 2, 29, "HI", wbf['header'])
+        worksheet.set_column(27, 27, 18)
+        worksheet.write(next_row + 2, 30, "SHI", wbf['header'])
+        worksheet.set_column(28, 28, 18)
+        worksheet.merge_range(next_row + 1, 31, next_row + 2, 31, "VARIANCE\n(+/-)", wbf['header'])
+        worksheet.set_column(29, 29, 18)
+
+        row = next_row + 3 # Mulai dari baris setelah header
+        previous_location_type = 0
+        hk_hi = 0
+        hk_shi = 0
+        hk2_hi = 0
+        hk2_shi = 0
+        biaya_hi_hk = 0
+        biaya_hi_premi = 0
+        biaya_hi_kontraktor = 0
+        biaya_hi_total = 0
+        biaya_shi_hk = 0
+        biaya_shi_premi = 0
+        biaya_shi_kontraktor = 0
+        biaya_shi_total = 0
+        material_total_hi = 0
+        material_total_shi = 0
+
+        # Untuk grand total
+        grand_hk_hi = 0
+        grand_hk_shi = 0
+        grand_hk2_hi = 0
+        grand_hk2_shi = 0
+        grand_biaya_hi_hk = 0
+        grand_biaya_hi_premi = 0
+        grand_biaya_hi_kontraktor = 0
+        grand_biaya_shi_hk = 0
+        grand_biaya_shi_premi = 0
+        grand_biaya_shi_kontraktor = 0
+        grand_material_total_hi = 0
+        grand_material_total_shi = 0
+
+
+        for data in data_report:
+            if previous_location_type != data['type_location_code']:
+                if previous_location_type != 0:
+
+                    # menulis subtotal
+                    col = 0
+                    worksheet.write(row, col, 'Subtotal', wbf['header_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-' , wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, hk_hi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, hk_shi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, hk2_hi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, hk2_shi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, biaya_hi_hk, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, biaya_hi_premi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, biaya_hi_kontraktor, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, biaya_shi_hk, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, biaya_shi_premi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, biaya_shi_kontraktor, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, material_total_hi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, material_total_shi, wbf['number_total'])
+                    col+=1
+                    worksheet.write(row, col, '-', wbf['number_total'])
+                    col+=1
+
+                    row += 1
+
+                    # Akumulasi ke grand total
+                    grand_hk_hi += hk_hi
+                    grand_hk_shi += hk_shi
+                    grand_hk2_hi += hk2_hi
+                    grand_hk2_shi += hk2_shi
+                    grand_biaya_hi_hk += biaya_hi_hk
+                    grand_biaya_hi_premi += biaya_hi_premi
+                    grand_biaya_hi_kontraktor += biaya_hi_kontraktor
+                    grand_biaya_shi_hk += biaya_shi_hk
+                    grand_biaya_shi_premi += biaya_shi_premi
+                    grand_biaya_shi_kontraktor += biaya_shi_kontraktor
+                    grand_material_total_hi += material_total_hi
+                    grand_material_total_shi += material_total_shi
+
+                    hk_hi = 0
+                    hk_shi = 0
+                    hk2_hi = 0
+                    hk2_shi = 0
+                    biaya_hi_hk = 0
+                    biaya_hi_premi = 0
+                    biaya_hi_kontraktor = 0
+                    biaya_hi_total = 0
+                    biaya_shi_hk = 0
+                    biaya_shi_premi = 0
+                    biaya_shi_kontraktor = 0
+                    biaya_shi_total = 0
+                    material_total_hi = 0
+                    material_total_shi = 0
+
+                previous_location_type = data['type_location_code']
+
+            # menulis datanya pada report
+            col = 0
+            worksheet.write(row, col, data['type_location_code'] if data['type_location_code'] else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['location_name'] if data['location_name']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['activity_code'] if data['activity_code']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['activity_name'] if data['activity_name'] else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['product1_name'] if data['product1_name']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['uom1_name'] if data['uom1_name']  else '-' , wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['hasil1'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['hasil1_shi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['product2_name'] if data['product2_name']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['uom2_name'] if data['uom2_name']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['hasil2'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['hasil2_shi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['hk_value'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['borong_value'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['kontraktor_value'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['hk_value_shi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['borong_value_shi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['kontraktor_value_shi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['product_material_name'] if data['product_material_name']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['uom_material_name'] if data['uom_material_name']  else '-', wbf['content'])
+            col+=1
+            worksheet.write(row, col, data['total_consumed_hi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, data['total_consumed_shi'], wbf['number_content'])
+            col+=1
+            worksheet.write(row, col, '-', wbf['content'])
+            col+=1
+            
+            hk_hi += data['hasil1']
+            hk_shi += data['hasil1_shi']
+            hk2_hi += data['hasil2']
+            hk2_shi += data['hasil2_shi']
+
+            biaya_hi_hk += data['hk_value']
+            biaya_hi_premi += data['borong_value']
+            biaya_hi_kontraktor += data['kontraktor_value']
+            # biaya_hi_total += data['hasil2']
+
+            biaya_shi_hk += data['hk_value_shi']
+            biaya_shi_premi += data['borong_value_shi']
+            biaya_shi_kontraktor += data['kontraktor_value_shi']
+            # biaya_shi_total += data['hasil2']
+
+            material_total_hi += data['total_consumed_hi']
+            material_total_shi += data['total_consumed_shi']
+
+            row += 1 
+
+        # subtotal terakhir
+        if previous_location_type != 0:
+            col = 0
+            worksheet.write(row, col, 'Subtotal', wbf['header_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk_hi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk_shi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk2_hi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, hk2_shi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_hi_hk, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_hi_premi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_hi_kontraktor, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_shi_hk, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_shi_premi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, biaya_shi_kontraktor, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, material_total_hi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, material_total_shi, wbf['number_total'])
+            col += 1
+            worksheet.write(row, col, '-', wbf['number_total'])
+            row += 1
+
+            grand_hk_hi += hk_hi
+            grand_hk_shi += hk_shi
+            grand_hk2_hi += hk2_hi
+            grand_hk2_shi += hk2_shi
+            grand_biaya_hi_hk += biaya_hi_hk
+            grand_biaya_hi_premi += biaya_hi_premi
+            grand_biaya_hi_kontraktor += biaya_hi_kontraktor
+            grand_biaya_shi_hk += biaya_shi_hk
+            grand_biaya_shi_premi += biaya_shi_premi
+            grand_biaya_shi_kontraktor += biaya_shi_kontraktor
+            grand_material_total_hi += material_total_hi
+            grand_material_total_shi += material_total_shi
+
+        # Grand total
+        # row += 1
+        col = 0
+        worksheet.write(row, col, 'Grand Total', wbf['header_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-' , wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_hk_hi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_hk_shi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_hk2_hi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_hk2_shi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_biaya_hi_hk, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_biaya_hi_premi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_biaya_hi_kontraktor, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_biaya_shi_hk, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_biaya_shi_premi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_biaya_shi_kontraktor, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_material_total_hi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, grand_material_total_shi, wbf['number_total'])
+        col+=1
+        worksheet.write(row, col, '-', wbf['number_total'])
+        col+=1
+
+        row += 1
+    
+        # Page Layout
+        worksheet.set_landscape()
+        worksheet.set_paper(9) # A4
+        # worksheet.set_header()
+        worksheet.repeat_rows(1, 4)
+        worksheet.print_area(0, 0, row, 13)
+        worksheet.set_print_scale(78)
+
+
+        ######### SHEET 2 untuk Store issue ########
+        row = 1
+        worksheet2.write(row, 0, (obj.company_id.name), wbf['title'])
+        worksheet2.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
+        worksheet2.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
+        worksheet2.write(row + 2, 1, ":", wbf['title'])
+        worksheet2.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
+        worksheet2.write(row + 3, 1, ": %s" %(obj.type.upper()), wbf['title'])
+        worksheet2.write(row + 4, 0, "TANGGAL", wbf['title'])
+        worksheet2.write(row + 4, 1, ": %s" %(date), wbf['title'])
+
+        worksheet2.merge_range(row, 6, row + 3, 6, "Diperiksa Oleh,", wbf['signature'])
+        worksheet2.write(row + 4, 6, "Ka. Afdeling/Kabag", wbf['header'])
+        worksheet2.merge_range(row, 7, row + 3, 7, "Disetujui Oleh,", wbf['signature'])
+        worksheet2.write(row + 4, 7, "Asisten Kepala", wbf['header'])
+
+        next_row = row + 6
+        worksheet2.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
+        worksheet2.set_column(0, 0, 18)
+        worksheet2.merge_range(next_row, 1, next_row + 1, 1, "LOKASI", wbf['header'])
+        worksheet2.write(next_row + 2, 1, "KODE", wbf['header'])
+        worksheet2.set_column(1, 1, 14)
+        worksheet2.merge_range(next_row, 2, next_row + 1, 3, "KEGIATAN", wbf['header'])
+        worksheet2.write(next_row + 2, 2, "COA", wbf['header'])
+        worksheet2.set_column(2, 2, 14)
+        worksheet2.write(next_row + 2, 3, "DESKRIPSI", wbf['header'])
+        worksheet2.set_column(3, 3, 40)
+        worksheet2.merge_range(next_row, 4, next_row, 8, "PEMAKAIAN MATERIAL", wbf['header'])
+        worksheet2.merge_range(next_row + 1, 4, next_row + 1, 6, "SKB", wbf['header'])
+        worksheet2.write(next_row + 2, 4, "NO. BPB", wbf['header'])
+        worksheet2.set_column(4, 4, 18)
+        worksheet2.write(next_row + 2, 5, "TANGGAL", wbf['header'])
+        worksheet2.set_column(5, 5, 18)
+        worksheet2.write(next_row + 2, 6, "QTY", wbf['header'])
+        worksheet2.set_column(6, 6, 18)
+        worksheet2.merge_range(next_row + 1, 7, next_row + 2, 7, "NAMA MATERIAL", wbf['header'])
+        worksheet2.set_column(7, 7, 40)
+        worksheet2.merge_range(next_row + 1, 8, next_row + 2, 8, "SATUAN", wbf['header'])
+        worksheet2.set_column(8, 8, 18)
+
+        # Pake date start dan date end 
+        # date_start_stk = fields.Datetime.to_string(obj.date_start)
+        # date_end_stk = fields.Datetime.to_string(obj.date_end)
+        # stock_move_ids = self.env['stock.move'].search([
+        #                     ('picking_type_id.code', '=', 'issue'),
+        #                     # ('allocation_residual_qty', '>', 0),
+        #                     ('pending_material_allocation', '>', 0),
+        #                     ('state','=','done'),
+        #                     ('date', '>=', date_start_stk),
+        #                     ('date', '<=', date_end_stk)
+        #                 ],order="date desc, plantation_activity_id asc")
+
+        # Pake as of date
+        date_start_stk = fields.Datetime.to_string(date_start)
+        date_stk = fields.Datetime.to_string(obj.date)
+        stock_move_ids = self.env['stock.move'].search([
+            ('picking_type_id.code', '=', 'issue'),
+            ('pending_material_allocation', '>', 0),
+            ('state', '=', 'done'),
+            ('date', '>=', date_start_stk),
+            ('date', '<=', date_stk)
+            # ('date', '<=', date_stk) 
+        ], order="date desc, plantation_activity_id asc")
+
+
+        # print(f"==== {len(stock_move_ids)}")
+        # print(f"==== {stos}")
+
+        row_data = next_row + 3
+        activity_ids = []
+        grand_total_qty = 0
+        subtotal_qty = 0
+        coa = False
+        activity_name = False
+        for move_id in stock_move_ids:
+            move_data = [
+                move_id.plantation_location_type_id.code,
+                move_id.plantation_location_id.code,
+                move_id.plantation_activity_id.code,
+                move_id.plantation_activity_name,
+                move_id.picking_id.name,
+                move_id.date,
+                move_id.product_uom_qty,
+                move_id.product_id.name,
+                move_id.product_uom.name
+            ]
+            coa = move_id.plantation_activity_id.code
+            activity_name = move_id.plantation_activity_name
+    
+
+            if move_id.plantation_activity_id.id not in activity_ids and activity_ids:
+                worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
+                worksheet2.write(row_data, 1, "", wbf['total'])
+                worksheet2.write(row_data, 2, move_data[1], wbf['total'])
+                worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
+
+                row_data += 1
+                subtotal_qty = 0  
+    
+
+            worksheet2.write(row_data, 0, move_data[0], wbf['content'])
+            worksheet2.set_column(0, 0, 18)
+
+            worksheet2.write(row_data, 1, move_data[1], wbf['content'])
+            worksheet2.set_column(1, 1, 14)
+
+            worksheet2.write(row_data, 2, move_data[2], wbf['content'])
+            worksheet2.set_column(2, 2, 14)
+
+            worksheet2.write(row_data, 3, move_data[3], wbf['content'])
+            worksheet2.set_column(3, 3, 40)
+
+            worksheet2.write(row_data, 4, move_data[4] or '-', wbf['content'])
+            worksheet2.set_column(4, 4, 14)
+
+            worksheet2.write(row_data, 5, move_data[5], wbf['date'])
+            worksheet2.set_column(5, 5, 14)
+
+            worksheet2.write(row_data, 6, move_data[6], wbf['content'])
+            worksheet2.set_column(6, 6, 14)
+
+            worksheet2.write(row_data, 7, move_data[7] or '-', wbf['content'])
+            worksheet2.set_column(7, 7, 40)
+
+            worksheet2.write(row_data, 8, move_data[8], wbf['content'])
+            worksheet2.set_column(8, 8, 14)
+
+            subtotal_qty += move_data[6]
+            grand_total_qty += move_data[6]
+
+            activity_ids.append(move_id.plantation_activity_id.id)
+            row_data += 1
+
+        worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
+        worksheet2.write(row_data, 1, "", wbf['total'])
+        worksheet2.write(row_data, 2, coa, wbf['total'])
+        worksheet2.write(row_data, 3, activity_name, wbf['total'])
+        worksheet2.write(row_data, 4, "", wbf['total'])
+        worksheet2.write(row_data, 5, "", wbf['total'])
+        worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
+        worksheet2.write(row_data, 7, "", wbf['total'])
+        worksheet2.write(row_data, 8, "", wbf['total'])
+        row_data += 1
+
+        worksheet2.write(row_data, 0, "Grand Total", wbf['total'])
+        worksheet2.write(row_data, 1, "", wbf['total'])
+        worksheet2.write(row_data, 2, "", wbf['total'])
+        worksheet2.write(row_data, 3, "", wbf['total'])
+        worksheet2.write(row_data, 4, "", wbf['total'])
+        worksheet2.write(row_data, 5, "", wbf['total'])
+        worksheet2.write(row_data, 6, grand_total_qty, wbf['total'])
+        worksheet2.write(row_data, 7, "", wbf['total'])
+        worksheet2.write(row_data, 8, "", wbf['total'])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #     def generate_xlsx_report(self, workbook, data, objects):
 #         workbook = self.add_workbook_format(workbook)
 #         worksheet = workbook.add_worksheet("Laporan Progress Kerja Harian")
@@ -756,802 +1588,3 @@ class ReportLpphExcel(models.AbstractModel):
 #             worksheet2.write(row_data, 6, grand_total_qty, wbf['total'])
 #             worksheet2.write(row_data, 7, "", wbf['total'])
 #             worksheet2.write(row_data, 8, "", wbf['total'])
-
-    def get_combined_report(self, date_start, date_end):
-        query = """
-            SELECT 
-                main.location_type_id,
-                ltp.code as type_location_code,
-                main.location_id,
-                ll.name as location_name,
-                main.activity_id,
-                la.name as activity_name,
-                la.code as activity_code,
-                main.product_id,
-                pt.name->>'en_US' as product1_name,
-                main.product_id_2,
-                pt2.name->>'en_US' as product2_name,
-                main.uom_id,
-                uu1.name->>'en_US' as uom1_name,
-                main.uom2_id,
-                uu2.name->>'en_US' as uom2_name,
-                main.hasil1,
-                main.hasil1_shi,
-                main.hasil2,
-                main.hasil2_shi,
-                main.hk_value,
-                main.hk_value_shi,
-                main.borong_value,
-                main.borong_value_shi,
-                main.kontraktor_value,
-                main.kontraktor_value_shi,
-                
-                -- Pemakaian Material
-                COALESCE(mat.total_consumed_hi, 0) AS total_consumed_hi,
-                COALESCE(mat.total_consumed_shi, 0) AS total_consumed_shi,
-                mat.product_id as product_material,
-                pt3.name->>'en_US' as product_material_name,
-                mat.product_uom_id as product_uom_material,
-                uu3.name->>'en_US' as uom_material_name
-                
-            FROM (
-                -- Query Pak hendra get hasil
-                SELECT
-                    sub.location_type_id,
-                    sub.location_id,
-                    sub.activity_id,
-                    sub.product_id,
-                    sub.product_id_2,
-                    sub.uom_id,
-                    sub.uom2_id,
-                    SUM(sub.hasil1) AS hasil1,
-                    SUM(sub.hasil1_shi) AS hasil1_shi,
-                    SUM(sub.hasil2) AS hasil2,
-                    SUM(sub.hasil2_shi) AS hasil2_shi,
-                    SUM(sub.hk_value) AS hk_value,
-                    SUM(sub.hk_value_shi) AS hk_value_shi,
-                    SUM(sub.borong_value) AS borong_value,
-                    SUM(sub.borong_value_shi) AS borong_value_shi,
-                    SUM(sub.kontraktor_value) AS kontraktor_value,
-                    SUM(sub.kontraktor_value_shi) AS kontraktor_value_shi
-                FROM (
-                    SELECT
-                        ltl.location_type_id,
-                        ltl.location_id,
-                        ltl.activity_id,
-                        ltl.product_id,
-                        ltl.product_id_2,
-                        ltl.satuan_1 AS uom_id,
-                        ltl.satuan_2 AS uom2_id,
-                        SUM(CASE WHEN ltl.date = %s THEN ltl.hasil_1 ELSE 0 END) AS hasil1,
-                        SUM(ltl.hasil_1) AS hasil1_shi,
-                        SUM(CASE WHEN ltl.date = %s THEN ltl.hasil_2 ELSE 0 END) AS hasil2,
-                        SUM(ltl.hasil_2) AS hasil2_shi,
-                        SUM(CASE WHEN ltl.is_borong = FALSE AND ltl.date = %s THEN ltl.contract_wage_value ELSE 0 END) AS hk_value,
-                        SUM(CASE WHEN ltl.is_borong = FALSE THEN ltl.contract_wage_value ELSE 0 END) AS hk_value_shi,
-                        SUM(CASE WHEN ltl.is_borong = TRUE AND ltl.date = %s THEN ltl.contract_wage_value ELSE 0 END) AS borong_value,
-                        SUM(CASE WHEN ltl.is_borong = TRUE THEN ltl.contract_wage_value ELSE 0 END) AS borong_value_shi,
-                        SUM(0) AS kontraktor_value,
-                        SUM(0) AS kontraktor_value_shi
-                    FROM lhm_transaction_line ltl
-                    WHERE ltl.date BETWEEN %s AND %s AND ltl.state = 'done'
-                    GROUP BY ltl.location_type_id, ltl.activity_id, ltl.location_id, ltl.product_id, ltl.product_id_2, ltl.satuan_1, ltl.satuan_2
-                    
-                    UNION ALL
-                    
-                    SELECT
-                        lcl.location_type_id,
-                        lcl.location_id,
-                        lcl.activity_id,
-                        lcl.product_id,
-                        lcl.product_id_2,
-                        lcl.uom_id AS uom_id,
-                        lcl.uom2_id AS uom2_id,
-                        SUM(CASE WHEN lcl.date = %s THEN lcl.nilai ELSE 0 END) AS hasil1,
-                        SUM(lcl.nilai) AS hasil1_shi,
-                        SUM(CASE WHEN lcl.date = %s THEN lcl.nilai2 ELSE 0 END) AS hasil2,
-                        SUM(lcl.nilai2) AS hasil2_shi,
-                        SUM(0) AS hk_value,
-                        SUM(0) AS hk_value_shi,
-                        SUM(0) AS borong_value,
-                        SUM(0) AS borong_value_shi,
-                        SUM(CASE WHEN lcl.date = %s THEN lcl.total ELSE 0 END) AS kontraktor_value,
-                        SUM(lcl.total) AS kontraktor_value_shi
-                    FROM lhm_contractor_line lcl
-                    WHERE lcl.date BETWEEN %s AND %s AND lcl.state = 'confirmed'
-                    GROUP BY lcl.location_type_id, lcl.activity_id, lcl.location_id, lcl.product_id, lcl.product_id_2, lcl.uom_id, lcl.uom2_id
-                ) sub
-                GROUP BY sub.location_type_id, sub.location_id, sub.activity_id, sub.product_id, sub.product_id_2, sub.uom_id, sub.uom2_id
-            ) main 
-
-            -- Query pemakaian material
-            LEFT JOIN (
-                SELECT
-                    lml.location_id,
-                    lml.activity_id,
-                    lml.product_id,
-                    lml.product_uom_id,
-                    SUM(CASE WHEN lt.date = %s THEN lml.realization ELSE 0 END) AS total_consumed_hi,
-                    SUM(lml.realization) AS total_consumed_shi
-                FROM lhm_transaction_material_line lml
-                JOIN lhm_transaction lt ON lml.lhm_id = lt.id
-                WHERE lt.date BETWEEN %s AND %s
-                AND lml.realization > 0
-                GROUP BY lml.location_id, lml.activity_id, lml.product_id, lml.product_uom_id
-                
-                UNION ALL
-                
-                SELECT
-                    lcl.location_id,
-                    lcl.activity_id,
-                    lcl.product_id,
-                    lcl.product_uom_id,
-                    SUM(CASE WHEN lcl.date = %s THEN lcl.realization ELSE 0 END) AS total_consumed_hi,
-                    SUM(lcl.realization) AS total_consumed_shi
-                FROM lhm_contractor_material_line lcl
-                WHERE lcl.date BETWEEN %s AND %s
-                AND lcl.realization > 0
-                GROUP BY lcl.location_id, lcl.activity_id, lcl.product_id, lcl.product_uom_id
-            ) mat ON main.location_id = mat.location_id AND main.activity_id = mat.activity_id
-            LEFT JOIN lhm_activity la on la.id = main.activity_id
-            LEFT JOIN lhm_location_type ltp on ltp.id = main.location_type_id
-            LEFT JOIN lhm_location ll on ll.id = main.location_id
-            
-            LEFT JOIN uom_uom uu1 on uu1.id = main.uom_id
-            LEFT JOIN uom_uom uu2 on uu2.id = main.uom2_id
-            
-            LEFT JOIN product_product pp on pp.id = main.product_id
-            LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-            LEFT JOIN product_product pp2 on pp2.id = main.product_id_2
-            LEFT JOIN product_template pt2 on pt2.id = pp2.product_tmpl_id
-            
-            LEFT JOIN product_product pp3 on pp3.id = mat.product_id
-            LEFT JOIN product_template pt3 on pt3.id = pp3.product_tmpl_id
-            LEFT JOIN uom_uom uu3 on uu3.id = mat.product_uom_id
-            ORDER BY location_type_id, location_id;
-        """
-
-        self.env.cr.execute(query, (date_end, date_end, date_end, date_end, date_start, date_end, 
-                                    date_end, date_end, date_end, date_start, date_end, 
-                                    date_end, date_start, date_end, date_end, date_start, date_end))
-        # return self.env.cr.fetchall()
-        columns = [desc[0] for desc in self.env.cr.description]
-        result = [dict(zip(columns, row)) for row in self.env.cr.fetchall()]
-        return result
-
-    def generate_xlsx_report(self, workbook, datas, obj):
-        workbook = self.add_workbook_format(workbook)
-        wbf = self.wbf
-
-        worksheet = workbook.add_worksheet("Laporan Progress Kerja Harian")
-        worksheet2 = workbook.add_worksheet("Pending Store Issue Harian")
-        data_report = self.get_combined_report(obj.date_start, obj.date_end)
-
-        date_from = obj.date_start.strftime('%d-%m-%Y')
-        date_to = obj.date_end.strftime('%d-%m-%Y')
-        date = date_from if date_from == date_to else f"{(date_from) + ' s/d ' + (date_to)}"
-
-        row = 1
-        worksheet.write(row, 0, (obj.company_id.name), wbf['title'])
-        worksheet.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
-        worksheet.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
-        worksheet.write(row + 2, 1, ": " , wbf['title'])
-        worksheet.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
-        worksheet.write(row + 3, 1, ": %s" %(obj.type.upper()), wbf['title'])
-        worksheet.write(row + 4, 0, "TANGGAL", wbf['title'])
-        worksheet.write(row + 4, 1, ": %s" %(date), wbf['title'])
-        worksheet.set_row(row, 18)
-        worksheet.set_row(row + 1, 18)
-        worksheet.set_row(row + 2, 18)
-        worksheet.set_column(row + 2, 0, 20)
-        worksheet.set_row(row + 3, 18)
-        worksheet.set_row(row + 4, 18)
-        
-        worksheet.merge_range(row, 25, row + 3, 26, "Diperiksa Oleh,", wbf['signature'])
-        worksheet.merge_range(row + 4, 25, row + 4, 26, "Ka. Afdeling/Kabag", wbf['header'])
-        worksheet.merge_range(row, 27, row + 3, 29, "Disetujui Oleh,", wbf['signature'])
-        worksheet.merge_range(row + 4, 27, row + 4, 29, "Asisten Kepala", wbf['header'])
-
-        next_row = row + 6
-        worksheet.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
-        worksheet.set_column(0, 0, 18)
-
-        worksheet.merge_range(next_row, 1, next_row + 1, 3, "LOKASI", wbf['header'])
-        worksheet.write(next_row + 2, 1, "KODE", wbf['header'])
-        worksheet.set_column(1, 1, 14)
-        worksheet.write(next_row + 2, 2, "SATUAN", wbf['header'])
-        worksheet.set_column(2, 2, 14)
-        worksheet.write(next_row + 2, 3, "QTY", wbf['header'])
-        worksheet.set_column(3, 3, 14)
-
-        worksheet.merge_range(next_row, 4, next_row + 1, 5, "KEGIATAN", wbf['header'])
-        worksheet.write(next_row + 2, 4, "COA", wbf['header'])
-        worksheet.set_column(4, 4, 14)
-        worksheet.write(next_row + 2, 5, "DESKRIPSI", wbf['header'])
-        worksheet.set_column(5, 5, 40)
-
-        worksheet.merge_range(next_row, 6, next_row + 2, 6, "PRODUCT 1", wbf['header'])
-        worksheet.set_column(6, 6, 18)
-        worksheet.merge_range(next_row, 7, next_row + 2, 7, "SATUAN 1", wbf['header'])
-        worksheet.set_column(7, 7, 18)
-
-        worksheet.merge_range(next_row, 8, next_row + 1, 9, "HASIL KERJA", wbf['header'])
-        worksheet.write(next_row + 2, 8, "HI", wbf['header'])
-        worksheet.set_column(8, 8, 14)
-        worksheet.write(next_row + 2, 9, "SHI", wbf['header'])
-        worksheet.set_column(9, 9, 14)
-
-        worksheet.merge_range(next_row, 10, next_row + 2, 10, "VARIANCE\n(+/-)", wbf['header'])
-        worksheet.set_column(10, 10, 18)
-        worksheet.merge_range(next_row, 11, next_row + 2, 11, "PRODUCT 2", wbf['header'])
-        worksheet.set_column(11, 11, 18)
-        worksheet.merge_range(next_row, 12, next_row + 2, 12, "SATUAN 2", wbf['header'])
-        worksheet.set_column(12, 12, 18)
-
-        worksheet.merge_range(next_row, 13, next_row + 1, 14, "HASIL KERJA", wbf['header'])
-        worksheet.write(next_row + 2, 13, "HI", wbf['header'])
-        worksheet.set_column(13, 13, 14)
-        worksheet.write(next_row + 2, 14, "SHI", wbf['header'])
-        worksheet.set_column(14, 14, 14)
-
-        worksheet.merge_range(next_row, 15, next_row + 2, 15, "VARIANCE\n(+/-)", wbf['header'])
-        worksheet.set_column(15, 15, 18)
-
-        worksheet.merge_range(next_row, 16, next_row, 23, "BIAYA", wbf['header'])
-        worksheet.merge_range(next_row + 1, 16, next_row + 1, 19, "HI", wbf['header'])
-        worksheet.write(next_row + 2, 16, "HK", wbf['header'])
-        worksheet.set_column(16, 16, 16)
-        worksheet.write(next_row + 2, 17, "BORONG/PREMI/LEMBUR", wbf['header'])
-        worksheet.set_column(17, 17, 23)
-        worksheet.write(next_row + 2, 18, "Kontraktor", wbf['header'])
-        worksheet.set_column(17, 17, 23)
-        worksheet.write(next_row + 2, 19, "TOTAL", wbf['header'])
-        worksheet.set_column(18, 18, 18)
-
-        worksheet.merge_range(next_row + 1, 20, next_row + 1, 23, "SHI", wbf['header'])
-        worksheet.write(next_row + 2, 20, "HK", wbf['header'])
-        worksheet.set_column(19, 19, 10)
-        worksheet.write(next_row + 2, 21, "BORONG/PREMI/LEMBUR", wbf['header'])
-        worksheet.set_column(20, 20, 23)
-        worksheet.write(next_row + 2, 22, "Kontraktor", wbf['header'])
-        worksheet.set_column(20, 20, 23)
-        worksheet.write(next_row + 2, 23, "TOTAL", wbf['header'])
-        worksheet.set_column(21, 21, 18)
-        
-        worksheet.merge_range(next_row, 24, next_row, 31, "PEMAKAIAN MATERIAL", wbf['header'])
-        worksheet.merge_range(next_row + 1, 24, next_row + 1, 26, "SKB", wbf['header'])
-        worksheet.write(next_row + 2, 24, "NO. BPB", wbf['header'])
-        worksheet.set_column(22, 22, 18)
-        worksheet.write(next_row + 2, 25, "TANGGAL", wbf['header'])
-        worksheet.set_column(23, 23, 18)
-        worksheet.write(next_row + 2, 26, "QTY", wbf['header'])
-        worksheet.set_column(24, 24, 18)
-        worksheet.merge_range(next_row + 1, 27, next_row + 2, 27, "NAMA MATERIAL", wbf['header'])
-        worksheet.set_column(25, 25, 40)
-        worksheet.merge_range(next_row + 1, 28, next_row + 2, 28, "SATUAN", wbf['header'])
-        worksheet.set_column(26, 26, 18)
-        worksheet.merge_range(next_row + 1, 29, next_row + 1, 30, "TOTAL", wbf['header'])
-        worksheet.write(next_row + 2, 29, "HI", wbf['header'])
-        worksheet.set_column(27, 27, 18)
-        worksheet.write(next_row + 2, 30, "SHI", wbf['header'])
-        worksheet.set_column(28, 28, 18)
-        worksheet.merge_range(next_row + 1, 31, next_row + 2, 31, "VARIANCE\n(+/-)", wbf['header'])
-        worksheet.set_column(29, 29, 18)
-
-        row = next_row + 3 # Mulai dari baris setelah header
-        previous_location_type = 0
-        hk_hi = 0
-        hk_shi = 0
-        hk2_hi = 0
-        hk2_shi = 0
-        biaya_hi_hk = 0
-        biaya_hi_premi = 0
-        biaya_hi_kontraktor = 0
-        biaya_hi_total = 0
-        biaya_shi_hk = 0
-        biaya_shi_premi = 0
-        biaya_shi_kontraktor = 0
-        biaya_shi_total = 0
-        material_total_hi = 0
-        material_total_shi = 0
-
-        # Untuk grand total
-        grand_hk_hi = 0
-        grand_hk_shi = 0
-        grand_hk2_hi = 0
-        grand_hk2_shi = 0
-        grand_biaya_hi_hk = 0
-        grand_biaya_hi_premi = 0
-        grand_biaya_hi_kontraktor = 0
-        grand_biaya_shi_hk = 0
-        grand_biaya_shi_premi = 0
-        grand_biaya_shi_kontraktor = 0
-        grand_material_total_hi = 0
-        grand_material_total_shi = 0
-
-
-        for data in data_report:
-            if previous_location_type != data['type_location_code']:
-                if previous_location_type != 0:
-
-                    # menulis subtotal
-                    col = 0
-                    worksheet.write(row, col, 'Subtotal', wbf['header_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-' , wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, hk_hi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, hk_shi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, hk2_hi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, hk2_shi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, biaya_hi_hk, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, biaya_hi_premi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, biaya_hi_kontraktor, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, biaya_shi_hk, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, biaya_shi_premi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, biaya_shi_kontraktor, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, material_total_hi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, material_total_shi, wbf['number_total'])
-                    col+=1
-                    worksheet.write(row, col, '-', wbf['number_total'])
-                    col+=1
-
-                    row += 1
-
-                    # Akumulasi ke grand total
-                    grand_hk_hi += hk_hi
-                    grand_hk_shi += hk_shi
-                    grand_hk2_hi += hk2_hi
-                    grand_hk2_shi += hk2_shi
-                    grand_biaya_hi_hk += biaya_hi_hk
-                    grand_biaya_hi_premi += biaya_hi_premi
-                    grand_biaya_hi_kontraktor += biaya_hi_kontraktor
-                    grand_biaya_shi_hk += biaya_shi_hk
-                    grand_biaya_shi_premi += biaya_shi_premi
-                    grand_biaya_shi_kontraktor += biaya_shi_kontraktor
-                    grand_material_total_hi += material_total_hi
-                    grand_material_total_shi += material_total_shi
-
-                    hk_hi = 0
-                    hk_shi = 0
-                    hk2_hi = 0
-                    hk2_shi = 0
-                    biaya_hi_hk = 0
-                    biaya_hi_premi = 0
-                    biaya_hi_kontraktor = 0
-                    biaya_hi_total = 0
-                    biaya_shi_hk = 0
-                    biaya_shi_premi = 0
-                    biaya_shi_kontraktor = 0
-                    biaya_shi_total = 0
-                    material_total_hi = 0
-                    material_total_shi = 0
-
-                previous_location_type = data['type_location_code']
-
-            # menulis datanya pada report
-            col = 0
-            worksheet.write(row, col, data['type_location_code'] if data['type_location_code'] else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['location_name'] if data['location_name']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['activity_code'] if data['activity_code']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['activity_name'] if data['activity_name'] else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['product1_name'] if data['product1_name']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['uom1_name'] if data['uom1_name']  else '-' , wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['hasil1'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['hasil1_shi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['product2_name'] if data['product2_name']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['uom2_name'] if data['uom2_name']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['hasil2'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['hasil2_shi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['hk_value'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['borong_value'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['kontraktor_value'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['hk_value_shi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['borong_value_shi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['kontraktor_value_shi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['product_material_name'] if data['product_material_name']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['uom_material_name'] if data['uom_material_name']  else '-', wbf['content'])
-            col+=1
-            worksheet.write(row, col, data['total_consumed_hi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, data['total_consumed_shi'], wbf['number_content'])
-            col+=1
-            worksheet.write(row, col, '-', wbf['content'])
-            col+=1
-            
-            hk_hi += data['hasil1']
-            hk_shi += data['hasil1_shi']
-            hk2_hi += data['hasil2']
-            hk2_shi += data['hasil2_shi']
-
-            biaya_hi_hk += data['hk_value']
-            biaya_hi_premi += data['borong_value']
-            biaya_hi_kontraktor += data['kontraktor_value']
-            # biaya_hi_total += data['hasil2']
-
-            biaya_shi_hk += data['hk_value_shi']
-            biaya_shi_premi += data['borong_value_shi']
-            biaya_shi_kontraktor += data['kontraktor_value_shi']
-            # biaya_shi_total += data['hasil2']
-
-            material_total_hi += data['total_consumed_hi']
-            material_total_shi += data['total_consumed_shi']
-
-            row += 1 
-
-        # subtotal terakhir
-        if previous_location_type != 0:
-            col = 0
-            worksheet.write(row, col, 'Subtotal', wbf['header_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, hk_hi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, hk_shi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, hk2_hi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, hk2_shi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, biaya_hi_hk, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, biaya_hi_premi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, biaya_hi_kontraktor, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, biaya_shi_hk, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, biaya_shi_premi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, biaya_shi_kontraktor, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, material_total_hi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, material_total_shi, wbf['number_total'])
-            col += 1
-            worksheet.write(row, col, '-', wbf['number_total'])
-            row += 1
-
-            grand_hk_hi += hk_hi
-            grand_hk_shi += hk_shi
-            grand_hk2_hi += hk2_hi
-            grand_hk2_shi += hk2_shi
-            grand_biaya_hi_hk += biaya_hi_hk
-            grand_biaya_hi_premi += biaya_hi_premi
-            grand_biaya_hi_kontraktor += biaya_hi_kontraktor
-            grand_biaya_shi_hk += biaya_shi_hk
-            grand_biaya_shi_premi += biaya_shi_premi
-            grand_biaya_shi_kontraktor += biaya_shi_kontraktor
-            grand_material_total_hi += material_total_hi
-            grand_material_total_shi += material_total_shi
-
-        # Grand total
-        # row += 1
-        col = 0
-        worksheet.write(row, col, 'Grand Total', wbf['header_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-' , wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_hk_hi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_hk_shi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_hk2_hi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_hk2_shi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_biaya_hi_hk, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_biaya_hi_premi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_biaya_hi_kontraktor, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_biaya_shi_hk, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_biaya_shi_premi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_biaya_shi_kontraktor, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_material_total_hi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, grand_material_total_shi, wbf['number_total'])
-        col+=1
-        worksheet.write(row, col, '-', wbf['number_total'])
-        col+=1
-
-        row += 1
-    
-        # Page Layout
-        worksheet.set_landscape()
-        worksheet.set_paper(9) # A4
-        # worksheet.set_header()
-        worksheet.repeat_rows(1, 4)
-        worksheet.print_area(0, 0, row, 13)
-        worksheet.set_print_scale(78)
-
-
-        ######### SHEET 2 untuk Store issue ########
-        row = 1
-        worksheet2.write(row, 0, (obj.company_id.name), wbf['title'])
-        worksheet2.write(row + 1, 0, "LAPORAN PROGRES PEKERJAAN HARIAN - DETAIL MATERIAL", wbf['title'])
-        worksheet2.write(row + 2, 0, "AFDELING BAGIAN", wbf['title'])
-        worksheet2.write(row + 2, 1, ":", wbf['title'])
-        worksheet2.write(row + 3, 0, "TYPE PEKERJA", wbf['title'])
-        worksheet2.write(row + 3, 1, ": %s" %(obj.type.upper()), wbf['title'])
-        worksheet2.write(row + 4, 0, "TANGGAL", wbf['title'])
-        worksheet2.write(row + 4, 1, ": %s" %(date), wbf['title'])
-
-        worksheet2.merge_range(row, 6, row + 3, 6, "Diperiksa Oleh,", wbf['signature'])
-        worksheet2.write(row + 4, 6, "Ka. Afdeling/Kabag", wbf['header'])
-        worksheet2.merge_range(row, 7, row + 3, 7, "Disetujui Oleh,", wbf['signature'])
-        worksheet2.write(row + 4, 7, "Asisten Kepala", wbf['header'])
-
-        next_row = row + 6
-        worksheet2.merge_range(next_row, 0, next_row + 2, 0, "TYPE", wbf['header'])
-        worksheet2.set_column(0, 0, 18)
-        worksheet2.merge_range(next_row, 1, next_row + 1, 1, "LOKASI", wbf['header'])
-        worksheet2.write(next_row + 2, 1, "KODE", wbf['header'])
-        worksheet2.set_column(1, 1, 14)
-        worksheet2.merge_range(next_row, 2, next_row + 1, 3, "KEGIATAN", wbf['header'])
-        worksheet2.write(next_row + 2, 2, "COA", wbf['header'])
-        worksheet2.set_column(2, 2, 14)
-        worksheet2.write(next_row + 2, 3, "DESKRIPSI", wbf['header'])
-        worksheet2.set_column(3, 3, 40)
-        worksheet2.merge_range(next_row, 4, next_row, 8, "PEMAKAIAN MATERIAL", wbf['header'])
-        worksheet2.merge_range(next_row + 1, 4, next_row + 1, 6, "SKB", wbf['header'])
-        worksheet2.write(next_row + 2, 4, "NO. BPB", wbf['header'])
-        worksheet2.set_column(4, 4, 18)
-        worksheet2.write(next_row + 2, 5, "TANGGAL", wbf['header'])
-        worksheet2.set_column(5, 5, 18)
-        worksheet2.write(next_row + 2, 6, "QTY", wbf['header'])
-        worksheet2.set_column(6, 6, 18)
-        worksheet2.merge_range(next_row + 1, 7, next_row + 2, 7, "NAMA MATERIAL", wbf['header'])
-        worksheet2.set_column(7, 7, 40)
-        worksheet2.merge_range(next_row + 1, 8, next_row + 2, 8, "SATUAN", wbf['header'])
-        worksheet2.set_column(8, 8, 18)
-
-        date_start_stk = fields.Datetime.to_string(obj.date_start)
-        date_end_stk = fields.Datetime.to_string(obj.date_end)
-
-        stock_move_ids = self.env['stock.move'].search([
-                            ('picking_type_id.code', '=', 'issue'),
-                            # ('allocation_residual_qty', '>', 0),
-                            ('pending_material_allocation', '>', 0),
-                            ('state','=','done'),
-                            ('date', '>=', date_start_stk),
-                            ('date', '<=', date_end_stk)
-                        ],order="date desc, plantation_activity_id asc")
-
-        # print(f"==== {len(stock_move_ids)}")
-        # print(f"==== {stos}")
-
-        row_data = next_row + 3
-        activity_ids = []
-        grand_total_qty = 0
-        subtotal_qty = 0
-        coa = False
-        activity_name = False
-        for move_id in stock_move_ids:
-            move_data = [
-                move_id.plantation_location_type_id.code,
-                move_id.plantation_location_id.code,
-                move_id.plantation_activity_id.code,
-                move_id.plantation_activity_name,
-                move_id.picking_id.name,
-                move_id.date,
-                move_id.product_uom_qty,
-                move_id.product_id.name,
-                move_id.product_uom.name
-            ]
-            coa = move_id.plantation_activity_id.code
-            activity_name = move_id.plantation_activity_name
-    
-
-            if move_id.plantation_activity_id.id not in activity_ids and activity_ids:
-                worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
-                worksheet2.write(row_data, 1, "", wbf['total'])
-                worksheet2.write(row_data, 2, move_data[1], wbf['total'])
-                worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
-
-                row_data += 1
-                subtotal_qty = 0  
-    
-
-            worksheet2.write(row_data, 0, move_data[0], wbf['content'])
-            worksheet2.set_column(0, 0, 18)
-
-            worksheet2.write(row_data, 1, move_data[1], wbf['content'])
-            worksheet2.set_column(1, 1, 14)
-
-            worksheet2.write(row_data, 2, move_data[2], wbf['content'])
-            worksheet2.set_column(2, 2, 14)
-
-            worksheet2.write(row_data, 3, move_data[3], wbf['content'])
-            worksheet2.set_column(3, 3, 40)
-
-            worksheet2.write(row_data, 4, move_data[4] or '-', wbf['content'])
-            worksheet2.set_column(4, 4, 14)
-
-            worksheet2.write(row_data, 5, move_data[5], wbf['content'])
-            worksheet2.set_column(5, 5, 14)
-
-            worksheet2.write(row_data, 6, move_data[6], wbf['content'])
-            worksheet2.set_column(6, 6, 14)
-
-            worksheet2.write(row_data, 7, move_data[7] or '-', wbf['content'])
-            worksheet2.set_column(7, 7, 40)
-
-            worksheet2.write(row_data, 8, move_data[8], wbf['content'])
-            worksheet2.set_column(8, 8, 14)
-
-            subtotal_qty += move_data[6]
-            grand_total_qty += move_data[6]
-
-            activity_ids.append(move_id.plantation_activity_id.id)
-            row_data += 1
-
-        worksheet2.write(row_data, 0, "Subtotal", wbf['total'])
-        worksheet2.write(row_data, 1, "", wbf['total'])
-        worksheet2.write(row_data, 2, coa, wbf['total'])
-        worksheet2.write(row_data, 3, activity_name, wbf['total'])
-        worksheet2.write(row_data, 4, "", wbf['total'])
-        worksheet2.write(row_data, 5, "", wbf['total'])
-        worksheet2.write(row_data, 6, subtotal_qty, wbf['total'])
-        worksheet2.write(row_data, 7, "", wbf['total'])
-        worksheet2.write(row_data, 8, "", wbf['total'])
-        row_data += 1
-
-        worksheet2.write(row_data, 0, "Grand Total", wbf['total'])
-        worksheet2.write(row_data, 1, "", wbf['total'])
-        worksheet2.write(row_data, 2, "", wbf['total'])
-        worksheet2.write(row_data, 3, "", wbf['total'])
-        worksheet2.write(row_data, 4, "", wbf['total'])
-        worksheet2.write(row_data, 5, "", wbf['total'])
-        worksheet2.write(row_data, 6, grand_total_qty, wbf['total'])
-        worksheet2.write(row_data, 7, "", wbf['total'])
-        worksheet2.write(row_data, 8, "", wbf['total'])
-
-

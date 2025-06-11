@@ -49,8 +49,9 @@ class WizardReportProgresKerjaMaterialDetail(models.TransientModel):
     _description    = "Laporan Progres Pekerjaan Harian Material Detail"
 
     name            = fields.Char(default="Laporan Progres Pekerjaan Harian Material Detail")
-    date_start      = fields.Date("Periode Dari Tgl", required=True)
-    date_end        = fields.Date("Sampai Tgl", required=True)
+    date            = fields.Date('As Of Date')
+    date_start      = fields.Date("Periode Dari Tgl")
+    date_end        = fields.Date("Sampai Tgl")
     type            = fields.Selection([('harian', 'Harian')], string='Type', default='harian')
     company_id      = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.user.company_id)
     report_type     = fields.Selection([('xlsx', 'XLSX'), ('xls', 'XLS')], string='Type', default='xlsx')
