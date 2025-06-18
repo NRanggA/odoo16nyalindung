@@ -14,55 +14,95 @@ class PurcahaseOrder(models.Model):
             has_received = any(record.picking_ids and record.picking_ids.filtered(lambda xx:xx.state == 'done'))
             record.is_received = bool(has_received)
 
-    def _prepare_equipment_register(self):
+    # def _prepare_equipment_register(self):
+    #     self.ensure_one()
+    #     lastest_date = False
+    #     for picking in self.picking_ids.filtered(lambda p: p.state=='done'):
+    #         date_done = picking.date_done.strftime('%Y-%m-%d')
+    #         if not lastest_date:
+    #             lastest_date = date_done
+    #         if lastest_date < date_done:
+    #             lastest_date = date_done
+    #     result = {
+    #         'date': lastest_date,
+    #         'origin': self.name,
+    #         'company_id': self.company_id.id,
+    #         'partner_id': self.partner_id.id,
+    #         'partner_ref': self.partner_ref,
+    #     }
+    #     return result
+
+    # def action_create_equipment_register(self):
+    #     precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+    #     EquipmentRegister = self.env['equipment.register']
+    #     registers = self.env['equipment.register']
+        
+    #     for order in self:
+    #         order = order.with_company(order.company_id)
+            
+    #         for line in order.order_line.filtered(lambda l: l.product_id and l.product_id.product_asset):
+    #             qty_to_register = line.qty_received - sum(line.equipment_register_line_ids.mapped('product_qty'))
+    #             if qty_to_register <= 0:
+    #                 continue
+
+    #             for _ in range(int(qty_to_register)):
+    #                 if not float_is_zero(line.qty_to_equip_register, precision_digits=precision):
+    #                     register_vals = order._prepare_equipment_register()
+    #                     register_vals['register_line_ids'] = [(0, 0, line._prepare_equipment_register_line())]
+    #                     registers |= EquipmentRegister.with_company(register_vals['company_id']).create(register_vals)
+                
+    #             # for qty in range(int(order.order_line.qty_received )):
+    #             #     if not float_is_zero(line.qty_to_equip_register, precision_digits=precision):
+    #             #         register_vals = order._prepare_equipment_register()
+    #             #         register_vals['register_line_ids'] = [(0, 0, line._prepare_equipment_register_line())]
+                        
+    #             #         registers |= EquipmentRegister.with_company(register_vals['company_id']).create(register_vals)
+        
+    #     if not registers:
+    #         raise UserError(_('There is not receiveable lines. You must receive the product before registering it into Equipment'))
+        
+    #     return self.action_view_equipment_register(registers)
+    
+    def _prepare_equipment_register(self, line):
         self.ensure_one()
-        lastest_date = False
-        for picking in self.picking_ids.filtered(lambda p: p.state=='done'):
+
+        latest_date = False
+        for picking in self.picking_ids.filtered(lambda p: p.state == 'done'):
             date_done = picking.date_done.strftime('%Y-%m-%d')
-            if not lastest_date:
-                lastest_date = date_done
-            if lastest_date < date_done:
-                lastest_date = date_done
-        result = {
-            'date': lastest_date,
+            if not latest_date or latest_date < date_done:
+                latest_date = date_done
+
+        return {
+            'date': latest_date,
             'origin': self.name,
+            'category_id': line.equipment_category_id.id,
             'company_id': self.company_id.id,
-            'partner_id': self.partner_id.id,
-            'partner_ref': self.partner_ref,
+            'register_line_ids': [(0, 0, line._prepare_equipment_register_line())],
         }
-        return result
 
     def action_create_equipment_register(self):
         precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
         EquipmentRegister = self.env['equipment.register']
         registers = self.env['equipment.register']
-        
+
         for order in self:
             order = order.with_company(order.company_id)
-            
+
             for line in order.order_line.filtered(lambda l: l.product_id and l.product_id.product_asset):
-                qty_to_register = line.qty_received - sum(line.equipment_register_line_ids.mapped('product_qty'))
-                if qty_to_register <= 0:
+                qty = line.qty_to_equip_register
+                if float_is_zero(qty, precision_digits=precision):
                     continue
 
-                for _ in range(int(qty_to_register)):
-                    if not float_is_zero(line.qty_to_equip_register, precision_digits=precision):
-                        register_vals = order._prepare_equipment_register()
-                        register_vals['register_line_ids'] = [(0, 0, line._prepare_equipment_register_line())]
-                        registers |= EquipmentRegister.with_company(register_vals['company_id']).create(register_vals)
-                
-                # for qty in range(int(order.order_line.qty_received )):
-                #     if not float_is_zero(line.qty_to_equip_register, precision_digits=precision):
-                #         register_vals = order._prepare_equipment_register()
-                #         register_vals['register_line_ids'] = [(0, 0, line._prepare_equipment_register_line())]
-                        
-                #         registers |= EquipmentRegister.with_company(register_vals['company_id']).create(register_vals)
-        
+                for _ in range(int(qty)):
+                    vals = order._prepare_equipment_register(line)
+                    registers |= EquipmentRegister.with_company(vals['company_id']).create(vals)
+
         if not registers:
-            raise UserError(_('There is not receiveable lines. You must receive the product before registering it into Equipment'))
-        
+            raise UserError(_('There is not receiveable lines. You must received the product before register it into Equipment'))
+
         return self.action_view_equipment_register(registers)
-    
+
+
 class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"
 

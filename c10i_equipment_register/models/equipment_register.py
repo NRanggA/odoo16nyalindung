@@ -87,6 +87,7 @@ class EquipmentRegister(models.Model):
 					'price_unit': rline.purchase_line_id.price_unit,
 					'equipment_register_line_id': rline.id,
 					'purchase_line_id': rline.purchase_line_id.id,
+                    'asset_category_id': self.category_id.asset_category_id.id
 				}
                 lines.append((0,0,line_vals))
         values.update({'line_ids': lines})
