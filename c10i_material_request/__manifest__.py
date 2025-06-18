@@ -11,7 +11,7 @@ The specific and easy-to-use Purchase Order Asset module in Odoo that allow you 
     'website': "http://konsaltenindonesia.com",
     'version': '14.1.0',
     'depends': [
-        'base', 'stock', 'c10i_lhm_v16'
+        'base', 'stock', 'c10i_lhm_v16','hr'
     ],
     'data': [
                 'data/sequences.xml',
@@ -20,6 +20,7 @@ The specific and easy-to-use Purchase Order Asset module in Odoo that allow you 
                 'security/ir.model.access.csv',
                 'views/material_request_view.xml',
                 'views/stock_picking_type_view.xml',
+                'views/hr_employee_view.xml',
                 # 'views/stock_picking_view.xml',
                 # 'views/stock_move_view.xml',
     ],
