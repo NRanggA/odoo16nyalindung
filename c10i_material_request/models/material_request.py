@@ -56,13 +56,24 @@ class MaterialRequest(models.Model):
         string="# Pickings")
 
     # Field Approver MR
-    approver_id = fields.Many2one('hr.employee', string='Approver')
-    @api.onchange('requested_by_2')
-    def _onchange_requested_by_2(self):
-        if self.requested_by_2.approver_mr_id:
-            self.approver_id = self.requested_by_2.approver_mr_id
-        else:
-            self.approver_id = self.requested_by_2.parent_id
+    # approver_id = fields.Many2one('hr.employee', string='Approver')
+    # @api.onchange('requested_by_2')
+    # def _onchange_requested_by_2(self):
+    #     if self.requested_by_2.approver_mr_id:
+    #         self.approver_id = self.requested_by_2.approver_mr_id
+    #     else:
+    #         self.approver_id = self.requested_by_2.parent_id
+
+    approver_id = fields.Many2one('hr.employee', string='Approver', compute='_compute_approver_id', store=True)
+
+    @api.depends('create_uid')
+    def _compute_approver_id(self):
+        for record in self:
+            employee = record.create_uid.employee_id
+            if employee.approver_mr_id:
+                record.approver_id = employee.approver_mr_id
+            else:
+                record.approver_id = employee.parent_id
 
 
     def _picking_count(self):
