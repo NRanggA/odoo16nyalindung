@@ -58,14 +58,14 @@
                         <table width="89%" style="margin-top: 20px; text-align: center; margin-left: 58px;">
                             <tbody>
                                 <tr>
-                                    <td>Menyetujui,</td>
+                                    <!-- <td>Menyetujui,</td> -->
                                     <td>Kepala Gudang,</td>
                                     <td>Penerima,</td>
                                     <td>Pemohon,</td>
                                 </tr>
                                 <tr height="100px"></tr>
                                 <tr>
-                                    <td>( WAHYU WIDIYANTO )</td>
+                                    <!-- <td>( WAHYU WIDIYANTO )</td> -->
                                     <td>( BUDI PURWANDI )</td>
                                     <td>( .............................. )</td>
                                     <td>( <t t-esc="o.employee_id.name or ''"/> )</td>

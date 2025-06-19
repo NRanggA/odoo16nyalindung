@@ -5,7 +5,7 @@
     'description': 'Costum Jurnal',
     'category': 'Sales',
     'author': 'Your Name',
-    'depends': ['purchase','account', 'purchase_request', 'ny_account'],
+    'depends': ['purchase','account', 'purchase_request', 'ny_account', 'hr'],
     'data': [
         'security/ir.model.access.csv',
         'views/purchase_order_views.xml',
@@ -15,7 +15,8 @@
         'views/purchase_request_views.xml',
         'wizard/purchase_order_popup_confirm.xml',
         'wizard/purchase_request_wizard_rfq.xml',
-        'wizard/purchase_revision_wizard_view.xml'
+        'wizard/purchase_revision_wizard_view.xml',
+        'views/hr_employee_views.xml'
     ],
     'installable': True,
     'application': False,
