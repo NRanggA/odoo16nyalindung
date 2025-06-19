@@ -659,6 +659,7 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write('K5', 'Rupiah', wbf['header'])
             sheet.write('L5', 'Qty', wbf['header'])
             sheet.write('M5', 'Rupiah', wbf['header'])
+            sheet.merge_range('N4:N5', 'Product Category', wbf['header'])
         else:
             sheet.write('D4', 'Saldo Awal', wbf['header'])
             sheet.write('E4', 'Penerimaan', wbf['header'])
@@ -671,6 +672,7 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write('F5', 'Qty', wbf['header'])
             sheet.write('G5', 'Qty', wbf['header'])
             sheet.write('H5', 'Qty', wbf['header'])
+            sheet.merge_range('I4:I5', 'Product Category', wbf['header'])
 
         row = 5 
         
@@ -756,6 +758,7 @@ class ReportStockMutation(models.AbstractModel):
                     # Closing
                     sheet.write(row, 11, closing_qty, wbf['content_float'])  
                     sheet.write(row, 12, closing_value, wbf['content_float'])  
+                    sheet.write(row, 13, product.categ_id.name, wbf['content'])
 
                 else:
                     # Opening
@@ -768,6 +771,7 @@ class ReportStockMutation(models.AbstractModel):
                     sheet.write(row, 6, adjustment_qty, wbf['content_float'])
                     # Closing
                     sheet.write(row, 7, closing_qty, wbf['content_float'])
+                    sheet.write(row, 8, product.categ_id.name, wbf['content'])
 
                 row += 1
         
