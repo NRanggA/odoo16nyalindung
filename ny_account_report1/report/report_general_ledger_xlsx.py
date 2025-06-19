@@ -220,7 +220,7 @@ class ReportStockMutation(models.AbstractModel):
         headers = [
             "Date", "Account", "JRNL", "Partner", "Ref", "Move", "Tipe Lokasi","ORG",
             "Lokasi", "Activity", "Analytic Account", "Entry Label",
-            "Debit", "Credit", "Cumm. Balance", "Currency"
+            "Debit", "Credit", "Cumm. Balance", "Currency", "Matching"
         ]
         for col, header in enumerate(headers):
             sheet.write(row, col, header, wbf['header'])
@@ -315,7 +315,7 @@ class ReportStockMutation(models.AbstractModel):
                 sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['content_float'])
 
                 sheet.write(row, 15, move_line.amount_currency if move_line.currency_id != move_line.company_id.currency_id else 0, wbf['content_float'])
-                sheet.write(row, 16, move_line.matching_number, wbf['content'])
+                sheet.write(row, 16, move_line.matching_number or '', wbf['content'])
 
                 row += 1
             # Menutup looping account_move_lines dengan baris saldo akhir
