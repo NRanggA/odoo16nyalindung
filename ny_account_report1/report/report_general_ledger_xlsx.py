@@ -207,6 +207,7 @@ class ReportStockMutation(models.AbstractModel):
         sheet.set_column('M:M', 20)
         sheet.set_column('N:N', 20)
         sheet.set_column('O:O', 20)
+        sheet.set_column('P:P', 20)
 
         row = 0
 
@@ -287,6 +288,7 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write(row, 13, total_credit, wbf['opening_balance'])
             sheet.write(row, 14, opening_balance, wbf['opening_balance'])
             sheet.write(row, 15, '', wbf['opening_balance'])
+            sheet.write(row, 16, '', wbf['opening_balance'])
             row += 1
 
             account_move_lines = self.env['account.move.line'].search(domain, order=order)
@@ -313,6 +315,7 @@ class ReportStockMutation(models.AbstractModel):
                 sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['content_float'])
 
                 sheet.write(row, 15, move_line.amount_currency if move_line.currency_id != move_line.company_id.currency_id else 0, wbf['content_float'])
+                sheet.write(row, 16, move_line.matching_number, wbf['content'])
 
                 row += 1
             # Menutup looping account_move_lines dengan baris saldo akhir
@@ -335,7 +338,7 @@ class ReportStockMutation(models.AbstractModel):
             # sheet.write_formula(row, 14, f'=SUM(O{row - len(account_move_lines)}:O{last_balance_row})', wbf['opening_balance'])
             sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['opening_balance'])
             sheet.write(row, 15, '', wbf['account'])
-            sheet.write(row, 15, '', wbf['account'])
+            sheet.write(row, 16, '', wbf['account'])
             row += 1
         
         # Pengaturan Cetak
