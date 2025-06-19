@@ -606,7 +606,7 @@ class ReportStockMutation(models.AbstractModel):
         sheet.write('F5', 'Product Name', wbf['header'])
         sheet.write('G5', 'Qty', wbf['header'])
         sheet.write('H5', 'UOM', wbf['header'])
-        sheet.write('I5', 'TAGS', wbf['header'])
+        sheet.write('I5', 'KETERANGAN', wbf['header'])
         
         if obj.with_journal:
             sheet.write('J5', 'Value', wbf['header'])
@@ -644,7 +644,7 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write(row, 7, stock.product_id.uom_id.name, wbf['content']) 
             tags = ""
             if stock.product_id.product_tag_ids:
-                tags = ' '.join(stock.product_id.product_tag_ids.mapped('name'))
+                tags = ', '.join(stock.product_id.product_tag_ids.mapped('name'))
             sheet.write(row, 8, tags, wbf['content']) 
 
             if obj.with_journal:
