@@ -388,30 +388,58 @@ class HrEmployeeExpense(models.Model):
             else:
                 payment.advance_found = False
 
-    @api.depends("account_move_id.line_ids.amount_residual")
-    def _compute_advance_residual(self):
-        for payment in self:
-            if not payment.is_advance:
-                payment.advance_residual = 0.0
-                continue
-            residual_company = 0.0
-            advance_account = payment.company_id.employee_advance_account_id
-            if not advance_account:
-                raise ValidationError(_('Please configure Employee Advance Account on your Accounting Settings'))
-            for line in payment.account_move_id.line_ids:
-                if line.account_id == advance_account:
-                    residual_company += line.amount_residual
-            payment.advance_residual = residual_company
+    # @api.depends("account_move_id.line_ids.amount_residual")
+    # def _compute_advance_residual(self):
+    #     for payment in self:
+    #         if not payment.is_advance:
+    #             payment.advance_residual = 0.0
+    #             continue
+    #         residual_company = 0.0
+    #         advance_account = payment.company_id.employee_advance_account_id
+    #         if not advance_account:
+    #             raise ValidationError(_('Please configure Employee Advance Account on your Accounting Settings'))
+    #         for line in payment.account_move_id.line_ids:
+    #             if line.account_id == advance_account:
+    #                 residual_company += line.amount_residual
+    #         payment.advance_residual = residual_company
 
-            # if payment.settlement_ids.id:
-            if payment.settlement_ids:
-                # for settle in payment.settlement_ids:
-                for settle in payment.settlement_ids.filtered(lambda s: s.employee_expense_state == 'approved'):
-                    if settle.account_move_id:
-                        for line in settle.account_move_id.line_ids:
-                            if line.account_id == advance_account:
-                                residual_company += line.amount_residual
-            payment.advance_residual = residual_company
+    #         # if payment.settlement_ids.id:
+    #         if payment.settlement_ids:
+    #             # for settle in payment.settlement_ids:
+    #             for settle in payment.settlement_ids.filtered(lambda s: s.employee_expense_state == 'approved'):
+    #                 if settle.account_move_id:
+    #                     for line in settle.account_move_id.line_ids:
+    #                         if line.account_id == advance_account:
+    #                             residual_company += line.amount_residual
+    #         payment.advance_residual = residual_company
+
+    @api.depends("account_move_id.line_ids.matched_credit_ids")
+    def _compute_advance_residual(self):
+        advance_account = self.env.company.employee_advance_account_id
+        if not advance_account:
+            raise ValidationError(_('Please configure Employee Advance Account on your Accounting Settings'))
+
+        for rec in self:
+            if not rec.is_advance or not rec.account_move_id:
+                rec.advance_residual = 0.0
+                continue
+
+            advance_lines = rec.account_move_id.line_ids.filtered(lambda l: l.account_id == advance_account)
+
+            residual_total = 0.0
+
+            for line in advance_lines:
+                debit_balance_total = 0.0 
+
+                for part in line.matched_credit_ids:
+                    debit_balance_total += part.debit_move_id.balance
+
+                final_residual = line.balance - debit_balance_total
+                residual_total += final_residual 
+
+            rec.advance_residual = residual_total
+
+
 
 
     @api.depends('amount_total', 'advance_to_settle_ids')
