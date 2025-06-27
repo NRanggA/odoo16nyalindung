@@ -430,8 +430,13 @@ class HrEmployeeExpense(models.Model):
 
             for line in advance_lines:
                 debit_balance_total = 0.0 
+                partials = line.matched_credit_ids
 
-                for part in line.matched_credit_ids:
+                if not partials:
+                    residual_total += line.balance
+                    continue
+
+                for part in partials:
                     debit_balance_total += part.debit_move_id.balance
 
                 final_residual = line.balance - debit_balance_total
