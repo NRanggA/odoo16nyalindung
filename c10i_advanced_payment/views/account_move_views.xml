@@ -26,4 +26,36 @@
         </field>
     </record>
 
+
+    <record id="view_account_move_inherit_amount_residual_advance" model="ir.ui.view">
+        <field name="name">account.move.view.tree.inherit,advanced.payment</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='activity_ids']" position="after">
+                <field name="is_advanced" invisible="1"/>
+                <field name="has_advanced" invisible="1"/>
+                <field name="advance_residual" attrs="{'invisible': [('is_advanced', '!=', True), ('has_advanced', '!=', True)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="view_account_invoice_filter_inherit_advance" model="ir.ui.view">
+        <field name="name">account.invoice.filter.inherit.advance</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='to_check']" position="after">
+                <separator/>
+                <filter name="advance_residual"
+                        string="Amount to Clear"
+                        domain="[('advance_residual', '>', 0)]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+
+
 </odoo>

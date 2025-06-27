@@ -1,4 +1,5 @@
 from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -12,6 +13,123 @@ class AccountMove(models.Model):
     sale_order_id = fields.Many2one('sale.order', string='Sale Order')
     is_po_advanced = fields.Boolean('is PO Advanced', compute='get_po_advanced', store=True)
     vendor_advanced_account_id = fields.Many2one('account.account', string='Vendor Advanced Account', related='company_id.vendor_advanced_account_id')
+
+
+    # Tambah field amount residual
+    advance_residual = fields.Monetary(
+        string='Advance Residual',
+        compute='_compute_advance_residual',
+        currency_field='currency_id',
+        store=True
+    )
+
+    # @api.depends('line_ids.account_id', 'line_ids.amount_residual')
+    # def _compute_advance_residual(self):
+    #     purchase_advance_account = self.env.company.vendor_advanced_account_id
+    #     if not purchase_advance_account:
+    #         raise ValidationError(_('Please configure Purchase Advance Account on your Accounting Settings'))
+
+    #     for move in self:
+    #         move.advance_residual = 0.0
+    #         if not move.is_advanced and not move.has_advanced:
+    #             continue
+
+    #         advance_lines = move.line_ids.filtered(lambda l: l.account_id == purchase_advance_account)
+    #         # move.advance_residual = sum(advance_lines.mapped('amount_residual'))
+            
+    #         residual_total = 0.0
+            
+    #         for line in advance_lines:
+    #             credit_balance_total = 0.0
+    #             partials = line.matched_debit_ids
+
+    #             if not partials:
+    #                 move.advance_residual =  line.amount_residual
+
+    #                 print(f"==== Tidak ada reconcile : {move.advance_residual} ====")
+    #                 # print(f"==== Tidak ada reconcile : {mo} ====")
+    #                 continue
+
+    #             for partial in partials:
+    #                 credit_balance_total += partial.credit_move_id.balance
+                
+    #             final_residual = line.amount_residual - credit_balance_total
+    #             residual_total += final_residual
+            
+    #         move.advance_residual = residual_total
+
+    #         print(f"Advance Residual for move {move.name}: {move.advance_residual}")
+
+    # @api.depends(
+    # 'line_ids.account_id',
+    # 'line_ids.amount_residual',
+    # )
+    # def _compute_advance_residual(self):
+    #     purchase_advance_account = self.env.company.vendor_advanced_account_id
+    #     if not purchase_advance_account:
+    #         raise ValidationError(_('Please configure Purchase Advance Account on your Accounting Settings'))
+
+    #     for move in self:
+    #         move.advance_residual = 0.0
+
+    #         if not move.is_advanced and not move.has_advanced:
+    #             continue
+
+    #         residual_total = 0.0
+    #         advance_lines = move.line_ids.filtered(lambda l: l.account_id == purchase_advance_account)
+
+    #         for line in advance_lines:
+    #             partials = line.matched_debit_ids
+
+    #             if not partials:
+    #                 residual_total += line.amount_residual
+    #                 continue
+
+    #             total_reconciled = sum(part.credit_move_id.balance for part in partials)
+    #             final_residual = line.balance - total_reconciled
+    #             residual_total += final_residual
+
+    #         move.advance_residual = residual_total
+
+
+    @api.depends(
+        'line_ids.account_id',
+        'line_ids.amount_residual',
+        'state',
+    )
+    def _compute_advance_residual(self):
+        purchase_advance_account = self.env.company.vendor_advanced_account_id
+        if not purchase_advance_account:
+            raise ValidationError(_('Please configure Purchase Advance Account on your Accounting Settings'))
+
+        for move in self:
+            # Default value
+            move.advance_residual = 0.0
+
+            # Skip kalau masih draft atau bukan advance
+            if move.state != 'posted':
+                continue
+
+            if not move.is_advanced and not move.has_advanced:
+                continue
+
+            residual_total = 0.0
+            advance_lines = move.line_ids.filtered(lambda l: l.account_id == purchase_advance_account)
+
+            for line in advance_lines:
+                partials = line.matched_debit_ids
+
+                if not partials:
+                    residual_total += line.amount_residual
+                    continue
+
+                total_reconciled = sum(part.credit_move_id.balance for part in partials)
+                final_residual = line.balance - total_reconciled
+                residual_total += final_residual
+
+            move.advance_residual = residual_total
+
+
 
 
     def _prepare_advanced_lines(self,advanced_line,advanced_move_id=False,move_id=False):
