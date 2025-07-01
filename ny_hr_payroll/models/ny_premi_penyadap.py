@@ -364,8 +364,8 @@ class NyPremiPenyadap(models.Model):
         for rec in self:
             if rec.batch_other_input_id.state!='draft':
                 raise ValidationError(_("Cannot delete other input which is the state of its Batch are not in draft state"))
-            if rec.payslip_id:
-                raise ValidationError(_("Cannot delete other input batch which is already linked with Payslip"))
+            # if rec.payslip_id:
+            #     raise ValidationError(_("Cannot delete other input batch which is already linked with Payslip"))
         return super().unlink()
 
     def action_view_block(self):
