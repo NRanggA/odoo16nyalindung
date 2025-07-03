@@ -48,8 +48,103 @@ class AccountPayment(models.Model):
                 rec.payment_line_ids = rec.payment_line_ids.filtered(lambda line: line.move_id.partner_id == rec.partner_id)
             else:
                 raise ValidationError("Partner atau Vendor harus diisi")
+    
+    ###################### HELPER METHOD ######################
+    def _prepare_move_vals_from_payment_lines(self):
+        payment_lines = []
+        amount_total = 0.0
+        for pline in self.payment_line_ids.filtered(lambda x: x.amount_to_pay > 0 or x.write_off_amount > 0):
+            amount, line_vals = pline._prepare_move_line_vals()
+            amount_total += amount
+            payment_lines.append(line_vals)
+
+            # If there is a write-off amount and account, prepare the write-off line
+            # Especially for inbound payments where customer pays more than the invoice residual amount
+            # User must assign write-off amount and account
+            if self.payment_type=='inbound' and pline.amount_to_pay > pline.amount_residual:
+                if pline.write_off_amount != pline.payment_difference:
+                    raise UserError(_("Write-off amount must be equal to Payment Difference since Customer Pay more than Invoice Residual Amount."))
+                elif not pline.write_off_account_id:
+                    raise UserError(_("Write-off amount must assign to an Account since Customer Pay more than Invoice Residual Amount."))
+            if pline.write_off_amount and pline.write_off_account_id:
+                write_off_amount, write_off_vals = pline._prepare_writeoff_line_vals()
+                amount_total += -write_off_amount
+                payment_lines.append(write_off_vals)
+        return amount_total, payment_lines
+
+    def _prepare_payment_move_vals(self, amount_total):
+        self.ensure_one()
+        debit_tot = credit_tot = 0
+        if self.payment_type == 'inbound':
+            if amount_total > 0:
+                debit_tot = amount_total
+            else:
+                credit_tot = abs(amount_total)
+        elif self.payment_type == 'outbound':
+            if amount_total > 0:
+                credit_tot = amount_total
+            else:
+                debit_tot = abs(amount_total)
             
+        return {
+            # 'account_id': self.journal_id.default_account_id.id,
+            'name' : self.ref,
+            'account_id': self.outstanding_account_id.id,
+            'debit': debit_tot,
+            'credit': credit_tot,
+            'partner_id': self.partner_id.id,
+        }
+
+    def reconcile_payment_lines(self):
+        """ Reconcile payment lines with their respective invoices or bills """
+        if self.payment_type == 'inbound':
+            for invoice, payment_move_line in zip(
+                    self.payment_line_ids.move_id, 
+                    self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')
+            ):
+                inv_line_to_recon = invoice.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable')
+                (inv_line_to_recon + payment_move_line).reconcile()
+        elif self.payment_type == 'outbound':
+            for bill, payment_move_line in zip(
+                self.payment_line_ids.move_id, 
+                self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
+            ):
+                bill_line_to_recon = bill.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
+                (bill_line_to_recon + payment_move_line).reconcile()
+
     def action_post(self):
+        ''' draft -> posted '''        
+        if self.payment_type in ('inbound','outbound') and self.payment_line_ids and any([l.amount_to_pay>0 for l in self.payment_line_ids]):
+            # Delete payment_line_ids that is not allocated
+            not_allocated_payment = self.payment_line_ids.filtered(lambda l: l.amount_to_pay == 0 and l.write_off_amount == 0)
+            if not_allocated_payment:
+                not_allocated_payment.unlink()
+
+            # Delete Existing Move Lines
+            payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
+            
+            amount_total, payment_line_vals_list = self._prepare_move_vals_from_payment_lines()
+            # Add Move LInes from Selected payment_line_ids
+            payment_lines.extend(list(map(lambda vals: (0, 0, vals), payment_line_vals_list)))
+
+            # Add Move LInes for Account Bank/Cash
+            payment_lines.append((0, 0, self._prepare_payment_move_vals(amount_total)))
+
+            # Update Existing Move Lines
+            self.move_id.write({
+                # 'ref': '',
+                'ref': self.ref,
+                'line_ids': payment_lines
+                })            
+            
+            self.move_id._post(soft=False)
+
+            # Reconciliation
+            self.reconcile_payment_lines()
+        else:
+            super().action_post()
+
+    def action_post_old(self):
         ''' draft -> posted '''        
         if self.payment_type=='inbound' and self.payment_line_ids and any([l.amount_to_pay>0 for l in self.payment_line_ids]):
             payment_lines = list(map(lambda x:(3,x.id), self.move_id.line_ids))
@@ -211,141 +306,9 @@ class AccountPayment(models.Model):
 
     def _synchronize_from_moves(self, changed_fields):
         return
-        ''' Update the account.payment regarding its related account.move.
-        Also, check both models are still consistent.
-        :param changed_fields: A set containing all modified fields on account.move.
-        '''
-        if self._context.get('skip_account_move_synchronization'):
-            return
-
-        for pay in self.with_context(skip_account_move_synchronization=True):
-
-            # After the migration to 14.0, the journal entry could be shared between the account.payment and the
-            # account.bank.statement.line. In that case, the synchronization will only be made with the statement line.
-            if pay.move_id.statement_line_id:
-                continue
-
-            move = pay.move_id
-            move_vals_to_write = {}
-            payment_vals_to_write = {}
-
-            if 'journal_id' in changed_fields:
-                if pay.journal_id.type not in ('bank', 'cash'):
-                    raise UserError(_("A payment must always belongs to a bank or cash journal."))
-
-            if 'line_ids' in changed_fields:
-                all_lines = move.line_ids
-                liquidity_lines, counterpart_lines, writeoff_lines = pay._seek_for_lines()
-
-                if len(liquidity_lines) != 1:
-                    raise UserError(_(
-                        "Journal Entry %s is not valid. In order to proceed, the journal items must "
-                        "include one and only one outstanding payments/receipts account.",
-                        move.display_name,
-                    ))
-
-                # if len(counterpart_lines) != 1:
-                #     raise UserError(_(
-                #         "Journal Entry %s is not valid. In order to proceed, the journal items must "
-                #         "include one and only one receivable/payable account (with an exception of "
-                #         "internal transfers).",
-                #         move.display_name,
-                #     ))
-
-                if any(line.currency_id != all_lines[0].currency_id for line in all_lines):
-                    raise UserError(_(
-                        "Journal Entry %s is not valid. In order to proceed, the journal items must "
-                        "share the same currency.",
-                        move.display_name,
-                    ))
-
-                if any(line.partner_id != all_lines[0].partner_id for line in all_lines):
-                    raise UserError(_(
-                        "Journal Entry %s is not valid. In order to proceed, the journal items must "
-                        "share the same partner.",
-                        move.display_name,
-                    ))
-
-                if counterpart_lines.account_id.account_type == 'asset_receivable':
-                    partner_type = 'customer'
-                else:
-                    partner_type = 'supplier'                
-
-                liquidity_amount = liquidity_lines.amount_currency
-
-                move_vals_to_write.update({
-                    'currency_id': liquidity_lines.currency_id.id,
-                    'partner_id': liquidity_lines.partner_id.id,
-                })
-                payment_vals_to_write.update({
-                    'amount': abs(liquidity_amount),
-                    'partner_type': partner_type,
-                    'currency_id': liquidity_lines.currency_id.id,
-                    'destination_account_id': counterpart_lines.account_id.id,
-                    'partner_id': liquidity_lines.partner_id.id,
-                })
-                if liquidity_amount > 0.0:
-                    payment_vals_to_write.update({'payment_type': 'inbound'})
-                elif liquidity_amount < 0.0:
-                    payment_vals_to_write.update({'payment_type': 'outbound'})
-
-            move.write(move._cleanup_write_orm_values(move, move_vals_to_write))
-            pay.write(move._cleanup_write_orm_values(pay, payment_vals_to_write))
     
     def _synchronize_to_moves(self, changed_fields):
         return
-        print("................_synchronize_to_moves", changed_fields)
-        ''' Update the account.move regarding the modified account.payment.
-        :param changed_fields: A list containing all modified fields on account.payment.
-        '''
-        if self._context.get('skip_account_move_synchronization'):
-            return
-
-        if not any(field_name in changed_fields for field_name in self._get_trigger_fields_to_synchronize()):
-            return
-
-        for pay in self.with_context(skip_account_move_synchronization=True):
-            liquidity_lines, counterpart_lines, writeoff_lines = pay._seek_for_lines()
-            print("................_synchronize_to_moves liquidity_lines", liquidity_lines)
-            print("................_synchronize_to_moves counterpart_lines", counterpart_lines)
-            print("................_synchronize_to_moves writeoff_lines", writeoff_lines)
-
-            # Make sure to preserve the write-off amount.
-            # This allows to create a new payment with custom 'line_ids'.
-
-            write_off_line_vals = []
-            if liquidity_lines and counterpart_lines and writeoff_lines:
-                write_off_line_vals.append({
-                    'name': writeoff_lines[0].name,
-                    'account_id': writeoff_lines[0].account_id.id,
-                    'partner_id': writeoff_lines[0].partner_id.id,
-                    'currency_id': writeoff_lines[0].currency_id.id,
-                    'amount_currency': sum(writeoff_lines.mapped('amount_currency')),
-                    'balance': sum(writeoff_lines.mapped('balance')),
-                })
-
-            line_vals_list = pay._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
-
-            line_ids_commands = [
-                Command.update(liquidity_lines.id, line_vals_list[0]) if liquidity_lines else Command.create(line_vals_list[0]),
-                Command.update(counterpart_lines.id, line_vals_list[1]) if counterpart_lines else Command.create(line_vals_list[1])
-            ]
-
-            for line in writeoff_lines:
-                line_ids_commands.append((2, line.id))
-
-            for extra_line_vals in line_vals_list[2:]:
-                line_ids_commands.append((0, 0, extra_line_vals))
-
-            # Update the existing journal items.
-            # If dealing with multiple write-off lines, they are dropped and a new one is generated.
-
-            pay.move_id.write({
-                'partner_id': pay.partner_id.id,
-                'currency_id': pay.currency_id.id,
-                'partner_bank_id': pay.partner_bank_id.id,
-                'line_ids': line_ids_commands,
-            })
 
 class AccountPaymentLine(models.Model):
     _name = 'account.payment.line'
@@ -377,3 +340,90 @@ class AccountPaymentLine(models.Model):
             self.amount_to_pay = self.amount_residual
         else:            
             self.amount_to_pay = 0
+    
+    def _prepare_move_line_vals(self):
+        self.ensure_one()
+        payment = self.account_payment_id
+        if not self.amount_to_pay:
+            return 0.0, {}
+        
+        amount_residual_to_pay = self.amount_to_pay
+        if self.write_off_amount and self.write_off_account_id:
+            amount_residual_to_pay += self.write_off_amount
+        amount = payment.currency_id._convert(amount_residual_to_pay, 
+                    payment.move_id.company_currency_id, payment.company_id, payment.date)
+        
+        if not self.move_id.amount_residual:
+            raise ValidationError(_(f"Its seem the {'Invoice' if payment.payment_type=='inbound' else 'Bill' } is already Paid."))
+        
+        # this was enable because sometimes customer pay more than the Invoice amount
+        print(":::::::::::::::", amount, self.move_id.amount_residual)
+        # if payment.payment_type == 'inbound' and amount > self.move_id.amount_residual:
+        #     raise ValidationError("Cannot allocate more than the residual amount.")
+        # while this one should never happened. user should not be able to pay more than the bill amount
+        if payment.payment_type == 'outbound' and amount > self.move_id.amount_residual:
+            raise ValidationError("Cannot allocate more than the residual amount.")
+
+        # Prepare the values for the move line
+        if not self.move_id:
+            raise ValidationError("Move line must be set before preparing move line values.")
+        
+        debit = credit = 0
+        account = False
+        if payment.payment_type == 'inbound':
+            account = self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'asset_receivable').account_id
+            credit = amount
+            amount_currency = -amount_residual_to_pay
+        elif payment.payment_type == 'outbound':
+            account = self.move_id.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable').account_id
+            debit = amount
+            amount_currency = amount_residual_to_pay
+        
+        line_vals = {
+            'name': self.move_id.name,
+            'account_id': account.id,
+            'debit': debit,
+            'credit': credit,
+            'amount_currency': amount_currency,
+            'partner_id': payment.partner_id.id,
+        }
+        return amount, line_vals
+
+    def _prepare_writeoff_line_vals(self):
+        self.ensure_one()
+        payment = self.account_payment_id
+        if payment.payment_type=='inbound' and self.amount_to_pay < self.amount_residual and self.write_off_amount > self.payment_difference:
+            raise UserError(_("Write-off amount cannot be greater than the payment difference."))
+        elif payment.payment_type=='outbound' and self.write_off_amount > self.payment_difference:
+            raise UserError(_("Write-off amount cannot be greater than the payment difference."))
+        
+        if not self.write_off_amount or not self.write_off_account_id:
+            return 0.0, {}
+        
+        write_off_amount = payment.currency_id._convert(self.write_off_amount, payment.move_id.company_currency_id, 
+                                        payment.company_id, payment.date)
+        
+        wo_debit = wo_kredit = amount_currency = 0
+        if payment.payment_type == 'inbound':
+            if write_off_amount > 0:
+                wo_debit = write_off_amount
+            else:
+                wo_kredit = abs(write_off_amount)
+            amount_currency = self.write_off_amount
+        elif payment.payment_type == 'outbound':
+            if write_off_amount > 0:
+                wo_kredit = write_off_amount
+            else:
+                wo_debit = abs(write_off_amount)
+            amount_currency = -1*self.write_off_amount
+        
+        write_off_vals = {
+            'name': self.description,
+            'account_id': self.write_off_account_id.id,
+            'debit': wo_debit,
+            'credit': wo_kredit,
+            'amount_currency': amount_currency,
+            'partner_id': payment.partner_id.id,
+        }
+
+        return write_off_amount, write_off_vals
