@@ -1,10 +1,15 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     # pricelist_id_2 = fields.Many2one('product.pricelist', string='Grading')
     route_id = fields.Many2one('stock.route', string='Route', domain=[('sale_selectable', '=', True)], ondelete='restrict', check_company=True)
+
+    # Field relasi ke sale order line melon
+    sale_order_line_melon_ids = fields.One2many('sale.order.line.melon', 'sale_order_id', string='Melon Order Lines')
+
 
     def _create_invoices(self, grouped=False, final=False):
         invoices = super(SaleOrder, self)._create_invoices(grouped=grouped, final=final)
@@ -14,30 +19,30 @@ class SaleOrder(models.Model):
                 for line in invoice.invoice_line_ids:
                     line.tax_ids = [(6, 0, [])]
         return invoices
-#     @api.onchange('pricelist_id', 'pricelist_id_2')
-#     def _onchange_pricelists(self):
-#         if self.pricelist_id and self.pricelist_id_2:
-#             for line in self.order_line:
-#                 price1 = self._get_pricelist_price(self.pricelist_id, line)
-#                 price2 = self._get_pricelist_price(self.pricelist_id_2, line)
+    
+    # @api.onchange('pricelist_id', 'pricelist_id_2')
+    # def _onchange_pricelists(self):
+    #     if self.pricelist_id and self.pricelist_id_2:
+    #         for line in self.order_line:
+    #             price1 = self._get_pricelist_price(self.pricelist_id, line)
+    #             price2 = self._get_pricelist_price(self.pricelist_id_2, line)
 
-#                 if price1 is not None and price2 is not None:
-#                     line.price_unit = (price1 + price2) / 2
-
-#     def _get_pricelist_price(self, pricelist, line):
-#         product = line.product_id
-#         qty = line.product_uom_qty
-#         partner = self.partner_id
-#         date = self.date_order or fields.Date.today()
-#         result = pricelist._compute_price_rule(
-#             [(product, qty, partner)],
-#             date=date,
-#             uom_id=product.uom_id.id,
-#         )
-#         product_price = result.get(product.id)
-#         if product_price:
-#             return product_price[0]
-#         return None
+    #             if price1 is not None and price2 is not None:
+    #                 line.price_unit = (price1 + price2) / 2
+    # def _get_pricelist_price(self, pricelist, line):
+    #     product = line.product_id
+    #     qty = line.product_uom_qty
+    #     partner = self.partner_id
+    #     date = self.date_order or fields.Date.today()
+    #     result = pricelist._compute_price_rule(
+    #         [(product, qty, partner)],
+    #         date=date,
+    #         uom_id=product.uom_id.id,
+    #     )
+    #     product_price = result.get(product.id)
+    #     if product_price:
+    #         return product_price[0]
+    #     return None
 
     @api.onchange('route_id')
     def onchange_route(self):
@@ -47,3 +52,130 @@ class SaleOrder(models.Model):
         else:
             for line in self.order_line:
                 line.route_id = False
+
+
+    # def action_generate_order_lines(self):
+    #     for order in self:
+    #         melon_lines = order.sale_order_line_melon_ids
+    #         if not melon_lines:
+    #             continue
+
+    #         order.order_line.unlink()
+
+    #         total_weight_gram = sum(m.weight for m in melon_lines)
+    #         total_weight_kg = total_weight_gram / 1000.0
+    #         total_price = sum(m.price_subtotal for m in melon_lines)
+
+    #         price_unit_kg = total_price / total_weight_kg
+    #         price_unit_kg_rounded = round(price_unit_kg, 2)
+
+
+    #         melon_product = self.env['product.product'].search([('name', '=', 'Melon Sagami')], limit=1)
+
+    #         if not melon_product:
+    #             raise UserError("Produk 'Melon Sagami' tidak ditemukan.")
+
+    #         self.env['sale.order.line'].create({
+    #             'order_id': order.id,
+    #             'product_id': melon_product.id,
+    #             'product_uom_qty': total_weight_kg,
+    #             'product_uom': melon_product.uom_id.id,
+    #             'price_unit': price_unit_kg_rounded,
+    #             'name': 'Melon Sagami (Automatis dari Melon Lines)',
+    #         })
+    def action_generate_order_lines(self):
+        for order in self:
+            melon_lines = order.sale_order_line_melon_ids
+            if not melon_lines:
+                continue
+
+            order.order_line.unlink()
+
+            # Jumlahkan total berat dan harga (price Total)
+            total_weight_gram = sum(m.weight for m in melon_lines)
+            total_weight_kg = total_weight_gram / 1000.0
+            total_price = sum(m.price_subtotal for m in melon_lines)
+
+            if total_weight_kg <= 0:
+                raise UserError("Total berat melon harus lebih dari 0.")
+
+            # Untuk Hitung harga per /kg
+            price_unit_kg = total_price / total_weight_kg
+            price_unit_kg_rounded = round(price_unit_kg, 2)
+
+            # Untuk Hitung selisih pembulatan
+            calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
+            rounding_diff = round(total_price - calculated_total, 2)
+
+            melon_product = self.env['product.product'].search([('name', '=', 'Melon Sagami')], limit=1)
+            rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
+
+            if not melon_product:
+                raise UserError("Produk 'Melon Sagami' tidak ditemukan.")
+            if not rounding_product:
+                raise UserError("Produk 'Selisih Rounding' tidak ditemukan.")
+
+            self.env['sale.order.line'].create({
+                'order_id'          : order.id,
+                'product_id'        : melon_product.id,
+                'product_uom_qty'   : total_weight_kg,
+                'product_uom'       : melon_product.uom_id.id,
+                'price_unit'        : price_unit_kg_rounded,
+                'name'              : melon_product.name,
+            })
+
+
+            if abs(rounding_diff) >= 0.01:
+                self.env['sale.order.line'].create({
+                    'order_id'          : order.id,
+                    'product_id'        : rounding_product.id,
+                    'product_uom_qty'   : 1,
+                    'product_uom'       : rounding_product.uom_id.id,
+                    'price_unit'        : -abs(rounding_diff),
+                    # 'price_unit'        : -rounding_diff,
+                    'name'              : 'Selisih Rounding',
+                })
+                order.message_post(body=f"Order Line Melon digenerate. Harga/kg: {price_unit_kg_rounded}, Rounding: {rounding_diff}")
+
+
+
+
+
+class SaleOrderLineMelon(models.Model):
+    _name = 'sale.order.line.melon'
+    _description = 'Sale Order Line Melon'
+
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order', required=True, ondelete='cascade')
+    product_id = fields.Many2one('product.product', string='Product', required=True)
+    product_qty = fields.Float(string='Quantity', required=True, default=0.0)
+    weight = fields.Float(string='Weight (g)', required=True, default=0.0)
+    price_unit = fields.Float(
+        string="Unit Price",
+        compute='_compute_price_unit',
+        digits='Product Price',
+        store=True, readonly=True, required=True, precompute=True)
+    
+    price_subtotal = fields.Float(string='Subtotal', compute='_compute_price_subtotal', store=True)
+
+    @api.depends('product_qty', 'price_unit')
+    def _compute_price_subtotal(self):
+        for line in self:
+            line.price_subtotal = line.product_qty * line.price_unit
+
+    @api.depends('product_id', 'weight', 'sale_order_id.pricelist_id')
+    def _compute_price_unit(self):
+        for line in self:
+            price = 0.0
+            pricelist = line.sale_order_id.pricelist_id
+            if pricelist and pricelist.is_melon:
+                domain = [
+                    ('pricelist_id', '=', pricelist.id),
+                    ('product_tmpl_id', '=', line.product_id.product_tmpl_id.id),
+                    ('weight_from', '<=', line.weight),
+                    ('weight_to', '>=', line.weight),
+                ]
+                matched_item = self.env['product.pricelist.item'].search(domain, limit=1)
+
+                if matched_item:
+                    price = matched_item.fixed_price or 0.0
+            line.price_unit = price

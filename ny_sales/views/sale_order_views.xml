@@ -42,6 +42,41 @@
             <xpath expr="//div[label[@for='date_order'] and @class='o_td_label']" position="attributes">
                 <attribute name="groups"/>
             </xpath>
+
+            <!-- field melon setelah order_line -->
+            <xpath expr="//page[@name='order_lines']" position="after">
+                <page string="Melon Order Lines" name="melon_order_lines">
+                    <div class="oe_button_box" name="button_generate_melon">
+                        <button name="action_generate_order_lines"
+                                string="Generate Order Lines"
+                                type="object"
+                                class="btn btn-primary"
+                                attrs="{'invisible': [('state', 'not in', ['draft', 'sent'])]}"
+                                />
+                    </div>
+                    <hr/>
+                    <field name="sale_order_line_melon_ids">
+                        <tree editable="bottom">
+                            <field name="product_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="product_qty"/>
+                            <field name="weight" sum="True"/>
+                            <field name="price_unit"/>
+                            <field name="price_subtotal" readonly="1" sum="True"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+
+            <!-- Menghilangkan field quotation date pada form Quotation -->
+            <xpath expr="//field[@name='date_order']" position="attributes">
+                <attribute name="attrs">{'invisible': [('state', 'in', ['draft','sale', 'done', 'cancel'])]}</attribute>
+            </xpath>
+            <xpath expr="//div[label[@for='date_order']]" position="attributes">
+                <attribute name="attrs">{'invisible': [('state', 'in', ['draft','sale', 'done', 'cancel'])]}</attribute>
+            </xpath>
+
+
+
         </field>
     </record>
     
@@ -61,4 +96,5 @@
             </xpath>
         </field>
     </record>
+
 </odoo>
