@@ -1,0 +1,152 @@
+<odoo>
+	<!-- Account Netting List View -->
+	<record model="ir.ui.view" id="account_netting_tree_view">
+		<field name="name">account.netting.tree</field>
+		<field name="model">account.netting</field>
+		<field name="arch" type="xml">
+			<tree string="Account Netting">
+				<field name="name"/>
+				<field name="date"/>
+				<field name="partner_id" optional="hide"/>
+				<!-- <field name="dest_partner_id" optional="hide"/> -->
+				<field name="journal_id"/>
+				<field name="move_id"/>
+				<field name="state" widget="badge" 
+						decoration-info="state == 'draft'" 
+						decoration-success="state == 'posted'"/>
+			</tree>
+		</field>
+	</record>
+
+	<!-- Account Netting Form View -->
+	<record model="ir.ui.view" id="account_netting_form_view">
+		<field name="name">account.netting.form</field>
+		<field name="model">account.netting</field>
+		<field name="arch" type="xml">
+			<form string="Account Netting">
+				<header>
+					<button name="action_post" string="Post" type="object" class="oe_highlight"
+						attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+					<button name="action_draft" string="Reset" type="object" 
+						attrs="{'invisible': [('state', '!=', 'posted')]}"/>
+					<field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+				</header>
+				<sheet>
+					<div class="oe_title">
+						<h1>
+							<field name="name" readonly="1" nolabel="1"/>
+						</h1>
+					</div>
+					<group>
+						<group>
+							<field name="date"/>
+							<field name="journal_id" options="{'no_create': True}"/>
+						</group>
+						<group>
+							<field name="move_id" attrs="{'invisible': [('move_id', '=', False)]}"/>
+						</group>
+					</group>
+					<group string="Filter">
+						<group>
+							<field name="partner_id" options="{'no_create': True}" 
+								attrs="{'readonly': [('state', '!=', 'draft')]}"
+								/>
+								<!-- attrs="{'readonly': ['|', ('state', '!=', 'draft'), ('line_ids', '!=', [])]}" -->
+								<!-- attrs="{'readonly': ['|', ('state', '!=', 'draft'), ('dr_line_ids', '!=', [])]}" -->
+						</group>
+						<group>
+							<!-- <field name="account_ids" nolabel="1" widget="many2many_tags"/> -->
+						</group>
+					</group>
+					<button name="%(action_wizard_set_netting_line)d" string="Add Outstanding Lines"
+						type="action" class="btn-warning" icon="fa-plus" 
+						context="{'default_netting_id': id, 'default_type': 'src', 'default_partner_id': partner_id}"
+						attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+					
+					<separator/>
+					<label for="dr_line_ids" string="Debtors Entries"/>
+					<field name="dr_line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
+						<tree create="false" edit="false">
+							<field name="move_line_id" invisible="1"/>
+							<field name="move_id"/>
+							<field name="amount_residual"/>
+							<field name="currency_id" invisible="1"/>
+							<field name="amount_currency" attrs="{'invisible': [('currency_id', '=', False)]}"/>
+						</tree>
+					</field>
+					<!-- <group>
+						<group>
+							<field name="dest_partner_id" options="{'no_create': True}" attrs="{'readonly': ['|', ('state', '!=', 'draft'), ('cr_line_ids', '!=', [])]}"/>
+						</group>
+						<group>
+							<field name="dest_account_ids" nolabel="1" widget="many2many_tags"/>
+						</group>
+					</group> -->
+					<!-- <button name="%(action_wizard_set_netting_line)d" string="Add Destination Lines"
+						type="action" class="btn-warning" icon="fa-plus" 
+						context="{'default_netting_id': id, 'default_type': 'dest', 'default_partner_id': dest_partner_id}"
+						attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+					<separator/> -->
+					<label for="cr_line_ids" string="Creditors Entries"/>
+					<field name="cr_line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
+						<tree create="false" edit="false">
+							<field name="move_line_id" invisible="1"/>
+							<field name="move_id"/>
+							<field name="amount_residual"/>
+							<field name="currency_id" invisible="1"/>
+							<field name="amount_currency" attrs="{'invisible': [('currency_id', '=', False)]}"/>
+						</tree>
+					</field>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids"/>
+					<field name="activity_ids"/>
+					<field name="message_ids"/>
+				</div>
+			</form>
+		</field>
+	</record>
+
+	<!-- Account Netting Search View -->
+	<record model="ir.ui.view" id="account_netting_search_view">
+		<field name="name">account.netting.search</field>
+		<field name="model">account.netting</field>
+		<field name="arch" type="xml">
+			<search string="Account Netting">
+				<field name="name" string="Reference" filter_domain="[('name', 'ilike', self)]"/>
+				<!-- <field name="partner_id" string="Partner" filter_domain="['|',('partner_id', '=', self),('dest_partner_id', '=', self)]"/> -->
+				<field name="partner_id"/>
+
+				<filter name="date" string="Date" date="date"/>
+
+				<separator/>
+				<filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+				<filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
+
+				<group expand="0" string="Group By">
+					<filter name="groupby_state" string="Status" context="{'group_by': 'state'}"/>
+					<filter name="groupby_partner" string="Source Partner" context="{'group_by': 'partner_id'}"/>
+					<!-- <filter name="groupby_src_partner" string="Source Partner" context="{'group_by': 'partner_id'}"/> -->
+					<!-- <filter name="groupby_dest_partner" string="Destination Partner" context="{'group_by': 'dest_partner_id'}"/> -->
+					<filter name="groupby_journal" string="Journal" context="{'group_by': 'journal_id'}"/>
+					<filter name="groupby_date" string="Date" context="{'group_by': 'date'}"/>
+				</group>
+			</search>
+		</field>
+	</record>
+
+	<!-- Account Netting Action -->
+	<record model="ir.actions.act_window" id="action_account_netting">
+		<field name="name">Partner Netting</field>
+		<field name="res_model">account.netting</field>
+		<field name="view_mode">tree,form</field>
+		<field name="help" type="html">
+			<p class="o_view_nocontent_smiling_face">
+				Create a new Partner Netting
+			</p>
+			<p>
+				Partner netting allows you to offset receivables and payables for the same partner.
+			</p>
+		</field>
+	</record>
+</odoo>

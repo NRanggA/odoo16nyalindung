@@ -1,0 +1,8 @@
+<odoo>
+	<!-- Menu Item -->
+		<!-- parent="account.menu_finance_entries_actions" -->
+	<menuitem id="menu_account_netting"
+		parent="account.menu_finance_entries"
+		action="action_account_netting"
+		sequence="50"/>
+</odoo>
