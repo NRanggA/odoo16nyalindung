@@ -1690,7 +1690,13 @@ class ClosingProduction(models.Model):
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
+                outgoing_moves_ret = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
                 outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
+                outgoing_qty -= sum(outgoing_moves_ret.mapped('product_uom_qty')) if outgoing_moves_ret else 0.0
                 values_to_create = {
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
