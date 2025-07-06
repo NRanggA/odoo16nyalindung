@@ -421,7 +421,7 @@ class lhm_transaction(models.Model):
         # jelankan fungsi progress
         self._progress()
         # Panggil fungsi untuk mengambil material yang digunakan
-        self.get_material()
+        # self.get_material()
 
     # Fungsi untuk mengecek employee sesuai kemandoran
     def check_employee_in_kemandoran(self):

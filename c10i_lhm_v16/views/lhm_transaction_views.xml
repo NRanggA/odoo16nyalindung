@@ -8,6 +8,10 @@
             <field name="arch" type="xml">
                 <form string="Laporan Harian Mandor">
                     <header>
+                        <button name="get_material" string="Input Material" 
+                            attrs="{'invisible': ['|',('state', '!=', 'draft'),('skb', '=', False)]}"
+                            type="object" class="btn-warning" 
+                            groups="c10i_lhm_v16.group_plantation_operator,c10i_lhm_v16.plantation_lhm_user"/>
                         <button name="run_progress" string="Proses" states="draft" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator,c10i_lhm_v16.plantation_lhm_user"/>
                         <button name="button_confirm" string="Confirm" states="in_progress" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_operator,c10i_lhm_v16.plantation_lhm_user" confirm="Apakah anda yakin akan dikonfirmasi?"/>
                         <button name="button_approve" string="Approve" states="confirmed" type="object" class="oe_highlight" groups="c10i_lhm_v16.group_plantation_manager,c10i_lhm_v16.plantation_lhm_approver" confirm="Apakah anda menyetujui dokumen ini?"/>
@@ -18,6 +22,11 @@
                         <button name="reprogress_plantation" class="oe_stat_button" icon="fa-refresh" string="Reprogress" states="in_progress,done" type="object" groups="base.group_no_one"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,cancel,in_progress,confirmed,done,close"/>
                     </header>
+                    <div class="alert alert-warning mb-0" role="alert" 
+                        attrs="{'invisible': ['|', ('state', 'in', ['done','close']), ('skb', '=', False)]}">
+                        <i class="fa fa-info-circle" style="margin-right: 5px;"></i>
+                        Aktifitas yang memerlukan <bold>Deklarasi Material Konsumsi</bold> ditemukan. Pastikan Anda telah menginputkan material yang digunakan pada aktifitas tersebut sebelum menyetujui LHM ini.
+                    </div>
                     <field name="doc_type_id" invisible="1"/><field name="approval" invisible="1"/>
                     <sheet>
                         <div class="oe_title">

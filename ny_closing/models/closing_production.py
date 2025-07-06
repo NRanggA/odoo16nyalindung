@@ -1686,11 +1686,32 @@ class ClosingProduction(models.Model):
                 total_produced += produced_qty
                 # Find Delivery/Sales
                 outgoing_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','internal'),('location_dest_id.usage','!=','internal'),
+                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_moves_ret = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','customer'),('location_dest_id.usage','=','internal'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
                 outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
+                outgoing_qty -= sum(outgoing_moves_ret.mapped('product_uom_qty')) if outgoing_moves_ret else 0.0
+
+                # Find Adjustment
+                adjustment_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                adjustment_in_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','inventory'),('location_dest_id.usage','=','internal'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+
                 values_to_create = {
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
