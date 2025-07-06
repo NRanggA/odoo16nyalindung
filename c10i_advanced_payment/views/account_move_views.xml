@@ -45,7 +45,7 @@
             <xpath expr="//field[@name='activity_ids']" position="after">
                 <field name="is_advanced" invisible="1"/>
                 <field name="has_advanced" invisible="1"/>
-                <field name="advance_residual" attrs="{'invisible': [('is_advanced', '!=', True), ('has_advanced', '!=', True)]}"/>
+                <field name="advance_residual" attrs="{'invisible': [('is_advanced', '!=', True)]}"/>
             </xpath>
         </field>
     </record>
