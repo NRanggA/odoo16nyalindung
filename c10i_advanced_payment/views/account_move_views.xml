@@ -17,12 +17,22 @@
                 <field name="has_advanced" invisible="1"/>
                 <field name="is_advanced" invisible="1"/>
                 <field name="is_po_advanced" invisible="1"/>
+                <field name="advanced_purchase_id" invisible="1"/>
             </xpath>
 
             <xpath expr="//button[@name='button_draft']" position="after">
                 <button string="Add Advanced" name="action_add_advanced" type="object" attrs="{'invisible': ['|','|',('is_advanced','=',True),('has_advanced','=',True),('is_po_advanced','=',False)]}"/>
                 <button string="Remove Advanced" name="action_remove_advanced" type="object" attrs="{'invisible': ['|',('is_advanced','=',True),('has_advanced','=',False)]}"/>
             </xpath>
+
+
+            <!-- Menargetkan node tree pada invoice_line_ids -->
+            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='account_id']" position="attributes">
+                <attribute name="attrs">{'readonly': [('parent.move_type', '=', 'in_invoice'), ('parent.is_advanced', '=', True), ('parent.advanced_purchase_id', '!=', False)]}</attribute>
+            </xpath>
+
+
+
         </field>
     </record>
 
