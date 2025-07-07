@@ -441,8 +441,8 @@ class RekapBukuKontraktor(models.AbstractModel):
         datas.append({
             'product_id': product_asamsemut.id,
             'product_name': product_asamsemut.name,
-                'opening_qty': opening_qty,
-                'receiving_qty': receiving_qty,
+            'opening_qty': opening_qty,
+            'receiving_qty': receiving_qty,
             'production_qty': production_qty,
             'delivery_qty': delivery_qty,
             'adjustment_qty': adjustment_qty,
