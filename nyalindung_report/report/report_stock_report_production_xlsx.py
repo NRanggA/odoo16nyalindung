@@ -417,12 +417,12 @@ class RekapBukuKontraktor(models.AbstractModel):
                                     ('location_id.usage','in',['supplier']),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        receiving_qty += sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
+        receiving_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
 
         out_asam_semut = self.env['mrp.manual.consume'].search([('product_id','=',product_asamsemut.id),
                                     ('date','>=',obj.from_date),('date','<=',obj.to_date),
                                     ('is_confirmed','=',True)])
-        production_qty -= sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
+        production_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
 
         delivery_qty = 0.0
 
