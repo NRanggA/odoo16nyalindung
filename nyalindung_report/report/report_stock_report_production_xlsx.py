@@ -395,11 +395,11 @@ class RekapBukuKontraktor(models.AbstractModel):
                                     ('is_confirmed','=',True)])
             opening_qty -= sum(prev_out_asam_semut.mapped('consumed_qty')) if prev_out_asam_semut else 0.0
             # DO antara Tanggal setelah Closing s.d to_date
-            prev_asamsemut_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
-                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
-                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
-                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
-            opening_qty -= sum(prev_asamsemut_delivery_moves.mapped('qty_done')) if prev_asamsemut_delivery_moves else 0.0
+            # prev_asamsemut_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
+            #                         ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
+            #                         ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+            #                         ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            # opening_qty -= sum(prev_asamsemut_delivery_moves.mapped('qty_done')) if prev_asamsemut_delivery_moves else 0.0
             # Adjustment antara Tanggal setelah Closing s.d to_date
             prev_asammsemut_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
@@ -414,7 +414,7 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
         receving_asam_semuts = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
-                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
+                                    ('location_id.usage','in',['supplier']),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         receiving_qty += sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
@@ -426,15 +426,23 @@ class RekapBukuKontraktor(models.AbstractModel):
 
         delivery_qty = 0.0
 
-        adjustment_qty = 0.0 # TODO: harusnya ada adjustment asam semut juga
-        
+        adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                    ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
+                                ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
+                                ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        adjustment_qty = (sum(adjustment_in_moves.mapped('qty_done')) if adjustment_in_moves else 0.0) - (sum(adjustment_out_moves.mapped('qty_done')) if adjustment_out_moves else 0.0)
+
         closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
         ### End : Asam Semut
         datas.append({
             'product_id': product_asamsemut.id,
             'product_name': product_asamsemut.name,
-            'opening_qty': opening_qty,
-            'receiving_qty': receiving_qty,
+                'opening_qty': opening_qty,
+                'receiving_qty': receiving_qty,
             'production_qty': production_qty,
             'delivery_qty': delivery_qty,
             'adjustment_qty': adjustment_qty,
