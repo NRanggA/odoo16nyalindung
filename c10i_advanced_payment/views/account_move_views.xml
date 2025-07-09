@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
 
             <xpath expr="//field[@name='invoice_line_ids']/tree" position="inside">
-                <field name="advanced_move_id" />
+                <field name="advanced_move_id" readonly="1"/>
             </xpath>
             <xpath expr="//div[@name='journal_div']" position="after">
 

@@ -208,7 +208,7 @@ class AccountMove(models.Model):
             purchase_id = self.invoice_line_ids.filtered(lambda x: x.purchase_order_id.id)
             if purchase_id:
 
-                advanced_ids = self.env['account.move'].search([('advanced_purchase_id', '=', purchase_id[0].purchase_order_id.id),('is_advanced', '=', True)])
+                advanced_ids = self.env['account.move'].search([('advanced_purchase_id', '=', purchase_id[0].purchase_order_id.id),('is_advanced', '=', True),('state', '=', 'posted')])
                 for advanced_id in advanced_ids.invoice_line_ids:
 
                     advanced_lines.append((0,0,self._prepare_advanced_lines(advanced_id,advanced_move_id=advanced_id)))
@@ -218,7 +218,7 @@ class AccountMove(models.Model):
                     
         elif self.move_type == 'out_invoice':
             if self.sale_order_id:
-                advanced_ids = self.env['account.move'].search([('advanced_sales_id', '=', self.sale_order_id.id),('is_advanced', '=', True)])
+                advanced_ids = self.env['account.move'].search([('advanced_sales_id', '=', self.sale_order_id.id),('is_advanced', '=', True),('state', '=', 'posted')])
                 for advanced_id in advanced_ids.invoice_line_ids:
 
                     advanced_lines.append((0,0,self._prepare_advanced_lines(advanced_id,advanced_move_id=advanced_id)))
