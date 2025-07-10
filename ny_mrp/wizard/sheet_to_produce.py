@@ -13,7 +13,7 @@ class SheetToProduce(models.TransientModel):
 
     bom_id = fields.Many2one('mrp.bom', string='Bill of Material')
 
-    sheet_to_produce = fields.Float(compute='_compute_qty', readonly=False, store=True, precompute=True, string='Qty To Produce')
+    sheet_to_produce = fields.Float(compute='_compute_qty', readonly=False, store=True, string='Qty To Produce')
     mrp_product_satuan_id = fields.Many2one('uom.uom', related='mrp_id.product_id.uom_id', string='Satuan To Produce', readonly=True, store=True)
 
     drc = fields.Float(string='DRC (%)', compute='_compute_qty', store=True)
