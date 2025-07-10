@@ -1,6 +1,7 @@
 from odoo import models, fields, api, exceptions, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
+from odoo.tools import float_round
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from collections import defaultdict
@@ -1517,7 +1518,7 @@ class TimbanganPabrik(models.Model):
             picking_vals = {
                 'origin': self.lhm_nap_id.name if self.lhm_nap_id else '',
                 'location_id': self.env.ref('c10i_lhm_v16.loc_virtual_kebun_loc_1').id,
-                'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
+                # 'location_dest_id': self.env.ref('c10i_lhm_v16.loc_stock_kebun_loc_1').id,
                 'move_ids_without_package': [(0, 0, {
                     'product_id': self.product_id.id,
                     'name': self.product_id.name,
