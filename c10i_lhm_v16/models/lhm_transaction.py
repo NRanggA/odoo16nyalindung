@@ -409,7 +409,9 @@ class lhm_transaction(models.Model):
                 return check_employee
         
         # Panggil fungsi untuk mengecek hasil 1 dan 2
-        self._check_employee_not_hasil_1_2()
+        if self.kemandoran_id and self.kemandoran_id.code != 'Pabrik':
+            self._check_employee_not_hasil_1_2()
+
         # fungsi untuk menambahkan employee panen ke dalam Nap
         self.lhm_line_ids.get_employee_panen_nap()
         # Panggil fungsi untuk mengambil gaji untuk setiap employee
