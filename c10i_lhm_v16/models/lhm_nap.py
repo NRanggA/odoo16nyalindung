@@ -695,6 +695,7 @@ class lhm_nap(models.Model):
                 
                 # Jumlahkan total data kebun untuk lokasi dan tanggal yang sesuai
                 kebun_total = round(sum(kebun_data[k] for k in corresponding_kebun_keys), 2)
+                transaction_total = round(transaction_total, 2)
                 if transaction_total != kebun_total:
                     raise UserError(
                         f"Jumlah hasil tidak sesuai untuk lokasi {location_name} dan tanggal {key[1]}. "
