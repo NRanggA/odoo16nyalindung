@@ -59,7 +59,7 @@
 
         'wizard/wizard_action_confirm_payment.xml',
         'wizard/wizard_action_confirm_invoice.xml',
-        'wizard/wizard_action_save_entries.xml',
+        # 'wizard/wizard_action_save_entries.xml',
 
         # No Create & No Edit
         'views/accounting_nocreate_noedit.xml',
