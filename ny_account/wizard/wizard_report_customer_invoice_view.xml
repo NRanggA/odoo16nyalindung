@@ -29,11 +29,23 @@
         <field name="target">new</field>
     </record>
 
+
+    <!-- Menu pada modul accounting -->
     <menuitem
         id="wizard_report_customer_invoice_xlsx_menu"
         name="Report Customer Invoice XLSX"
         action="wizard_report_customer_invoice_xlsx_action"
         parent	= "account.menu_finance_reports"
         sequence="163"/>
+
+
+    <!-- Menu pada modul sales -->
+    <menuitem
+        id="wizard_report_customer_invoice_xlsx_menu_sales"
+        name="Report Customer Invoice"
+        action="wizard_report_customer_invoice_xlsx_action"
+        parent	= "sale.sale_menu_root"
+        sequence="39"/>
+
 
 </odoo>
