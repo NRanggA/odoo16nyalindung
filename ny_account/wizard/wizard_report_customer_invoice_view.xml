@@ -45,6 +45,7 @@
         name="Report Customer Invoice"
         action="wizard_report_customer_invoice_xlsx_action"
         parent	= "sale.sale_menu_root"
+        groups="sales_team.group_sale_manager"
         sequence="39"/>
 
 
