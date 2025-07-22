@@ -33,7 +33,7 @@ class AccountAssetAsset(models.Model):
 
 
     # Penambahan filed lokasi dan luas 
-    lokasi  = fields.Char('Lokasi')
+    lokasi  = fields.Char('Lokasi Tanah')
     luas    = fields.Float('Luas', digits='Unit of Measure')
 
 
