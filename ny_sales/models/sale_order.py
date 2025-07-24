@@ -65,7 +65,8 @@ class SaleOrder(models.Model):
                 melon_lines = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product)
                 # Jumlahkan total berat dan harga (price Total)
                 total_weight_gram = sum(melon_lines.mapped('total_weight'))
-                total_weight_kg = total_weight_gram / 1000.0
+                # total_weight_kg = total_weight_gram / 1000.0
+                total_weight_kg = total_weight_gram
                 subtotal = sum(m.price_subtotal for m in melon_lines)
 
                 if total_weight_kg <= 0:
@@ -85,7 +86,8 @@ class SaleOrder(models.Model):
                     'route_id': order.route_id.id,
                     'product_id': product.id,
                     'product_uom_qty': total_weight_kg,
-                    'product_uom': product.uom_id.id,
+                    # 'product_uom': product.uom_id.id,
+                    'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]),
                     'price_unit': price_unit_kg_rounded,
                     'name': product.name,
                 })
