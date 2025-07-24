@@ -7,6 +7,10 @@ class SaleOrderLines(models.Model):
     comodel_name='product.pricelist.item',
     compute='_compute_pricelist_item_id2')
 
+    melon_line_ids = fields.One2many('sale.order.line.melon', 'order_line_id', string='melon')
+
+    qty_butir = fields.Float(string='Qty Butir')
+
     @api.depends('product_id', 'product_uom', 'product_uom_qty')
     def _compute_pricelist_item_id2(self):
         for line in self:

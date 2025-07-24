@@ -1,5 +1,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+from odoo.tools.float_utils import float_round
+from odoo.tools import float_is_zero
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -59,6 +61,8 @@ class SaleOrder(models.Model):
             if not order.sale_order_line_melon_ids:
                 continue
             rounding_diff = 0.0
+            precision = self.env['decimal.precision'].precision_get('Product Price')
+
             for product in order.sale_order_line_melon_ids.product_id:
                 # With Price
                 order.order_line.filtered(lambda l: l.product_id == l.product_id and l.price_unit > 0).unlink()
@@ -75,11 +79,13 @@ class SaleOrder(models.Model):
 
                 # Untuk Hitung harga per /kg
                 price_unit_kg = subtotal / total_weight_kg
-                price_unit_kg_rounded = round(price_unit_kg, 2)
+                price_unit_kg_rounded = float_round(price_unit_kg, precision_digits=precision)
 
                 # Untuk Hitung selisih pembulatan
-                calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
-                rounding_diff += round(subtotal - calculated_total, 2)
+                # calculated_total = float_round(price_unit_kg_rounded * total_weight_kg, precision_rounding=2)
+                calculated_total = order.currency_id.round(price_unit_kg_rounded * total_weight_kg)
+                # rounding_diff += float_round(subtotal - calculated_total, precision_rounding=2)
+                rounding_diff += subtotal - calculated_total
 
 
                 self.env['sale.order.line'].create({
@@ -91,6 +97,8 @@ class SaleOrder(models.Model):
                     'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
                     'price_unit': price_unit_kg_rounded,
                     'name': product.name,
+                    'melon_line_ids': [(6, 0, melon_lines.ids)],
+                    'qty_butir': sum(melon_lines.mapped('product_qty')),
                 })
                 
                 # With Price
@@ -112,11 +120,14 @@ class SaleOrder(models.Model):
 
                 # Untuk Hitung harga per /kg
                 price_unit_kg = subtotal / total_weight_kg
-                price_unit_kg_rounded = round(price_unit_kg, 2)
+                price_unit_kg_rounded = float_round(price_unit_kg, precision_digits=precision)
 
                 # Untuk Hitung selisih pembulatan
-                calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
-                rounding_diff += round(subtotal - calculated_total, 2)
+                # calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
+                calculated_total = order.currency_id.round(price_unit_kg_rounded * total_weight_kg)
+                rounding_diff += subtotal - calculated_total
+
+
 
 
                 self.env['sale.order.line'].create({
@@ -128,10 +139,15 @@ class SaleOrder(models.Model):
                     'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
                     'price_unit': price_unit_kg_rounded,
                     'name': product.name,
+                    'melon_line_ids': [(6, 0, melon_lines2.ids)],
+                    'qty_butir': sum(melon_lines2.mapped('product_qty')),
                 })
+            
+            # print(f"==== dasad : {rounding_diff}")
+            # print(f"==== dasad : {float_is_zero(rounding_diff, precision_rounding=order.currency_id.rounding)}")
 
             rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
-            if abs(rounding_diff) >= 0.01:
+            if not float_is_zero(rounding_diff, precision_rounding=order.currency_id.rounding):
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
                     'route_id': order.route_id.id,
@@ -141,6 +157,7 @@ class SaleOrder(models.Model):
                     'price_unit': rounding_diff,
                     'name': 'Selisih Rounding',
                 })
+                
                 # order.message_post(body=f"Order Line Melon digenerate. Harga/kg: {price_unit_kg_rounded}, Rounding: {rounding_diff}")
 
 class SaleOrderLineMelon(models.Model):
@@ -163,6 +180,9 @@ class SaleOrderLineMelon(models.Model):
     
     price_subtotal = fields.Float(string='Subtotal', compute='_compute_price_subtotal', 
         store=True)
+
+    order_line_id = fields.Many2one('sale.order.line', string='Order Line')
+
 
     @api.depends('total_weight', 'product_qty')
     def _compute_avg_weight(self):
