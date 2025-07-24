@@ -310,7 +310,8 @@ class HrEmployeeExpense(models.Model):
                             'line_ids' : [Command.create({
                                 'product_id' : line.product_id.id,
                                 'name' : line.name,
-                                'account_id' : line.account_id.id,
+                                # 'account_id' : line.account_id.id,
+                                'account_id' : record.contra_account_for_advance.id,
                                 'amount' : abs(record.amount_total2),
                             }) for line in record.advance_to_settle_ids.line_ids]
                     })
