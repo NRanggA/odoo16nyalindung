@@ -93,7 +93,7 @@ class SaleOrder(models.Model):
                 })
 
             rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
-            if abs(rounding_diff) >= 0.01:
+            if rounding_diff >= 0.01:
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
                     'product_id': rounding_product.id,
