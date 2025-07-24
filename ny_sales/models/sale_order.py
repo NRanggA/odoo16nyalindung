@@ -112,14 +112,17 @@ class SaleOrderLineMelon(models.Model):
     product_id = fields.Many2one('product.product', string='Product', required=True)
     product_qty = fields.Float(string='Quantity', required=True, default=0.0)
     total_weight = fields.Float(string='Total Weight (g)', required=True)
-    weight = fields.Float(compute='_compute_avg_weight', string='Avg. Weight (g)', required=True, digits=0, store=True)
+    weight = fields.Float(compute='_compute_avg_weight', string='Avg. Weight (g)', 
+        required=True, digits=0, 
+        readonly=True, store=True)
     price_unit = fields.Float(
         string="Unit Price",
         compute='_compute_price_unit',
         digits='Product Price',
-        store=True, readonly=True, required=True, precompute=True)
+        store=True, readonly=False, required=True, precompute=True)
     
-    price_subtotal = fields.Float(string='Subtotal', compute='_compute_price_subtotal', store=True)
+    price_subtotal = fields.Float(string='Subtotal', compute='_compute_price_subtotal', 
+        store=True)
 
     @api.depends('total_weight', 'product_qty')
     def _compute_avg_weight(self):
@@ -128,11 +131,6 @@ class SaleOrderLineMelon(models.Model):
                 line.weight = line.total_weight / line.product_qty
             else:
                 line.weight = 0.0
-
-    @api.depends('product_qty', 'weight')
-    def _compute_price_subtotal(self):
-            for line in self:
-                line.price_subtotal = line.product_qty * line.price_unit
 
     @api.depends('product_id', 'weight', 'sale_order_id.pricelist_id')
     def _compute_price_unit(self):
@@ -151,3 +149,8 @@ class SaleOrderLineMelon(models.Model):
                 if matched_item:
                     price = matched_item.fixed_price or 0.0
             line.price_unit = price
+
+    @api.depends('product_qty', 'weight')
+    def _compute_price_subtotal(self):
+            for line in self:
+                line.price_subtotal = line.product_qty * line.price_unit
