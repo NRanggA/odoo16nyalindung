@@ -79,8 +79,10 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
         self.ensure_one()
         account_move = self.env['account.move']
         type_location = self.env['lhm.location.type'].search([('code', '=', '-')], limit=1)
+        is_non_credit = any(po.non_credit for po in self.purchase_order_ids)
         taxes = self.purchase_order_ids.mapped('order_line.taxes_id')
-        tax_ids = list(set(taxes.ids))
+        # tax_ids = list(set(taxes.ids))
+        tax_ids = [] if is_non_credit else list(set(taxes.ids))
         move = account_move.create({
             'move_type': 'in_invoice',
             'partner_id': self.purchase_order_ids[0].partner_id.id,
@@ -92,7 +94,8 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
                 'account_id': self.account_id.id,
                 'tax_ids': self.account_id.id,
                 'price_unit': self.get_amount(),
-                'tax_ids': [(6, 0, tax_ids)],
+                # 'tax_ids': [(6, 0, tax_ids)],
+                'tax_ids': [(6, 0, tax_ids)] if tax_ids else [],
             })]
         })
 
