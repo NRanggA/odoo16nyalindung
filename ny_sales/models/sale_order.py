@@ -60,15 +60,53 @@ class SaleOrder(models.Model):
                 continue
             rounding_diff = 0.0
             for product in order.sale_order_line_melon_ids.product_id:
-                order.order_line.filtered(lambda l: l.product_id == l.product_id).unlink()
-                
-                melon_lines = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product)
+                # With Price
+                order.order_line.filtered(lambda l: l.product_id == l.product_id and l.price_unit > 0).unlink()
+
+                melon_lines = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product and m.price_unit>0)
                 # Jumlahkan total berat dan harga (price Total)
                 total_weight_gram = sum(melon_lines.mapped('total_weight'))
                 # total_weight_kg = total_weight_gram / 1000.0
                 total_weight_kg = total_weight_gram
                 subtotal = sum(m.price_subtotal for m in melon_lines)
 
+                if total_weight_kg <= 0:
+                    raise UserError("Total berat melon harus lebih dari 0.")
+
+                # Untuk Hitung harga per /kg
+                price_unit_kg = subtotal / total_weight_kg
+                price_unit_kg_rounded = round(price_unit_kg, 2)
+
+                # Untuk Hitung selisih pembulatan
+                calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
+                rounding_diff += round(subtotal - calculated_total, 2)
+
+
+                self.env['sale.order.line'].create({
+                    'order_id': order.id,
+                    'route_id': order.route_id.id,
+                    'product_id': product.id,
+                    'product_uom_qty': total_weight_kg,
+                    # 'product_uom': product.uom_id.id,
+                    'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
+                    'price_unit': price_unit_kg_rounded,
+                    'name': product.name,
+                })
+                
+                # With Price
+
+                order.order_line.filtered(lambda l: l.product_id == l.product_id and not l.price_unit).unlink()
+                
+                melon_lines2 = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product and not m.price_unit)
+                # Jumlahkan total berat dan harga (price Total)
+                total_weight_gram = sum(melon_lines2.mapped('total_weight'))
+                # total_weight_kg = total_weight_gram / 1000.0
+                total_weight_kg = total_weight_gram
+                subtotal = sum(m.price_subtotal for m in melon_lines2)
+
+                if not melon_lines2:
+                    continue
+                    
                 if total_weight_kg <= 0:
                     raise UserError("Total berat melon harus lebih dari 0.")
 
@@ -152,7 +190,7 @@ class SaleOrderLineMelon(models.Model):
                     price = matched_item.fixed_price or 0.0
             line.price_unit = price
 
-    @api.depends('product_qty', 'weight')
+    @api.depends('product_qty', 'weight', 'price_unit')
     def _compute_price_subtotal(self):
             for line in self:
                 line.price_subtotal = line.product_qty * line.price_unit
