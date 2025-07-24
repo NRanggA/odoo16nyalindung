@@ -54,35 +54,6 @@ class SaleOrder(models.Model):
                 line.route_id = False
 
 
-    # def action_generate_order_lines(self):
-    #     for order in self:
-    #         melon_lines = order.sale_order_line_melon_ids
-    #         if not melon_lines:
-    #             continue
-
-    #         order.order_line.unlink()
-
-    #         total_weight_gram = sum(m.weight for m in melon_lines)
-    #         total_weight_kg = total_weight_gram / 1000.0
-    #         total_price = sum(m.price_subtotal for m in melon_lines)
-
-    #         price_unit_kg = total_price / total_weight_kg
-    #         price_unit_kg_rounded = round(price_unit_kg, 2)
-
-
-    #         melon_product = self.env['product.product'].search([('name', '=', 'Melon Sagami')], limit=1)
-
-    #         if not melon_product:
-    #             raise UserError("Produk 'Melon Sagami' tidak ditemukan.")
-
-    #         self.env['sale.order.line'].create({
-    #             'order_id': order.id,
-    #             'product_id': melon_product.id,
-    #             'product_uom_qty': total_weight_kg,
-    #             'product_uom': melon_product.uom_id.id,
-    #             'price_unit': price_unit_kg_rounded,
-    #             'name': 'Melon Sagami (Automatis dari Melon Lines)',
-    #         })
     def action_generate_order_lines(self):
         for order in self:
             if not order.sale_order_line_melon_ids:
@@ -93,7 +64,7 @@ class SaleOrder(models.Model):
                 
                 melon_lines = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product)
                 # Jumlahkan total berat dan harga (price Total)
-                total_weight_gram = sum(m.weight*m.product_qty for m in melon_lines)
+                total_weight_gram = sum(melon_lines.mapped('total_weight'))
                 total_weight_kg = total_weight_gram / 1000.0
                 subtotal = sum(m.price_subtotal for m in melon_lines)
 
@@ -108,7 +79,6 @@ class SaleOrder(models.Model):
                 calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
                 rounding_diff += round(subtotal - calculated_total, 2)
 
-                rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
 
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
@@ -120,6 +90,7 @@ class SaleOrder(models.Model):
                     'name': product.name,
                 })
 
+            rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
             if abs(rounding_diff) >= 0.01:
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
@@ -138,8 +109,8 @@ class SaleOrderLineMelon(models.Model):
     sale_order_id = fields.Many2one('sale.order', string='Sale Order', required=True, ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
     product_qty = fields.Float(string='Quantity', required=True, default=0.0)
-    weight = fields.Float(string='Avg. Weight (g)', required=True, default=0.0)
-    # total_weight = fields.Float(compute='_compute_total_weight', string='Total Weight (g)', required=True, default=0.0)
+    total_weight = fields.Float(string='Total Weight (g)', required=True)
+    weight = fields.Float(compute='_compute_avg_weight', string='Avg. Weight (g)', required=True, digits=0, store=True)
     price_unit = fields.Float(
         string="Unit Price",
         compute='_compute_price_unit',
@@ -148,14 +119,18 @@ class SaleOrderLineMelon(models.Model):
     
     price_subtotal = fields.Float(string='Subtotal', compute='_compute_price_subtotal', store=True)
 
-    # def _compute_avg_weight(self):
-    #     for line in self:
-    #         line.weight = line.total_weight / line.product_qty
-
-    @api.depends('product_qty', 'price_unit')
-    def _compute_price_subtotal(self):
+    @api.depends('total_weight', 'product_qty')
+    def _compute_avg_weight(self):
         for line in self:
-            line.price_subtotal = line.product_qty * line.price_unit
+            if line.product_qty:
+                line.weight = line.total_weight / line.product_qty
+            else:
+                line.weight = 0.0
+
+    @api.depends('product_qty', 'weight')
+    def _compute_price_subtotal(self):
+            for line in self:
+                line.price_subtotal = line.product_qty * line.price_unit
 
     @api.depends('product_id', 'weight', 'sale_order_id.pricelist_id')
     def _compute_price_unit(self):

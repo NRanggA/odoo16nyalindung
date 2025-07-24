@@ -59,6 +59,7 @@
                         <tree editable="bottom">
                             <field name="product_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="product_qty"/>
+                            <field name="total_weight" sum="True"/>
                             <field name="weight" sum="True"/>
                             <field name="price_unit"/>
                             <field name="price_subtotal" readonly="1" sum="True"/>
