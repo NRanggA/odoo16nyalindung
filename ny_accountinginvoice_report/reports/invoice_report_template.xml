@@ -50,13 +50,13 @@
                                 <td style="width: 50%; font-size: 10px;"><t t-esc="o.partner_id.contact_address"/></td>
                                 <td style="padding-left: 70px;">Due Date</td>
                                 <td>: </td>
-                                <td><t t-esc="o.invoice_date_due"/></td>
+                                <td><t t-esc="o.invoice_date_due.strftime('%d %B %Y')" /></td>
                             </tr>
                             <tr>
                                 <td><t t-esc="o.partner_id.vat or ''"/></td>
                                 <td style="padding-left: 70px;">Date Invoice</td>
                                 <td>: </td>
-                                <td><t t-esc="o.invoice_date"/></td>
+                                <td><t t-esc="o.invoice_date.strftime('%d %B %Y')" /></td>
                                 <!-- <td t-if="o.invoice_line_ids" rowspan="3">
                                     <t t-foreach="o.invoice_line_ids" t-as="line" t-if="line.plantation_activity_id">
                                         <span><t t-esc="line.plantation_activity_id.name or 'N/A'"/></span>
@@ -69,32 +69,72 @@
                 </div>
 
                 <!-- Tabel Kedua -->
-                <table class="bordered" style="font-size: 12px;">
-                    <tr>
-                        <th>No.</th>
-                        <th style="text-align: center;">Deskripsi/Product</th>
-                        <th style="text-align: center;">Qty</th>
-                        <th style="text-align: center;">UoM</th>
-                        <th style="text-align: center;">Price</th>
-                        <th style="text-align: center;">Amount</th>
-                    </tr>
-                    <t t-set="index" t-value="0"/>
-                    <t t-foreach="o.invoice_line_ids" t-as="line">
-                        <t t-set="index" t-value="index + 1"/>
-                        <tr style="border: 1px solid black;">
-                            <td style="border: 1px solid black;"><t t-esc="index"/></td>
-                            <td><t t-esc="line.name"/></td>
-                            <td style="text-align: center;"><t t-esc="line.quantity"/></td>
-                            <td style="text-align: center;"><t t-esc="line.product_uom_id.name"/></td>
-                            <td class="right-align">Rp <t t-esc="o.format_amount(line.price_unit)"/></td>
-                            <td class="right-align">Rp <t t-esc="o.format_amount(line.price_subtotal)"/></td>
+                <!-- Jika sale order nya ada melon_ids -->
+                <t t-if="o.sale_order_id.sale_order_line_melon_ids">
+                    <table class="bordered" style="font-size: 12px;">
+                        <tr>
+                            <th>No.</th>
+                            <th style="text-align: center;">Deskripsi/Product</th>
+                            <th style="text-align: center;">Qty</th>
+                            <!-- <th style="text-align: center;">Total Weight (g)</th> -->
+                            <th style="text-align: center;">Price</th>
+                            <th style="text-align: center;">SubTotal</th>
                         </tr>
-                    </t>
-                </table>
+                        <t t-set="index" t-value="0"/>
+                        <t t-foreach="o.invoice_line_ids.filtered(lambda l: not l.product_id.is_discount)" t-as="line">
+                            <t t-set="qty_butir" t-value="sum(line.sale_line_ids.mapped('qty_butir'))"/>
+                            <t t-set="is_melon" t-value="line.sale_line_ids.melon_line_ids"/>
 
-                <!-- Perhitungan Sub Total dan Total Diskon -->
-                <t t-set="sub_total" t-value="sum(line.price_unit * line.quantity for line in o.invoice_line_ids)"/>
+                            <t t-if="is_melon">
+                                <t t-set="price" t-value="line.sale_line_ids.melon_line_ids[0].price_unit"/>
+                            </t>
+                            <t t-else="">
+                                <t t-set="price" t-value="line.price_unit"/>
+                            </t>
+
+                            <t t-set="index" t-value="index + 1"/>
+                            <tr style="border: 1px solid black;">
+                                <td style="border: 1px solid black;"><t t-esc="index"/></td>
+                                <td><t t-esc="line.product_id.name"/></td>
+                                <td style="text-align: center;"><t t-esc="qty_butir"/></td>
+                                <!-- <td style="text-align: center;"><t t-esc="line.quantity"/></td> -->
+                                <td class="right-align">Rp <t t-esc="o.format_amount(price)"/></td>
+                                <td class="right-align">Rp <t t-esc="o.format_amount(line.price_subtotal)"/></td>
+                            </tr>
+                        </t>
+                    </table>
+                </t>
+
+                <t t-else="">
+                    <table class="bordered" style="font-size: 12px;">
+                        <tr>
+                            <th>No.</th>
+                            <th style="text-align: center;">Deskripsi/Product</th>
+                            <th style="text-align: center;">Qty</th>
+                            <th style="text-align: center;">UoM</th>
+                            <th style="text-align: center;">Price</th>
+                            <th style="text-align: center;">Amount</th>
+                        </tr>
+                        <t t-set="index" t-value="0"/>
+                        <t t-foreach="o.invoice_line_ids" t-as="line">
+                            <t t-set="index" t-value="index + 1"/>
+                            <tr style="border: 1px solid black;">
+                                <td style="border: 1px solid black;"><t t-esc="index"/></td>
+                                <td><t t-esc="line.name"/></td>
+                                <td style="text-align: center;"><t t-esc="line.quantity"/></td>
+                                <td style="text-align: center;"><t t-esc="line.product_uom_id.name"/></td>
+                                <td class="right-align">Rp <t t-esc="o.format_amount(line.price_unit)"/></td>
+                                <td class="right-align">Rp <t t-esc="o.format_amount(line.price_subtotal)"/></td>
+                            </tr>
+                        </t>
+                    </table>
+                </t>
+
+                
+                <!-- <t t-set="sub_total" t-value="sum(line.price_unit * line.quantity for line in o.invoice_line_ids)"/> -->
+                <t t-set="sub_total" t-value="sum(line.price_subtotal for line in o.invoice_line_ids if line.price_subtotal > 0)"/>
                 <t t-set="total_discount" t-value="sum(line.price_unit * line.quantity * line.discount / 100 for line in o.invoice_line_ids)"/>
+                <t t-set="total_discount" t-value="total_discount + sum(line.price_subtotal * -1 for line in o.invoice_line_ids if line.product_id.is_discount)"/>
 
                 <!-- Tabel Ketiga -->
                 <table class="no-border2" style="font-size: 12px;">
@@ -108,7 +148,7 @@
                         <td colspan="4" class="terbilang" style="font-style: italic; font-weight: bold;"><t t-esc="o.amount_text"/> rupiah</td>
                         <td class="right-align">Disc Total:</td>
                         <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
-                        <td class="right-align"><t t-esc="o.format_amount(total_discount)"/></td>
+                        <td class="right-align"><t t-esc="o.format_amount(total_discount) if total_discount else o.format_amount(0)"/></td>
                     </tr>
 
                     <tr t-foreach="o.line_ids.filtered(lambda l: l.tax_ids)" t-as="line">
