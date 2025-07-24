@@ -114,7 +114,8 @@ class SaleOrderLineMelon(models.Model):
     total_weight = fields.Float(string='Total Weight (g)', required=True)
     weight = fields.Float(compute='_compute_avg_weight', string='Avg. Weight (g)', 
         required=True, digits=0, 
-        readonly=True, store=True)
+        readonly=False, store=True, 
+        precompute=True)
     price_unit = fields.Float(
         string="Unit Price",
         compute='_compute_price_unit',
