@@ -96,6 +96,7 @@ class SaleOrder(models.Model):
             if abs(rounding_diff) >= 0.01:
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
+                    'route_id': order.route_id.id,
                     'product_id': rounding_product.id,
                     'product_uom_qty': 1,
                     'product_uom': rounding_product.uom_id.id,
