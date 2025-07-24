@@ -1,5 +1,6 @@
 from odoo import fields, models, api, _, Command
 from odoo.exceptions import ValidationError, UserError
+from odoo.tools.float_utils import float_compare
 
 
 class AccountPayment(models.Model):
@@ -350,8 +351,19 @@ class AccountPaymentLine(models.Model):
         amount_residual_to_pay = self.amount_to_pay
         if self.write_off_amount and self.write_off_account_id:
             amount_residual_to_pay += self.write_off_amount
-        amount = payment.currency_id._convert(amount_residual_to_pay, 
-                    payment.move_id.company_currency_id, payment.company_id, payment.date)
+        # amount = payment.currency_id._convert(amount_residual_to_pay, 
+        #             payment.move_id.company_currency_id, payment.company_id, payment.date, round=True)
+        
+        amount = payment.currency_id.round(
+                    payment.currency_id._convert(
+                        amount_residual_to_pay,
+                        payment.move_id.company_currency_id,
+                        payment.company_id,
+                        payment.date
+                    )
+                )
+
+
         
         if not self.move_id.amount_residual:
             raise ValidationError(_(f"Its seem the {'Invoice' if payment.payment_type=='inbound' else 'Bill' } is already Paid."))
@@ -361,8 +373,15 @@ class AccountPaymentLine(models.Model):
         # if payment.payment_type == 'inbound' and amount > self.move_id.amount_residual:
         #     raise ValidationError("Cannot allocate more than the residual amount.")
         # while this one should never happened. user should not be able to pay more than the bill amount
-        if payment.payment_type == 'outbound' and amount > self.move_id.amount_residual:
+        # if payment.payment_type == 'outbound' and amount > self.move_id.amount_residual:
+        #     print(f"===== Amount : {amount}, Residual : {self.move_id.amount_residual}")
+        #     raise ValidationError("Cannot allocate more than the residual amount.")
+
+        if payment.payment_type == 'outbound' and float_compare(
+                amount, self.move_id.amount_residual,
+                precision_digits=payment.currency_id.decimal_places) > 0:
             raise ValidationError("Cannot allocate more than the residual amount.")
+        
 
         # Prepare the values for the move line
         if not self.move_id:

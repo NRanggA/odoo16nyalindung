@@ -25,8 +25,8 @@ class WizardInventoryTurnover(models.TransientModel):
         self._cr.execute("""
             SELECT 
                 pt.name AS product,
-                SUM(CASE WHEN sm.date <= '%s' and sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_from,
-                SUM(CASE WHEN sm.date <= '%s' and sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_to,
+                SUM(CASE WHEN sm.date < '%s' AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_from,
+                SUM(CASE WHEN sm.date <= '%s' AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_to,
                 SUM(CASE WHEN sm.date >= '%s' and sm.date <= '%s' and sl.name != 'Stock' THEN product_qty ELSE 0 END) AS total_cogs
             FROM stock_move sm                                                                                  
             LEFT JOIN product_product pp ON pp.id = sm.product_id

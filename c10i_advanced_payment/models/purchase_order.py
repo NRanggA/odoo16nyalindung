@@ -5,7 +5,12 @@ class PurchaseOrder(models.Model):
 
     advanced_vendor_move_ids = fields.Many2many('account.move','advanced_purchase_rel','purchase_id','move_id', string='Advanced Purchase',compute="_compute_advanced_purchase")
     count_advanced_purchase = fields.Integer('Count Advanced Purchase',compute="_compute_advanced_purchase")
+    boolean_cancel_advanced = fields.Boolean(string="Boolean Cancel Advanced", compute="_compute_boolean_cancel_advanced")
 
+    def _compute_boolean_cancel_advanced(self):
+        for order in self:
+            boolean_cancel = any(move.state == 'cancel' for move in order.advanced_vendor_move_ids)
+            order.boolean_cancel_advanced = boolean_cancel
 
     def _compute_advanced_purchase(self):
         for order in self:

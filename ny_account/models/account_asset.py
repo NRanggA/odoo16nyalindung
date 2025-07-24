@@ -31,6 +31,12 @@ class AccountAssetAsset(models.Model):
     value_residual              = fields.Monetary(compute='_amount_residual', string='Residual Value')
     value                       = fields.Monetary(string='Gross Value', required=True, readonly=True, states={'draft': [('readonly', False)]})
 
+
+    # Penambahan filed lokasi dan luas 
+    lokasi  = fields.Char('Lokasi Tanah')
+    luas    = fields.Float('Luas', digits='Unit of Measure')
+
+
     @api.depends('varieties_id','location_type_id', 'state')
     def _filter_locations(self):
         # biar tidak di run setiap saat

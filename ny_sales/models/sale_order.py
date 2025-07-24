@@ -110,9 +110,6 @@ class SaleOrder(models.Model):
 
                 rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
 
-                if not rounding_product:
-                    raise UserError("Produk 'Selisih Rounding' tidak ditemukan.")
-
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
                     'route_id': order.route_id.id,
