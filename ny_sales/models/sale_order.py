@@ -122,6 +122,7 @@ class SaleOrder(models.Model):
                 'product_uom'       : melon_product.uom_id.id,
                 'price_unit'        : price_unit_kg_rounded,
                 'name'              : melon_product.name,
+                'route_id'          : order.route_id.id if order.route_id else False,
             })
 
 
