@@ -93,13 +93,13 @@ class SaleOrder(models.Model):
                 })
 
             rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
-            if rounding_diff >= 0.01:
+            if abs(rounding_diff) >= 0.01:
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
                     'product_id': rounding_product.id,
                     'product_uom_qty': 1,
                     'product_uom': rounding_product.uom_id.id,
-                    'price_unit': -abs(rounding_diff),
+                    'price_unit': rounding_diff,
                     'name': 'Selisih Rounding',
                 })
                 # order.message_post(body=f"Order Line Melon digenerate. Harga/kg: {price_unit_kg_rounded}, Rounding: {rounding_diff}")
