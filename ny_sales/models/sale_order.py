@@ -87,7 +87,7 @@ class SaleOrder(models.Model):
                     'product_id': product.id,
                     'product_uom_qty': total_weight_kg,
                     # 'product_uom': product.uom_id.id,
-                    'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]),
+                    'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
                     'price_unit': price_unit_kg_rounded,
                     'name': product.name,
                 })
