@@ -75,14 +75,41 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
             elif wizard.advance_payment_method == 'fixed' and wizard.fixed_amount <= 0.00:
                 raise UserError(_('The value of the down payment amount must be positive.'))
 
+    # def create_invoices(self):
+    #     self.ensure_one()
+    #     account_move = self.env['account.move']
+    #     type_location = self.env['lhm.location.type'].search([('code', '=', '-')], limit=1)
+    #     is_non_credit = any(po.non_credit for po in self.purchase_order_ids)
+    #     taxes = self.purchase_order_ids.mapped('order_line.taxes_id')
+    #     # tax_ids = list(set(taxes.ids))
+    #     tax_ids = [] if is_non_credit else list(set(taxes.ids))
+    #     move = account_move.create({
+    #         'move_type': 'in_invoice',
+    #         'partner_id': self.purchase_order_ids[0].partner_id.id,
+    #         'is_advanced': True,
+    #         'advanced_purchase_id': self.purchase_order_ids[0].id,
+    #         'invoice_line_ids': [Command.create({
+    #             'name': 'Advanced Payment',
+    #             'plantation_location_type_id': type_location.id,
+    #             'account_id': self.account_id.id,
+    #             'tax_ids': self.account_id.id,
+    #             'price_unit': self.get_amount(),
+    #             # 'tax_ids': [(6, 0, tax_ids)],
+    #             'tax_ids': [(6, 0, tax_ids)] if tax_ids else [],
+    #         })]
+    #     })
+
+    #     return self.action_open_move(move)
+
     def create_invoices(self):
         self.ensure_one()
         account_move = self.env['account.move']
         type_location = self.env['lhm.location.type'].search([('code', '=', '-')], limit=1)
-        is_non_credit = any(po.non_credit for po in self.purchase_order_ids)
         taxes = self.purchase_order_ids.mapped('order_line.taxes_id')
-        # tax_ids = list(set(taxes.ids))
-        tax_ids = [] if is_non_credit else list(set(taxes.ids))
+        tax_ids = list(set(taxes.ids))
+        is_non_credit = any(po.non_credit for po in self.purchase_order_ids)
+        invoice_tax_ids = [(6, 0, tax_ids)] if not is_non_credit else []
+
         move = account_move.create({
             'move_type': 'in_invoice',
             'partner_id': self.purchase_order_ids[0].partner_id.id,
@@ -92,12 +119,34 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
                 'name': 'Advanced Payment',
                 'plantation_location_type_id': type_location.id,
                 'account_id': self.account_id.id,
-                'tax_ids': self.account_id.id,
                 'price_unit': self.get_amount(),
-                # 'tax_ids': [(6, 0, tax_ids)],
-                'tax_ids': [(6, 0, tax_ids)] if tax_ids else [],
+                'tax_ids': invoice_tax_ids,
             })]
         })
+
+        if is_non_credit:
+            total_ppn_value = 0.0
+            for po in self.purchase_order_ids:
+                for line in po.order_line:
+                    ppn_taxes = line.taxes_id.filtered(lambda tax: 'PPN' in tax.name)
+                    if ppn_taxes:
+                        ppn_amount = sum(ppn_taxes.mapped('amount')) / 100
+                        qty = line.product_qty or 1.0
+                        ppn_value = line.price_unit * ppn_amount * qty
+                        total_ppn_value += ppn_value
+
+            if total_ppn_value > 0:
+                self.env['account.move.line'].create({
+                    'display_type': 'product',
+                    'name': 'PPN Tidak di kreditkan',
+                    'product_id': False,
+                    'product_uom_id': False,
+                    'quantity': 1,
+                    'price_unit': total_ppn_value,
+                    'account_id': self.account_id.id,
+                    'tax_ids': [],
+                    'move_id': move.id,
+                })
 
         return self.action_open_move(move)
 
