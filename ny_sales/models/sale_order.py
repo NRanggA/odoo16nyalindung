@@ -65,88 +65,44 @@ class SaleOrder(models.Model):
 
             for product in order.sale_order_line_melon_ids.product_id:
                 # With Price
-                order.order_line.filtered(lambda l: l.product_id == l.product_id and l.price_unit > 0).unlink()
+                order.order_line.filtered(lambda l: l.product_id == l.product_id).unlink()
+                for price_unit in order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product).mapped('price_unit'):
+                    melon_lines_per_price = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product and m.price_unit == price_unit)
+                    # Jumlahkan total berat dan harga (price Total)
+                    total_weight_gram = sum(melon_lines_per_price.mapped('total_weight'))
+                    # total_weight_kg = total_weight_gram / 1000.0
+                    total_weight_kg = total_weight_gram
+                    subtotal = sum(m.price_subtotal for m in melon_lines_per_price)
 
-                melon_lines = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product and m.price_unit>0)
-                # Jumlahkan total berat dan harga (price Total)
-                total_weight_gram = sum(melon_lines.mapped('total_weight'))
-                # total_weight_kg = total_weight_gram / 1000.0
-                total_weight_kg = total_weight_gram
-                subtotal = sum(m.price_subtotal for m in melon_lines)
+                    if total_weight_kg <= 0:
+                        raise UserError("Total berat melon harus lebih dari 0.")
 
-                if total_weight_kg <= 0:
-                    raise UserError("Total berat melon harus lebih dari 0.")
+                    # Untuk Hitung harga per /kg
+                    price_unit_kg = subtotal / total_weight_kg
+                    price_unit_kg_rounded = float_round(price_unit_kg, precision_digits=precision)
 
-                # Untuk Hitung harga per /kg
-                price_unit_kg = subtotal / total_weight_kg
-                price_unit_kg_rounded = float_round(price_unit_kg, precision_digits=precision)
+                    # Untuk Hitung selisih pembulatan
+                    # calculated_total = float_round(price_unit_kg_rounded * total_weight_kg, precision_rounding=2)
+                    calculated_total = order.currency_id.round(price_unit_kg_rounded * total_weight_kg)
+                    # rounding_diff += float_round(subtotal - calculated_total, precision_rounding=2)
+                    rounding_diff += subtotal - calculated_total
 
-                # Untuk Hitung selisih pembulatan
-                # calculated_total = float_round(price_unit_kg_rounded * total_weight_kg, precision_rounding=2)
-                calculated_total = order.currency_id.round(price_unit_kg_rounded * total_weight_kg)
-                # rounding_diff += float_round(subtotal - calculated_total, precision_rounding=2)
-                rounding_diff += subtotal - calculated_total
-
-
-                self.env['sale.order.line'].create({
-                    'order_id': order.id,
-                    'route_id': order.route_id.id,
-                    'product_id': product.id,
-                    'product_uom_qty': total_weight_kg,
-                    # 'product_uom': product.uom_id.id,
-                    'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
-                    'price_unit': price_unit_kg_rounded,
-                    'name': product.name,
-                    'melon_line_ids': [(6, 0, melon_lines.ids)],
-                    'qty_butir': sum(melon_lines.mapped('product_qty')),
-                })
-                
-                # With Price
-
-                order.order_line.filtered(lambda l: l.product_id == l.product_id and not l.price_unit).unlink()
-                
-                melon_lines2 = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product and not m.price_unit)
-                # Jumlahkan total berat dan harga (price Total)
-                total_weight_gram = sum(melon_lines2.mapped('total_weight'))
-                # total_weight_kg = total_weight_gram / 1000.0
-                total_weight_kg = total_weight_gram
-                subtotal = sum(m.price_subtotal for m in melon_lines2)
-
-                if not melon_lines2:
-                    continue
-                    
-                if total_weight_kg <= 0:
-                    raise UserError("Total berat melon harus lebih dari 0.")
-
-                # Untuk Hitung harga per /kg
-                price_unit_kg = subtotal / total_weight_kg
-                price_unit_kg_rounded = float_round(price_unit_kg, precision_digits=precision)
-
-                # Untuk Hitung selisih pembulatan
-                # calculated_total = round(price_unit_kg_rounded * total_weight_kg, 2)
-                calculated_total = order.currency_id.round(price_unit_kg_rounded * total_weight_kg)
-                rounding_diff += subtotal - calculated_total
-
-
-
-
-                self.env['sale.order.line'].create({
-                    'order_id': order.id,
-                    'route_id': order.route_id.id,
-                    'product_id': product.id,
-                    'product_uom_qty': total_weight_kg,
-                    # 'product_uom': product.uom_id.id,
-                    'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
-                    'price_unit': price_unit_kg_rounded,
-                    'name': product.name,
-                    'melon_line_ids': [(6, 0, melon_lines2.ids)],
-                    'qty_butir': sum(melon_lines2.mapped('product_qty')),
-                })
+                    self.env['sale.order.line'].create({
+                        'order_id': order.id,
+                        'route_id': order.route_id.id,
+                        'product_id': product.id,
+                        'product_uom_qty': total_weight_kg,
+                        # 'product_uom': product.uom_id.id,
+                        'product_uom': self.env['uom.uom'].search([('name','=','g'),('category_id','=',product.uom_id.category_id.id)]).id,
+                        'price_unit': price_unit_kg_rounded,
+                        'name': product.name if price_unit else f"Bonus : {product.name}",
+                        'melon_line_ids': [(6, 0, melon_lines_per_price.ids)],
+                        'qty_butir': sum(melon_lines_per_price.mapped('product_qty')),
+                    })
             
-            # print(f"==== dasad : {rounding_diff}")
-            # print(f"==== dasad : {float_is_zero(rounding_diff, precision_rounding=order.currency_id.rounding)}")
-
             rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
+            if not rounding_product:
+                raise UserError("Product Selisih Rounding tidak ditemukan")
             if not float_is_zero(rounding_diff, precision_rounding=order.currency_id.rounding):
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
