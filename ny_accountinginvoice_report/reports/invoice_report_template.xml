@@ -87,16 +87,18 @@
 
                             <t t-if="is_melon">
                                 <t t-set="price" t-value="line.sale_line_ids.melon_line_ids[0].price_unit"/>
+                                <t t-set="quantity" t-value="qty_butir"/>
                             </t>
                             <t t-else="">
                                 <t t-set="price" t-value="line.price_unit"/>
+                                <t t-set="quantity" t-value="line.quantity"/>
                             </t>
 
                             <t t-set="index" t-value="index + 1"/>
                             <tr style="border: 1px solid black;">
                                 <td style="border: 1px solid black;"><t t-esc="index"/></td>
                                 <td><t t-esc="line.product_id.name"/></td>
-                                <td style="text-align: center;"><t t-esc="qty_butir"/></td>
+                                <td style="text-align: center;"><t t-esc="quantity"/></td>
                                 <!-- <td style="text-align: center;"><t t-esc="line.quantity"/></td> -->
                                 <td class="right-align">Rp <t t-esc="o.format_amount(price)"/></td>
                                 <td class="right-align">Rp <t t-esc="o.format_amount(line.price_subtotal)"/></td>

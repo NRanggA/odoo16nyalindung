@@ -65,9 +65,9 @@ class SaleOrder(models.Model):
 
             for product in order.sale_order_line_melon_ids.product_id:
                 # With Price
-                order.order_line.filtered(lambda l: l.product_id == l.product_id).unlink()
-                for price_unit in order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product).mapped('price_unit'):
-                    melon_lines_per_price = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id == product and m.price_unit == price_unit)
+                order.order_line.filtered(lambda l: l.product_id.id == product.id).unlink()
+                for price_unit in order.sale_order_line_melon_ids.filtered(lambda m: m.product_id.id == product.id).mapped('price_unit'):
+                    melon_lines_per_price = order.sale_order_line_melon_ids.filtered(lambda m: m.product_id.id == product.id and m.price_unit == price_unit)
                     # Jumlahkan total berat dan harga (price Total)
                     total_weight_gram = sum(melon_lines_per_price.mapped('total_weight'))
                     # total_weight_kg = total_weight_gram / 1000.0
@@ -100,9 +100,9 @@ class SaleOrder(models.Model):
                         'qty_butir': sum(melon_lines_per_price.mapped('product_qty')),
                     })
             
-            rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Rounding')], limit=1)
+            rounding_product = self.env['product.product'].search([('name', '=', 'Selisih Pembulatan')], limit=1)
             if not rounding_product:
-                raise UserError("Product Selisih Rounding tidak ditemukan")
+                raise UserError("Product Selisih Pembulatan tidak ditemukan")
             if not float_is_zero(rounding_diff, precision_rounding=order.currency_id.rounding):
                 self.env['sale.order.line'].create({
                     'order_id': order.id,
