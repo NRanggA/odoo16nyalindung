@@ -12,6 +12,13 @@ class SaleOrder(models.Model):
     # Field relasi ke sale order line melon
     sale_order_line_melon_ids = fields.One2many('sale.order.line.melon', 'sale_order_id', string='Melon Order Lines')
 
+    has_melon_lines = fields.Boolean(compute='_compute_has_melon_lines')
+
+    @api.depends('sale_order_line_melon_ids')
+    def _compute_has_melon_lines(self):
+        for order in self:
+            order.has_melon_lines = bool(order.sale_order_line_melon_ids)
+
 
     def _create_invoices(self, grouped=False, final=False):
         invoices = super(SaleOrder, self)._create_invoices(grouped=grouped, final=final)
