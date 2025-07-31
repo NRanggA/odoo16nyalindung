@@ -385,7 +385,7 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty = last_closing.sheet_rm_closing_qty
             # Penerimaan antara Tanggal setelah Closing s.d to_date
             prev_receving_asam_semuts = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
-                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
+                                    ('location_id.usage','in',('supplier','customer','production')),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
                                     ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             opening_qty += sum(prev_receving_asam_semuts.mapped('qty_done')) if prev_receving_asam_semuts else 0.0
@@ -414,7 +414,7 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
         receving_asam_semuts = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
-                                    ('location_id.usage','in',['supplier']),('location_dest_id.usage','=','internal'),
+                                    ('location_id.usage','in',['supplier','customer','production']),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         receiving_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
