@@ -1,5 +1,7 @@
 from odoo import models
 from pytz import timezone, UTC
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 class ReportAsset(models.AbstractModel):
     _name           = 'report.ny_account_report1.report_asset_xlsx'
     _inherit        = 'report.report_xlsx.abstract'
@@ -285,8 +287,6 @@ class ReportAsset(models.AbstractModel):
         workbook = self.add_workbook_format(workbook)
         wbf = self.wbf
 
-        # from_date = obj.from_date.strftime('%d-%m-%Y') if obj.from_date else ''
-        # to_date = obj.to_date.strftime('%d-%m-%Y') if obj.to_date else ''
         date = obj.date.strftime('%d-%m-%Y') if obj.date else ''
 
         sheet = workbook.add_worksheet("Asset Report")
@@ -299,6 +299,9 @@ class ReportAsset(models.AbstractModel):
         sheet.set_column('G:G', 20)
         sheet.set_column('H:H', 20)
         sheet.set_column('I:I', 20)
+        sheet.set_column('J:J', 20)
+        sheet.set_column('K:K', 20)
+        sheet.set_column('L:L', 20)
 
         row = 0
 
@@ -313,8 +316,7 @@ class ReportAsset(models.AbstractModel):
 
         # Header Kolom
         headers = [
-            "Nama", "Reference", "Asset Category", "Tanggal", "Register Code", "Equipment Code", "Gross Value", 
-            "Akumulasi Penyusutan", "Residual Value", "Sisa Masa (Bulan)"
+            "Nama", "Reference", "Asset Category", "Tanggal", "Register Code", "Equipment Code", "Gross Value","Akumulasi Penyusutan (sebelum bulan ini)", "Akumulasi Penyusutan (Bulan ini)","Akumulasi Penyusutan", "Residual Value", "Sisa Masa (Bulan)"
         ]
         for col, header in enumerate(headers):
             sheet.write(row, col, header, wbf['header'])
@@ -323,10 +325,9 @@ class ReportAsset(models.AbstractModel):
         # Tambahkan ini untuk freeze header
         sheet.freeze_panes(row, 0)
 
-        # assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([('account_asset_id.account_type','=','asset_fixed')])
         assets_categories = obj.asset_category_ids if obj.asset_category_ids else self.env['account.asset.category'].search([])
         for asset_category in assets_categories:
-            for col in range(0, 10):  
+            for col in range(0, 12):  
                 value = f"{asset_category.name}" if col == 0 else "" 
                 sheet.write(row, col, value, wbf['header_category'])
             row += 1
@@ -334,6 +335,9 @@ class ReportAsset(models.AbstractModel):
             subtotal_value = 0.0
             subtotal_accum_depreciation = 0.0
             subtotal_residual = 0.0
+
+            subtotal_penyusutan_sebelum_bulan_ini = 0.0
+            subtotal_penyusutan_bulan_ini = 0.0
             
             # domain = [('category_id', '=', asset_category.id),('date','<=',obj.date), ('parent_id', '=', False)]
             domain = [('category_id', '=', asset_category.id), ('parent_id', '=', False)]
@@ -358,23 +362,37 @@ class ReportAsset(models.AbstractModel):
                 gross_value = asset.value if obj.date >= asset.date else 0.0
                 sheet.write(row, 6, gross_value, wbf['content_float'])
                 
+                tanggal_as_of = obj.date
+                awal_bulan_ini = tanggal_as_of.replace(day=1)
+
+                # Ambil depreciation line dan urutkan
+                depreciation_lines = asset.depreciation_line_ids.sorted(key=lambda l: l.depreciation_date)
+
+                # Akumulasi penyusutan s.d. sebelum bulan ini
+                penyusutan_sebelum_bulan_ini = sum(
+                    line.amount for line in depreciation_lines
+                    if line.depreciation_date < awal_bulan_ini
+                )
+
+                # Tambahkan saldo awal jika ada
+                if asset.beginning_balance:
+                    penyusutan_sebelum_bulan_ini += asset.accumulated_depreciation or 0.0
+
+                # Penyusutan bulan ini s.d. tanggal input
+                penyusutan_bulan_ini = sum(
+                    line.amount for line in depreciation_lines
+                    if awal_bulan_ini <= line.depreciation_date <= tanggal_as_of
+                )
+
+                            
+                # Akumulasi Penyusutan (sebelum bulan ini)
+                sheet.write(row, 7, penyusutan_sebelum_bulan_ini if obj.date >= asset.date else 0.0, wbf['content_float'])
+                # Akumulasi Penyusutan (Bulan ini)
+                sheet.write(row, 8, penyusutan_bulan_ini if obj.date >= asset.date else 0.0, wbf['content_float'])
+
+
+
                 sisa_umur = sum(1 for line in asset.depreciation_line_ids if not line.move_check)
-
-                ################################################## UBAH ######################################################
-                # kalo dia tanggal nya kurang dari tanggal yang ada di odoo, maka kasih nilai 0 sebagai default
-                # accumulated_depreciation = residual_value = 0.0
-                # if not asset.depreciation_line_ids:
-                #     accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
-                #     residual_value = asset.value_residual
-                # else:
-                #     for line in asset.depreciation_line_ids:
-                #         if line.depreciation_date.month == obj.date.month and line.depreciation_date.year == obj.date.year:
-
-                #             accumulated_depreciation += line.depreciated_value
-                #             residual_value += line.remaining_value
-                #     if not residual_value:
-                #         residual_value = line.remaining_value
-
                 accumulated_depreciation = 0.0
                 residual_value = 0.0
                 # Ambil semua line penyusutannya sesuai dengan tanggal dulu
@@ -402,22 +420,24 @@ class ReportAsset(models.AbstractModel):
                     accumulated_depreciation = asset.accumulated_depreciation if asset.beginning_balance else 0.0
 
                 # Hitung residual value menggunakan rumus perhitugan gross value - accumulated depreciation
-                # residual_value = max(asset.value - accumulated_depreciation, 0.0)
                 residual_value = gross_value - accumulated_depreciation
                 ################################################ UBAH ######################################################
 
                 # Accumulated Depreciation
-                sheet.write(row, 7, accumulated_depreciation if obj.date >= asset.date else 0.0, wbf['content_float'])
+                sheet.write(row, 9, accumulated_depreciation if obj.date >= asset.date else 0.0, wbf['content_float'])
                 # Residual Value
-                sheet.write(row, 8, residual_value if obj.date >= asset.date else 0.0, wbf['content_float'])
+                sheet.write(row, 10, residual_value if obj.date >= asset.date else 0.0, wbf['content_float'])
 
                 # Sisa Umur (Bulan)
-                sheet.write(row, 9, sisa_umur if obj.date >= asset.date else 0.0, wbf['content_number'])
+                sheet.write(row, 11, sisa_umur if obj.date >= asset.date else 0.0, wbf['content_number'])
 
                 if obj.date >= asset.date:
                     subtotal_value += asset.value
                     subtotal_accum_depreciation += accumulated_depreciation
                     subtotal_residual += residual_value
+
+                    subtotal_penyusutan_sebelum_bulan_ini += penyusutan_sebelum_bulan_ini
+                    subtotal_penyusutan_bulan_ini += penyusutan_bulan_ini
 
                 row += 1
             
@@ -428,9 +448,11 @@ class ReportAsset(models.AbstractModel):
             sheet.write(row, 4, '', wbf['header_category'])
             sheet.write(row, 5, '', wbf['header_category'])
             sheet.write(row, 6, subtotal_value, wbf['total_float'])
-            sheet.write(row, 7, subtotal_accum_depreciation, wbf['total_float'])
-            sheet.write(row, 8, subtotal_residual, wbf['total_float'])
-            sheet.write(row, 9, '', wbf['header_category'])
+            sheet.write(row, 7, subtotal_penyusutan_sebelum_bulan_ini, wbf['total_float'])
+            sheet.write(row, 8, subtotal_penyusutan_bulan_ini, wbf['total_float'])
+            sheet.write(row, 9, subtotal_accum_depreciation, wbf['total_float'])
+            sheet.write(row, 10, subtotal_residual, wbf['total_float'])
+            sheet.write(row, 11, '', wbf['header_category'])
             row += 1 
             
         # Pengaturan Cetak
