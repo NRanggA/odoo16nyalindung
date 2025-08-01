@@ -339,8 +339,8 @@ class ReportAsset(models.AbstractModel):
             subtotal_penyusutan_sebelum_bulan_ini = 0.0
             subtotal_penyusutan_bulan_ini = 0.0
             
-            # domain = [('category_id', '=', asset_category.id),('date','<=',obj.date), ('parent_id', '=', False)]
-            domain = [('category_id', '=', asset_category.id), ('parent_id', '=', False)]
+            domain = [('category_id', '=', asset_category.id),('date','<=',obj.date), ('parent_id', '=', False)]
+            # domain = [('category_id', '=', asset_category.id), ('parent_id', '=', False)]
             if obj.asset_state=='running_only':
                 domain.append(('state','=','open'))
             elif obj.asset_state=='include_closed':
