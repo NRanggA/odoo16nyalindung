@@ -153,7 +153,8 @@
                         <td class="right-align"><t t-esc="o.format_amount(total_discount) if total_discount else o.format_amount(0)"/></td>
                     </tr>
 
-                    <tr t-foreach="o.line_ids.filtered(lambda l: l.tax_ids)" t-as="line">
+                    <!-- pajak yang lama -->
+                    <!-- <tr t-foreach="o.line_ids.filtered(lambda l: l.tax_ids)" t-as="line">
                         <t t-foreach="line.tax_ids" t-as="tax">
                             <tr>
                                 <td colspan="4"></td>
@@ -165,7 +166,30 @@
                                 </td>
                             </tr>
                         </t>
-                    </tr>
+                    </tr> -->
+                    
+                    <!-- pajak yang baru -->
+                    <t t-set="tax_totals" t-value="{}"/>
+                    <t t-set="tax_names" t-value="{}"/>
+                    <t t-foreach="o.line_ids.filtered(lambda l: l.tax_ids)" t-as="line">
+                        <t t-foreach="line.tax_ids" t-as="tax">
+                            <t t-set="tax_key" t-value="str(tax.id)"/>
+                            <t t-set="tax_amount" t-value="(line.price_unit * line.quantity) * (tax.amount / 100)"/>
+                            <t t-set="tax_totals" t-value="dict(tax_totals, **{tax_key: tax_totals.get(tax_key, 0.0) + tax_amount})"/>
+                            <t t-set="tax_names" t-value="dict(tax_names, **{tax_key: tax.name})"/>
+                        </t>
+                    </t>
+                    <t t-foreach="tax_totals.items()" t-as="item">
+                        <tr>
+                            <td colspan="4"></td>
+                            <td class="right-align">
+                                <t t-esc="tax_names[item[0]]"/>:
+                            </td>
+                            <td class="right-align"><t t-esc="o.currency_id.symbol"/></td>
+                            <td class="right-align"><t t-esc="o.format_amount(item[1])"/></td>
+                        </tr>
+                    </t>
+
                     <tr>
                         <td colspan="4"></td>
                         <td class="right-align"><strong>Grand Total:</strong></td>
