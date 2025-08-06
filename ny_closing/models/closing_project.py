@@ -256,6 +256,7 @@ class ClosingProject(models.Model):
                 v_accumulated_cost numeric := 0.0;
             BEGIN
                 select date_from from closing_project where id=p_closing_project_id INTO v_closing_project_date_from;
+                select date_to from closing_project where id=p_closing_project_id INTO v_closing_project_date_to;
                 select location_type_id from lhm_project where id=p_project_id INTO v_location_type;
                 select location_id from lhm_project where id=p_project_id INTO v_location;
                 select lpt.account_id from lhm_project lp, lhm_project_type lpt where lp.id=p_project_id and lp.categ_id=lpt.id INTO v_deferred_account;
@@ -278,7 +279,7 @@ class ClosingProject(models.Model):
                                     SUM(0) as new_deferred_cost
                                 FROM account_move_line aml1
                                 WHERE 
-                                    aml1.date<v_closing_project_date_from 
+                                    aml1.date<=v_closing_project_date_to 
                                     and aml1.parent_state='posted'
                                     and aml1.plantation_location_type_id=v_location_type
                                     and aml1.plantation_location_id=v_location 
