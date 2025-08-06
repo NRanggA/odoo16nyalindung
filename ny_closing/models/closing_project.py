@@ -248,6 +248,7 @@ class ClosingProject(models.Model):
             $BODY$
             DECLARE
                 v_closing_project_date_from date;
+                v_closing_project_date_to date;
                 v_location_type integer;
                 v_location integer;
                 v_deferred_account integer;
