@@ -4,7 +4,7 @@ from odoo.exceptions import UserError, ValidationError
 class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
-    account_disallowed_ids = fields.Many2many('account.account', string='Disallowed Accounts', help='Accounts that are not allowed to be used in this journal.')
+    account_disallowed_ids = fields.Many2many('account.account', 'account_journal_disallowed_account_rel', 'journal_id', 'account_id',string='Disallowed Accounts', help='Accounts that are not allowed to be used in this journal.')
 
     @api.constrains('account_control_ids', 'account_disallowed_ids')
     def _check_account_conflict(self):
