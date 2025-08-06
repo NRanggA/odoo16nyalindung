@@ -22,7 +22,6 @@ class WizardReportStockMutation(models.TransientModel):
 
     product_type = fields.Selection([
         ('consu', 'Consumable'),
-        ('service', 'Sercive'),
         ('product', 'Storable Product'),
     ], string='Product Type')
 
@@ -33,13 +32,16 @@ class WizardReportStockMutation(models.TransientModel):
 
     @api.onchange('inventory_valuation', 'product_type')
     def _onchange_inventory_valuation(self):
-        # domain = []
-        domain = [('has_a_wip', '=', False)]
+        domain = [
+            ('has_a_wip', '=', False),
+            ('detailed_type', '!=', 'service'),
+        ]
 
         if self.inventory_valuation:
             domain.append(('categ_id.property_valuation', '=', self.inventory_valuation))
 
         if self.product_type:
+            domain = [d for d in domain if d[0] != 'detailed_type']
             domain.append(('detailed_type', '=', self.product_type))
 
         return {'domain': {'product_ids': domain}}
