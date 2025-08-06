@@ -33,7 +33,8 @@ class WizardReportStockMutation(models.TransientModel):
 
     @api.onchange('inventory_valuation', 'product_type')
     def _onchange_inventory_valuation(self):
-        domain = []
+        # domain = []
+        domain = [('has_a_wip', '=', False)]
 
         if self.inventory_valuation:
             domain.append(('categ_id.property_valuation', '=', self.inventory_valuation))
