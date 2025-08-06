@@ -304,13 +304,26 @@ class AccountMoveLine(models.Model):
     # exclude_from_advance_tab = fields.Boolean(help="Technical field used to exclude some lines from the invoice_line_ids tab in the form view.")
 
     def _check_constrains_account_id_journal_id(self):
-        super()._check_constrains_account_id_journal_id()
-
+        # Group lines berdasarkan jurnal ID dari dokumen (move)
+        lines_grouped_by_journal = {}
         for line in self.filtered(lambda x: x.display_type not in ('line_section', 'line_note')):
             journal = line.move_id.journal_id
-            account = line.account_id
-            if account in journal.account_disallowed_ids:
-                raise UserError(_("You cannot use this account (%s) in this journal, because it is marked as disallowed.", account.display_name))
+            lines_grouped_by_journal.setdefault(journal.id, []).append(line)
+
+        # Jalankan super() hanya untuk lines dari jurnal yang aktif di dokumen
+        for journal_id, lines in lines_grouped_by_journal.items():
+            journal = self.env['account.journal'].browse(journal_id)
+            # Filter lines untuk jurnal ini
+            valid_lines = self.browse([line.id for line in lines])
+            # Jalankan validasi Odoo hanya untuk lines yang cocok jurnalnya
+            super(AccountMoveLine, valid_lines)._check_constrains_account_id_journal_id()
+
+            # Jalankan validasi tambahan: disallowed accounts
+            for line in valid_lines:
+                account = line.account_id
+                disallowed = journal.account_disallowed_ids
+                if account in disallowed:
+                    raise UserError(_("You cannot use this account (%s) in this journal, because it is marked as disallowed.", account.display_name))
 
 class AccountInvoiceAdvanceAllocated(models.Model):
     _name = 'account.invoice.advance.allocated'
