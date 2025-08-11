@@ -53,67 +53,111 @@ class AllocationRequest(models.Model):
 	def action_submit(self):
 		self.state = 'submitted'
 
+	# def action_approve(self):
+	# 	for request in self:
+	# 		if not request.equipment_id:
+	# 			raise ValidationError("You have not selected Equipment, please select the Equipment First.")
+
+	# 		other_request = self.search([('equipment_id','=',request.equipment_id.id), ('state','in',['approved','allocated'])])
+	# 		if other_request:
+	# 			return {
+	# 				'type':'ir.actions.act_window',
+	# 				'name':'Message',
+	# 				'res_model':'button.approve',
+	# 				'view_mode':'form',
+	# 				'context': {'default_prev_request_ids': [(4,other_request.id)]},
+	# 				'target':'new',
+	# 			}
+
+	# 		if request.assigned_id:
+	# 			assigned_name = request.assigned_id.name
+	# 		elif request.assigned_partner_id:
+	# 			assigned_name = request.request.assigned_partner_id.name
+	# 		else:
+	# 			raise ValidationError("You have not selected Assigned Person")
+	# 		# display_approve_msg = """ Hello """ + assigned_name + """,""" + """
+	# 		# 			  <br/>
+	# 		# 			  <br/>
+	# 		# 			  Your request for a set of """+ request.equipment_id.name +"""/""" +request.equipment_id.serial_no + """ 
+	# 		# 			  on given scheduled date which is """ + request.scheduled_date.strftime('%d/%m/%Y') +"""
+	# 		# 			  has been approved."""
+	# 		display_approve_msg = (
+	# 			f"Hello {assigned_name},<br/><br/>"
+	# 			f"Your request for a set of {request.equipment_id.name or ''}/{request.equipment_id.serial_no or ''} "
+	# 			f"on given scheduled date which is {request.scheduled_date.strftime('%d/%m/%Y')} has been approved."
+	# 		)
+	# 		request.message_post(body=display_approve_msg)
+	# 		request.write({
+	# 			'state': 'approved',
+	# 			'approved_by': self.env.user.id,
+	# 		})
+	# 	return True
+
 	def action_approve(self):
 		for request in self:
 			if not request.equipment_id:
 				raise ValidationError("You have not selected Equipment, please select the Equipment First.")
 
-			other_request = self.search([('equipment_id','=',request.equipment_id.id), ('state','in',['approved','allocated'])])
+			other_request = self.search([
+				('equipment_id', '=', request.equipment_id.id),
+				('state', 'in', ['approved', 'allocated'])
+			])
 			if other_request:
 				return {
-					'type':'ir.actions.act_window',
-					'name':'Message',
-					'res_model':'button.approve',
-					'view_mode':'form',
-					'context': {'default_prev_request_ids': [(4,other_request.id)]},
-					'target':'new',
+					'type': 'ir.actions.act_window',
+					'name': 'Message',
+					'res_model': 'button.approve',
+					'view_mode': 'form',
+					'context': {'default_prev_request_ids': [(4, other_request.id)]},
+					'target': 'new',
 				}
 
-			if request.assigned_id:
-				assigned_name = request.assigned_id.name
-			elif request.assigned_partner_id:
-				assigned_name = request.request.assigned_partner_id.name
-			else:
-				raise ValidationError("You have not selected Assigned Person")
-			display_approve_msg = """ Hello """ + assigned_name + """,""" + """
-						  <br/>
-						  <br/>
-						  Your request for a set of """+ request.equipment_id.name +"""/""" +request.equipment_id.serial_no + """ 
-						  on given scheduled date which is """ + request.scheduled_date.strftime('%d/%m/%Y') +"""
-						  has been approved."""
+			assigned_name = request.assigned_id.name or request.assigned_partner_id.name or ''
+			equipment_name = request.equipment_id.name or ''
+			serial_no = request.equipment_id.serial_no or ''
+			scheduled_date_str = request.scheduled_date.strftime('%d/%m/%Y') if request.scheduled_date else ''
+
+			display_approve_msg = (
+				f"Hello {assigned_name},<br/><br/>"
+				f"Your request for a set of {equipment_name}/{serial_no} "
+				f"on given scheduled date which is {scheduled_date_str} has been approved."
+			)
+
 			request.message_post(body=display_approve_msg)
 			request.write({
 				'state': 'approved',
 				'approved_by': self.env.user.id,
 			})
+
 		return True
 
 	def action_allocate(self):
 		for request in self:
-			if request.assigned_id:
-				assigned_name = request.assigned_id.name
-			elif request.assigned_partner_id:
-				assigned_name = request.assigned_partner_id.name
-			else:
+			assigned_name = request.assigned_id.name or request.assigned_partner_id.name or ''
+			
+			if not assigned_name:
 				raise ValidationError("You have not selected Assigned Person")
+
+			equipment_name = request.equipment_id.name or ''
+			serial_no = request.equipment_id.serial_no or ''
+
 			if request.allocation_type == 'on_demand':
-				display_allocated_msg=""" Hello """ + assigned_name + """,""" + """
-									<br/>
-									<br/>
-									""" + request.equipment_id.name + """/""" + request.equipment_id.serial_no +"""
-									has been allocated to you as per your request."""
+				display_allocated_msg = (
+					f"Hello {assigned_name},<br/><br/>"
+					f"{equipment_name}/{serial_no} has been allocated to you as per your request."
+				)
 				request.message_post(body=display_allocated_msg)
 			else:
-				display_allocated_message=""" Hello """ + assigned_name + """,""" + """
-										<br/>
-										<br/>
-										We have assigned you an equipment named """ + request.equipment_id.name + """/""" + request.equipment_id.serial_no +"""
-										on permanent basis."""
+				display_allocated_message = (
+					f"Hello {assigned_name},<br/><br/>"
+					f"We have assigned you an equipment named {equipment_name}/{serial_no} on permanent basis."
+				)
 				request.message_post(body=display_allocated_message)
+
 			request.state = 'allocated'
 			request.equipment_id.write({
-				'employee_id': request.assigned_id.id if request.assigned_contact_type=='employee' else False,
-				'partner_id': request.assigned_partner_id.id if request.assigned_contact_type=='partner' else False,
+				'employee_id': request.assigned_id.id if request.assigned_contact_type == 'employee' else False,
+				'partner_id': request.assigned_partner_id.id if request.assigned_contact_type == 'partner' else False,
 				'assign_date': fields.Date.context_today(self),
 				'state': 'not_available'
 			})
@@ -141,20 +185,45 @@ class AllocationRequest(models.Model):
 				raise ValidationError("You can Only delete the Request(s) that are in 'New' or 'Cancelled' state !!!")
 		return super(AllocationRequest,self).unlink()
 
+	# @api.model
+	# def create(self, val):
+	# 	result = super(AllocationRequest ,self).create(val)
+	# 	if result.assigned_id:
+	# 		assigned_name = result.assigned_id.name
+	# 	elif result.assigned_partner_id:
+	# 		assigned_name = result.assigned_partner_id.name
+	# 	else:
+	# 		raise ValidationError("You have not selected Assigned Person")
+	# 	display_creation_msg=""" Hello, """ + """<br/><br/>An allocation request has been created 
+	# 							for a set of """ + """<b>""" + result.equipment_id.name + """/""" + result.equipment_id.serial_no + """</b>""" + """ by
+	# 							""" + """<b>""" + assigned_name + """
+	# 							(Management) </b> for the scheduled date 
+	# 							""" + """<b>""" + result.scheduled_date.strftime('%d/%m/%Y') + """.
+	# 							</b>"""
+	# 	result.message_post(body=display_creation_msg)
+	# 	return result
+
 	@api.model
 	def create(self, val):
-		result = super(AllocationRequest ,self).create(val)
+		result = super(AllocationRequest, self).create(val)
+
 		if result.assigned_id:
-			assigned_name = result.assigned_id.name
+			assigned_name = result.assigned_id.name or ''
 		elif result.assigned_partner_id:
-			assigned_name = result.assigned_partner_id.name
+			assigned_name = result.assigned_partner_id.name or ''
 		else:
 			raise ValidationError("You have not selected Assigned Person")
-		display_creation_msg=""" Hello, """ + """<br/><br/>An allocation request has been created 
-								for a set of """ + """<b>""" + result.equipment_id.name + """/""" + result.equipment_id.serial_no + """</b>""" + """ by
-								""" + """<b>""" + assigned_name + """
-								(Management) </b> for the scheduled date 
-								""" + """<b>""" + result.scheduled_date.strftime('%d/%m/%Y') + """.
-								</b>"""
+
+		equipment_name = result.equipment_id.name or ''
+		serial_no = result.equipment_id.serial_no or ''
+		scheduled_date_str = result.scheduled_date.strftime('%d/%m/%Y') if result.scheduled_date else ''
+
+		display_creation_msg = (
+			f"Hello,<br/><br/>An allocation request has been created "
+			f"for a set of <b>{equipment_name}/{serial_no}</b> by "
+			f"<b>{assigned_name} (Management)</b> for the scheduled date "
+			f"<b>{scheduled_date_str}.</b>"
+		)
+
 		result.message_post(body=display_creation_msg)
 		return result
