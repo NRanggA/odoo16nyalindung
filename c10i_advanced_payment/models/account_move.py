@@ -462,4 +462,13 @@ class AccountMoveLine(models.Model):
         else:
             return super(AccountMoveLine, self)._compute_account_id()
 
+    def unlink(self):
+        for line in self:
+            if (
+                line.move_id.is_advanced
+                and line.move_id.advanced_purchase_id
+            ):
+                raise ValidationError(_("Anda Tidak bisa menghapus baris ini karena invoice advanced."))
+        return super().unlink()
+
    
