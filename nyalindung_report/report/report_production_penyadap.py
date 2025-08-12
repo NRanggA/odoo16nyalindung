@@ -267,41 +267,51 @@ class ReportProductionPenyadap(models.AbstractModel):
 
         date_generated = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
 
+        # cases_attendance_id = [
+        #     f"COALESCE(MAX(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.attendance_id END), ead.attendance_type_id) AS \"{date.strftime('%d_%b_%y').upper()}_DATE\""
+        #     for date in date_generated
+        # ]
         cases_attendance_id = [
-            f"MAX(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.attendance_id ELSE NULL END) AS \"{date.strftime('%d_%b_%y').upper()}_DATE\""
+            f"COALESCE(MAX(CASE WHEN trans_data.trans_date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.attendance_id END), MAX(CASE WHEN ead.attendance_date = '{date.strftime('%Y-%m-%d')}' THEN ead.attendance_type_id END)) AS \"{date.strftime('%d_%b_%y').upper()}_DATE\""
             for date in date_generated
         ]
         sum_cases_hasil_1 = [
-            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_1_nap ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_1_NAP\""
+            f"COALESCE(SUM(CASE WHEN trans_data.trans_date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_1_nap ELSE 0 END)/NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0), 0) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_1_NAP\""
             for date in date_generated
         ]
         sum_cases_hasil_2 = [
-            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_2_nap ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_2_NAP\""
+            f"COALESCE(SUM(CASE WHEN trans_data.trans_date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_2_nap ELSE 0 END)/NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0), 0) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_2_NAP\""
             for date in date_generated
         ]
         sum_cases_konversi_hasil_1 = [
-            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_convert_latex ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LATEKS\""
+            f"COALESCE(SUM(CASE WHEN trans_data.trans_date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_convert_latex ELSE 0 END)/NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0), 0) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LATEKS\""
             for date in date_generated
         ]
         sum_cases_konversi_hasil_2 = [
-            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_convert_lump ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LUMP\""
+            f"COALESCE(SUM(CASE WHEN trans_data.trans_date = '{date.strftime('%Y-%m-%d')}' THEN trans_data.hasil_convert_lump ELSE 0 END)/NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0), 0) AS \"{date.strftime('%d_%b_%y').upper()}_HASIL_CONVERT_LUMP\""
             for date in date_generated
         ]
 
         sum_cases_total_konversi = [
-            f"SUM(CASE WHEN trans_data.date = '{date.strftime('%Y-%m-%d')}' THEN COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0) ELSE 0 END) AS \"{date.strftime('%d_%b_%y').upper()}_TOTAL_HASIL_CONVERT\""
+            f"COALESCE(SUM(CASE WHEN trans_data.trans_date = '{date.strftime('%Y-%m-%d')}' THEN COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0) ELSE 0 END)/ NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0), 0) AS \"{date.strftime('%d_%b_%y').upper()}_TOTAL_HASIL_CONVERT\""
             for date in date_generated
         ]
 
         queryhasil1 = f"""
-        WITH employee_data AS (
+        WITH employee_attendance_data AS (
             SELECT 
                 emp.id AS emp_id,
                 emp.name AS employee_name,
                 emp.kemandoran_id AS kemandoran_emp,
-                emp.no_induk as no_induk
+                emp.no_induk AS no_induk,
+                COALESCE(att.type_id, 0) AS attendance_type_id,
+                att.date AS attendance_date
             FROM 
                 hr_employee emp
+            LEFT JOIN 
+                hr_attendance_sheet att 
+                ON emp.id = att.employee_id 
+                AND att.date BETWEEN %s AND %s
             WHERE 
                 emp.active = TRUE
                 AND emp.kemandoran_id = %s
@@ -312,7 +322,7 @@ class ReportProductionPenyadap(models.AbstractModel):
                 trans_nap_line.hasil_2_nap,  
                 trans_nap_line.hasil_convert_latex,  
                 trans_nap_line.hasil_convert_lump,  
-                trans.date,
+                trans.date AS trans_date,
                 trans_line.attendance_id, 
                 trans_line.employee_id
             FROM 
@@ -328,15 +338,23 @@ class ReportProductionPenyadap(models.AbstractModel):
                 trans.date BETWEEN %s AND %s
         )
         SELECT
-            employee_data.employee_name,
-            employee_data.no_induk,
-            employee_data.kemandoran_emp,
-            SUM(COALESCE(trans_data.hasil_1_nap, 0)) AS total_hasil_1_nap,
-            SUM(COALESCE(trans_data.hasil_2_nap, 0)) AS total_hasil_2_nap,
-            SUM(COALESCE(trans_data.hasil_convert_latex, 0)) AS total_hasil_convert_latex,
-            SUM(COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert_lump,
-            SUM(COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0)) AS total_hasil_convert,
-            COUNT(trans_data.attendance_id) AS attendance_count,
+            ead.employee_name,
+            ead.no_induk,
+            ead.kemandoran_emp,
+            SUM(COALESCE(trans_data.hasil_1_nap, 0)) / NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0) AS total_hasil_1_nap,
+            SUM(COALESCE(trans_data.hasil_2_nap, 0)) / NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0) AS total_hasil_2_nap,
+            SUM(COALESCE(trans_data.hasil_convert_latex, 0)) / NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0) AS total_hasil_convert_latex,
+            SUM(COALESCE(trans_data.hasil_convert_lump, 0)) / NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0) AS total_hasil_convert_lump,
+            SUM(COALESCE(trans_data.hasil_convert_latex, 0) + COALESCE(trans_data.hasil_convert_lump, 0)) / NULLIF(COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)), 0) AS total_hasil_convert,
+            COUNT(DISTINCT trans_data.trans_date) AS attendance_count_kj,
+            COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 1  AND NOT EXISTS ( SELECT 1 FROM trans_data td  WHERE td.employee_id = ead.emp_id  AND td.trans_date = ead.attendance_date)  THEN ead.attendance_date  END) AS attendance_count_kj_ead,
+            COUNT(DISTINCT trans_data.trans_date) + COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 1 AND NOT EXISTS (SELECT 1 FROM trans_data td WHERE td.employee_id = ead.emp_id AND td.trans_date = ead.attendance_date) THEN ead.attendance_date END) AS total_kj,
+            COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 2 THEN ead.attendance_date END) AS attendance_count_m_ead,
+            COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 3 THEN ead.attendance_date END) AS attendance_count_ct_ead,
+            COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 4 THEN ead.attendance_date END) AS attendance_count_s_ead,
+            COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 5 THEN ead.attendance_date END) AS attendance_count_l_ead,
+            COUNT(DISTINCT CASE WHEN ead.attendance_type_id = 6 THEN ead.attendance_date END) AS attendance_count_p_ead,
+            COUNT(DISTINCT COALESCE(ead.attendance_date, trans_data.trans_date)) AS total_attendance,
             {','.join(cases_attendance_id)},
             {','.join(sum_cases_hasil_1)},
             {','.join(sum_cases_hasil_2)},
@@ -344,17 +362,19 @@ class ReportProductionPenyadap(models.AbstractModel):
             {','.join(sum_cases_konversi_hasil_2)},
             {','.join(sum_cases_total_konversi)}
         FROM 
-            employee_data
+            employee_attendance_data ead
         LEFT JOIN 
-            trans_data ON employee_data.emp_id = trans_data.employee_id
+            trans_data ON ead.emp_id = trans_data.employee_id
         GROUP BY 
-            employee_data.employee_name,
-            employee_data.no_induk,
-            employee_data.kemandoran_emp
+            ead.employee_name,
+            ead.no_induk,
+            ead.kemandoran_emp
         ORDER BY
-            employee_data.employee_name ASC;
+            ead.employee_name ASC;
         """
-        return queryhasil1, [kemandoran_id, from_date, to_date]
+        # print(queryhasil1)
+        # print(wlee)
+        return queryhasil1, [from_date, to_date, kemandoran_id, from_date, to_date]
 
     def generate_xlsx_report(self, workbook, datas, obj):
         workbook = self.add_workbook_format(workbook)
@@ -364,7 +384,7 @@ class ReportProductionPenyadap(models.AbstractModel):
 
         from_date = obj.from_date
         to_date = obj.to_date
-        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 194, 195]
+        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 195, 199, 200]
 
         attendance_data = {}
 
@@ -525,6 +545,11 @@ class ReportProductionPenyadap(models.AbstractModel):
             row += 1
             nomor = 1
             total_kj_per_date = {date: 0 for date in date_columns}
+            total_l_per_date = {date: 0 for date in date_columns}
+            total_s1_per_date = {date: 0 for date in date_columns}
+            total_p_per_date = {date: 0 for date in date_columns}
+            total_ct_per_date = {date: 0 for date in date_columns}
+            total_m_per_date = {date: 0 for date in date_columns}
             total_hasil_1_per_tanggal = {date: 0 for date in date_columns}
             total_hasil_2_per_tanggal = {date: 0 for date in date_columns}
             total_chasil_1_per_tanggal = {date: 0 for date in date_columns}
@@ -549,14 +574,20 @@ class ReportProductionPenyadap(models.AbstractModel):
                 location_name = self.env["lhm.location"].browse(location_id).name if location_id else "-"
                 sheet.write(row, 4, location_name, wbf['data'])
 
-                attendance_count = line.get("attendance_count", 0)
-                sheet.write(row, hko_start, attendance_count, wbf['biru_muda'])
-                sheet.write(row, hko_start + 1, 0, wbf['data_center'])
-                sheet.write(row, hko_start + 2, 0, wbf['data_center'])
-                sheet.write(row, hko_start + 3, 0, wbf['data_center'])
-                sheet.write(row, hko_start + 4, 0, wbf['data_center'])
-                sheet.write(row, hko_start + 5, 0, wbf['data_center'])
-                sheet.write(row, total_hk_start, attendance_count, wbf['data_center'])
+                attendance_count_kj = line.get("total_kj", 0)
+                attendance_count_m = line.get("attendance_count_m_ead", 0)
+                attendance_count_ct = line.get("attendance_count_ct_ead", 0)
+                attendance_count_s = line.get("attendance_count_s_ead", 0)
+                attendance_count_l = line.get("attendance_count_l_ead", 0)
+                attendance_count_p = line.get("attendance_count_p_ead", 0)
+                attendance_count_total = line.get("total_attendance", 0)
+                sheet.write(row, hko_start, attendance_count_kj, wbf['biru_muda'])
+                sheet.write(row, hko_start + 1, attendance_count_l, wbf['data_center'])
+                sheet.write(row, hko_start + 2, attendance_count_s, wbf['data_center'])
+                sheet.write(row, hko_start + 3, attendance_count_p, wbf['data_center'])
+                sheet.write(row, hko_start + 4, attendance_count_ct, wbf['data_center'])
+                sheet.write(row, hko_start + 5, attendance_count_m, wbf['data_center'])
+                sheet.write(row, total_hk_start, attendance_count_total, wbf['data_center'])
 
                 for i, date_str in enumerate(date_columns):
                     date = datetime.strptime(date_str, "%d_%b_%y")
@@ -565,7 +596,24 @@ class ReportProductionPenyadap(models.AbstractModel):
                     attendance_code = self.env["hr.attendance.type"].browse(attendance_id).code if attendance_id else "-"
                     if attendance_code == "KJ":
                         total_kj_per_date[date_str] += 1
-                    cell_format = wbf['hijau_muda'] if attendance_code == "KJ" else wbf['data_center']
+                        cell_format = wbf['hijau_muda']
+                    elif attendance_code == "L":
+                        total_l_per_date[date_str] += 1
+                        cell_format = wbf['hijau_tua']
+                    elif attendance_code == "S1":
+                        total_s1_per_date[date_str] += 1
+                        cell_format = wbf['kuning']
+                    elif attendance_code == "P":
+                        total_p_per_date[date_str] += 1
+                        cell_format = wbf['biru_tua']
+                    elif attendance_code == "CT":
+                        total_ct_per_date[date_str] += 1
+                        cell_format = wbf['biru_muda']
+                    elif attendance_code == "M":
+                        total_m_per_date[date_str] += 1
+                        cell_format = wbf['merah']
+                    else:
+                        cell_format = wbf['data_center']
                     sheet.write(row, start_col + i, attendance_code, cell_format)
 
                 for i, date_str in enumerate(date_columns):
@@ -734,28 +782,54 @@ class ReportProductionPenyadap(models.AbstractModel):
             # Line Total Paling Bawah
             sheet.merge_range(row, 0, row, 3, "JUMLAH TOTAL", wbf['jumlah_total'])
             
+            total_attendance_kj = 0
+            total_attendance_m = 0
+            total_attendance_ct = 0
+            total_attendance_s = 0
+            total_attendance_l = 0
+            total_attendance_p = 0
             total_attendance = 0
             grandtotal_hasil_1 = 0 
             grandtotal_hasil_2 = 0 
             grandtotal_chasil_1 = 0 
             grandtotal_chasil_2 = 0 
-            grandtotal_konversi = 0 
-            for line in list_hasil_1:
-                attendance_count = line.get("attendance_count", 0)
-                total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0)
-                total_attendance += attendance_count
+            grandtotal_konversi = 0
 
-                sheet.write(row, hko_start, total_attendance, wbf['hijau_tua'])
-                sheet.write(row, hko_start + 1, 0, wbf['hijau_tua'])
-                sheet.write(row, hko_start + 2, 0, wbf['hijau_tua'])
-                sheet.write(row, hko_start + 3, 0, wbf['hijau_tua'])
-                sheet.write(row, hko_start + 4, 0, wbf['hijau_tua'])
-                sheet.write(row, hko_start + 5, 0, wbf['hijau_tua'])
+            for line in list_hasil_1:
+                attendance_count_kj = line.get("total_kj", 0)
+                attendance_count_m = line.get("attendance_count_m_ead", 0)
+                attendance_count_ct = line.get("attendance_count_ct_ead", 0)
+                attendance_count_s = line.get("attendance_count_s_ead", 0)
+                attendance_count_l = line.get("attendance_count_l_ead", 0)
+                attendance_count_p = line.get("attendance_count_p_ead", 0)
+                attendance_count = line.get("total_attendance", 0)
+                total_attendance_kj += attendance_count_kj
+                total_attendance_m += attendance_count_m
+                total_attendance_ct += attendance_count_ct
+                total_attendance_s += attendance_count_s
+                total_attendance_l += attendance_count_l
+                total_attendance_p += attendance_count_p
+                total_attendance += attendance_count
+                
+                # total_hasil_1_tanggal = line.get("total_hasil_1_nap", 0)
+
+                sheet.write(row, hko_start, total_attendance_kj, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 1, total_attendance_l, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 2, total_attendance_s, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 3, total_attendance_p, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 4, total_attendance_ct, wbf['hijau_tua'])
+                sheet.write(row, hko_start + 5, total_attendance_m, wbf['hijau_tua'])
                 sheet.write(row, hko_start + 6, total_attendance, wbf['hijau_tua'])
 
             for i, date_str in enumerate(date_columns):
-                total_kj = total_kj_per_date.get(date_str, 0)
-                sheet.write(row, start_col + i, total_kj, wbf['kuning'])
+                total_att = (
+                            total_kj_per_date.get(date_str, 0) +
+                            total_l_per_date.get(date_str, 0) +
+                            total_s1_per_date.get(date_str, 0) +
+                            total_p_per_date.get(date_str, 0) +
+                            total_ct_per_date.get(date_str, 0) +
+                            total_m_per_date.get(date_str, 0))
+                sheet.write(row, start_col + i, total_att, wbf['kuning'])
 
             for i, date_str in enumerate(date_columns):
                 total_hasil_1 = total_hasil_1_per_tanggal.get(date_str, 0)
