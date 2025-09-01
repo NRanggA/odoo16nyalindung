@@ -32,6 +32,7 @@
         'views/account_journal_views.xml',
 
         'data/sequence_data.xml',
+        'data/cron.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

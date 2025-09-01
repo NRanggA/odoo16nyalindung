@@ -2,6 +2,7 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import RedirectWarning, UserError, ValidationError, AccessError
+from datetime import date
 
 class AccountPeriod(models.Model):
     _name = 'account.period'
@@ -186,3 +187,13 @@ class AccountPeriod(models.Model):
 
             closing_move = self.move_id
         closing_move.with_context(closing=True)._post(soft=False)
+
+    @api.model
+    def _cron_close_past_periods(self):
+        today = date.today()
+        periods = self.search([
+            ('date_stop', '<', today),
+            ('state', '=', 'draft')
+        ])
+        for period in periods:
+            period.write({'state': 'done'})
