@@ -113,6 +113,7 @@ class PurchaseOrderAdvancePaymentInv(models.TransientModel):
         move = account_move.create({
             'move_type': 'in_invoice',
             'partner_id': self.purchase_order_ids[0].partner_id.id,
+            'currency_id': self.purchase_order_ids[0].currency_id.id,  #Fixing
             'is_advanced': True,
             'advanced_purchase_id': self.purchase_order_ids[0].id,
             'invoice_line_ids': [Command.create({
