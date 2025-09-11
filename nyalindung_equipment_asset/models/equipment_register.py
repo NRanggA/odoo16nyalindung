@@ -47,7 +47,7 @@ class EquipmentRegister(models.Model):
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': line.account_id.id,
-					'name': 'Reclass Asset to SPM',
+					'name': 'Reclass Asset Clearing to Asset',
 					'debit': amount,
 					'credit': 0.0,
 				}
@@ -56,7 +56,7 @@ class EquipmentRegister(models.Model):
 				credit_account = line.product_id.categ_id.asset_clearing_account_id
 				move_line_vals = {
 					'account_id': credit_account.id,
-					'name': 'Reclass SPM to Asset',
+					'name': 'Reclass Asset Clearing to Asset',
 					'credit': amount,
 					'debit': 0.0,
 				}

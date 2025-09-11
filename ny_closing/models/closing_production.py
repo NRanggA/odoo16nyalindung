@@ -1342,7 +1342,7 @@ class ClosingProduction(models.Model):
             # Get Purchase Amount Asam Semut
             closing.action_compute_sheet_rm_cost()
             closing.sheet_rm_incoming_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
-            closing.sheet_rm_incoming_value = sum([x.move_id.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
+            # closing.sheet_rm_incoming_value = sum([x.move_id.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
             # Get Consumed Asam Semut
             out_asam_semut = self.env['mrp.manual.consume'].search([('product_id.name','=','Asam Semut'),
                                     ('date','>=',closing.date_from),('date','<=',closing.date_to),

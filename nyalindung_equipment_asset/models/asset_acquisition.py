@@ -251,7 +251,7 @@ class AssetAcquisition(models.Model):
 					# debit_lines
 					move_line_vals_asset = {
 						'account_id': asset_category.account_asset_id.id,
-						'name': 'Reclass Asset to SPM',
+						'name': 'Reclass Asset Clearing to Asset',
 						'debit': sum(purchase_account_dict.values()),
 						'credit': 0.0,
 					}
@@ -261,7 +261,7 @@ class AssetAcquisition(models.Model):
 					for account, amount in purchase_account_dict.items():
 						move_line_vals = {
 							'account_id': credit_account.id if credit_account else account.id,
-							'name': 'Reclass SPM to Asset',
+							'name': 'Reclass Asset Clearing to Asset',
 							'credit': amount,
 							'debit': 0.0,
 						}
@@ -333,7 +333,7 @@ class AssetAcquisition(models.Model):
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': product_expense or product_categ_expense,
-					'name': 'Reclass Asset to SPM',
+					'name': 'Reclass Asset Clearing to Asset',
 					'debit': amount,
 					'credit': 0.0,
 				}
@@ -342,7 +342,7 @@ class AssetAcquisition(models.Model):
 				credit_account = line.product_id.categ_id.asset_clearing_account_id
 				move_line_vals = {
 					'account_id': credit_account.id,
-					'name': 'Reclass SPM to Asset',
+					'name': 'Reclass Asset Clearing to Asset',
 					'credit': amount,
 					'debit': 0.0,
 				}
