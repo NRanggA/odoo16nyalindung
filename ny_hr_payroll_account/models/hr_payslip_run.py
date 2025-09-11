@@ -23,7 +23,7 @@ class HrPayslipRun(models.Model):
                 array_agg(cm.id) as cm_ids, sum(cm.debit_amount) as cost  
             FROM hr_payslip_cost_map cm, lhm_location_type llt \
             WHERE cm.plantation_location_type_id=llt.id
-                and llt.general_charge='true'
+                and (llt.general_charge='true' or llt.indirect='true')
                 and cm.payslip_run_id={self.id} 
                 and cm.debit_amount>0 
                 and cm.type='reclass'
@@ -56,7 +56,7 @@ class HrPayslipRun(models.Model):
             n_block = len(block_tanams.ids)
             remaining_cost = debit_amt
             allocated_cost = 0.0
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>remaining_cost", remaining_cost)
+            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>remaining_cost", remaining_cost)
             for block_tanam in block_tanams:
                 if block_tanam.is_project:
                     project_tanam = self.env['lhm.project'].search([('plant_block_id','=',block_tanam.id)], limit=1)
