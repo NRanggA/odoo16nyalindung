@@ -142,7 +142,7 @@ class AccountMove(models.Model):
             'product_uom_id': advanced_line.product_uom_id.id,
             'quantity': advanced_line.quantity,
             'account_id': advanced_line.account_id.id,
-            'price_unit': -advanced_line.price_unit,
+            'price_unit': -advanced_line.move_id.advance_residual if advanced_line.move_id.move_type in ('in_invoice','out_invoice') else -advanced_line.price_unit,
             'tax_ids': [(6, 0, advanced_line.tax_ids.ids)],
             # 'analytic_account_id': advanced_line.analytic_account_id.id,
             # 'debit': advanced_line.price_unit,
