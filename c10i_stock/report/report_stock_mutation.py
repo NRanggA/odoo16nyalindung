@@ -675,14 +675,19 @@ class ReportStockMutation(models.AbstractModel):
         #     products = obj.product_ids
         # else:
 
-        domain = []
+        # domain = []
+        domain = [
+            ('has_a_wip', '=', False),
+            ('detailed_type', '!=', 'service'),
+        ]
         
         if obj.product_ids:
             domain.append(('id', 'in', obj.product_ids.ids))
 
         if obj.product_type:
+            domain = [d for d in domain if d[0] != 'detailed_type']
             domain.append(('detailed_type', '=', obj.product_type))
-        
+
         if obj.inventory_valuation:
             domain.append(('categ_id.property_valuation', '=', obj.inventory_valuation))
         

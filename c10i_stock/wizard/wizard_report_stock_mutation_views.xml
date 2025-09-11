@@ -22,7 +22,7 @@
                             <field name="show_value" widget="radio" />
                         </group>
                     </group>
-                    <group name="location" string="Product">
+                    <group name="product" string="Product">
                         <field name="product_ids"/>
                     </group>
                     <footer>

@@ -275,6 +275,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 hr_employee emp
             WHERE 
                 emp.active = TRUE
+                AND emp.work_end_date IS NULL
                 AND emp.kemandoran_id = %s
             UNION ALL
             SELECT 
@@ -436,6 +437,7 @@ class ReportSummaryAttendance(models.AbstractModel):
                 hr_employee emp
             WHERE 
                 emp.active = TRUE
+                AND emp.work_end_date IS NULL
                 AND emp.kemandoran_id = %s
             UNION ALL
             SELECT 

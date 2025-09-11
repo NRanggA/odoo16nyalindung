@@ -8,7 +8,7 @@ class WizardReportProductionKebun(models.TransientModel):
     
     from_date           = fields.Date('From Date')
     to_date             = fields.Date('To Date')
-    kemandoran_id       = fields.Many2many("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True, domain=[("id", "in", [140, 193, 194, 195])],)
+    kemandoran_id       = fields.Many2many("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True, domain=[("id", "in", [140, 193, 195, 199, 200])],)
 
 
     def create_report(self):
