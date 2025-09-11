@@ -32,7 +32,7 @@ class HrAttendanceSheet(models.Model):
             _logger.error("Tipe absensi dengan kode 'M' tidak ditemukan.")
             return False
 
-        employees   = self.env['hr.employee'].search([('active', '=', True), ('word_end_date', '=', False)])
+        employees   = self.env['hr.employee'].search([('active', '=', True), ('work_end_date', '=', False)])
         jakarta     = timezone('Asia/Jakarta')
         today_date  = utc.localize(fields.Datetime.now()).astimezone(jakarta)
         # today_date = fields.Date.context_today(self)
