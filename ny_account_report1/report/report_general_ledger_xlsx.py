@@ -256,10 +256,11 @@ class ReportStockMutation(models.AbstractModel):
 
             account_type = account.account_type
             # if account_type in ['bank', 'cash']:
-            if account_type == 'asset_cash' :
-                order = 'date asc, debit desc, credit desc'
-            else:
-                order = 'date asc, name asc'
+            # if account_type == 'asset_cash' :
+            #     order = 'date asc, debit desc, credit desc'
+            # else:
+            #     order = 'date asc, name asc'
+            order = 'date asc, name asc'
 
             # Hitung Saldo Awal
             if account_move:
