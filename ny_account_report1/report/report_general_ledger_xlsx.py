@@ -260,7 +260,7 @@ class ReportStockMutation(models.AbstractModel):
             #     order = 'date asc, debit desc, credit desc'
             # else:
             #     order = 'date asc, name asc'
-            order = 'date asc, move_id.name asc'
+            order = 'date asc, move_name asc'
 
             # Hitung Saldo Awal
             if account_move:
