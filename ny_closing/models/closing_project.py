@@ -149,7 +149,7 @@ class ClosingProject(models.Model):
         for closing in self:
             closing.dest_account_id = closing.project_id.categ_id.account_id.id
     
-    @api.depends('project_id')
+    @api.depends('project_id','closing_process_id.state')
     def _compute_mark(self):
         for closing in self:
             new_mark_project_period = 'none'
