@@ -15,7 +15,7 @@ class WizardInventoryTurnover(models.TransientModel):
         return self.env.ref('c10i_inventory_report.inventory_turnover_xlsx').report_action(self)
     
     def view_tree(self):        
-        action = self.env.ref('c10i_inventory_report.inventory_turnover_line_action').read()[0]
+        action = self.env.ref('c10i_inventory_report.inventory_turnover_line_action').sudo().read()[0]
         
         return action
     
