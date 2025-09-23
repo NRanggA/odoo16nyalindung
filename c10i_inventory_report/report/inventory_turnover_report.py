@@ -253,6 +253,7 @@ class ReportSalaryDepartment(models.Model):
             cogs_for_calc = cogs if cogs != 0 else 1
             qty_mean = ((start + end) / 2) if ((start + end) / 2) != 0 else 1
 
+            # doi = ((start + end) / 2) / cogs_for_calc
             doi = (((start + end) / 2) / cogs_for_calc) * days
             ito = cogs / qty_mean
             sa = (end * 30) / qty_mean
