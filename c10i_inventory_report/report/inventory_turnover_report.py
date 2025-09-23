@@ -156,9 +156,91 @@ class ReportSalaryDepartment(models.Model):
     #     #         worksheet.write(row,int(data['month'])+1,'=' + xl_rowcol_to_cell(row+4,int(data['month'])+1),text_style)
 
 
+    # def generate_xlsx_report(self, workbook, data, obj):
+    #     # Styles
+    #     text_style = workbook.add_format({'font_size': 12, 'align': 'left', 'valign': 'vcenter', 'text_wrap': True, 'num_format': '#,##0.00'})
+    #     num_style = workbook.add_format({'font_size': 11, 'align': 'right', 'valign': 'vcenter', 'text_wrap': True, 'num_format': '#,##0.00'})
+    #     text_style_heading = workbook.add_format({'font_size': 12, 'align': 'center', 'valign': 'vcenter', 'text_wrap': True, 'bold': True})
+
+    #     # Worksheet
+    #     worksheet = workbook.add_worksheet('Inventory Turnover')
+    #     worksheet.set_column('A:A', 5)
+    #     worksheet.set_column('B:B', 35)
+    #     worksheet.set_column('C:H', 25)
+
+    #     # Header
+    #     row, col = 0, 1
+    #     worksheet.write(row, col, 'Inventory Turn Over', text_style)
+    #     worksheet.write(row + 1, col, 'Period From: %s' % obj.period_from.strftime('%d %B %Y'), text_style)
+    #     worksheet.write(row + 2, col, 'Period To:   %s' % obj.period_to.strftime('%d %B %Y'), text_style)
+
+    #     # Table Header
+    #     headers = ['Product', 'Beginning Balance (Qty)', 'Ending Balance (Qty)', 'COGS/Usage (Qty)', 'DOI (Days)', 'ITO', 'Stock Availability (Days)']
+    #     row += 4
+    #     for i, header in enumerate(headers, start=1):
+    #         worksheet.write(row, i, header, text_style_heading)
+
+    #     # Query Data (identik dengan generate_line)
+    #     self._cr.execute("""
+    #         SELECT 
+    #             pt.id AS product_tmpl_id,
+    #             SUM(CASE WHEN sm.date < %s AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_from,
+    #             SUM(CASE WHEN sm.date <= %s AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_to,
+    #             SUM(CASE WHEN sm.date >= %s AND sm.date <= %s AND sl.name != 'Stock' THEN product_qty ELSE 0 END) AS total_cogs
+    #         FROM stock_move sm                                                                                  
+    #         LEFT JOIN product_product pp ON pp.id = sm.product_id
+    #         LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
+    #         LEFT JOIN stock_location sl ON sl.id = sm.location_dest_id
+    #         WHERE sm.state IN ('done', 'assigned')
+    #         GROUP BY pt.id
+    #         ORDER BY pt.id
+    #     """, (
+    #         obj.period_from,
+    #         obj.period_to,
+    #         obj.period_from,
+    #         obj.period_to,
+    #     ))
+
+    #     result = self._cr.dictfetchall()
+    #     days = (obj.period_to - obj.period_from).days or 1
+
+    #     # Isi data
+    #     row += 1
+    #     for data in result:
+    #         tmpl_id = data.get('product_tmpl_id')
+    #         product = ''
+    #         if tmpl_id:
+    #             product = self.env['product.template'].browse(tmpl_id).name or ''
+
+    #         start = data.get('total_in_date_from') or 0
+    #         end = data.get('total_in_date_to') or 0
+    #         cogs = data.get('total_cogs') or 0
+
+    #         cogs_for_calc = cogs if cogs != 0 else 1
+    #         qty_mean = ((start + end) / 2) if ((start + end) / 2) != 0 else 1
+
+    #         doi = ((start + end) / 2) / cogs_for_calc
+    #         ito = cogs / qty_mean
+    #         sa = (end * 30) / qty_mean
+
+    #         values = [
+    #             product,
+    #             start,
+    #             end,
+    #             cogs,
+    #             doi,
+    #             ito,
+    #             sa
+    #         ]
+
+    #         for i, val in enumerate(values, start=1):
+    #             style = text_style if i == 1 else num_style
+    #             worksheet.write(row, i, val, style)
+
+    #         row += 1
+
 
     def generate_xlsx_report(self, workbook, data, obj):
-        # Styles
         text_style = workbook.add_format({'font_size': 12, 'align': 'left', 'valign': 'vcenter', 'text_wrap': True, 'num_format': '#,##0.00'})
         num_style = workbook.add_format({'font_size': 11, 'align': 'right', 'valign': 'vcenter', 'text_wrap': True, 'num_format': '#,##0.00'})
         text_style_heading = workbook.add_format({'font_size': 12, 'align': 'center', 'valign': 'vcenter', 'text_wrap': True, 'bold': True})
@@ -167,7 +249,7 @@ class ReportSalaryDepartment(models.Model):
         worksheet = workbook.add_worksheet('Inventory Turnover')
         worksheet.set_column('A:A', 5)
         worksheet.set_column('B:B', 35)
-        worksheet.set_column('C:H', 25)
+        worksheet.set_column('C:I', 25)
 
         # Header
         row, col = 0, 1
@@ -176,36 +258,52 @@ class ReportSalaryDepartment(models.Model):
         worksheet.write(row + 2, col, 'Period To:   %s' % obj.period_to.strftime('%d %B %Y'), text_style)
 
         # Table Header
-        headers = ['Product', 'Beginning Balance (Qty)', 'Ending Balance (Qty)', 'COGS/Usage (Qty)', 'DOI (Days)', 'ITO', 'Stock Availability (Days)']
+        headers = [
+            'Product Category',
+            'Product',
+            'Beginning Balance (Qty)',
+            'Ending Balance (Qty)',
+            'COGS/Usage (Qty)',
+            'DOI (Days)',
+            'ITO',
+            'Stock Availability (Days)'
+        ]
         row += 4
         for i, header in enumerate(headers, start=1):
             worksheet.write(row, i, header, text_style_heading)
 
-        # Query Data (identik dengan generate_line)
-        self._cr.execute("""
+        category_filter = ""
+        params = [obj.period_from, obj.period_to, obj.period_from, obj.period_to]
+        if obj.product_category_ids:
+            if len(obj.product_category_ids) == 1:
+                category_filter = "AND pt.categ_id = %s"
+                params.append(obj.product_category_ids.id)
+            else:
+                category_filter = "AND pt.categ_id IN %s"
+                params.append(tuple(obj.product_category_ids.ids))
+
+        query = f"""
             SELECT 
                 pt.id AS product_tmpl_id,
+                pc.name AS category,
                 SUM(CASE WHEN sm.date < %s AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_from,
                 SUM(CASE WHEN sm.date <= %s AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_to,
                 SUM(CASE WHEN sm.date >= %s AND sm.date <= %s AND sl.name != 'Stock' THEN product_qty ELSE 0 END) AS total_cogs
             FROM stock_move sm                                                                                  
             LEFT JOIN product_product pp ON pp.id = sm.product_id
             LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
+            LEFT JOIN product_category pc ON pc.id = pt.categ_id
             LEFT JOIN stock_location sl ON sl.id = sm.location_dest_id
             WHERE sm.state IN ('done', 'assigned')
-            GROUP BY pt.id
-            ORDER BY pt.id
-        """, (
-            obj.period_from,
-            obj.period_to,
-            obj.period_from,
-            obj.period_to,
-        ))
+            {category_filter}
+            GROUP BY pt.id, pc.name
+            ORDER BY pc.name, pt.id
+        """
 
+        self._cr.execute(query, tuple(params))
         result = self._cr.dictfetchall()
         days = (obj.period_to - obj.period_from).days or 1
 
-        # Isi data
         row += 1
         for data in result:
             tmpl_id = data.get('product_tmpl_id')
@@ -213,6 +311,7 @@ class ReportSalaryDepartment(models.Model):
             if tmpl_id:
                 product = self.env['product.template'].browse(tmpl_id).name or ''
 
+            category = data.get('category') or ''
             start = data.get('total_in_date_from') or 0
             end = data.get('total_in_date_to') or 0
             cogs = data.get('total_cogs') or 0
@@ -225,6 +324,7 @@ class ReportSalaryDepartment(models.Model):
             sa = (end * 30) / qty_mean
 
             values = [
+                category,
                 product,
                 start,
                 end,
@@ -235,7 +335,7 @@ class ReportSalaryDepartment(models.Model):
             ]
 
             for i, val in enumerate(values, start=1):
-                style = text_style if i == 1 else num_style
+                style = text_style if i in (1, 2) else num_style
                 worksheet.write(row, i, val, style)
 
             row += 1

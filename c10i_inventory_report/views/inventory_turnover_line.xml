@@ -7,6 +7,7 @@
             <field name="model">inventory.turnover.line</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="category"/>
                     <field name="name"/>
                     <field name="start_balance"/>
                     <field name="end_balance"/>
