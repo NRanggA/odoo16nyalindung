@@ -9,6 +9,7 @@
                 <tree>
                     <field name="category"/>
                     <field name="name"/>
+                    <field name="uom"/>
                     <field name="start_balance"/>
                     <field name="end_balance"/>
                     <field name="cogs"/>

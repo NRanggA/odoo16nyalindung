@@ -36,6 +36,7 @@ class WizardInventoryTurnover(models.TransientModel):
             SELECT 
                 pt.name AS product,
                 pc.name AS category,
+                uom.name as uom_name,
                 SUM(CASE WHEN sm.date < '%s' AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_from,
                 SUM(CASE WHEN sm.date <= '%s' AND sl.name = 'Stock' THEN product_qty ELSE 0 END) AS total_in_date_to,
                 SUM(CASE WHEN sm.date >= '%s' and sm.date <= '%s' and sl.name != 'Stock' THEN product_qty ELSE 0 END) AS total_cogs
@@ -44,9 +45,10 @@ class WizardInventoryTurnover(models.TransientModel):
             LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
             LEFT JOIN product_category pc ON pc.id = pt.categ_id
             LEFT JOIN stock_location sl ON sl.id = sm.location_dest_id
+            LEFT JOIN uom_uom uom ON uom.id = pt.uom_id
             WHERE sm.state in ('done','assigned')
             %s
-            GROUP BY pt.name, pc.name
+            GROUP BY pt.name, pc.name, uom.name
             ORDER BY pc.name, pt.name;
         """ % (
             self.period_from.strftime('%Y-%m-%d'),
@@ -66,6 +68,7 @@ class WizardInventoryTurnover(models.TransientModel):
             model.create({
                 'category': data['category'],
                 'name': data['product'],
+                'uom': data['uom_name'],
                 'start_balance': data['total_in_date_from'],
                 'end_balance': data['total_in_date_to'],
                 'cogs': data['total_cogs'],
@@ -116,6 +119,7 @@ class InventoryTurnoverLine(models.TransientModel):
 
     name = fields.Char(string='Product')
     category = fields.Char(string='Product Category')
+    uom = fields.Char(string='Product Uom')
     start_balance = fields.Float(string='Beginning Balance (Qty)')
     end_balance = fields.Float(string='Ending Balance (Qty)')
     cogs = fields.Float(string='COGS/Usage (Qty)')
