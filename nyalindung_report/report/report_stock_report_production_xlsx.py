@@ -264,7 +264,12 @@ class RekapBukuKontraktor(models.AbstractModel):
                                 ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                 ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         rm_moves = production_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
-        production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+        production_qty = 0.0
+        for m in rm_moves:
+            if m.state == 'done':
+                production_qty += m.quantity_done
+            else:
+                production_qty += m.product_qty
 
         latex_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
@@ -344,7 +349,13 @@ class RekapBukuKontraktor(models.AbstractModel):
                                 ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                 ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         rm_moves = production_compo.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-        production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+        # production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+        production_qty = 0.0
+        for m in rm_moves:
+            if m.state == 'done':
+                production_qty += m.quantity_done
+            else:
+                production_qty += m.product_qty
 
         lump_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
