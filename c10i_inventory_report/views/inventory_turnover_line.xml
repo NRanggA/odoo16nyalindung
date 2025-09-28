@@ -11,9 +11,12 @@
                     <field name="name"/>
                     <field name="uom"/>
                     <field name="start_balance"/>
+                    <field name="incoming"/>
+                    <field name="outgoing"/>
                     <field name="end_balance"/>
                     <field name="cogs"/>
-                    <field name="doi"/>
+                    <field name="avg_consumption"/>
+                    <!-- <field name="doi"/> -->
                     <field name="ito"/>
                     <field name="stock_availability"/>
                 </tree>
