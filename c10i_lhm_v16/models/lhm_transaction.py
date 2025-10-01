@@ -433,17 +433,31 @@ class lhm_transaction(models.Model):
         # Daftar employee_id pada lhm_line_ids yang tidak sesuai dengan kemandoran
         invalid_employees = self.lhm_line_ids.filtered(lambda line: line.employee_id not in allowed_employees)
 
+        # if invalid_employees:
+        #     return {
+        #         'type': 'ir.actions.act_window',
+        #         'res_model': 'lhm.transaction.warning.wizard',
+        #         'view_mode': 'form',
+        #         'target': 'new',
+        #         'context': {
+        #             'default_message': "Beberapa karyawan di dalam LHM line tidak sesuai dengan Kemandoran yang dipilih.",
+        #             'default_invalid_employee_ids': [(6, 0, invalid_employees.mapped('employee_id').ids)]
+        #         }
+        #     }
+
         if invalid_employees:
+            wiz = self.env['lhm.transaction.warning.wizard'].sudo().create({
+                'message': "Beberapa karyawan di dalam LHM line tidak sesuai dengan Kemandoran yang dipilih.",
+                'invalid_employee_ids': [(6, 0, invalid_employees.mapped('employee_id').ids)]
+            })
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'lhm.transaction.warning.wizard',
+                'res_id': wiz.id,
                 'view_mode': 'form',
                 'target': 'new',
-                'context': {
-                    'default_message': "Beberapa karyawan di dalam LHM line tidak sesuai dengan Kemandoran yang dipilih.",
-                    'default_invalid_employee_ids': [(6, 0, invalid_employees.mapped('employee_id').ids)]
-                }
             }
+
 
     def _check_employee_not_hasil_1_2(self):
         # Cari semua baris yang tidak memiliki hasil_1 dan hasil_2
