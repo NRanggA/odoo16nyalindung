@@ -135,6 +135,16 @@ class WizardInventoryTurnover(models.TransientModel):
                             AND m.dest_usage = 'internal' THEN m.product_qty
                         ELSE 0 END
                 ),0) AS incoming,
+                -- COGS (Penggunaan selama 3 bulan terakhir)
+                COALESCE(SUM(
+                    CASE
+                        WHEN m.date >= (%(date_to)s::timestamp - interval '3 month') 
+                            AND m.date <= %(date_to)s
+                            AND m.src_usage = 'internal' 
+                        THEN m.product_qty
+                        ELSE 0 END
+                ),0) AS cogs,
+
                 -- Outgoing during the period
                 COALESCE(SUM(
                     CASE 
@@ -166,14 +176,18 @@ class WizardInventoryTurnover(models.TransientModel):
             incoming = row['incoming']
             outgoing = row['outgoing']
             end_balance = row['end_balance']
-            cogs = outgoing if outgoing != 0 else 1
-            qty_mean = ((start_balance + end_balance) / 2) if ((start_balance + end_balance) / 2) != 0 else 1
+            cogs = row['cogs']
+            # qty_mean = ((start_balance + end_balance) / 2) if ((start_balance + end_balance) / 2) != 0 else 1
 
-            # mengambil total hari 3 bulan kebelakang
+            # mengambil total hari 3 bulan kebelakang (maksimum forcast)
             date_from_hits = self.period_to - relativedelta.relativedelta(months=3)
             total_days = (self.period_to - date_from_hits).days
 
             avg_consumption = cogs / total_days if total_days != 0 else 0
+
+            # Jika stock (ending) nya ada, tapi stock consumption nya 0 selama 3 bulan terakhir, maka stock availability dianggap maksimum forcast
+            if end_balance > 0 and avg_consumption == 0:
+                avg_consumption = end_balance / total_days
 
             model.create({
                 'category': row['category'],

@@ -346,6 +346,7 @@ class ReportSalaryDepartment(models.Model):
                     sm.date,
                     sl_src.usage AS src_usage,
                     sl_dest.usage AS dest_usage,
+                    sp.picking_type_id,
                     sm.product_qty
                 FROM stock_move sm
                 JOIN product_product pp ON pp.id = sm.product_id
@@ -354,29 +355,46 @@ class ReportSalaryDepartment(models.Model):
                 JOIN uom_uom uom ON uom.id = pt.uom_id
                 LEFT JOIN stock_location sl_src ON sl_src.id = sm.location_id
                 LEFT JOIN stock_location sl_dest ON sl_dest.id = sm.location_dest_id
-                WHERE sm.state = 'done'
+                LEFT JOIN stock_picking sp ON sp.id = sm.picking_id
+                WHERE sm.state in ('done','assigned')
                 {category_filter}
             )
             SELECT
                 m.product_name AS product,
                 m.category_name AS category,
                 m.uom_name AS uom_name,
+                -- Beginning balance: all incoming - outgoing before period_from
                 COALESCE(SUM(
                     CASE 
                         WHEN m.date < %(date_from)s AND m.dest_usage = 'internal' THEN m.product_qty
                         WHEN m.date < %(date_from)s AND m.src_usage = 'internal' THEN -m.product_qty
                         ELSE 0 END
                 ),0) AS start_balance,
+                -- Incoming during the period
                 COALESCE(SUM(
                     CASE 
-                        WHEN m.date >= %(date_from)s AND m.date <= %(date_to)s AND m.dest_usage = 'internal' 
-                            THEN m.product_qty ELSE 0 END
+                        WHEN m.date >= %(date_from)s AND m.date <= %(date_to)s 
+                            AND m.dest_usage = 'internal' THEN m.product_qty
+                        ELSE 0 END
                 ),0) AS incoming,
+                -- COGS (Penggunaan selama 3 bulan terakhir)
+                COALESCE(SUM(
+                    CASE
+                        WHEN m.date >= (%(date_to)s::timestamp - interval '3 month') 
+                            AND m.date <= %(date_to)s
+                            AND m.src_usage = 'internal' 
+                        THEN m.product_qty
+                        ELSE 0 END
+                ),0) AS cogs,
+
+                -- Outgoing during the period
                 COALESCE(SUM(
                     CASE 
-                        WHEN m.date >= %(date_from)s AND m.date <= %(date_to)s AND m.src_usage = 'internal'
-                            THEN m.product_qty ELSE 0 END
+                        WHEN m.date >= %(date_from)s AND m.date <= %(date_to)s 
+                            AND m.src_usage = 'internal' THEN m.product_qty
+                        ELSE 0 END
                 ),0) AS outgoing,
+                -- Ending balance = start + incoming - outgoing
                 COALESCE(SUM(
                     CASE 
                         WHEN m.date <= %(date_to)s AND m.dest_usage = 'internal' THEN m.product_qty
@@ -406,12 +424,18 @@ class ReportSalaryDepartment(models.Model):
             end_balance = data.get('end_balance') or 0
 
             # Perhitungan
-            cogs = outgoing
+            cogs = data.get('cogs') or 0
             avg_consumption = cogs / total_days if total_days != 0 else 0
             # avg_inventory = (start_balance + end_balance) / 2 if (start_balance + end_balance) != 0 else 1
+            # Jika stock (ending) nya ada, tapi stock consumption nya 0 selama 3 bulan terakhir, maka stock availability dianggap maksimum forcast
+            if end_balance > 0 and avg_consumption == 0:
+                avg_consumption = end_balance / total_days
+            
             ito = end_balance / avg_consumption if avg_consumption != 0 else 0
             # stock_avail = end_balance / avg_consumption if avg_consumption != 0 else 0
             stock_avail = round(end_balance / avg_consumption, 0) if avg_consumption != 0 else 0
+
+            
 
             product = data.get('product')
             if isinstance(product, dict):
