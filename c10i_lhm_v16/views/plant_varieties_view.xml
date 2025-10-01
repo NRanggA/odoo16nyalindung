@@ -44,7 +44,8 @@
                         </page>
                         <page name="other" string="Project and Nursery">
                             <label for="project_ids"/>
-                            <field name="project_ids" widget="many2many"/>
+                            <!-- <field name="project_ids" widget="many2many"/> -->
+                            <field name="project_ids" widget="many2many" domain="[('state','=','in_progress')]"/>
                             <!-- <label for="nursery_ids"/> -->
                             <!-- <field name="nursery_ids" widget="many2many"/> -->
                         </page>
