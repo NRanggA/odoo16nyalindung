@@ -446,16 +446,25 @@ class lhm_transaction(models.Model):
         #     }
 
         if invalid_employees:
-            wiz = self.env['lhm.transaction.warning.wizard'].sudo().create({
+            wiz_vals = {
                 'message': "Beberapa karyawan di dalam LHM line tidak sesuai dengan Kemandoran yang dipilih.",
                 'invalid_employee_ids': [(6, 0, invalid_employees.mapped('employee_id').ids)]
+            }
+            wiz = self.env['lhm.transaction.warning.wizard'].sudo().create(wiz_vals)
+
+            action_context = dict(self.env.context)  # copy context supaya tidak hilang
+            action_context.update({
+                'default_message': wiz_vals['message'],
+                'default_invalid_employee_ids': wiz_vals['invalid_employee_ids'],
             })
+
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'lhm.transaction.warning.wizard',
                 'res_id': wiz.id,
                 'view_mode': 'form',
                 'target': 'new',
+                'context': action_context
             }
 
 
