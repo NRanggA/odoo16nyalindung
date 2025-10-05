@@ -83,7 +83,6 @@ class HrPayslipLine(models.Model):
                     dr_amount = self.total
                 else:
                     cr_amount = self.total
-                    
                 vals1 = {
                     'payslip_line_id': self.id,
                     'partner_id': config.partner_id.id,
@@ -125,6 +124,8 @@ class HrPayslipLine(models.Model):
                     lhm_lines = self.slip_id.lhm_line_ids.filtered(lambda l: not l.is_borong)
                 
                 for lhm_line in lhm_lines:
+                    if self.slip_id.employee_id.name=='Asep Tabeat':
+                        print(">>>>>>>>>>>>>>>", self.salary_rule_id.name, lhm_line.varieties_id.name, lhm_line.location_type_id.code, lhm_line.location_id.name, lhm_line.activity_id.code, lhm_line.contract_wage_value)
                     dr_amount = cr_amount = 0.0
                     dr_amount = lhm_line.contract_wage_value
                     mappings.append({
@@ -147,6 +148,7 @@ class HrPayslipLine(models.Model):
     def _create_cost_map(self, type):
         vals_list = []
         for line in self:
+            print("...............", line.slip_id.employee_id.name, line.name, line.total)
             for config in line.salary_rule_id.config_account_ids:
                 vals_list.extend(line._get_mapping_account(config, type))
         if vals_list:

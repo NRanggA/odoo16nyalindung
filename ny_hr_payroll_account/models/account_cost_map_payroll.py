@@ -188,6 +188,8 @@ class AccountCostMapPayroll(models.Model):
         return True
 
     def action_post(self):
+        self.create_account_move()
+        self.create_account_move_general_charge()
         if not self.move_ids:
             raise ValidationError("You dont have journal entry to post")
         self.move_ids.filtered(lambda m: m.state!='posted')._post()
@@ -198,6 +200,9 @@ class AccountCostMapPayroll(models.Model):
 
     def action_reset_move(self):
         pass
+
+    def action_print_allocation(self):
+        return self.env.ref('ny_hr_payroll_account.action_report_payroll_cost_allocation_xlsx').report_action(self)
 
     def action_view_moves(self):
         action = self.env["ir.actions.actions"]._for_xml_id("account.action_move_journal_line")

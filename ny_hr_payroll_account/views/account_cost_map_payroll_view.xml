@@ -9,10 +9,10 @@
                 <header>
                     <button string="Map Payroll Cost" name="action_map_cost" type="object" class="oe_highlight" states="draft" />
                     <button string="Re-map Payroll Cost" name="action_map_cost" type="object" states="mapped" />
-                    <button string="Create Reclass Journal" name="create_account_move" type="object" class="oe_highlight" states="mapped" />
-                    <button string="Create Reclass GC Journal" name="create_account_move_general_charge" type="object" class="oe_highlight" states="mapped" />
-                    <button string="Post" name="action_post" type="object" states="mapped" />
-
+                    <!-- <button string="Create Reclass Journal" name="create_account_move" type="object" class="oe_highlight" states="mapped" /> -->
+                    <!-- <button string="Create Reclass GC Journal" name="create_account_move_general_charge" type="object" class="oe_highlight" states="mapped" /> -->
+                    <button string="Post Reclass Journal" name="action_post" type="object" states="mapped" class="oe_highlight"/>
+                    <button string="Print Allocation" name="action_print_allocation" type="object" states="mapped,done" />
                     <field name="state" widget="statusbar" statusbar_visible="draft,mapped,done"/>
                 </header>
                 <sheet>

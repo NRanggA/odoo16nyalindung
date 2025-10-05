@@ -32,7 +32,7 @@ class SheetToProduce(models.TransientModel):
     @api.onchange('product_latex_id')
     def onchange_product(self):
         # self.latex_onhand_qty = self.product_latex_id.qty_available
-        self.latex_onhand_qty = self.product_latex_id.free_qty
+        self.latex_onhand_qty = self.product_latex_id.virtual_available
     
     def action_apply(self):
         self.mrp_id.write({'product_qty': self.sheet_to_produce})
