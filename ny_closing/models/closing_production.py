@@ -1546,14 +1546,26 @@ class ClosingProduction(models.Model):
                 ripening_outgoing_qty = (sum(out_moves_ripening_loc.mapped('qty_done')) if out_moves_ripening_loc else 0.0) - (sum(return_moves_ripening_loc.mapped('qty_done')) if return_moves_ripening_loc else 0.0)
 
                 # Get Adjustment
-                adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product.id),
-                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
-                                ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
-                adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product.id),
-                                ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
-                                ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+                adjustment_out_moves = self.env['stock.move.line'].search([
+                    ('product_id', '=', product.id),
+                    ('location_id.usage', '=', 'internal'),
+                    ('location_dest_id.usage', '=', 'inventory'),
+                    ('move_id.scrap_ids', '=', False), 
+                    ('state', '=', 'done'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                ])
+
+                adjustment_in_moves = self.env['stock.move.line'].search([
+                    ('product_id', '=', product.id),
+                    ('location_dest_id.usage', '=', 'internal'),
+                    ('location_id.usage', '=', 'inventory'),
+                    ('move_id.scrap_ids', '=', False),  
+                    ('state', '=', 'done'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                ])
+
                 adjustment_qty = (sum(adjustment_in_moves.mapped('qty_done')) if adjustment_in_moves else 0.0) - (sum(adjustment_out_moves.mapped('qty_done')) if adjustment_out_moves else 0.0)
 
                 # for move in adjustment_in_moves:
