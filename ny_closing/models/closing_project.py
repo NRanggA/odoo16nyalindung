@@ -392,7 +392,7 @@ class ClosingProject(models.Model):
                 closing.total_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
             else:
                 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Aja")
-                source_moves = self.env['account.move.line'].search(self._get_domain_source_move_lines())
+                source_moves = self.env['account.move.line'].search(closing._get_domain_source_move_lines())
                 closing.total_cost = sum(source_moves.mapped('balance')) if source_moves else 0.0
 
     def _prepare_move_lines_for_project_tanaman(self):
