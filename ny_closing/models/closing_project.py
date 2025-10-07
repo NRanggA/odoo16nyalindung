@@ -485,6 +485,14 @@ class ClosingProject(models.Model):
                 }
                 move_lines.append((0,0,vals))
             
+            # if closing.project_id.varieties_id.name == 'Melon':
+            #     print(f"================")
+            #     print(f"==== Project Tanaman: {closing.project_tanaman}")
+            #     print(f"==== Project Name : {closing.project_id.name}")
+            #     print(f"==== Line : {move_lines}")
+            if not move_lines:
+                continue
+
             values = {
                 'date': closing.date_to,
                 'journal_id': project_journal.id,
@@ -496,7 +504,6 @@ class ClosingProject(models.Model):
             else:
                 new_move = self.env['account.move'].create(values)
                 closing.closing_move_id = new_move.id
-        
         return True
 
     def action_cancel(self):
