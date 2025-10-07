@@ -1551,6 +1551,7 @@ class ClosingProduction(models.Model):
                     ('location_id.usage', '=', 'internal'),
                     ('location_dest_id.usage', '=', 'inventory'),
                     ('move_id.scrap_ids', '=', False), 
+                    ('move_id.picking_id', '=', False),
                     ('state', '=', 'done'),
                     ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                     ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
@@ -1560,7 +1561,8 @@ class ClosingProduction(models.Model):
                     ('product_id', '=', product.id),
                     ('location_dest_id.usage', '=', 'internal'),
                     ('location_id.usage', '=', 'inventory'),
-                    ('move_id.scrap_ids', '=', False),  
+                    ('move_id.scrap_ids', '=', False),
+                    ('move_id.picking_id', '=', False),
                     ('state', '=', 'done'),
                     ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                     ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
@@ -1782,18 +1784,49 @@ class ClosingProduction(models.Model):
                 outgoing_qty -= sum(outgoing_moves_ret.mapped('product_uom_qty')) if outgoing_moves_ret else 0.0
 
                 # Find Adjustment
-                adjustment_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
-                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
-                                ])
-                adjustment_in_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','inventory'),('location_dest_id.usage','=','internal'),
-                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
-                                ])
-                adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
-                adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+                # Punya pak hendra
+                # adjustment_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                #                 ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                #                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                #                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                #                 ])
+                # adjustment_in_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                #                 ('location_id.usage','=','inventory'),('location_dest_id.usage','=','internal'),
+                #                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                #                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                #                 ])
+                # adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                # adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+
+                adjustment_out_moves = self.env['stock.move'].search([
+                    ('product_id', '=', product.id),
+                    ('state', '=', 'done'),
+                    ('scrap_ids', '=', False),
+                    ('picking_id', '=', False),
+                    ('location_id.usage', '=', 'internal'),
+                    ('location_dest_id.usage', '=', 'inventory'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                ])
+
+                adjustment_in_moves = self.env['stock.move'].search([
+                    ('product_id', '=', product.id),
+                    ('state', '=', 'done'),
+                    ('scrap_ids', '=', False),
+                    ('picking_id', '=', False),
+                    ('location_id.usage', '=', 'inventory'),
+                    ('location_dest_id.usage', '=', 'internal'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                ])
+
+                # Hitung qty adjustment (in - out)
+                adjustment_qty = (
+                    sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+                ) - (
+                    sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                )
+
 
                 values_to_create = {
                     'product_id': product.id,
@@ -1803,6 +1836,7 @@ class ClosingProduction(models.Model):
                     'incoming_qty': produced_qty,
                     'manufacturing_cost': 0.0,
                     'outgoing_qty': outgoing_qty,
+                    'adjustment_qty': adjustment_qty,
                 }
                 if prev_closing_fg:
                     values_to_create.update({
