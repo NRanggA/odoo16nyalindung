@@ -2695,8 +2695,13 @@ class ClosingProduction(models.Model):
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
             move_lines_production2.append((0,0,vals_src2))
 
+        move_lines_production = [line for line in move_lines_production if line[2].get('account_id')]
+        move_lines_production2 = [line for line in move_lines_production2 if line[2].get('account_id')]
+        move_lines_cogs = [line for line in move_lines_cogs if line[2].get('account_id')]
+
         if check_bal and check_bal>=-1.0 and check_bal<=1.0:
             move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
+
         if move_lines_production or move_lines_production2:
             values = {
                 'date': self.date_to,
@@ -2705,7 +2710,7 @@ class ClosingProduction(models.Model):
                 'line_ids': move_lines_production+move_lines_production2,
             }
             new_move = self.env['account.move'].create(values)
-            self.closing_move_ids = [(4, new_move.id)]
+            self.closing_move_ids = [(4, new_move.id)]        
         if move_lines_cogs:
             values = {
                 'date': self.date_to,
