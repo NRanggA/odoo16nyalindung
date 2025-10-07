@@ -1545,6 +1545,25 @@ class ClosingProduction(models.Model):
                                 ])
                 ripening_outgoing_qty = (sum(out_moves_ripening_loc.mapped('qty_done')) if out_moves_ripening_loc else 0.0) - (sum(return_moves_ripening_loc.mapped('qty_done')) if return_moves_ripening_loc else 0.0)
 
+                # Get Adjustment
+                adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+                adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
+                                ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+                adjustment_qty = (sum(adjustment_in_moves.mapped('qty_done')) if adjustment_in_moves else 0.0) - (sum(adjustment_out_moves.mapped('qty_done')) if adjustment_out_moves else 0.0)
+
+                # for move in adjustment_in_moves:
+                #     print(f"==== Adjusment In Move {move.reference} - {move.qty_done}")
+
+                # for move in adjustment_out_moves:
+                #     print(f"==== Adjusment Out Move {move.reference} - {move.qty_done}")
+
+                # print(f"==== Adjusment product {product.name} = {adjustment_qty}")
+
                 values_to_create = {
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
@@ -1557,6 +1576,7 @@ class ClosingProduction(models.Model):
                     'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'outgoing_qty': outgoing_qty,
                     'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
+                    'adjustment_qty': adjustment_qty,
                 }
                 if prev_closing_fg:
                     values_to_create.update({
@@ -1570,7 +1590,6 @@ class ClosingProduction(models.Model):
             
             # for exvals in to_create:
             #     exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
-            
             # Other Plantation Product
             if to_create:
                 closing.fg2_valuation_ids = list(map(lambda x: (0,0,x), to_create))
