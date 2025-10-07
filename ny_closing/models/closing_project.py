@@ -457,6 +457,10 @@ class ClosingProject(models.Model):
     def create_account_move(self):
         project_journal = self.env.ref('ny_closing.plantation_closing_project_journal')
         for closing in self:
+
+            if not closing.project_tanaman:
+                continue
+
             if closing.closing_move_id:
                 if closing.closing_move_id.state in ('posted','cancel'):
                     closing.closing_move_id.button_draft()
@@ -485,11 +489,6 @@ class ClosingProject(models.Model):
                 }
                 move_lines.append((0,0,vals))
             
-            # if closing.project_id.varieties_id.name == 'Melon':
-            #     print(f"================")
-            #     print(f"==== Project Tanaman: {closing.project_tanaman}")
-            #     print(f"==== Project Name : {closing.project_id.name}")
-            #     print(f"==== Line : {move_lines}")
             if not move_lines:
                 continue
 
@@ -506,9 +505,25 @@ class ClosingProject(models.Model):
                 closing.closing_move_id = new_move.id
         return True
 
+    # def action_cancel(self):
+    #     for closing in self:
+    #         closing.closing_move_id.button_cancel()
+
     def action_cancel(self):
         for closing in self:
-            closing.closing_move_id.button_cancel()
+            move = closing.closing_move_id
+            if not move:
+                continue
+
+            if move.state == 'posted':
+                move.button_draft()
+
+            if move.state != 'cancel':
+                move.button_cancel()
+
+            move.unlink()
+
+            closing.closing_move_id = False
     
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")
