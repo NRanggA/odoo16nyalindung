@@ -485,10 +485,25 @@ class ClosingProduction(models.Model):
     sheet_rm_inventory_account_id = fields.Many2one('account.account', string='Inventory Account Asam Semut')
     sheet_rm_purchase_account_id = fields.Many2one('account.account', string='Purchase Account Asam Semut')
     sheet_rm_consumption_account_id = fields.Many2one('account.account', string='Consumption Account Asam Semut')
+    sheet_rm_adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account Asam Semut')
     sheet_rm_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Begining Qty of Asam Semut')
     sheet_rm_opening_qty_manual = fields.Float(string='Begining Qty of Asam Semut')
     sheet_rm_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Begining Value of Asam Semut')
     sheet_rm_opening_value_manual = fields.Float(string='Begining Value of Asam Semut')
+    
+    sheet_rm_opening_adjustment_value_enable = fields.Boolean(string='Enable Adjustment Opening Value')
+    sheet_rm_opening_adjustment_value = fields.Float(string='Adjustment Opening Value')
+    sheet_rm_opening_adjustment_diff = fields.Float(compute='_compute_opening_adj_value_diff', store=True, string='Adjustment Opening Value Diff')
+    # sheet_rm_closing_adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account Asam Semut')
+    @api.depends('sheet_rm_opening_value', 'sheet_rm_opening_adjustment_value_enable',
+                 'sheet_rm_opening_adjustment_value')
+    def _compute_opening_adj_value_diff(self):
+        for closing in self:
+            if closing.sheet_rm_opening_adjustment_value_enable:
+                closing.sheet_rm_opening_adjustment_diff = closing.sheet_rm_opening_adjustment_value - closing.sheet_rm_opening_value
+            else:
+                closing.sheet_rm_opening_adjustment_diff = 0
+    
     sheet_rm_incoming_qty = fields.Float(string='Incoming Qty of Asam Semut')
     sheet_rm_incoming_value = fields.Float(string='Incoming Qty of Asam Semut')
     sheet_rm_onhand_qty = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='Onhand Qty of Asam Semut')
@@ -496,8 +511,27 @@ class ClosingProduction(models.Model):
     sheet_rm_cost_price = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='New Cost Price of Asam Semut')
     sheet_rm_outgoing_qty = fields.Float(string='Consumed Qty of Asam Semut')
     sheet_rm_outgoing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Consumed Qty of Asam Semut')
+    sheet_rm_adjustment_qty = fields.Float(string='Adjustment Qty of Asam Semut')
+    sheet_rm_adjustment_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Adjustment Value of Asam Semut')
     sheet_rm_closing_qty = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Qty of Asam Semut')
     sheet_rm_closing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Value of Asam Semut')
+    
+    sheet_rm_closing_adjustment_value_enable = fields.Boolean(string='Enable Adjustment Closing Value')
+    sheet_rm_closing_adjustment_value = fields.Float(string='Adjustment Closing Value')
+    sheet_rm_closing_adjustment_diff = fields.Float(compute='_compute_closing_adj_value_diff', store=True, string='Adjustment Closing Value Diff')
+    sheet_rm_closing_value2 = fields.Float(compute='_compute_closing_adj_value_diff', store=True, string='Ending Value of Asam Semut')
+    # sheet_rm_closing_adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account Asam Semut')
+    @api.depends('sheet_rm_closing_value', 'sheet_rm_closing_adjustment_value_enable', 
+                 'sheet_rm_closing_adjustment_value')
+    def _compute_closing_adj_value_diff(self):
+        for closing in self:
+            if closing.sheet_rm_closing_adjustment_value_enable:
+                closing.sheet_rm_closing_adjustment_diff = closing.sheet_rm_closing_adjustment_value - closing.sheet_rm_closing_value
+                closing.sheet_rm_closing_value2 = closing.sheet_rm_closing_value + closing.sheet_rm_closing_adjustment_diff
+            else:
+                closing.sheet_rm_closing_adjustment_diff = 0
+                closing.sheet_rm_closing_value2 = closing.sheet_rm_closing_value
+
     sheet_raw_material_cost = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Raw Material Cost of Sheet')
 
     latex_wip_onhand_qty = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current WIP Lateks')
@@ -656,20 +690,23 @@ class ClosingProduction(models.Model):
             closing.lump_plantation_cost = sum(closing.plantation_cost_ids.mapped('total_cost_lump')) if closing.plantation_cost_ids else 0.0
     
     @api.depends('sheet_rm_opening_qty', 'sheet_rm_opening_value',
-                 'sheet_rm_incoming_qty', 'sheet_rm_incoming_value')
+                 'sheet_rm_incoming_qty', 'sheet_rm_incoming_value',
+                 'sheet_rm_opening_adjustment_diff')
     def _compute_onhand_asam_semut(self):
         for closing in self:
             closing.sheet_rm_onhand_qty = closing.sheet_rm_opening_qty + closing.sheet_rm_incoming_qty
-            closing.sheet_rm_onhand_value = closing.sheet_rm_opening_value + closing.sheet_rm_incoming_value
+            closing.sheet_rm_onhand_value = closing.sheet_rm_opening_value + closing.sheet_rm_opening_adjustment_diff + closing.sheet_rm_incoming_value
             closing.sheet_rm_cost_price = closing.sheet_rm_onhand_value/closing.sheet_rm_onhand_qty if closing.sheet_rm_onhand_qty else 0.0
     
     @api.depends('sheet_rm_outgoing_qty', 'sheet_rm_cost_price',
-                 'sheet_rm_onhand_qty', 'sheet_rm_onhand_value')
+                 'sheet_rm_onhand_qty', 'sheet_rm_onhand_value',
+                 'sheet_rm_adjustment_qty', 'sheet_rm_adjustment_value')
     def _compute_closing_asam_semut(self):
         for closing in self:
             closing.sheet_rm_outgoing_value = closing.sheet_rm_cost_price * closing.sheet_rm_outgoing_qty
-            closing.sheet_rm_closing_qty = closing.sheet_rm_onhand_qty - closing.sheet_rm_outgoing_qty
-            closing.sheet_rm_closing_value = closing.sheet_rm_onhand_value - closing.sheet_rm_outgoing_value
+            closing.sheet_rm_adjustment_value = closing.sheet_rm_cost_price * closing.sheet_rm_adjustment_qty
+            closing.sheet_rm_closing_qty = closing.sheet_rm_onhand_qty - closing.sheet_rm_outgoing_qty + closing.sheet_rm_adjustment_qty
+            closing.sheet_rm_closing_value = closing.sheet_rm_onhand_value - closing.sheet_rm_outgoing_value + closing.sheet_rm_adjustment_value
             closing.sheet_raw_material_cost = closing.sheet_rm_outgoing_value
 
     @api.depends('latex_opening_qty', 'latex_opening_value', 
@@ -1327,16 +1364,18 @@ class ClosingProduction(models.Model):
             mrp_sheet_done = closing._get_mrp_done_this_month(sheet_product)
             if mrp_sheet_done:
                 rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
-                closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+                # closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+                closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
             mrp_compound_done = closing._get_mrp_done_this_month(compound_product)
             if mrp_compound_done:
                 rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-                closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+                # closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+                closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
             
             # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
             # Get Receiving Asam Semut
             receving_asam_semuts = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
-                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
+                                    ('location_id.usage','not in',('internal','inventory')),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
             # Get Purchase Amount Asam Semut
@@ -1348,6 +1387,19 @@ class ClosingProduction(models.Model):
                                     ('date','>=',closing.date_from),('date','<=',closing.date_to),
                                     ('is_confirmed','=',True)])
             closing.sheet_rm_outgoing_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
+
+            # Get Adjustment Asam Semut
+            asam_semut_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                    ('move_id.picking_id','=',False),('state','=','done'),
+                                    ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            asam_semut_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
+                                    ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
+                                    ('move_id.picking_id','=',False),('state','=','done'),
+                                    ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.sheet_rm_adjustment_qty = (sum(asam_semut_adjustment_in_moves.mapped('qty_done')) if asam_semut_adjustment_in_moves else 0.0) - (sum(asam_semut_adjustment_out_moves.mapped('qty_done')) if asam_semut_adjustment_out_moves else 0.0)
 
             # Get Sales
             latex_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
@@ -2153,7 +2205,7 @@ class ClosingProduction(models.Model):
             move_lines_receiving.append((0,0,vals_src_31))
         # END: Purchase Asam Semut
 
-        # BEGIN: Konsumsi Asam Semut
+        # BEGIN: Adjustment Asam Semut
         if self.sheet_rm_outgoing_qty or self.sheet_rm_outgoing_value:
             vals_dest32 = {
                 'name': 'Konsumsi Asam Semut',
@@ -2163,32 +2215,69 @@ class ClosingProduction(models.Model):
                 'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
                 'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
             }
-            move_lines_wip.append((0,0,vals_dest32))
+            move_lines_outgoing.append((0,0,vals_dest32))
             vals_src_32 = vals_dest32.copy()
             vals_src_32.update({
                 'account_id': self.sheet_rm_inventory_account_id.id,
                 'debit': vals_dest32['credit'],
                 'credit': vals_dest32['debit'],
             })
-            move_lines_wip.append((0,0,vals_src_32))
-
-            vals_dest33 = {
-                'name': 'Cost Asam Semut to WIP Latex',
+            move_lines_outgoing.append((0,0,vals_src_32))
+        
+        if self.sheet_rm_opening_adjustment_value_enable and self.sheet_rm_opening_adjustment_diff:
+            vals_dest32 = {
+                'name': 'Adjustment Selisih Nilai Asam Semut',
                 'plantation_varieties_id': varieties.id,
                 'product_id': False,
-                'account_id': self.latex_wip_account_id.id,
-                'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
-                'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_opening_adjustment_diff if self.sheet_rm_opening_adjustment_diff>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_opening_adjustment_diff) if self.sheet_rm_opening_adjustment_diff<0 else 0.0, 2),
             }
-            move_lines_wip.append((0,0,vals_dest33))
-            vals_src_33 = vals_dest33.copy()
-            vals_src_33.update({
-                'account_id': self.sheet_rm_consumption_account_id.id,
-                'debit': vals_dest33['credit'],
-                'credit': vals_dest33['debit'],
+            move_lines_outgoing.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_adjustment_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
             })
-            move_lines_wip.append((0,0,vals_src_33))
-        # END: Purchase Asam Semut
+            move_lines_outgoing.append((0,0,vals_src_32))
+        
+        if self.sheet_rm_closing_adjustment_value_enable and self.sheet_rm_closing_adjustment_diff:
+            vals_dest32 = {
+                'name': 'Adjustment Selisih Nilai Asam Semut',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_closing_adjustment_diff if self.sheet_rm_closing_adjustment_diff>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_closing_adjustment_diff) if self.sheet_rm_closing_adjustment_diff<0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_adjustment_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_src_32))
+        
+        if self.sheet_rm_adjustment_qty and self.sheet_rm_adjustment_value:
+            vals_dest32 = {
+                'name': 'Adjustment Selisih Nilai Asam Semut',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_adjustment_value if self.sheet_rm_adjustment_value>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_adjustment_value) if self.sheet_rm_adjustment_value<0 else 0.0, 2),
+            }
+            move_lines_wip.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_adjustment_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_wip.append((0,0,vals_src_32))
+        # END: Adjustment Asam Semut
             
         if move_lines_receiving:
             # handling Pembuatan

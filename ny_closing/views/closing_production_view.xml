@@ -616,6 +616,7 @@
                         <group string="Account for Asam Semut" attrs="{'invisible': [('varieties_type','!=','karet')]}">
                             <field name="sheet_rm_inventory_account_id" string="Inventory Account" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                             <field name="sheet_rm_consumption_account_id" string="Consumption Account" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
+                            <field name="sheet_rm_adjustment_account_id" string="Adjustment Account" options="{'no_create': True, 'no_edit': True, 'no_open': True}" attrs="{'required': [('varieties_type','=','karet'),('state','=','account_entry')]}"/>
                         </group>
                     </group>
                     <notebook>
@@ -740,7 +741,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td style="padding-left: 20px;" rowspan="10">Manufacturing Cost
+                                        <td style="padding-left: 20px;" rowspan="14">Manufacturing Cost
                                             <button name="action_compute_mrp_cost" type="object" icon="fa-refresh" states="rm_valuation"/>
                                             <br/>
                                             <field name="manufacturing_cost_account_ids" widget="many2many_tags" groups="ny_closing.plantation_closing_config"/>
@@ -785,6 +786,16 @@
                                         <td></td>
                                         <td style="text-align: right;"><field name="sheet_rm_opening_qty" /></td>
                                         <td style="text-align: right;"><field name="sheet_rm_opening_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Adjustment Value Opening</td>
+                                        <td><field name="sheet_rm_opening_adjustment_value_enable"/></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_opening_adjustment_value" attrs="{'invisible': [('sheet_rm_opening_adjustment_value_enable','=',False)]}"/></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_opening_adjustment_diff" attrs="{'invisible': [('sheet_rm_opening_adjustment_value_enable','=',False)]}"/></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -836,10 +847,40 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td style="padding-left: 20px;">Adjustment</td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_adjustment_qty" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_adjustment_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td style="padding-left: 20px;">Ending</td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="sheet_rm_closing_qty" /></td>
                                         <td style="text-align: right;"><field name="sheet_rm_closing_value" /></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">Adjustment Ending Value</td>
+                                        <td><field name="sheet_rm_closing_adjustment_value_enable" /></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_closing_adjustment_value" attrs="{'invisible': [('sheet_rm_closing_adjustment_value_enable','=',False)]}"/></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_closing_adjustment_diff" attrs="{'invisible': [('sheet_rm_closing_adjustment_value_enable','=',False)]}"/></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-left: 20px;">New Ending</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="sheet_rm_closing_value2" /></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
