@@ -425,6 +425,13 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td style="font-weight: bold;">Adjustment Value Only</td>
+                                        <td style="text-align: right;"></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="adjustment_value_only"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td style="font-weight: bold;">Ending</td>
                                         <td style="text-align: right;"><field name="closing_qty"/></td>
                                         <td></td>
