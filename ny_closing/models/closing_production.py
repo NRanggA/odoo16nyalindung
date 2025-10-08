@@ -1545,6 +1545,39 @@ class ClosingProduction(models.Model):
                                 ])
                 ripening_outgoing_qty = (sum(out_moves_ripening_loc.mapped('qty_done')) if out_moves_ripening_loc else 0.0) - (sum(return_moves_ripening_loc.mapped('qty_done')) if return_moves_ripening_loc else 0.0)
 
+                # Get Adjustment
+                adjustment_out_moves = self.env['stock.move.line'].search([
+                    ('product_id', '=', product.id),
+                    ('location_id.usage', '=', 'internal'),
+                    ('location_dest_id.usage', '=', 'inventory'),
+                    ('move_id.scrap_ids', '=', False), 
+                    ('move_id.picking_id', '=', False),
+                    ('state', '=', 'done'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                ])
+
+                adjustment_in_moves = self.env['stock.move.line'].search([
+                    ('product_id', '=', product.id),
+                    ('location_dest_id.usage', '=', 'internal'),
+                    ('location_id.usage', '=', 'inventory'),
+                    ('move_id.scrap_ids', '=', False),
+                    ('move_id.picking_id', '=', False),
+                    ('state', '=', 'done'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                ])
+
+                adjustment_qty = (sum(adjustment_in_moves.mapped('qty_done')) if adjustment_in_moves else 0.0) - (sum(adjustment_out_moves.mapped('qty_done')) if adjustment_out_moves else 0.0)
+
+                # for move in adjustment_in_moves:
+                #     print(f"==== Adjusment In Move {move.reference} - {move.qty_done}")
+
+                # for move in adjustment_out_moves:
+                #     print(f"==== Adjusment Out Move {move.reference} - {move.qty_done}")
+
+                # print(f"==== Adjusment product {product.name} = {adjustment_qty}")
+
                 values_to_create = {
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
@@ -1557,6 +1590,7 @@ class ClosingProduction(models.Model):
                     'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'outgoing_qty': outgoing_qty,
                     'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
+                    'adjustment_qty': adjustment_qty,
                 }
                 if prev_closing_fg:
                     values_to_create.update({
@@ -1570,7 +1604,6 @@ class ClosingProduction(models.Model):
             
             # for exvals in to_create:
             #     exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
-            
             # Other Plantation Product
             if to_create:
                 closing.fg2_valuation_ids = list(map(lambda x: (0,0,x), to_create))
@@ -1751,18 +1784,49 @@ class ClosingProduction(models.Model):
                 outgoing_qty -= sum(outgoing_moves_ret.mapped('product_uom_qty')) if outgoing_moves_ret else 0.0
 
                 # Find Adjustment
-                adjustment_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
-                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
-                                ])
-                adjustment_in_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','inventory'),('location_dest_id.usage','=','internal'),
-                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
-                                ])
-                adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
-                adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+                # Punya pak hendra
+                # adjustment_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                #                 ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                #                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                #                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                #                 ])
+                # adjustment_in_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                #                 ('location_id.usage','=','inventory'),('location_dest_id.usage','=','internal'),
+                #                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                #                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                #                 ])
+                # adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                # adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+
+                adjustment_out_moves = self.env['stock.move'].search([
+                    ('product_id', '=', product.id),
+                    ('state', '=', 'done'),
+                    ('scrap_ids', '=', False),
+                    ('picking_id', '=', False),
+                    ('location_id.usage', '=', 'internal'),
+                    ('location_dest_id.usage', '=', 'inventory'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                ])
+
+                adjustment_in_moves = self.env['stock.move'].search([
+                    ('product_id', '=', product.id),
+                    ('state', '=', 'done'),
+                    ('scrap_ids', '=', False),
+                    ('picking_id', '=', False),
+                    ('location_id.usage', '=', 'inventory'),
+                    ('location_dest_id.usage', '=', 'internal'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                ])
+
+                # Hitung qty adjustment (in - out)
+                adjustment_qty = (
+                    sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+                ) - (
+                    sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                )
+
 
                 values_to_create = {
                     'product_id': product.id,
@@ -1772,6 +1836,7 @@ class ClosingProduction(models.Model):
                     'incoming_qty': produced_qty,
                     'manufacturing_cost': 0.0,
                     'outgoing_qty': outgoing_qty,
+                    'adjustment_qty': adjustment_qty,
                 }
                 if prev_closing_fg:
                     values_to_create.update({
@@ -2407,7 +2472,7 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_production.append((0,0,vals_src))
             
-            if line.outgoing_qty or linr.outgoing_value:
+            if line.outgoing_qty or line.outgoing_value:
                 vals_src = {
                     'name': 'Cost of Goods Sold',
                     'plantation_location_type_id': False,
@@ -2428,6 +2493,44 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_production.extend([(0,0,vals_src),(0,0,vals_dest)])
             
+            # buat fungsi untuk journal adjustment
+            # kalau nilainya minus maka inventory ada di credit, debit nya ada account adjustment
+            # Kalau nilainya positif maka inventory ada di debit, credit nya account adjustment
+            if line.adjustment_qty or line.adjustment_value:
+                adjustment_value = line.adjustment_value or 0.0
+
+                if adjustment_value < 0:
+                    debit_account = line.adjustment_account_id.id
+                    credit_account = line.inventory_account_id.id
+                    debit_val = abs(adjustment_value)
+                    credit_val = abs(adjustment_value)
+                else:
+                    debit_account = line.inventory_account_id.id
+                    credit_account = line.adjustment_account_id.id
+                    debit_val = adjustment_value
+                    credit_val = adjustment_value
+
+                vals_src = {
+                    'name': 'Adjustment',
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': debit_account,
+                    'product_id': line.product_id.id,
+                    'debit': round(debit_val if debit_val > 0 else 0.0, 2),
+                    'credit': 0.0,
+                }
+                vals_dest = vals_src.copy()
+                vals_dest.update({
+                    'account_id': credit_account,
+                    'debit': 0.0,
+                    'credit': round(credit_val if credit_val > 0 else 0.0, 2),
+                })
+                move_lines_production.extend([(0, 0, vals_src), (0, 0, vals_dest)])
+
+
             if move_lines_production:
                 first_bal = check_balance = 0.0
                 for x,y,val in move_lines_production:
@@ -2651,8 +2754,13 @@ class ClosingProduction(models.Model):
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
             move_lines_production2.append((0,0,vals_src2))
 
+        move_lines_production = [line for line in move_lines_production if line[2].get('account_id')]
+        move_lines_production2 = [line for line in move_lines_production2 if line[2].get('account_id')]
+        move_lines_cogs = [line for line in move_lines_cogs if line[2].get('account_id')]
+
         if check_bal and check_bal>=-1.0 and check_bal<=1.0:
             move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
+
         if move_lines_production or move_lines_production2:
             values = {
                 'date': self.date_to,
@@ -2661,7 +2769,7 @@ class ClosingProduction(models.Model):
                 'line_ids': move_lines_production+move_lines_production2,
             }
             new_move = self.env['account.move'].create(values)
-            self.closing_move_ids = [(4, new_move.id)]
+            self.closing_move_ids = [(4, new_move.id)]        
         if move_lines_cogs:
             values = {
                 'date': self.date_to,
