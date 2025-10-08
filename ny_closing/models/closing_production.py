@@ -188,7 +188,7 @@ class ClosingProductionFinishGood(models.Model):
             'outgoing_qty', 'outgoing_value',
             'ripening_qty', 'ripening_value',
             'scrap_qty', 'scrap_value',
-            'adjustment_qty', 'adjustment_value'
+            'adjustment_qty', 'adjustment_value', 'adjustment_value_only'
             )
     def _compute_closing(self):
         for line in self:
