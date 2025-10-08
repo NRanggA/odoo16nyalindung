@@ -2707,7 +2707,7 @@ class ClosingProduction(models.Model):
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
-                    'account_id': line.adjustment_account_id.id,
+                    'account_id': line.inventory_account_id.id,
                     'product_id': line.product_id.id,
                     'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
                     'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
@@ -2716,7 +2716,7 @@ class ClosingProduction(models.Model):
                 vals_src5 = vals_adj.copy()
                 vals_src5.update({
                     'name': f"Adjustment Cost {line.product_id.name} Mentah",
-                    'account_id': line.inventory_account_id.id,
+                    'account_id': line.adjustment_account_id.id,
                     'debit': vals_adj['credit'],
                     'credit': vals_adj['debit'],
                 })
