@@ -2205,8 +2205,9 @@ class ClosingProduction(models.Model):
             move_lines_receiving.append((0,0,vals_src_31))
         # END: Purchase Asam Semut
 
-        # BEGIN: Adjustment Asam Semut
+        # BEGIN: Outgoing Asam Semut
         if self.sheet_rm_outgoing_qty or self.sheet_rm_outgoing_value:
+            # Persediaan Biaya Asam Semut ke Asam Semut
             vals_dest32 = {
                 'name': 'Konsumsi Asam Semut',
                 'plantation_varieties_id': varieties.id,
@@ -2223,7 +2224,27 @@ class ClosingProduction(models.Model):
                 'credit': vals_dest32['debit'],
             })
             move_lines_outgoing.append((0,0,vals_src_32))
+            
+            # Asam Semut ke WIP Lates
+            vals_dest32 = {
+                'name': 'Cost Asam Semut to WIP Lates',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.latex_wip_account_id.id,
+                'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
+            }
+            move_lines_wip.append((0,0,vals_dest32))
+            vals_src_33 = vals_dest32.copy()
+            vals_src_33.update({
+                'account_id': self.sheet_rm_consumption_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_wip.append((0,0,vals_src_33))
+        # END: Outgoing Asam Semut
         
+        # BEGIN: Adjustment Asam Semut
         if self.sheet_rm_opening_adjustment_value_enable and self.sheet_rm_opening_adjustment_diff:
             vals_dest32 = {
                 'name': 'Adjustment Selisih Nilai Asam Semut',
