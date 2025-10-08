@@ -192,7 +192,7 @@ class ClosingProductionFinishGood(models.Model):
     def _compute_closing(self):
         for line in self:
             line.closing_qty = line.onhand_qty - line.ripening_qty - line.outgoing_qty - line.outgoing_issue_qty - line.scrap_qty + line.adjustment_qty
-            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.outgoing_issue_value - line.scrap_value + line.adjustment_value
+            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.outgoing_issue_value - line.scrap_value + line.adjustment_value + line.adjustment_value_only 
     
     @api.depends('closing_id', 'closing_id.varieties_type', 
         'ripening_incoming_qty', 'closing_id.pisang_ripening_cost', 
