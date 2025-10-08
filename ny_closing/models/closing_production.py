@@ -2715,7 +2715,7 @@ class ClosingProduction(models.Model):
                 move_lines_cogs.append((0, 0, vals_adj))
                 vals_src5 = vals_adj.copy()
                 vals_src5.update({
-                    'name': f"Inventory Scrap",
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
                     'account_id': line.inventory_account_id.id,
                     'debit': vals_adj['credit'],
                     'credit': vals_adj['debit'],
