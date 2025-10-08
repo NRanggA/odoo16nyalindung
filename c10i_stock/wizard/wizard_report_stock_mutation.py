@@ -26,9 +26,9 @@ class WizardReportStockMutation(models.TransientModel):
     ], string='Product Type')
 
     inventory_valuation = fields.Selection([
-        # ('manual_periodic', 'Manual'),
+        ('manual_periodic', 'Manual'),
         ('real_time', 'Automated'),
-    ], string='Inventory Valuation', default="real_time")
+    ], string='Inventory Valuation')
 
     @api.onchange('inventory_valuation', 'product_type')
     def _onchange_inventory_valuation(self):
