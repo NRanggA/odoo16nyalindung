@@ -100,7 +100,8 @@ class ClosingProductionFinishGood(models.Model):
     scrap_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Scrap Value')
 
     adjustment_qty = fields.Float(string='Adjustment Qty')
-    adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value', readonly=False)
+    adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value')
+    adjustment_value_only = fields.Float(string='Adjustment Value only')
 
     closing_qty = fields.Float(compute='_compute_closing', store=True, string='Closing Qty')
     closing_value = fields.Float(compute='_compute_closing', store=True, string='Closing Value')
@@ -2901,7 +2902,7 @@ class ClosingProduction(models.Model):
                 move_lines_cogs.append((0, 0, vals_src4))
             
             # 7. Journal Susut
-            if line.adjustment_qty or line.adjustment_value:
+            if line.adjustment_qty or line.adjustment_value or line.adjustment_value_only:
                 vals_adj = {
                     'name': f"Adjustment Cost {line.product_id.name} Mentah",
                     'plantation_location_type_id': False,
@@ -2911,8 +2912,8 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.adjustment_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
-                    'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
+                    'debit': round(line.adjustment_value + line.adjustment_value_only, 2) if line.adjustment_value or line.adjustment_value_only > 0 else 0.0,
+                    'credit': round(abs(line.adjustment_value + line.adjustment_value_only), 2) if line.adjustment_value or line.adjustment_value_only < 0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_adj))
                 vals_src5 = vals_adj.copy()
