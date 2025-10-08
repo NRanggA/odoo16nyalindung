@@ -15,6 +15,7 @@
                             <field name="project_id" />
                             <field name="date_from" />
                             <field name="date_to" />
+                            <field name="mark_project_period" />
                         </group>
                         <group>
                             <label for="total_cost" />
