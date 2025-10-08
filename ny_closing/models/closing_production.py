@@ -100,7 +100,7 @@ class ClosingProductionFinishGood(models.Model):
     scrap_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Scrap Value')
 
     adjustment_qty = fields.Float(string='Adjustment Qty')
-    adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value')
+    adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value', readonly=False)
 
     closing_qty = fields.Float(compute='_compute_closing', store=True, string='Closing Qty')
     closing_value = fields.Float(compute='_compute_closing', store=True, string='Closing Value')
