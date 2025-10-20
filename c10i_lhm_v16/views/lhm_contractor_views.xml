@@ -60,7 +60,7 @@
                                 <field name="user_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="operating_unit_id" readonly="1" options="{'no_create_edit':True, 'no_create':True, 'no_open':True}"/>
                                 <field name="invoice_id" readonly="1" options="{'no_create_edit':True, 'no_create':True}"/>
-                                <field name="move_id" readonly="1" invisible="1" options="{'no_create_edit':True, 'no_create':True}"/>
+                                <field name="move_id" readonly="1" group="account.group_account_user" options="{'no_create_edit':True, 'no_create':True}"/>
                                 <field name="amount_total" widget="monetary"/>
                                 <!-- <field name="date_stop" readonly="1" invisible="1"/> -->
                             </group>
