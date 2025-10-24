@@ -100,6 +100,9 @@
             <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="after">
                 <field name="qty_butir"  attrs="{'column_invisible': [('parent.has_melon_lines', '=', False)]}"/>
             </xpath>
+            <xpath expr="//kanban" position="inside">
+                <field name="route_id" invisible="1"/>
+            </xpath>
         </field>
     </record>
 
