@@ -37,11 +37,14 @@ class EquipmentRegister(models.Model):
 		result = super(EquipmentRegister ,self).create(val_list)
 		return result
 
+	# def unlink(self):
+	# 	for reg in self:
+	# 		if reg.state not in ['cancel', 'draft']:
+	# 			raise ValidationError("You can Only delete the Request(s) that are in 'New' or 'Cancelled' state !!!")
+	# 	return super(EquipmentRegister,self).unlink()
+
 	def unlink(self):
-		for reg in self:
-			if reg.state not in ['cancel', 'draft']:
-				raise ValidationError("You can Only delete the Request(s) that are in 'New' or 'Cancelled' state !!!")
-		return super(EquipmentRegister,self).unlink()
+		raise ValidationError("You cannot delete this record, only can be cancelled.")
 
 	###################
 	# BUSINESS METHOD #
@@ -107,6 +110,9 @@ class EquipmentRegister(models.Model):
 				if line.equipment_ids:
 					raise ValidationError("You can only Cancel This when the Equipment is not created yet. Please delete the Equipment first.")
 		return self.write({'state':'cancel'})
+	
+	def action_draft(self):
+		return self.write({'state':'draft'})
 
 	def action_open_equipment(self, equipments=False):
 		result = self.env["ir.actions.actions"]._for_xml_id('c10i_purchase_equipment.equipment_action_from_register')

@@ -10,6 +10,7 @@
                     <button name="action_confirm" string="Confirm" states="draft" type="object" class="oe_highlight"/>
                     <button name="action_done" string="Done" states="confirm" type="object" class="oe_highlight"/>
                     <button name="action_cancel" string="Cancel" states="draft,confirm" type="object"/>
+                    <button name="action_draft" string="Draft" states="cancel" type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
                 </header>
                 <sheet>
