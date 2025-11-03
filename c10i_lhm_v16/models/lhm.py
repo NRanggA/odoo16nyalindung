@@ -798,7 +798,7 @@ class lhm_project(models.Model):
 
     def button_done(self):
         if self.location_id:
-            self.location_id.write({'active': True})
+            self.location_id.write({'active': False})
         self.state = 'done'
 
     # Error karena field subtype_project_id tidak terdapat di model ini
