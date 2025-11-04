@@ -2223,8 +2223,8 @@ class ClosingProduction(models.Model):
             vals_adjs_11 = vals_src11.copy()
             vals_adjs_11.update({
                 'account_id': self.latex_adjustment_account_id.id,
-                'debit': vals_src9['credit'],
-                'credit': vals_src9['debit'],
+                'debit': vals_src11['credit'],
+                'credit': vals_src11['debit'],
             })
             move_lines_outgoing.append((0,0,vals_adjs_11))
             
