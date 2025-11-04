@@ -1403,7 +1403,7 @@ class ClosingProduction(models.Model):
             closing.sheet_rm_adjustment_qty = (sum(asam_semut_adjustment_in_moves.mapped('qty_done')) if asam_semut_adjustment_in_moves else 0.0) - (sum(asam_semut_adjustment_out_moves.mapped('qty_done')) if asam_semut_adjustment_out_moves else 0.0)
 
             # Get Sales
-            latex_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+            latex_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
@@ -1415,11 +1415,11 @@ class ClosingProduction(models.Model):
             closing.lump_delivered_qty = sum(lump_delivery_moves.mapped('qty_done')) if lump_delivery_moves else 0.0
 
             # Get Adjustment
-            latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
-            latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
