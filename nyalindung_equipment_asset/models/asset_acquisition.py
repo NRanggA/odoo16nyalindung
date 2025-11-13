@@ -98,6 +98,9 @@ class AssetAcquisition(models.Model):
 										'prorata': line.asset_category_id.prorata,
 										'first_depreciation_manual_date': first_depreciation_date,
 										'category_id': line.asset_category_id.id,
+										'gain_account_id': line.asset_category_id.gain_account_id.id,
+										'loss_account_id': line.asset_category_id.loss_account_id.id,
+										'write_on_asset_sales_account_id': line.asset_category_id.write_on_asset_sales_account_id.id,
 										'acquisition_line_ids': [(4, line.id)],
 									},
 								}})
@@ -124,6 +127,9 @@ class AssetAcquisition(models.Model):
 									'prorata': line.asset_category_id.prorata,
 									'first_depreciation_manual_date': first_depreciation_date,
 									'category_id': line.asset_category_id.id,
+									'gain_account_id': line.asset_category_id.gain_account_id.id,
+									'loss_account_id': line.asset_category_id.loss_account_id.id,
+									'write_on_asset_sales_account_id': line.asset_category_id.write_on_asset_sales_account_id.id,
 									'acquisition_line_ids': [(4, line.id)],
 								},
 							}})
@@ -226,6 +232,9 @@ class AssetAcquisition(models.Model):
 								'prorata': parent_asset.prorata,
 								'first_depreciation_manual_date': first_depreciation_date,
 								'category_id': parent_asset.category_id.id,
+								'gain_account_id': line.asset_category_id.gain_account_id.id,
+								'loss_account_id': line.asset_category_id.loss_account_id.id,
+								'write_on_asset_sales_account_id': line.asset_category_id.write_on_asset_sales_account_id.id,
 								'acquisition_line_ids': [(4, line.id)],
 							},
 						}})
@@ -297,7 +306,7 @@ class AssetAcquisition(models.Model):
 					'parent_id': parent_id,
 					# 'name': f"Merge: {existing_asset.name}",
 				})
-			
+
 			# TODO: Recompute Parent Depreciation Board
 			if to_recompute_parent:
 				to_recompute_parent.compute_parent_depreciation_board()

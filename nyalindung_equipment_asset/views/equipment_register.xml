@@ -19,7 +19,7 @@
                 <attribute name="readonly">1</attribute>
             </xpath>
             <xpath expr="//field[@name='register_line_ids']/tree/field[@name='name']" position="attributes">
-                <attribute name="readonly">1</attribute>
+                <attribute name="readonly">0</attribute>
             </xpath>
             <xpath expr="//field[@name='register_line_ids']/tree/field[@name='product_qty']" position="attributes">
                 <attribute name="readonly">1</attribute>
