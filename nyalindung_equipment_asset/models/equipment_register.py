@@ -159,7 +159,7 @@ class EquipmentRegisterLine(models.Model):
 	# HELPER METHOD #
 	#################
 	def _prepare_equipment_vals(self):
-		seq_code = self.category_id.sequence_id.code
+		seq_code = self.register_id.category_id.sequence_id.code
 		serial_no = self.env['ir.sequence'].next_by_code(seq_code)
 				
 		threshold_param_to = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_to', default=0.0)
