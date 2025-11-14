@@ -181,7 +181,7 @@ class EquipmentRegisterLine(models.Model):
             'serial_no' : self.register_id.serial_no,
 			'main_product_id': self.product_id.id,
 			'register_line_id': self.id,
-			'name': self.product_id.name,
+			'name': self.name,
 			'note': self.name,
 			'purchase_date': self.register_id.date,
 			'effective_date': self.register_id.date,
