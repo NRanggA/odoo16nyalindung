@@ -168,7 +168,7 @@ class EquipmentRegisterLine(models.Model):
 		asset_type = self.category_id.asset_type
 		
 		res = {
-            # 'category_id' : self.register_id.category_id.id,
+            'category_id' : self.register_id.category_id.id,
             'equipment_assign_to' : self.register_id.equipment_assign_to,
             'department_id' : self.register_id.department_id.id,
             'employee_id' : self.register_id.employee_id.id,
@@ -185,7 +185,7 @@ class EquipmentRegisterLine(models.Model):
 			'note': self.name,
 			'purchase_date': self.register_id.date,
 			'effective_date': self.register_id.date,
-			'category_id': self.category_id.id,
+			# 'category_id': self.category_id.id,
 			'partner_id': self.purchase_line_id.order_id.partner_id.id,
 			'partner_ref': self.purchase_line_id.order_id.partner_ref,
 			'seq_no': serial_no,
