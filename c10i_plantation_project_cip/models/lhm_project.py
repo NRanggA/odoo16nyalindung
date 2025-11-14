@@ -82,7 +82,7 @@ class LhmProject(models.Model):
             total = 0.0
             activity = project.activity_ids[:1]
 
-            if not activity or not activity.account_id:
+            if not activity or not activity.account_id or not project.location_id:
                 project.amount_cip = 0.0
                 continue
 

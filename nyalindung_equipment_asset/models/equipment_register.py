@@ -186,8 +186,8 @@ class EquipmentRegisterLine(models.Model):
 			'purchase_date': self.register_id.date,
 			'effective_date': self.register_id.date,
 			# 'category_id': self.category_id.id,
-			'partner_id': self.purchase_line_id.order_id.partner_id.id,
-			'partner_ref': self.purchase_line_id.order_id.partner_ref,
+			# 'partner_id': self.purchase_line_id.order_id.partner_id.id,
+			# 'partner_ref': self.purchase_line_id.order_id.partner_ref,
 			'seq_no': serial_no,
 			'cost': self.purchase_line_id.price_unit,
 			'asset_type' : asset_type
