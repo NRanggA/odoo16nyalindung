@@ -49,6 +49,8 @@
                         <field name="activity_id" 
                             domain="[('id','in',filtered_activities)]" 
                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                        <field name="account_activity_id" readonly="1" />
+                        <field name="account_activity_cost_id" readonly="1" />
 
 
                     </group>

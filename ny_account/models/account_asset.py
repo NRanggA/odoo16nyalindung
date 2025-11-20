@@ -12,6 +12,8 @@ class AccountAssetAsset(models.Model):
     no_line                     = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
     location_id                 = fields.Many2one('lhm.location', string='Lokasi')
     activity_id                 = fields.Many2one('lhm.activity', string="Aktivitas")
+    account_activity_id         = fields.Many2one(related='activity_id.account_id', string="Account Aktivitas", readonly=True, store=True)
+    account_activity_cost_id    = fields.Many2one(related='activity_id.cost_account_id', string="Cost Account Aktivitas", readonly=True, store=True)
     varieties_id                = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     varieties_validator         = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
     @api.depends('location_type_id')
