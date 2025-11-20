@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'purchase', 'c10i_payment', 'c10i_payment_credit_balance', 'account', 'om_account_asset', 'c10i_direct_payment', 'hr', 'sale'],
+    'depends': ['base', 'purchase', 'c10i_payment', 'c10i_payment_credit_balance', 'account', 'om_account_asset', 'c10i_direct_payment', 'hr', 'sale', 'ny_closing'],
 
     # always loaded
     'data': [
