@@ -12,7 +12,9 @@ from . import hr_foreman
 from . import hr_attendance_type
 
 from . import lhm_transaction
+from . import lhm_contractor
 from . import material_request
 from . import hr_attendance
 from . import planning_crop
 from . import lhm_hanca
+from . import res_partner
