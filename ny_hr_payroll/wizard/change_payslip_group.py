@@ -1,6 +1,6 @@
 from odoo import models, fields, api, _
 
-class ChangePayslipGroup(models.Model):
+class ChangePayslipGroup(models.TransientModel):
     _name = 'hr.change.payslip.group'
     _description = 'Change Payslip Group'
 
