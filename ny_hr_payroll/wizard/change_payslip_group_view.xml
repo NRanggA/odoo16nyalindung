@@ -24,6 +24,7 @@
         <field name="res_model">hr.change.payslip.group</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
+        <field name="binding_model_id" ref="c10i_hr_payroll.model_hr_payslip"/>
     </record>
 
 </odoo>

@@ -1,4 +1,5 @@
 *.pyc
+ny_dashboard
 =======
 # sphinx build directories
 _build/
