@@ -44,3 +44,5 @@ access_hr_payslip_pph_all_ro,hr.payslip.pph userinternal readonly,c10i_hr_payrol
 access_hr_payslip_pph_hrpayroll_ro,hr.payslip.pph user readonly,c10i_hr_payroll_pph.model_hr_payslip_pph,ny_hr_payroll.group_hr_payroll_user_readonly,1,0,0,0
 access_hr_payslip_pph_progresif_all_ro,hr.payslip.pph.progresif userinternal readonly,c10i_hr_payroll_pph.model_hr_payslip_pph_progresif,ny_hr_payroll.group_hr_payroll_user_readonly,1,0,0,0
 access_hr_payslip_pph_progresif_hrpayroll_ro,hr.payslip.pph.progresif hr_payroll readonly,c10i_hr_payroll_pph.model_hr_payslip_pph_progresif,ny_hr_payroll.group_hr_payroll_user_readonly,1,0,0,0
+access_hr_payslip_group_hrpayroll,hr.payslip.pph.progresif hr_payroll,ny_hr_payroll.model_hr_payslip_group,c10i_hr_payroll.group_hr_payroll_user,1,1,1,1
+access_hr_payslip_group_user,hr.payslip.pph.progresif readonly,ny_hr_payroll.model_hr_payslip_group,base.group_user,1,0,0,0

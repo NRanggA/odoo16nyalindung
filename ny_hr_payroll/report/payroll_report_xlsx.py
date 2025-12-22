@@ -510,12 +510,15 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
 
         # Mengelompokkan berdasarkan kemandoran
         payslip_grouped = {}
-        for payslip in obj.sorted(key = lambda p: p.employee_id.type_id.payroll_sequence):
+        # for payslip in obj.sorted(key = lambda p: p.employee_id.type_id.payroll_sequence):
+        for payslip in obj.sorted(key = lambda p: p.employee_id.payslip_group_id.sequence):
             # kemandoran = payslip.employee_id.kemandoran_id
-            tipe_karyawan = payslip.employee_id.type_id
-            if tipe_karyawan not in payslip_grouped:
-                payslip_grouped[tipe_karyawan] = []
-            payslip_grouped[tipe_karyawan].append(payslip)
+            # tipe_karyawan = payslip.employee_id.type_id
+            group = payslip.employee_id.payslip_group_id
+            # if tipe_karyawan not in payslip_grouped:
+            if group not in payslip_grouped:
+                payslip_grouped[group] = []
+            payslip_grouped[group].append(payslip)
 
         next_row += 1 
         indx = 1
@@ -780,13 +783,15 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
 
         indx = 1
         # for kemandoran in obj.employee_id.kemandoran_id:
-        for tipe in obj.employee_id.type_id.sorted(key = lambda t: t.payroll_sequence):
+        # for tipe in obj.employee_id.type_id.sorted(key = lambda t: t.payroll_sequence):
+        for group in obj.employee_id.payslip_group_id.sorted(key = lambda t: t.sequence):
             worksheet2.write(next_row, 1, indx, wbf['content'])
             indx += 1
-            worksheet2.write(next_row, 2, tipe.name or '', wbf['content'])
+            worksheet2.write(next_row, 2, group.name or '', wbf['content'])
             
             # payslips = obj.filtered(lambda p : p.employee_id.kemandoran_id.id == kemandoran.id)
-            payslips = obj.filtered(lambda p : p.employee_id.type_id.id == tipe.id)
+            # payslips = obj.filtered(lambda p : p.employee_id.type_id.id == tipe.id)
+            payslips = obj.filtered(lambda p : p.employee_id.payslip_group_id.id == group.id)
             worksheet2.write(next_row, 3, len(payslips.employee_id.ids), wbf['content'])
             subtotal_values[3] = subtotal_values.get(3, 0) + len(payslips.employee_id.ids)
             mapped_line = {}
