@@ -54,6 +54,7 @@
                 <field name="bom_id" />
                 <separator/>
                 <filter name="filter_confirmed" string="Confirmed" domain="[('is_confirmed', '=', True)]" />
+                <filter name="filter_today" string="Today" domain="[('date','=',datetime.date.today())]"/>
 
                 <group name="name" string="Group By">
                     <filter name="groupby_product" string="Product" context="{'group_by': 'product_id'}" />
