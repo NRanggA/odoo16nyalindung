@@ -17,4 +17,5 @@ class ChangePayslipGroup(models.TransientModel):
     def change_group(self):
         self.ensure_one()
         self.payslip_ids.payslip_group_id = self.payslip_group_id.id
+        self.payslip_ids.employee_id.payslip_group_id = self.payslip_group_id.id
         return True
