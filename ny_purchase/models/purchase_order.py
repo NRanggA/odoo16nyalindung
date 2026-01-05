@@ -25,6 +25,21 @@ class PurchaseOrder(models.Model):
 
     revision_number = fields.Integer(string="Revision Number", default=0, readonly=True)
 
+    pr_names = fields.Char(
+        string="Purchase Request",
+        compute="_compute_pr_names",
+        store=True)
+
+    @api.depends('order_line.purchase_request_lines.request_id')
+    def _compute_pr_names(self):
+        for po in self:
+            pr_names = set()
+            for line in po.order_line:
+                for pr_line in line.purchase_request_lines:
+                    if pr_line.request_id:
+                        pr_names.add(pr_line.request_id.name)
+            po.pr_names = ', '.join(sorted(pr_names))
+
     @api.model
     def create(self, vals):
         if 'name' not in vals or not vals['name']:
