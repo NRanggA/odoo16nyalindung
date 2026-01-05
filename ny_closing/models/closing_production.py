@@ -1578,6 +1578,25 @@ class ClosingProduction(models.Model):
                 #     print(f"==== Adjusment Out Move {move.reference} - {move.qty_done}")
 
                 # print(f"==== Adjusment product {product.name} = {adjustment_qty}")
+                # Find Material Request Issue
+                issued_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                ('move_id.mr_line_id','!=',False),
+                                ('location_dest_id.usage','=','inventory'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                issued_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_id.usage','=','inventory'),
+                                ('move_id.mr_line_id','!=',False),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_issue_stock_move_ids = [(6, 0, issued_moves_out.move_id.ids + issued_moves_return.move_id.ids)]
+                outgoing_issue_qty = (sum(issued_moves_out.mapped('qty_done')) if issued_moves_out else 0.0) - (sum(issued_moves_return.mapped('qty_done')) if issued_moves_return else 0.0)
 
                 values_to_create = {
                     'product_id': product.id,
@@ -1590,6 +1609,8 @@ class ClosingProduction(models.Model):
                     'scrap_qty': scrap_qty,
                     'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'outgoing_qty': outgoing_qty,
+                    'outgoing_issue_qty': outgoing_issue_qty,
+                    'outgoing_issue_stock_move_ids': outgoing_issue_stock_move_ids,
                     'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'adjustment_qty': adjustment_qty,
                 }
@@ -2698,6 +2719,41 @@ class ClosingProduction(models.Model):
                     'credit': vals_cogs2['debit'],
                 })
                 move_lines_cogs.append((0, 0, vals_src5))
+            
+            if line.outgoing_issue_stock_move_ids:
+                remaining_issue_value = round(line.outgoing_issue_value, 2)
+                for smi in line.outgoing_issue_stock_move_ids:
+                    if smi.location_id.usage=='internal' and smi.location_dest_id.usage!='internal':
+                        issue_value = round(smi.quantity_done * line.new_cost_price, 2)
+                    elif smi.location_id.usage!='internal' and smi.location_dest_id.usage=='internal':
+                        issue_value = round(-1 * smi.quantity_done * line.new_cost_price, 2)
+                    remaining_issue_value -= issue_value
+                    vals_issues = {
+                        'name': f"{line.product_id.name} Issued",
+                        'plantation_location_type_id': False,
+                        'plantation_varieties_id': varieties.id,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'plantation_src_journal_id': False,
+                        'account_id': smi.plantation_activity_id.account_id.id,
+                        'product_id': line.product_id.id,
+                        'debit': issue_value if issue_value>0 else 0.0,
+                        'credit': issue_value if issue_value<0 else 0.0,
+                    }
+                    move_lines_cogs.append((0, 0, vals_issues))
+                vals_src4 = {
+                    'name': f"{smi.product_id.name} Issued",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': False,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.inventory_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
+                    'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_src4))
             
             # 7. Journal Susut
             if line.adjustment_qty or line.adjustment_value:

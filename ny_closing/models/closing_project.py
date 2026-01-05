@@ -38,12 +38,12 @@ class ClosingProjectPlantDeferred(models.Model):
         for line in self:
             line.cost_to_post = ((line.deferred_cost + line.new_deferred_cost) - line.accumulated_cost) * line.pct_cost_to_post / 100.0
     
-    @api.onchange('cost_to_post')
+    # @api.onchange('cost_to_post')
     def _set_percentage(self):
         for line in self:
             line.pct_cost_to_post = line.cost_to_post / ((line.deferred_cost + line.new_deferred_cost) - line.accumulated_cost) * 100.0
     
-    @api.depends('residual_deferred','cost_to_post')
+    @api.depends('residual_deferred','cost_to_post','pct_cost_to_post')
     def _compute_residual2(self):
         for line in self:
             line.new_residual_deferred = line.residual_deferred - line.cost_to_post

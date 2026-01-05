@@ -519,6 +519,8 @@
                 <field name="ripening_value" sum="ripening_value" optional="hide"/>
                 <field name="outgoing_qty" sum="outgoing_qty" />
                 <field name="outgoing_value" sum="outgoing_value" optional="hide"/>
+                <field name="outgoing_issue_qty" sum="outgoing_issue_qty" optional="hide"/>
+                <field name="outgoing_issue_value" sum="outgoing_issue_value" optional="hide"/>
                 <field name="scrap_qty" sum="scrap_qty" />
                 <field name="scrap_value" sum="scrap_value" optional="hide"/>
                 <field name="adjustment_qty" sum="adjustment_qty" />
