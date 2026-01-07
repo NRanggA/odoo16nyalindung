@@ -536,6 +536,7 @@ class ClosingProduction(models.Model):
     sheet_raw_material_cost = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Raw Material Cost of Sheet')
 
     latex_wip_onhand_qty = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current WIP Lateks')
+    latex_wip_adjustment_qty = fields.Float(string='Adjustment WIP Lateks')
     latex_wip_onhand_value = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current Value WIP Lateks')
     latex_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Lateks')
     latex_wip_outgoing_qty = fields.Float(string='Finished Process Sheet')
@@ -593,6 +594,7 @@ class ClosingProduction(models.Model):
     lump_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Lump')
     lump_wip_outgoing_qty = fields.Float(string='Finished Process Compo')
     lump_wip_outgoing_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Finished Process Value Compo')
+    lump_wip_adjustment_qty = fields.Float(string='Adjustment WIP Lump')
     lump_wip_qty = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Lump')
     lump_wip_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Value Lump')
     
@@ -770,14 +772,16 @@ class ClosingProduction(models.Model):
 
     @api.depends('latex_wip_outgoing_qty', 
                 'latex_wip_cost_price', 'latex_wip_onhand_qty',
-                 'lump_wip_outgoing_qty', 'lump_wip_cost_price', 'lump_wip_onhand_qty')
+                'latex_wip_adjustment_qty',
+                'lump_wip_outgoing_qty', 'lump_wip_cost_price', 'lump_wip_onhand_qty',
+                'lump_wip_adjustment_qty',)
     def _compute_closing_wip_value_rm(self):
         for closing in self:
             closing.latex_wip_outgoing_value = round(closing.latex_wip_outgoing_qty * closing.latex_wip_cost_price, 2)
-            closing.latex_wip_qty = closing.latex_wip_onhand_qty - closing.latex_wip_outgoing_qty
+            closing.latex_wip_qty = closing.latex_wip_onhand_qty - closing.latex_wip_outgoing_qty + closing.latex_wip_adjustment_qty
             closing.latex_wip_value = closing.latex_wip_onhand_value - closing.latex_wip_outgoing_value
             closing.lump_wip_outgoing_value = round(closing.lump_wip_outgoing_qty * closing.lump_wip_cost_price, 2)
-            closing.lump_wip_qty = closing.lump_wip_onhand_qty - closing.lump_wip_outgoing_qty
+            closing.lump_wip_qty = closing.lump_wip_onhand_qty - closing.lump_wip_outgoing_qty + closing.lump_wip_adjustment_qty
             closing.lump_wip_value = closing.lump_wip_onhand_value - closing.lump_wip_outgoing_value
 
     @api.depends('latex_delivered_qty', 'lump_delivered_qty', 
@@ -2750,8 +2754,10 @@ class ClosingProduction(models.Model):
                     'plantation_src_journal_id': False,
                     'account_id': line.inventory_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
-                    'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
+                    # 'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
+                    # 'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
+                    'debit': round(abs(line.outgoing_issue_value-remaining_issue_value), 2) if (line.outgoing_issue_value-remaining_issue_value)<0 else 0.0,
+                    'credit': round(line.outgoing_issue_value-remaining_issue_value, 2) if (line.outgoing_issue_value-remaining_issue_value)>0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_src4))
             
