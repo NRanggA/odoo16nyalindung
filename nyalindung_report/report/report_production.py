@@ -380,7 +380,7 @@ class ReportProduction(models.AbstractModel):
 
         from_date = obj.from_date
         to_date = obj.to_date
-        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 195, 199, 200]
+        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 195, 199, 200, 217]
 
         attendance_data = {}
 
