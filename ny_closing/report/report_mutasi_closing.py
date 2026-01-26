@@ -840,8 +840,10 @@ class ReportMutasiClosing(models.AbstractModel):
                 sheet3.merge_range(start_row, 10, start_row, 11, 'Ripening', wbf['header'])
                 sheet3.merge_range(start_row, 12, start_row, 13, 'Scrap', wbf['header'])
                 sheet3.merge_range(start_row, 14, start_row, 15, 'Delivery', wbf['header'])
-                sheet3.merge_range(start_row, 16, start_row, 17, 'Adjustment', wbf['header'])
-                sheet3.merge_range(start_row, 18, start_row, 19, 'Ending', wbf['header'])
+                sheet3.merge_range(start_row, 16, start_row, 17, 'Other Issue', wbf['header'])
+                sheet3.merge_range(start_row, 18, start_row, 19, 'Adjustment', wbf['header'])
+                sheet3.merge_range(start_row, 20, start_row, 21, 'Adjustment Closing', wbf['header'])
+                sheet3.merge_range(start_row, 22, start_row, 23, 'Ending', wbf['header'])
                 
                 # Body value
                 # Beginning
@@ -865,12 +867,18 @@ class ReportMutasiClosing(models.AbstractModel):
                 # Delivery
                 sheet3.write(start_row + 1, 14, 'Qty', wbf['header'])
                 sheet3.write(start_row + 1, 15, 'Value', wbf['header'])
-                # Adjustment
+                # Other Issue
                 sheet3.write(start_row + 1, 16, 'Qty', wbf['header'])
                 sheet3.write(start_row + 1, 17, 'Value', wbf['header'])
-                # Ending
+                # Adjustment
                 sheet3.write(start_row + 1, 18, 'Qty', wbf['header'])
                 sheet3.write(start_row + 1, 19, 'Value', wbf['header'])
+                # Adjustment Closing
+                sheet3.write(start_row + 1, 20, 'Qty', wbf['header'])
+                sheet3.write(start_row + 1, 21, 'Value', wbf['header'])
+                # Ending
+                sheet3.write(start_row + 1, 22, 'Qty', wbf['header'])
+                sheet3.write(start_row + 1, 23, 'Value', wbf['header'])
 
             else:  # Repening Location
                 sheet3.merge_range(start_row, 3, start_row, 4, 'Beginning', wbf['header'])
@@ -935,11 +943,17 @@ class ReportMutasiClosing(models.AbstractModel):
             sheet3.write(row, 14, pisang.outgoing_qty, wbf['content_float'])
             sheet3.write(row, 15, pisang.outgoing_value, wbf['content_float'])
 
-            sheet3.write(row, 16, pisang.adjustment_qty, wbf['content_float'])
-            sheet3.write(row, 17, pisang.adjustment_value, wbf['content_float'])
+            sheet3.write(row, 16, pisang.outgoing_issue_qty, wbf['content_float'])
+            sheet3.write(row, 17, pisang.outgoing_issue_value, wbf['content_float'])
 
-            sheet3.write(row, 18, pisang.closing_qty, wbf['content_float'])
-            sheet3.write(row, 19, pisang.closing_value, wbf['content_float'])
+            sheet3.write(row, 18, pisang.adjustment_qty, wbf['content_float'])
+            sheet3.write(row, 19, pisang.adjustment_value, wbf['content_float'])
+            
+            sheet3.write(row, 20, pisang.adjustment_closing_qty, wbf['content_float'])
+            sheet3.write(row, 21, pisang.adjustment_closing_value, wbf['content_float'])
+
+            sheet3.write(row, 22, pisang.closing_qty, wbf['content_float'])
+            sheet3.write(row, 23, pisang.closing_value, wbf['content_float'])
             
             row += 1
         

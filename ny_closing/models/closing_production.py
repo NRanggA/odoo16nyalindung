@@ -101,6 +101,10 @@ class ClosingProductionFinishGood(models.Model):
 
     adjustment_qty = fields.Float(string='Adjustment Qty')
     adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value')
+
+    adjustment_closing_qty = fields.Float(string='Adjustment Closing Qty')
+    adjustment_closing_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Closing Value')
+
     adjustment_value_only = fields.Float(string='Adjustment Value only')
 
     closing_qty = fields.Float(compute='_compute_closing', store=True, string='Closing Qty')
@@ -173,7 +177,7 @@ class ClosingProductionFinishGood(models.Model):
             line.onhand_value = line.opening_value + line.plantation_cost + line.manufacturing_cost
             line.new_cost_price = line.onhand_value/line.onhand_qty if line.onhand_qty else 0.0
 
-    @api.depends('new_cost_price', 'outgoing_qty', 'ripening_qty', 'scrap_qty', 'adjustment_qty')
+    @api.depends('new_cost_price', 'outgoing_qty', 'ripening_qty', 'scrap_qty', 'adjustment_qty', 'adjustment_closing_qty')
     def _compute_outgoing_value(self):
         for line in self:
             line.outgoing_value = line.outgoing_qty * line.new_cost_price
@@ -181,6 +185,7 @@ class ClosingProductionFinishGood(models.Model):
             line.ripening_value = line.ripening_qty * line.new_cost_price
             line.scrap_value = line.scrap_qty * line.new_cost_price
             line.adjustment_value = line.adjustment_qty * line.new_cost_price
+            line.adjustment_closing_value = line.adjustment_closing_qty * line.new_cost_price
             line.ripening_incoming_qty = line.ripening_qty
             line.ripening_incoming_value = line.ripening_value
 
@@ -2774,6 +2779,29 @@ class ClosingProduction(models.Model):
                     'product_id': line.product_id.id,
                     'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
                     'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_adj))
+                vals_src5 = vals_adj.copy()
+                vals_src5.update({
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'account_id': line.adjustment_account_id.id,
+                    'debit': vals_adj['credit'],
+                    'credit': vals_adj['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src5))
+            # 7. Journal Susut
+            if line.adjustment_closing_qty or line.adjustment_closing_value:
+                vals_adj = {
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.inventory_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(line.adjustment_closing_value, 2) if line.adjustment_closing_value>0 else 0.0,
+                    'credit': round(abs(line.adjustment_closing_value), 2) if line.adjustment_closing_value<0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_adj))
                 vals_src5 = vals_adj.copy()

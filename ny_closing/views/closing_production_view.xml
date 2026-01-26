@@ -103,10 +103,24 @@
                                         <td></td>
                                     </tr>
                                     <tr>
+                                        <td style="font-weight: bold;">Other Issue</td>
+                                        <td style="text-align: right;"><field name="outgoing_issue_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="outgoing_issue_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <td style="font-weight: bold;">Adjustment</td>
                                         <td style="text-align: right;"><field name="adjustment_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="adjustment_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Adjustment Closing</td>
+                                        <td style="text-align: right;"><field name="adjustment_closing_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="adjustment_closing_value"/></td>
                                         <td></td>
                                     </tr>
                                     <tr>
