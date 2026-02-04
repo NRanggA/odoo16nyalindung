@@ -2763,6 +2763,20 @@ class ClosingProduction(models.Model):
                         'credit': issue_value if issue_value<0 else 0.0,
                     }
                     move_lines_cogs.append((0, 0, vals_issues))
+                if remaining_issue_value:
+                    vals_src4 = {
+                        'name': f"{smi.product_id.name} Difference",
+                        'plantation_location_type_id': False,
+                        'plantation_varieties_id': False,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'plantation_src_journal_id': False,
+                        'account_id': line.adjustment_account_id.id,
+                        'product_id': line.product_id.id,
+                        'debit': round(remaining_issue_value, 2) if remaining_issue_value>0 else 0.0,
+                        'credit': round(abs(remaining_issue_value), 2) if remaining_issue_value<0 else 0.0,
+                    }
+                    move_lines_cogs.append((0, 0, vals_src4))
                 vals_src4 = {
                     'name': f"{smi.product_id.name} Issued",
                     'plantation_location_type_id': False,
@@ -2774,8 +2788,8 @@ class ClosingProduction(models.Model):
                     'product_id': line.product_id.id,
                     # 'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
                     # 'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
-                    'debit': round(abs(line.outgoing_issue_value-remaining_issue_value), 2) if (line.outgoing_issue_value-remaining_issue_value)<0 else 0.0,
-                    'credit': round(line.outgoing_issue_value-remaining_issue_value, 2) if (line.outgoing_issue_value-remaining_issue_value)>0 else 0.0,
+                    'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
+                    'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_src4))
             
