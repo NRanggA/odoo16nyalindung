@@ -46,6 +46,7 @@
                     
                     <button string="Cancel" name="button_cancel" type="object" class="btn-danger" states="draft,running_workshop,running_vehicle,running_machine,closing_laboratory,closing_project,closing_nursery,closing_plantation,closing_production"/>
                     
+                    <button string="Project Report" name="print_closing_project_report" states="closing_project,closing_nursery,closing_laboratory,closing_plantation,closing_production,done" type="object" />
                     <button string="Plantation Report" name="print_closing_plantation_report" states="closing_plantation,closing_production,done" type="object" />
                     <button string="Stock Report" name="print_closing_production_report" states="closing_production,done" type="object" />
 

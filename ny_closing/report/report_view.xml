@@ -10,6 +10,15 @@
         <field name="print_report_name">f'Laporan Closing Plantation {object.date_from} s/d {object.date_to}'</field>
     </record>
 
+    <record id="action_project_closing_xlsx" model="ir.actions.report">
+        <field name="name">Closing Project Excel</field>
+        <field name="model">closing.process</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_closing.project_closing_xlsx</field>
+        <field name="report_file">ny_closing.project_closing_xlsx</field>
+        <field name="print_report_name">f'Laporan Closing Project {object.date_from} s/d {object.date_to}'</field>
+    </record>
+
     <!-- <record id="action_production_closing" model="ir.actions.report">
         <field name="name">Closing Plantation</field>
         <field name="model">closing.plantation</field>

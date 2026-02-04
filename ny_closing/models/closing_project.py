@@ -144,6 +144,9 @@ class ClosingProject(models.Model):
 
     closing_move_id = fields.Many2one('account.move', string='Journal Entry')
 
+    accumultated_cip_this_year = fields.Float('Accumulated CIP')
+    accumultated_cip_last_year = fields.Float('Accumulated CIP Last Year')
+
     @api.depends('project_id')
     def _compute_dest_account(self):
         for closing in self:
@@ -359,12 +362,37 @@ class ClosingProject(models.Model):
         else:
             domain.append(('account_id','in',src_account_ids))
         return domain
+    
+    def _get_domain_source_last_year_move_lines(self):
+        src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
+        if not src_account_ids:
+            raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        last_year_date = self.date_to - relativedelta(years=1) - relativedelta(month=12, days=31)
+        domain = [('plantation_location_id','=',self.project_id.location_id.id),
+                ('parent_state','=','posted'),
+                ('date','<=',last_year_date)]
+        if len(src_account_ids)==1:
+            domain.append(('account_id','=',src_account_ids[0]))
+        else:
+            domain.append(('account_id','in',src_account_ids))
+        return domain
+
+    def _get_domain_source_last_prev_move_lines(self):
+        src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
+        if not src_account_ids:
+            raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        domain = [('plantation_location_id','=',self.project_id.location_id.id),
+                ('parent_state','=','posted'),
+                ('date','<=',self.date_to)]
+        if len(src_account_ids)==1:
+            domain.append(('account_id','=',src_account_ids[0]))
+        else:
+            domain.append(('account_id','in',src_account_ids))
+        return domain
 
     def summarize_move_line(self):
         for closing in self:
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Summerize Project Cost", closing.id)
             if closing.project_id.project_tanaman and closing.project_id.plant_block_id:
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Tanaman")
                 closing.cost_line_ids.unlink()
                 closing.deferred_cost_line_ids.unlink()
                 if closing.project_id.harvest_date_schedule <= closing.date_from:
@@ -391,9 +419,16 @@ class ClosingProject(models.Model):
                 self.env.cr.execute(f"select procedure_summerize_project_deferred_cost({closing.id}, {closing.project_id.id}, {self.env.user.id}, {self.env.company.id})")
                 closing.total_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
             else:
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Aja")
                 source_moves = self.env['account.move.line'].search(closing._get_domain_source_move_lines())
                 closing.total_cost = sum(source_moves.mapped('balance')) if source_moves else 0.0
+                if closing.date_to.month > 1:
+                    source_moves2 = self.env['account.move.line'].search(closing._get_domain_source_last_prev_move_lines())
+                    closing.accumultated_cip_this_year = sum(source_moves2.mapped('balance')) if source_moves2 else 0.0
+                else:
+                    closing.accumultated_cip_this_year = 0.0
+                
+                source_moves3 = self.env['account.move.line'].search(closing._get_domain_source_last_year_move_lines())
+                closing.accumultated_cip_last_year = sum(source_moves3.mapped('balance')) if source_moves3 else 0.0
 
     def _prepare_move_lines_for_project_tanaman(self):
         self.ensure_one()

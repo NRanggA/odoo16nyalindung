@@ -60,6 +60,9 @@ class ClosingProcess(models.Model):
 
     def print_closing_plantation_report(self):
         return self.env.ref('ny_closing.action_plantation_closing_xlsx').report_action(self)
+
+    def print_closing_project_report(self):
+        return self.env.ref('ny_closing.action_project_closing_xlsx').report_action(self)
     ############ END REPORT ############
 
     @api.model

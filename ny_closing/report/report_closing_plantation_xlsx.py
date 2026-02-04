@@ -4,7 +4,7 @@ from odoo import api, models, fields, _
 # from dateutil.relativedelta import relativedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
 
-class WmsInventoryAgingReportExcel(models.AbstractModel):
+class PlantationClosingReportExcel(models.AbstractModel):
     _name = 'report.ny_closing.plantation_closing_xlsx'
     _description = "Summery Closing Plantation"
     _inherit = 'report.report_xlsx.abstract'
@@ -400,14 +400,17 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.merge_range(next_row, 2, next_row+1, 2, 'Blok Tanam' , wbf['header'])
         worksheet.set_column(2,2,35)
         worksheet.set_column(3,6,15)
-        worksheet.merge_range(next_row, 3, next_row, 6, 'Harga Perolehan' , wbf['header'])
-        worksheet.write(next_row+1, 3, 'Saldo Awal' , wbf['header'])
-        worksheet.write(next_row+1, 4, 'Bulan Ini' , wbf['header'])
-        worksheet.write(next_row+1, 5, 'Penyesuaian' , wbf['header'])
-        worksheet.write(next_row+1, 6, 'Saldo Akhir' , wbf['header'])
+        worksheet.merge_range(next_row-1, 3, next_row-1, 6, 'Harga Perolehan' , wbf['header'])
+        worksheet.merge_range(next_row-1, 3, next_row, 3, 'Saldo Akhir\nTahun Lalu' , wbf['header'])
+        worksheet.merge_range(next_row, 4, next_row, 6, 'Tahun Berjalan' , wbf['header'])
+        worksheet.write(next_row+1, 4, 'Saldo Awal' , wbf['header'])
+        worksheet.write(next_row+1, 5, 'Bulan Ini' , wbf['header'])
+        worksheet.write(next_row+1, 6, 'Penyesuaian' , wbf['header'])
+        # worksheet.write(next_row+1, 7, 'Saldo Akhir' , wbf['header'])
+        worksheet.merge_range(next_row-1, 7, next_row, 7, 'Saldo Akhir' , wbf['header'])
 
         next_row += 2
-        for c in range(6):
+        for c in range(7):
             worksheet.write(next_row, c+1, c+1, wbf['header'])
         next_row += 1
         start_row = next_row
@@ -416,10 +419,13 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         for line in obj.closing_plantation_ids.filtered(lambda l: l.status=='tbm').sorted(key=lambda l: l.plant_block_id.varieties_id.id):
             worksheet.write(next_row, 1, line.plant_block_id.varieties_id.name, wbf['content'])
             worksheet.write(next_row, 2, line.plant_block_id.code, wbf['content'])
-            worksheet.write(next_row, 3, line.accumulated_tbm_cost or 0.0, wbf['content_float'])
-            worksheet.write(next_row, 4, line.current_period_cost or 0.0, wbf['content_float'])
-            worksheet.write(next_row, 5, line.adjustment_period_cost or 0.0, wbf['content_float'])
-            worksheet.write(next_row, 6, line.accumulated_tbm_cost + line.current_period_cost + line.adjustment_period_cost, wbf['content_float'])
+            # worksheet.write(next_row, 3, line.accumulated_tbm_cost or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 3, line.accumulated_tbm_cost_last_year or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 4, line.accumulated_tbm_cost_this_year or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 5, line.current_period_cost or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 6, line.adjustment_period_cost or 0.0, wbf['content_float'])
+            # worksheet.write(next_row, 7, line.accumulated_tbm_cost + line.current_period_cost + line.adjustment_period_cost, wbf['content_float'])
+            worksheet.write(next_row, 7, line.accumulated_tbm_cost_last_year + line.accumulated_tbm_cost_this_year + line.current_period_cost + line.adjustment_period_cost, wbf['content_float'])
             next_row += 1
         
         next_row += 1
@@ -429,6 +435,7 @@ class WmsInventoryAgingReportExcel(models.AbstractModel):
         worksheet.write_formula(next_row, 4, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,4)}:{xl_rowcol_to_cell(next_row-2,4)})", wbf['total_float'])
         worksheet.write_formula(next_row, 5, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,5)}:{xl_rowcol_to_cell(next_row-2,5)})", wbf['total_float'])
         worksheet.write_formula(next_row, 6, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,6)}:{xl_rowcol_to_cell(next_row-2,6)})", wbf['total_float'])
+        worksheet.write_formula(next_row, 7, f"=SUBTOTAL(9, {xl_rowcol_to_cell(start_row,7)}:{xl_rowcol_to_cell(next_row-2,7)})", wbf['total_float'])
         
         worksheet.set_landscape()
         worksheet.set_paper(9)  # A4
