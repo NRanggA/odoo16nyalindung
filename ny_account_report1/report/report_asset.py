@@ -276,7 +276,7 @@ class ReportAsset(models.AbstractModel):
                 # )
                 penyusutan_bulan_ini = penyusutan_sebelum_bulan_ini = penyusutan_tahun_lalu = 0.0
                 for l in depreciation_lines:
-                    if l.depreciation_date.month < tanggal_as_of.month:
+                    if awal_bulan_ini <= l.depreciation_date <= tanggal_as_of:
                         penyusutan_bulan_ini += l.amount
                     elif l.depreciation_date < awal_bulan_ini and l.depreciation_date.year == tanggal_as_of.year:
                         penyusutan_sebelum_bulan_ini += l.amount
