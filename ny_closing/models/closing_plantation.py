@@ -112,6 +112,8 @@ class ClosingPlantation(models.Model):
     current_period_cost = fields.Float(compute='_compute_cost', store=True, string='Cost on Current Period')
     
     adjustment_period_cost = fields.Float('Adjustment Cost on Current Period')
+    accumulated_tbm_cost_last_year = fields.Float('Accumulated TBM Cost Last Year')
+    accumulated_tbm_cost_this_year = fields.Float('Accumulated TBM Cost This Year')
 
     cost_line_ids = fields.One2many('closing.plantation.line', 'closing_id')
     cost_line_to_be_deferred_ids = fields.One2many('closing.plantation.line', 'closing_id', domain=[('to_be_deferred','=',True)], string="Cost to be Deferred")
