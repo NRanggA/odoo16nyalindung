@@ -2760,23 +2760,23 @@ class ClosingProduction(models.Model):
                         'account_id': smi.plantation_activity_id.account_id.id,
                         'product_id': line.product_id.id,
                         'debit': issue_value if issue_value>0 else 0.0,
-                        'credit': issue_value if issue_value<0 else 0.0,
+                        'credit': abs(issue_value) if issue_value<0 else 0.0,
                     }
                     move_lines_cogs.append((0, 0, vals_issues))
-                if remaining_issue_value:
-                    vals_src4 = {
-                        'name': f"{smi.product_id.name} Difference",
-                        'plantation_location_type_id': False,
-                        'plantation_varieties_id': False,
-                        'plantation_location_id': False,
-                        'plantation_activity_id': False,
-                        'plantation_src_journal_id': False,
-                        'account_id': line.adjustment_account_id.id,
-                        'product_id': line.product_id.id,
-                        'debit': round(remaining_issue_value, 2) if remaining_issue_value>0 else 0.0,
-                        'credit': round(abs(remaining_issue_value), 2) if remaining_issue_value<0 else 0.0,
-                    }
-                    move_lines_cogs.append((0, 0, vals_src4))
+                # if remaining_issue_value:
+                #     vals_src4 = {
+                #         'name': f"{smi.product_id.name} Difference",
+                #         'plantation_location_type_id': False,
+                #         'plantation_varieties_id': False,
+                #         'plantation_location_id': False,
+                #         'plantation_activity_id': False,
+                #         'plantation_src_journal_id': False,
+                #         'account_id': line.adjustment_account_id.id,
+                #         'product_id': line.product_id.id,
+                #         'debit': round(remaining_issue_value, 2) if remaining_issue_value>0 else 0.0,
+                #         'credit': round(abs(remaining_issue_value), 2) if remaining_issue_value<0 else 0.0,
+                #     }
+                #     move_lines_cogs.append((0, 0, vals_src4))
                 vals_src4 = {
                     'name': f"{smi.product_id.name} Issued",
                     'plantation_location_type_id': False,
