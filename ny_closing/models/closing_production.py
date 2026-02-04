@@ -1218,6 +1218,18 @@ class ClosingProduction(models.Model):
                 ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
         source_mo = finished_mo.mapped('source_mo_id')
         return source_mo
+    def _get_mrp_done_this_month_compo(self, product):
+        self.ensure_one()
+        # Old Version
+        mrp = self.env['mrp.production'].search([('product_id','=',product.id),('state','=','done'),
+                ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+                ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        # finished_mo = self.env['mrp.production'].search([
+        #         ('source_mo_id.product_id','=',product.id),('state','=','done'),
+        #         ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+        #         ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        # source_mo = finished_mo.mapped('source_mo_id')
+        return mrp
 
     def _get_mrp_inprogress_this_month(self, product):
         self.ensure_one()
@@ -1379,7 +1391,8 @@ class ClosingProduction(models.Model):
             if mrp_sheet_done:
                 rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
-            mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
+            mrp_compound_done = closing._get_mrp_done_this_month_compo(compound_product)
+            # mrp_compound_done = closing._get_mrp_done_this_month(compound_product2) # TODO : dipake per feb 2026
             if mrp_compound_done:
                 rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
