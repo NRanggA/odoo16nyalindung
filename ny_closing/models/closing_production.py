@@ -1391,12 +1391,20 @@ class ClosingProduction(models.Model):
             if mrp_sheet_done:
                 rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
-            mrp_compound_done = closing._get_mrp_done_this_month_compo(compound_product)
-            # mrp_compound_done = closing._get_mrp_done_this_month(compound_product2) # TODO : dipake per feb 2026
+            
+            # TODO: REMOVE THIS di CLOSING FEB 2026
+            outgoing_wip_lump = 0
+            rm_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','production'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('production_id.date_start','<=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
+            outgoing_wip_lump = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
+            mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
             if mrp_compound_done:
                 rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-                closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
-            
+                outgoing_wip_lump += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
+            closing.lump_wip_outgoing_qty = closing.lump_wip_outgoing_qty
             # WIP : Asam semut hanya untuk SHEET
             # WIP : Get Receiving Asam Semut
             receving_asam_semuts = self.env['stock.move.line'].search([
