@@ -11,7 +11,7 @@
             </xpath> -->
             <field name="user_id" position="after">
                 <field name="must_have_source_mo" invisible="1"/>
-                <field name="source_mo_id" attrs="{'required': [('must_have_source_mo','=', True)]}, 'invisible': [('must_have_source_mo','=', False)]" options="{'no_create': True}"/>
+                <field name="source_mo_id" attrs="{'required': [('must_have_source_mo','=', True)], 'invisible': [('must_have_source_mo','=', False)]}" options="{'no_create': True}"/>
             </field>
             <field name="origin" position="attributes">
                 <attribute name="invisible">True</attribute>
