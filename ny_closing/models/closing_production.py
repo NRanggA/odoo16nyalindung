@@ -1356,8 +1356,8 @@ class ClosingProduction(models.Model):
             
             # WIP : GET Beginning WIP
             # GET Work Inprogress Saldo awal WIP atau MO PREV MONTH
-            closing.latex_wip_opening_qty = self.prev_closing_id.closing_wip_latex_qty
-            closing.lump_wip_opening_qty = self.prev_closing_id.closing_wip_lump_qty
+            closing.latex_wip_opening_qty = self.prev_closing_id.latex_wip_qty
+            closing.lump_wip_opening_qty = self.prev_closing_id.lump_wip_qty
             # mrp_sheet_prev = closing._get_mrp_inprogress_prev_month(sheet_product)
             # if mrp_sheet_prev:
             #     rm_moves = mrp_sheet_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
