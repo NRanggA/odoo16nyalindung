@@ -174,6 +174,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         product_asamsemut = self.env['product.product'].search([('name','=','Asam Semut')], limit=1)
         sheet_product = self.env['product.product'].search([('name','=','Sheet')], limit=1)
         compound_product = self.env['product.product'].search([('name','=','Compo')], limit=1)
+        compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
 
         next_row = 2
         col = 1
@@ -371,7 +372,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         #                         ('state','in',['progress','done']),
         #                         ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
         #                         ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        production_compo = self.env['mrp.production'].search([('product_id','=',compound_product.id),
+        production_compo = self.env['mrp.production'].search([('product_id','=',compound_product2.id),
                 ('state','=','done'),
                 ('date_start','=', False),
                 ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
@@ -474,7 +475,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         #                             ('is_confirmed','=',True)])
         # production_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
         production_qty = 0.0
-        production_all = self.env['mrp.production'].search([('product_id','in',[sheet_product.id, compound_product.id]),
+        production_all = self.env['mrp.production'].search([('product_id','in',[sheet_product.id, compound_product2.id]),
                 ('state','=','done'),
                 ('date_start','=', False),
                 ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
