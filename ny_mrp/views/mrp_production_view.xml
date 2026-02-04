@@ -21,8 +21,8 @@
                             '|',                                      
                             ('product_id', '=', False),             
                             '|',                                     
-                            ('product_name', '!=', 'Sheet'),       
-                            ('state', '!=', 'draft')                 
+                                ('product_name', 'not in', ['Sheet','Compo']),
+                                ('state', '!=', 'draft')                 
                         ]}"/>
             </xpath>
             <page name="finished_products" position="before">

@@ -7,7 +7,26 @@ class MrpProduction(models.Model):
 
     manual_consume_ids = fields.One2many('mrp.manual.consume', 'component_consume_production_id', string='Manual Consumed')
     product_name = fields.Char('Product Name', related='product_id.name', readonly=True, store=True)
+    must_have_source_mo = fields.Boolean(related='bom_id.must_have_source_mo', string='Must Have Source MO', store=True)
+    source_mo_id = fields.Many2one('mrp.production', string='Asal MO', readonly=True, help='MO asal dari mana MO ini dibuat melalui proses split atau backorder.')
+    wip_date_start = fields.Datetime(related='source_mo_id.date_finished', string='WIP Start Date', help='Tanggal mulai WIP dari MO ini.', readonly=True, store=True)
+    finish_mo_ids = fields.One2many('mrp.production', 'source_mo_id', string='Akhir MO', readonly=True)
+    state_mo_wip = fields.Selection([
+        ('none', 'None'),
+        ('inprogress', 'In Progress'),
+        ('completed', 'Completed'),
+    ], string='State MO WIP', compute='_compute_state_mo_wip', store=True)
 
+    @api.depends('state', 'finish_mo_ids', 'finish_mo_ids.state')
+    def _compute_state_mo_wip(self):
+        for prod in self:
+            if prod.state in ['draft', 'cancel']:
+                prod.state_mo_wip = 'none'
+            elif any(fin_mo.state != 'done' for fin_mo in prod.finish_mo_ids):
+                prod.state_mo_wip = 'inprogress'
+            else:
+                prod.state_mo_wip = 'completed'
+    
     # def action_draft(self):
     #     for production in self:
     #         production.state = 'draft'
@@ -58,25 +77,6 @@ class MrpProduction(models.Model):
                              'default_product_latex_id': self.bom_id.bom_line_ids.filtered(lambda x: x.product_id.name=='Lateks').product_id.id,
                              'default_bom_id': self.bom_id.id}
         return action
-
-    # def button_mark_done(self):
-    #     for rec in self:
-    #         if not rec.env.context.get('from_wizard'):
-    #             confirmation_message = f"Anda akan mencatat produksi {rec.qty_producing}/{rec.product_uom_id.name}  '{rec.product_id.name}', apakah akan dilanjutkan?" 
-    #             return {
-    #                 'type'      : 'ir.actions.act_window',
-    #                 'res_model' : 'wizard.action.validate',
-    #                 'view_mode' : 'form',
-    #                 'view_id'   : self.env.ref('ny_mrp.view_wizard_action_validate_mo').id,
-    #                 'target'    : 'new',
-    #                 'context': {
-    #                     'active_id'             : rec.id, 
-    #                     'active_model'          : rec._name,
-    #                     'confirmation_message'  : confirmation_message  
-    #                 },
-    #             }
-    #     return super(MrpProduction, self).button_mark_done()
-
 
     def button_mark_done(self):
         for rec in self:
