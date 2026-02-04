@@ -1890,14 +1890,21 @@ class ClosingProduction(models.Model):
                 exvals['manufacturing_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.latex_wip_outgoing_value
 
             # Finish Good : Compo
-            mrp_compound_done = closing._get_mrp_done_this_month(closing.compound_product_id)
+            # mrp_compound_done = closing._get_mrp_done_this_month(closing.compound_product_id)
             # compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
             # mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
             finished_compo_qty = 0.0
-            if mrp_compound_done:
-                # rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-                # finished_compo_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-                finished_compo_qty = sum(mrp_compound_done.mapped('qty_produced')) if mrp_compound_done else 0.0
+            # if mrp_compound_done:
+            #     # rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+            #     # finished_compo_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            #     finished_compo_qty = sum(mrp_compound_done.mapped('qty_produced')) if mrp_compound_done else 0.0
+            production_moves_compo = self.env['stock.move'].search([('product_id','=',closing.compound_product_id.id),
+                            ('state','=','done'),
+                            ('location_id.usage','=','production'),('location_dest_id.usage','=','internal'),
+                            ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                            ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                            ])
+            finished_compo_qty = sum(production_moves_compo.mapped('product_uom_qty')) if production_moves_compo else 0.0
                 
             prev_closing_fg_compo = False
             if closing.prev_closing_id:
