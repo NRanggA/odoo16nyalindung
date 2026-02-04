@@ -1412,7 +1412,7 @@ class ClosingProduction(models.Model):
             # if mrp_compound_done:
             #     rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
             #     outgoing_wip_lump += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
-            closing.lump_wip_outgoing_qty = closing.lump_wip_outgoing_qty
+            closing.lump_wip_outgoing_qty = outgoing_wip_lump
             # WIP : Asam semut hanya untuk SHEET
             # WIP : Get Receiving Asam Semut
             receving_asam_semuts = self.env['stock.move.line'].search([
