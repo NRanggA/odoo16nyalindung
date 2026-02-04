@@ -120,9 +120,9 @@ class ProjectClosingReportExcel(models.AbstractModel):
             worksheet.write(next_row, 2, line.project_id.name, wbf['content'])
             worksheet.write(next_row, 3, line.accumultated_cip_last_year or 0.0, wbf['content_float'])
             worksheet.write(next_row, 4, line.accumultated_cip_this_year or 0.0, wbf['content_float'])
-            worksheet.write(next_row, 5, line.current_period_cost or 0.0, wbf['content_float'])
+            worksheet.write(next_row, 5, line.total_cost or 0.0, wbf['content_float'])
             # worksheet.write(next_row, 6, line.adjustment_period_cost or 0.0, wbf['content_float'])
-            worksheet.write(next_row, 6, line.accumultated_cip_last_year + line.accumultated_cip_this_year + line.current_period_cost, wbf['content_float'])
+            worksheet.write(next_row, 6, line.accumultated_cip_last_year + line.accumultated_cip_this_year + line.total_cost, wbf['content_float'])
             next_row += 1
         
         next_row += 1
@@ -175,10 +175,10 @@ class ProjectClosingReportExcel(models.AbstractModel):
         #     # worksheet.write(next_row, 3, line.accumulated_tbm_cost or 0.0, wbf['content_float'])
         #     worksheet.write(next_row, 3, line.accumulated_tbm_cost_last_year or 0.0, wbf['content_float'])
         #     worksheet.write(next_row, 4, line.accumulated_tbm_cost_this_year or 0.0, wbf['content_float'])
-        #     worksheet.write(next_row, 5, line.current_period_cost or 0.0, wbf['content_float'])
+        #     worksheet.write(next_row, 5, line.total_cost or 0.0, wbf['content_float'])
         #     worksheet.write(next_row, 6, line.adjustment_period_cost or 0.0, wbf['content_float'])
-        #     # worksheet.write(next_row, 7, line.accumulated_tbm_cost + line.current_period_cost + line.adjustment_period_cost, wbf['content_float'])
-        #     worksheet.write(next_row, 7, line.accumulated_tbm_cost_last_year + line.accumulated_tbm_cost_this_year + line.current_period_cost + line.adjustment_period_cost, wbf['content_float'])
+        #     # worksheet.write(next_row, 7, line.accumulated_tbm_cost + line.total_cost + line.adjustment_period_cost, wbf['content_float'])
+        #     worksheet.write(next_row, 7, line.accumulated_tbm_cost_last_year + line.accumulated_tbm_cost_this_year + line.total_cost + line.adjustment_period_cost, wbf['content_float'])
         #     next_row += 1
         
         # next_row += 1
