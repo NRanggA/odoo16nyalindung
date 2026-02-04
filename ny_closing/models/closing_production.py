@@ -1387,19 +1387,27 @@ class ClosingProduction(models.Model):
                 closing.lump_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
             # WIP : GET MO DONE THIS MONTH
-            mrp_sheet_done = closing._get_mrp_done_this_month(sheet_product)
-            if mrp_sheet_done:
-                rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
-                closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
-            
-            # TODO: REMOVE THIS di CLOSING FEB 2026
-            outgoing_wip_lump = 0
-            rm_moves1 = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
+            outgoing_wip_sheet = 0
+            rm_moves1 = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','production'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
                                     ('production_id.date_start','<=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
-            outgoing_wip_lump = sum(rm_moves1.mapped('qty_done')) if rm_moves1 else 0.0
+            outgoing_wip_sheet = sum(rm_moves1.mapped('qty_done')) if rm_moves1 else 0.0
+            mrp_sheet_done = closing._get_mrp_done_this_month(sheet_product)
+            if mrp_sheet_done:
+                rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
+                outgoing_wip_sheet += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
+            closing.latex_wip_outgoing_qty = outgoing_wip_sheet
+
+            # TODO: REMOVE THIS di CLOSING FEB 2026
+            outgoing_wip_lump = 0
+            rm_moves2 = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','production'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('production_id.date_start','<=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
+            outgoing_wip_lump = sum(rm_moves2.mapped('qty_done')) if rm_moves2 else 0.0
             mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
             if mrp_compound_done:
                 rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
