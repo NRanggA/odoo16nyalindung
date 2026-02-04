@@ -399,7 +399,7 @@ class PlantationClosingReportExcel(models.AbstractModel):
         worksheet.set_column(1,1,15)
         worksheet.merge_range(next_row, 2, next_row+1, 2, 'Blok Tanam' , wbf['header'])
         worksheet.set_column(2,2,35)
-        worksheet.set_column(3,6,15)
+        worksheet.set_column(3,7,15)
         worksheet.merge_range(next_row-1, 3, next_row-1, 7, 'Harga Perolehan' , wbf['header'])
         worksheet.merge_range(next_row, 3, next_row+1, 3, 'Saldo Akhir\nTahun Lalu' , wbf['header'])
         worksheet.merge_range(next_row, 4, next_row, 6, 'Tahun Berjalan' , wbf['header'])

@@ -109,7 +109,7 @@ class ProjectClosingReportExcel(models.AbstractModel):
         worksheet.merge_range(next_row, 6, next_row+1, 6, 'Saldo Akhir' , wbf['header'])
 
         next_row += 2
-        for c in range(7):
+        for c in range(6):
             worksheet.write(next_row, c+1, c+1, wbf['header'])
         next_row += 1
         start_row = next_row
