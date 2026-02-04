@@ -1310,6 +1310,7 @@ class ClosingProduction(models.Model):
             sheet_product = self.env['product.product'].search([('name','=','Sheet')], limit=1)
             closing.sheet_product_id = sheet_product.id
             compound_product = self.env['product.product'].search([('name','=','Compo')], limit=1)
+            compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
             closing.compound_product_id = compound_product.id
             
             # Get Plantation Cost
@@ -1371,7 +1372,7 @@ class ClosingProduction(models.Model):
             if mrp_sheet:
                 rm_moves = mrp_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-            mrp_compound = closing._get_mrp_inprogress_this_month(compound_product)
+            mrp_compound = closing._get_mrp_inprogress_this_month(compound_product2)
             if mrp_compound:
                 rm_moves = mrp_compound.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
@@ -1381,7 +1382,7 @@ class ClosingProduction(models.Model):
             if mrp_sheet_done:
                 rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
-            mrp_compound_done = closing._get_mrp_done_this_month(compound_product)
+            mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
             if mrp_compound_done:
                 rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
@@ -1892,7 +1893,9 @@ class ClosingProduction(models.Model):
                 exvals['manufacturing_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.latex_wip_outgoing_value
 
             # Finish Good : Compo
-            mrp_compound_done = closing._get_mrp_done_this_month(closing.compound_product_id)
+            # mrp_compound_done = closing._get_mrp_done_this_month(closing.compound_product_id)
+            compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
+            mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
             finished_compo_qty = 0.0
             if mrp_compound_done:
                 # rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
