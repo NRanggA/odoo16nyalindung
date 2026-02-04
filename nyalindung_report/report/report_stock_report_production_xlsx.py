@@ -270,6 +270,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         #                         ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         production_sheet = self.env['mrp.production'].search([('product_id','=',sheet_product.id),
                                 ('state','=','done'),
+                                ('date_start','=', False),
                                 ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                 ('date_finished','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         rm_moves = production_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
@@ -372,6 +373,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         #                         ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         production_compo = self.env['mrp.production'].search([('product_id','=',compound_product.id),
                 ('state','=','done'),
+                ('date_start','=', False),
                 ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                 ('date_finished','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         rm_moves = production_compo.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
@@ -474,6 +476,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         production_qty = 0.0
         production_all = self.env['mrp.production'].search([('product_id','in',[sheet_product.id, compound_product.id]),
                 ('state','=','done'),
+                ('date_start','=', False),
                 ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                 ('date_finished','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         rm_moves = production_all.move_raw_ids.filtered(lambda s: s.product_id.id==product_asamsemut.id)
