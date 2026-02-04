@@ -9,6 +9,13 @@
             <!-- <xpath expr="//field[@name='product_qty']" position="after">
                 <button string="Qty To Produce" name="get_target_production" type="object" class="btn-warning" states="draft"/>
             </xpath> -->
+            <field name="user_id" position="after">
+                <field name="must_have_source_mo" invisible="1"/>
+                <field name="source_mo_id" attrs="{'required': [('must_have_source_mo','=', True)]}, 'invisible': [('must_have_source_mo','=', False)]" options="{'no_create': True}"/>
+            </field>
+            <field name="origin" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </field>
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="product_name" invisible="1"/>
             </xpath>
