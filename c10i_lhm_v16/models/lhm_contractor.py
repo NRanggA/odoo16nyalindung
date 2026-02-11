@@ -122,6 +122,12 @@ class lhm_contractor(models.Model):
                                 related='company_id.account_payable_contractor_id', readonly=False,
                                 string="Account Payable Perantara Buku Kontraktor")
     is_hasil_2                   = fields.Boolean(string='Is Hasil 2', compute='_compute_is_hasil_2', store=True)
+    has_material_consumption = fields.Boolean('Has Material Consumption', compute="_has_material_consumption", store=True)
+
+    @api.depends('line_ids', 'line_ids.activity_id')
+    def _has_material_consumption(self):
+        for record in self:
+            record.has_material_consumption = any(line.activity_id.skb for line in record.line_ids)
 
     @api.onchange('line_ids', 'date')
     def _onchange_line_ids(self):

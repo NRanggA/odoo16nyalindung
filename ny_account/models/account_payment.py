@@ -73,15 +73,19 @@ class AccountPayment(models.Model):
             amount_charge = int(record.amount_charge)
             record.amount_charge_text = num2words(amount_charge, lang='id')
     
-    @api.onchange('payment_line_ids', 'amount_charge')
+    @api.onchange('payment_line_ids', 'credit_balance_ids', 'amount_charge')
     def _onchange_amount(self):
         for rec in self:
             amount = 0
             if rec.payment_line_ids:
                 amount = sum([line.amount_to_pay for line in rec.payment_line_ids])
-                rec.amount = amount
-
-                rec.amount += rec.amount_charge
+            if rec.credit_balance_ids:
+                amount -= sum([line2.amount_to_allocate for line2 in rec.credit_balance_ids])
+            
+            if rec.amount_charge:
+                amount += rec.amount_charge
+            
+            rec.amount = amount
 
     def report_data(self):
         for rec in self:
@@ -127,86 +131,86 @@ class AccountPayment(models.Model):
             res = super().action_post()
 
             if rec.journal_id.type in ['bank', 'cash'] and rec.payment_type in ['inbound', 'outbound']:
-                    sequence = None
-                    if rec.payment_type == 'inbound' and rec.journal_id.sequence_id:
-                        sequence = rec.journal_id.sequence_id
-                    elif rec.payment_type == 'outbound' and rec.journal_id.sequence_out_id:
-                        sequence = rec.journal_id.sequence_out_id
+                sequence = None
+                if rec.payment_type == 'inbound' and rec.journal_id.sequence_id:
+                    sequence = rec.journal_id.sequence_id
+                elif rec.payment_type == 'outbound' and rec.journal_id.sequence_out_id:
+                    sequence = rec.journal_id.sequence_out_id
 
-                    if not sequence:
+                if not sequence:
+                    raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
+
+                payment_date    = rec.date or datetime.now().date()
+                sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+
+                if not sequence_number:
+                    raise ValidationError("Gagal mendapatkan nomor sequence.")
+
+                rec.name = sequence_number
+                
+                # Paired Journal
+                if rec.paired_internal_transfer_payment_id:
+                    sequence_paired = None
+                    if rec.paired_internal_transfer_payment_id.payment_type == 'inbound' and rec.paired_internal_transfer_payment_id.journal_id.sequence_id:
+                        sequence_paired = rec.paired_internal_transfer_payment_id.journal_id.sequence_id
+                    elif rec.paired_internal_transfer_payment_id.payment_type == 'outbound' and rec.paired_internal_transfer_payment_id.journal_id.sequence_out_id:
+                        sequence_paired = rec.paired_internal_transfer_payment_id.journal_id.sequence_out_id
+
+
+                    if not sequence_paired:
                         raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
 
-                    payment_date    = rec.date or datetime.now().date()
-                    sequence_number = sequence.with_context(ir_sequence_date=payment_date).next_by_id()
+                    payment_date_paired     = rec.date or datetime.now().date()
+                    sequence_number_paired  = sequence_paired.with_context(ir_sequence_date=payment_date_paired).next_by_id()
 
-                    if not sequence_number:
-                        raise ValidationError("Gagal mendapatkan nomor sequence.")
-
-                    rec.name = sequence_number
-                    
-                    # Paired Journal
-                    if rec.paired_internal_transfer_payment_id:
-                        sequence_paired = None
-                        if rec.paired_internal_transfer_payment_id.payment_type == 'inbound' and rec.paired_internal_transfer_payment_id.journal_id.sequence_id:
-                            sequence_paired = rec.paired_internal_transfer_payment_id.journal_id.sequence_id
-                        elif rec.paired_internal_transfer_payment_id.payment_type == 'outbound' and rec.paired_internal_transfer_payment_id.journal_id.sequence_out_id:
-                            sequence_paired = rec.paired_internal_transfer_payment_id.journal_id.sequence_out_id
-
-
-                        if not sequence_paired:
-                            raise ValidationError("Sequence untuk jurnal belum dikonfigurasi.")
-
-                        payment_date_paired     = rec.date or datetime.now().date()
-                        sequence_number_paired  = sequence_paired.with_context(ir_sequence_date=payment_date_paired).next_by_id()
-
-                        rec.paired_internal_transfer_payment_id.name = sequence_number_paired
+                    rec.paired_internal_transfer_payment_id.name = sequence_number_paired
 
             # Mengecek apakah ada (amount_charge)
             for payment in rec.filtered(lambda p: p.payment_type == 'outbound'):
                 if payment.amount_charge > 0:
-                        if not payment.charge_account_id:
-                            raise ValidationError("Charge Acount Harus di isi")
-                        
-                        sequence_adm        = rec.journal_id.sequence_out_id
-                        sequence_number_adm = sequence_adm.with_context(ir_sequence_date=payment_date).next_by_id()
-                        charge_move_name    = sequence_number_adm
+                    if not payment.charge_account_id:
+                        raise ValidationError("Charge Acount Harus di isi")
+                    
+                    sequence_adm        = rec.journal_id.sequence_out_id
+                    sequence_number_adm = sequence_adm.with_context(ir_sequence_date=payment_date).next_by_id()
+                    charge_move_name    = sequence_number_adm
 
-                        # Membuat entri jurnal untuk biaya administrasi
-                        move_vals = {
-                            'name': charge_move_name,
-                            'journal_id': payment.journal_id.id,
-                            'move_type': 'entry',
-                            'is_payment': True,
-                            'line_ids': [
-                                # Baris debit 
-                                (0, 0, {
-                                    'account_id': payment.charge_account_id.id,
-                                    'name'      : payment.memo_charge,
-                                    'debit'     : payment.amount_charge,
-                                    'credit'    : 0.0,
-                                    'partner_id': payment.partner_id.id,
-                                }),
-                                # Baris kredit
-                                (0, 0, {
-                                    'account_id': payment.outstanding_account_id.id,  
-                                    'name'      : payment.memo_charge,
-                                    'debit'     : 0.0,
-                                    'credit'    : payment.amount_charge,
-                                    'partner_id': payment.partner_id.id,
-                                }),
-                            ],
-                        }
+                    # Membuat entri jurnal untuk biaya administrasi
+                    move_vals = {
+                        'name': charge_move_name,
+                        'journal_id': payment.journal_id.id,
+                        'move_type': 'entry',
+                        'is_payment': True,
+                        'line_ids': [
+                            # Baris debit 
+                            (0, 0, {
+                                'account_id': payment.charge_account_id.id,
+                                'name'      : payment.memo_charge,
+                                'debit'     : payment.amount_charge,
+                                'credit'    : 0.0,
+                                'partner_id': payment.partner_id.id,
+                            }),
+                            # Baris kredit
+                            (0, 0, {
+                                'account_id': payment.outstanding_account_id.id,  
+                                'name'      : payment.memo_charge,
+                                'debit'     : 0.0,
+                                'credit'    : payment.amount_charge,
+                                'partner_id': payment.partner_id.id,
+                            }),
+                        ],
+                    }
 
-                        # Membuat jurnal entry untuk charge
-                        charge_move = rec.env['account.move'].create(move_vals)
+                    # Membuat jurnal entry untuk charge
+                    charge_move = rec.env['account.move'].create(move_vals)
 
-                        # Posting jurnal entry yang baru dibuat
-                        charge_move.with_context(is_payment=True)._post(soft=False)
+                    # Posting jurnal entry yang baru dibuat
+                    charge_move.with_context(is_payment=True)._post(soft=False)
 
-                        # Simpan jurnal kedua di charge_move_id
-                        payment.charge_move_id = charge_move
+                    # Simpan jurnal kedua di charge_move_id
+                    payment.charge_move_id = charge_move
 
-                                # Tambahkan pengecekan konteks ketika dari wizard, dan validasi sekali lagi nilai amount tidak boleh 0
+                            # Tambahkan pengecekan konteks ketika dari wizard, dan validasi sekali lagi nilai amount tidak boleh 0
 
             return res
 

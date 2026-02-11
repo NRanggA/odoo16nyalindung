@@ -38,12 +38,12 @@ class ClosingProjectPlantDeferred(models.Model):
         for line in self:
             line.cost_to_post = ((line.deferred_cost + line.new_deferred_cost) - line.accumulated_cost) * line.pct_cost_to_post / 100.0
     
-    @api.onchange('cost_to_post')
+    # @api.onchange('cost_to_post')
     def _set_percentage(self):
         for line in self:
             line.pct_cost_to_post = line.cost_to_post / ((line.deferred_cost + line.new_deferred_cost) - line.accumulated_cost) * 100.0
     
-    @api.depends('residual_deferred','cost_to_post')
+    @api.depends('residual_deferred','cost_to_post','pct_cost_to_post')
     def _compute_residual2(self):
         for line in self:
             line.new_residual_deferred = line.residual_deferred - line.cost_to_post
@@ -144,12 +144,15 @@ class ClosingProject(models.Model):
 
     closing_move_id = fields.Many2one('account.move', string='Journal Entry')
 
+    accumultated_cip_this_year = fields.Float('Accumulated CIP')
+    accumultated_cip_last_year = fields.Float('Accumulated CIP Last Year')
+
     @api.depends('project_id')
     def _compute_dest_account(self):
         for closing in self:
             closing.dest_account_id = closing.project_id.categ_id.account_id.id
     
-    @api.depends('project_id')
+    @api.depends('project_id','closing_process_id.state')
     def _compute_mark(self):
         for closing in self:
             new_mark_project_period = 'none'
@@ -248,6 +251,7 @@ class ClosingProject(models.Model):
             $BODY$
             DECLARE
                 v_closing_project_date_from date;
+                v_closing_project_date_to date;
                 v_location_type integer;
                 v_location integer;
                 v_deferred_account integer;
@@ -256,6 +260,7 @@ class ClosingProject(models.Model):
                 v_accumulated_cost numeric := 0.0;
             BEGIN
                 select date_from from closing_project where id=p_closing_project_id INTO v_closing_project_date_from;
+                select date_to from closing_project where id=p_closing_project_id INTO v_closing_project_date_to;
                 select location_type_id from lhm_project where id=p_project_id INTO v_location_type;
                 select location_id from lhm_project where id=p_project_id INTO v_location;
                 select lpt.account_id from lhm_project lp, lhm_project_type lpt where lp.id=p_project_id and lp.categ_id=lpt.id INTO v_deferred_account;
@@ -278,7 +283,7 @@ class ClosingProject(models.Model):
                                     SUM(0) as new_deferred_cost
                                 FROM account_move_line aml1
                                 WHERE 
-                                    aml1.date<v_closing_project_date_from 
+                                    aml1.date<=v_closing_project_date_to 
                                     and aml1.parent_state='posted'
                                     and aml1.plantation_location_type_id=v_location_type
                                     and aml1.plantation_location_id=v_location 
@@ -357,12 +362,37 @@ class ClosingProject(models.Model):
         else:
             domain.append(('account_id','in',src_account_ids))
         return domain
+    
+    def _get_domain_source_last_year_move_lines(self):
+        src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
+        if not src_account_ids:
+            raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        last_year_date = self.date_to - relativedelta(years=1) - relativedelta(month=12, days=31)
+        domain = [('plantation_location_id','=',self.project_id.location_id.id),
+                ('parent_state','=','posted'),
+                ('date','<=',last_year_date)]
+        if len(src_account_ids)==1:
+            domain.append(('account_id','=',src_account_ids[0]))
+        else:
+            domain.append(('account_id','in',src_account_ids))
+        return domain
+
+    def _get_domain_source_last_prev_move_lines(self):
+        src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
+        if not src_account_ids:
+            raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        domain = [('plantation_location_id','=',self.project_id.location_id.id),
+                ('parent_state','=','posted'),
+                ('date','<=',self.date_to)]
+        if len(src_account_ids)==1:
+            domain.append(('account_id','=',src_account_ids[0]))
+        else:
+            domain.append(('account_id','in',src_account_ids))
+        return domain
 
     def summarize_move_line(self):
         for closing in self:
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Summerize Project Cost", closing.id)
             if closing.project_id.project_tanaman and closing.project_id.plant_block_id:
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Tanaman")
                 closing.cost_line_ids.unlink()
                 closing.deferred_cost_line_ids.unlink()
                 if closing.project_id.harvest_date_schedule <= closing.date_from:
@@ -389,9 +419,16 @@ class ClosingProject(models.Model):
                 self.env.cr.execute(f"select procedure_summerize_project_deferred_cost({closing.id}, {closing.project_id.id}, {self.env.user.id}, {self.env.company.id})")
                 closing.total_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
             else:
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Project Aja")
-                source_moves = self.env['account.move.line'].search(self._get_domain_source_move_lines())
+                source_moves = self.env['account.move.line'].search(closing._get_domain_source_move_lines())
                 closing.total_cost = sum(source_moves.mapped('balance')) if source_moves else 0.0
+                if closing.date_to.month > 1:
+                    source_moves2 = self.env['account.move.line'].search(closing._get_domain_source_last_prev_move_lines())
+                    closing.accumultated_cip_this_year = sum(source_moves2.mapped('balance')) if source_moves2 else 0.0
+                else:
+                    closing.accumultated_cip_this_year = 0.0
+                
+                source_moves3 = self.env['account.move.line'].search(closing._get_domain_source_last_year_move_lines())
+                closing.accumultated_cip_last_year = sum(source_moves3.mapped('balance')) if source_moves3 else 0.0
 
     def _prepare_move_lines_for_project_tanaman(self):
         self.ensure_one()
@@ -455,6 +492,10 @@ class ClosingProject(models.Model):
     def create_account_move(self):
         project_journal = self.env.ref('ny_closing.plantation_closing_project_journal')
         for closing in self:
+
+            if not closing.project_tanaman:
+                continue
+
             if closing.closing_move_id:
                 if closing.closing_move_id.state in ('posted','cancel'):
                     closing.closing_move_id.button_draft()
@@ -483,6 +524,9 @@ class ClosingProject(models.Model):
                 }
                 move_lines.append((0,0,vals))
             
+            if not move_lines:
+                continue
+
             values = {
                 'date': closing.date_to,
                 'journal_id': project_journal.id,
@@ -494,12 +538,27 @@ class ClosingProject(models.Model):
             else:
                 new_move = self.env['account.move'].create(values)
                 closing.closing_move_id = new_move.id
-        
         return True
+
+    # def action_cancel(self):
+    #     for closing in self:
+    #         closing.closing_move_id.button_cancel()
 
     def action_cancel(self):
         for closing in self:
-            closing.closing_move_id.button_cancel()
+            move = closing.closing_move_id
+            if not move:
+                continue
+
+            if move.state == 'posted':
+                move.button_draft()
+
+            if move.state != 'cancel':
+                move.button_cancel()
+
+            move.unlink()
+
+            closing.closing_move_id = False
     
     def action_view_src_move_lines(self):
         action = self.env["ir.actions.actions"]._for_xml_id("ny_closing.plantation_closing_aml_action")

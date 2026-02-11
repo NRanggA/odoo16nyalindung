@@ -215,7 +215,8 @@
                 <separator/>
                 <filter string="Date" name="date" date="date"/>
                 <separator/>
-                <filter name="submit" string="To Approve" domain="[('employee_expense_state','=','submit')]"/>
+                <filter name="advance_residual" string="Amount to clear" domain="[('advance_residual', '>', 0)]"/>
+                <separator/>
                 <filter name="approve" string="To Post" domain="[('employee_expense_state','=','approved')]"/>
                 <filter name="posted" string="Posted" domain="[('employee_expense_state', '=', 'posted')]"/>
                 <filter name="cancel" string="Cancelled" domain="[('employee_expense_state', '=', 'cancel')]"/>
@@ -229,6 +230,8 @@
                     <filter name="status" string="Status" context="{'group_by':'employee_expense_state'}"/>
                     <separator/>
                     <filter string="Date" name="groupdate" context="{'group_by': 'date'}"/>
+                    <separator/>
+                    <filter string="Partner" name="grouppartner" context="{'group_by': 'partner_id'}"/>
                 </group>
             </search>
         </field>

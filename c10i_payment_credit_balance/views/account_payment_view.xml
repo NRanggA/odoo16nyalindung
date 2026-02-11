@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_form_inherit_credit_balance" model="ir.ui.view">
+        <field name="name">account.payment.form.inherit.credit.balance</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="c10i_payment.account_view_account_payment_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_line_ids']" position="after">
+                <label for="credit_balance_ids" 
+                    attrs="{'invisible': ['|',('payment_type', '!=', 'inbound'),('credit_balance_ids', '=', [])]}" 
+                    />
+                <field name="credit_balance_ids"
+                         attrs="{'readonly': [('state','!=','draft')], 
+                            'invisible': ['|',('payment_type', '!=', 'inbound'),('credit_balance_ids', '=', [])]}">
+                    <tree create="false" editable="top">
+                        <field name="move_line_id" invisible="1"/>
+                        <field name="move_id"/>
+                        <field name="date"/>
+                        <field name="amount_residual" readonly="1" sum="amount_residual"/>
+                        <field name="amount_to_allocate" sum="amount_to_allocate"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

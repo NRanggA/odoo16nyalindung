@@ -14,6 +14,9 @@
                         <field name="period_to" required="1" />
                         <field name="company_id" invisible="1" />
                     </group>
+                    <group string="Product Categories">
+                        <field name="product_category_ids" widget="many2many_tags"/>
+                    </group>
                     <!-- <notebook>
                         <page string="Inventory List">
                             <field name="line_ids">

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_payroll_cost_allocation_xlsx" model="ir.actions.report">
+        <field name="name">Cost Allocation</field>
+        <field name="model">account.cost.map.payroll</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_hr_payroll_account.payroll_cost_allocation_xlsx</field>
+        <field name="report_file">ny_hr_payroll_account.payroll_cost_allocation_xlsx</field>
+        <field name="binding_model_id" ref="model_account_cost_map_payroll"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

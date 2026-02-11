@@ -1176,8 +1176,8 @@ class ReportLpphExcel(models.AbstractModel):
                             # ('allocation_residual_qty', '>', 0),
                             ('pending_material_allocation', '>', 0),
                             ('state','=','done'),
-                            ('date', '>=', date_from),
-                            ('date', '<=', date_to)
+                            ('date', '>=', date_start),
+                            ('date', '<=', date_end)
                         ],order="date desc, plantation_activity_id asc")
 
         row_data = next_row + 3

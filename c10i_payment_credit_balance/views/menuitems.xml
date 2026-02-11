@@ -1,0 +1,11 @@
+<odoo>
+    <!-- Add a new menuitem under Invoicing > Customers, after Customer Payments -->
+    <menuitem id="menu_c10i_payment_credit_balance"
+                name="Credit Balance"
+                parent="account.menu_finance_receivables"
+                sequence="25"
+                action="c10i_payment_credit_balance.action_customer_unreconciled_credit_balance"
+                />
+
+    <!-- Adjust sequence if needed to ensure it appears after Customer Payments (sequence 20) -->
+</odoo>

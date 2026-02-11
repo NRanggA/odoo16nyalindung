@@ -47,7 +47,7 @@ class EquipmentRegister(models.Model):
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': line.account_id.id,
-					'name': 'Reclass Asset to SPM',
+					'name': 'Reclass Asset Clearing to Asset',
 					'debit': amount,
 					'credit': 0.0,
 				}
@@ -56,7 +56,7 @@ class EquipmentRegister(models.Model):
 				credit_account = line.product_id.categ_id.asset_clearing_account_id
 				move_line_vals = {
 					'account_id': credit_account.id,
-					'name': 'Reclass SPM to Asset',
+					'name': 'Reclass Asset Clearing to Asset',
 					'credit': amount,
 					'debit': 0.0,
 				}
@@ -159,15 +159,16 @@ class EquipmentRegisterLine(models.Model):
 	# HELPER METHOD #
 	#################
 	def _prepare_equipment_vals(self):
-		seq_code = self.category_id.sequence_id.code
+		seq_code = self.register_id.category_id.sequence_id.code
 		serial_no = self.env['ir.sequence'].next_by_code(seq_code)
 				
 		threshold_param_to = self.env['ir.config_parameter'].sudo().get_param('ny_equipment.threshold_to', default=0.0)
 		threshold_to = float(threshold_param_to) if threshold_param_to else 0.0
-		asset_type = 'lva' if self.purchase_line_id.price_unit <= threshold_to  else 'fa'
+		# asset_type = 'lva' if self.purchase_line_id.price_unit <= threshold_to  else 'fa'
+		asset_type = self.register_id.category_id.asset_type
 		
 		res = {
-            # 'category_id' : self.register_id.category_id.id,
+            'category_id' : self.register_id.category_id.id,
             'equipment_assign_to' : self.register_id.equipment_assign_to,
             'department_id' : self.register_id.department_id.id,
             'employee_id' : self.register_id.employee_id.id,
@@ -180,13 +181,13 @@ class EquipmentRegisterLine(models.Model):
             'serial_no' : self.register_id.serial_no,
 			'main_product_id': self.product_id.id,
 			'register_line_id': self.id,
-			'name': self.product_id.name,
+			'name': self.name,
 			'note': self.name,
 			'purchase_date': self.register_id.date,
 			'effective_date': self.register_id.date,
-			'category_id': self.category_id.id,
-			'partner_id': self.purchase_line_id.order_id.partner_id.id,
-			'partner_ref': self.purchase_line_id.order_id.partner_ref,
+			# 'category_id': self.category_id.id,
+			# 'partner_id': self.purchase_line_id.order_id.partner_id.id,
+			# 'partner_ref': self.purchase_line_id.order_id.partner_ref,
 			'seq_no': serial_no,
 			'cost': self.purchase_line_id.price_unit,
 			'asset_type' : asset_type

@@ -303,6 +303,17 @@ class AccountMoveLine(models.Model):
     advance_residual_amount = fields.Monetary(string='Advance Residual Amount', currency_field='currency_id')
     # exclude_from_advance_tab = fields.Boolean(help="Technical field used to exclude some lines from the invoice_line_ids tab in the form view.")
 
+    @api.constrains('account_id', 'journal_id')
+    def _check_disallowed_accounts(self):
+        for line in self.filtered(lambda l: l.display_type not in ('line_section', 'line_note')):
+            journal = line.journal_id or line.move_id.journal_id
+            if journal and line.account_id in journal.account_disallowed_ids:
+                raise ValidationError(_(
+                    "Account %s is disallowed in Journal %s.",
+                    line.account_id.display_name,
+                    journal.display_name
+                ))
+
 class AccountInvoiceAdvanceAllocated(models.Model):
     _name = 'account.invoice.advance.allocated'
     _description = 'Advance Outstanding Allocated'

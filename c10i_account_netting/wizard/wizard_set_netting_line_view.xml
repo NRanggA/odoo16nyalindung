@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Set Netting Line Form View -->
+    <record model="ir.ui.view" id="wizard_set_netting_line_form_view">
+        <field name="name">wizard.set.netting.line.form</field>
+        <field name="model">wizard.set.netting.line</field>
+        <field name="arch" type="xml">
+            <form string="Add Netting Lines">
+                <group>
+                    <field name="netting_id" invisible="1"/>
+                    <!-- <field name="type" invisible="1"/> -->
+                    <field name="partner_id" invisible="1"/>
+                </group>
+                <label for="move_line_ids" string="Select Move Lines"/>
+                <field name="move_line_ids" nolabel="1" widget="many2many" 
+                    options="{'no_create': True, 'no_create_edit': True}">
+                    <tree>
+                        <field name="move_id"/>
+                        <field name="date"/>
+                        <field name="account_id"/>
+                        <field name="name"/>
+                        <field name="debit"/>
+                        <field name="credit"/>
+                        <field name="amount_residual"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="amount_residual_currency" attrs="{'invisible': [('currency_id', '=', False)]}"/>
+                    </tree>
+                </field>
+
+                <footer>
+                    <button name="action_add_lines" string="Add Lines" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Set Netting Line Action -->
+    <record model="ir.actions.act_window" id="action_wizard_set_netting_line">
+        <field name="name">Add Netting Lines</field>
+        <field name="res_model">wizard.set.netting.line</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="wizard_set_netting_line_form_view"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

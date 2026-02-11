@@ -24,6 +24,7 @@
                                 <field name="current_period_cost" readonly="1" nolable="1"/>
                                 <button string="View Journals" name="action_view_src_move_lines" type="object" class="btn-info" icon="fa-search"/>
                             </div>
+                            <field name="adjustment_period_cost" readonly="1" />
                             <label for="accumulated_deferred_cost" attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}"/>
                             <div attrs="{'invisible': [('type_of_plant','=','longterm_tbm_tm')]}">
                                 <field name="accumulated_deferred_cost" readonly="1" nolable="1"/>

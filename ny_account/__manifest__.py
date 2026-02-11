@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'purchase', 'c10i_payment', 'account', 'om_account_asset', 'c10i_direct_payment', 'hr'],
+    'depends': ['base', 'purchase', 'c10i_payment', 'c10i_payment_credit_balance', 'account', 'om_account_asset', 'c10i_direct_payment', 'hr', 'sale', 'ny_closing'],
 
     # always loaded
     'data': [
@@ -59,6 +59,7 @@
 
         'wizard/wizard_action_confirm_payment.xml',
         'wizard/wizard_action_confirm_invoice.xml',
+        # 'wizard/wizard_action_save_entries.xml',
 
         # No Create & No Edit
         'views/accounting_nocreate_noedit.xml',

@@ -14,3 +14,4 @@ from . import lhm_plant_block
 from . import ny_ongkos_pikul
 from . import ny_batch_other_input
 from . import hr_employee
+from . import hr_payslip_batch_other_input

@@ -152,7 +152,7 @@ class AssetAcquisition(models.Model):
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': asset_category.account_asset_id.id,
-					'name': 'Reclass Asset to SPM',
+					'name': 'Reclass Asset Clearing to Asset',
 					'debit': sum(purchase_account_dict.values()),
 					'credit': 0.0,
 				}
@@ -161,7 +161,7 @@ class AssetAcquisition(models.Model):
 				for account, amount in purchase_account_dict.items():
 					move_line_vals = {
 						'account_id': account.id,
-						'name': 'Reclass SPM to Asset',
+						'name': 'Reclass Asset Clearing to Asset',
 						'credit': amount,
 						'debit': 0.0,
 					}

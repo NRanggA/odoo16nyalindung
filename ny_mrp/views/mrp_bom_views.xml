@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <field name="type" position="after">
                 <field name="sequence_id"/>
+                <field name="must_have_source_mo"/>
             </field>
             <field name="code" position="attributes">
                 <attribute name="required">1</attribute>

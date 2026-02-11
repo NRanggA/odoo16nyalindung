@@ -1,0 +1,44 @@
+<odoo>
+    <record id="view_project_form_cip" model="ir.ui.view">
+        <field name="name">project.project.form.cip</field>
+        <field name="model">lhm.project</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_project_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//header" position="inside">
+                <button name="action_create_asset"
+                    type="object"
+                    class="oe_highlight"
+                    string="Create Asset"
+                    attrs="{'invisible': ['|', ('state', '!=', 'done'), ('equipment_register_id', '!=', False)]}"/>
+
+            </xpath>
+
+            <xpath expr="//div[@name='button_box']/button[@name='toggle_active']" position="after">
+                <button name="action_open_project_move_lines"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-book"
+                        string="Journal Entries"/>
+
+                <button name="action_open_equipment_register"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-cogs"
+                        string="Equipment Register"
+                        attrs="{'invisible': [('equipment_register_id', '=', False)]}"/>
+
+            </xpath>
+
+
+            <xpath expr="//group[@name='project_information']//field[@name='qty']" position="after">
+                <field name="amount_cip" readonly="1"/>
+                <field name="equipment_category_id"/>
+                <field name="equipment_register_id" invisible="1"/>
+                <field name="product_id" invisible="1"/>
+            </xpath>
+
+
+        </field>
+    </record>
+</odoo>

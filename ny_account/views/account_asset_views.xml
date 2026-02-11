@@ -8,6 +8,12 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='analytic_distribution']" position="after">
                 <field name="charge_to_activity" />
+                <field name="lokasi" />
+                <label for="luas"/>
+                <div class="o_input_group">
+                    <field name="luas" nolabel="1"/>
+                    <div class="o_form_label">m²</div>
+                </div>
             </xpath>
 
             <xpath expr="//field[@name='currency_id']" position="before">
@@ -43,6 +49,8 @@
                         <field name="activity_id" 
                             domain="[('id','in',filtered_activities)]" 
                             options="{'no_create_edit':True, 'no_create':True, 'no_open':True}" />
+                        <field name="account_activity_id" readonly="1" />
+                        <field name="account_activity_cost_id" readonly="1" />
 
 
                     </group>

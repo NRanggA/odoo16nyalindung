@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_change_payslip_group_form" model="ir.ui.view">
+        <field name="name">hr.change.payslip.group.view.form</field>
+        <field name="model">hr.change.payslip.group</field>
+        <field name="arch" type="xml">
+            <form string="Change Payslip Group">
+                <field name="payslip_ids" invisible="1" widget="many2many_tags"/>
+                <sheet>
+                    <group>
+                        <field name="payslip_group_id" required="1" />
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Change Group" name="change_group" type="object" class="oe_highlight"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_change_payslip_group_action" model="ir.actions.act_window">
+        <field name="name">Change Payslip Group</field>
+        <field name="res_model">hr.change.payslip.group</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="c10i_hr_payroll.model_hr_payslip"/>
+    </record>
+
+</odoo>

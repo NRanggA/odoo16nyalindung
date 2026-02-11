@@ -29,32 +29,30 @@ class AccountMove(models.Model):
 
     def _post(self, soft=True):
         res = super(AccountMove,self)._post(soft=True)
-        if self.journal_id.create_cash_register:
-            cash_statement ={}
-            cashregister = self.env['account.bank.statement']
-            cash_statement_id =  cashregister.search([('journal_id', '=', self.journal_id.id),('date', '=', fields.Date.today())])
-            line_ids = self._prepare_data_line_cash_statement()
-            if cash_statement_id:
-                cash_statement_id.write({'line_ids': [(0,0,line_ids)]})
-            else:
-                cash_statement = self._prepare_data_cash_statement()
-                cash_statement['line_ids'] = self._prepare_data_line_cash_statement()
-                cashregister.create(cash_statement)
+        for rec in self:
+            if rec.journal_id.create_cash_register:
+                cash_statement ={}
+                cashregister = self.env['account.bank.statement']
+                cash_statement_id =  cashregister.search([('journal_id', '=', rec.journal_id.id),('date', '=', fields.Date.today())])
+                line_ids = rec._prepare_data_line_cash_statement()
+                if cash_statement_id:
+                    cash_statement_id.write({'line_ids': [(0,0,line_ids)]})
+                else:
+                    cash_statement = rec._prepare_data_cash_statement()
+                    cash_statement['line_ids'] = rec._prepare_data_line_cash_statement()
+                    cashregister.create(cash_statement)
         return res
     
     def button_draft(self):
         res = super(AccountMove,self).button_draft()
 
-        if self.journal_id.create_cash_register:
-            
-            cashregister = self.env['account.bank.statement.line'].search([('date', '=', self.date),('direct_payment_move_id', '=', self.id)])
-            if cashregister:
-
-                # move_id = cashregister.move_id
-                for cash_statement_id in cashregister:
-                    statement_id = cash_statement_id.statement_id
-                
-                    statement_id.write({'line_ids':[(2,cash_statement_id.id,0)]})
-
+        for rec in self:
+            if rec.journal_id.create_cash_register:
+                cashregister = self.env['account.bank.statement.line'].search([('date', '=', rec.date),('direct_payment_move_id', '=', rec.id)])
+                if cashregister:
+                    # move_id = cashregister.move_id
+                    for cash_statement_id in cashregister:
+                        statement_id = cash_statement_id.statement_id
+                        statement_id.write({'line_ids':[(2,cash_statement_id.id,0)]})
 
         return res

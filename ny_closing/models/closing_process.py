@@ -60,6 +60,9 @@ class ClosingProcess(models.Model):
 
     def print_closing_plantation_report(self):
         return self.env.ref('ny_closing.action_plantation_closing_xlsx').report_action(self)
+
+    def print_closing_project_report(self):
+        return self.env.ref('ny_closing.action_project_closing_xlsx').report_action(self)
     ############ END REPORT ############
 
     @api.model
@@ -508,12 +511,13 @@ class ClosingProcess(models.Model):
                         'date_from': rec.date_from, 'date_to': rec.date_to,
                         'varieties_type': 'melon', 
                     }
-                prev_closing2 = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done'),
+                prev_closing3 = self.env['closing.production'].search([('date_to','<',rec.date_from),('state','=','done'),
                                                 ('varieties_type','=','melon')], order='date_from desc', limit=1)
-                if prev_closing2:
-                    vals2.update({'prev_closing_id': prev_closing2.id,
-                        'melon_inventory_account_id': prev_closing2.melon_inventory_account_id.id if prev_closing2.melon_inventory_account_id else False,
-                        'melon_varieties_id': prev_closing2.melon_varieties_id.id,
+                if prev_closing3:
+                    vals2.update({'prev_closing_id': prev_closing3.id,
+                        'melon_inventory_account_id': prev_closing3.melon_inventory_account_id.id if prev_closing3.melon_inventory_account_id else False,
+                        'melon_varieties_id': prev_closing3.melon_varieties_id.id,
+                        'plantation_other_cost_account_ids': [(6,0,prev_closing3.plantation_other_cost_account_ids.ids)] if prev_closing3.plantation_other_cost_account_ids else False,
                     })
                 rec.closing_production_ids = [(0,0,vals2)]
             # CREATE PRODUCTION OTHER VARITAS

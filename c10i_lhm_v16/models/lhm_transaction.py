@@ -409,7 +409,9 @@ class lhm_transaction(models.Model):
                 return check_employee
         
         # Panggil fungsi untuk mengecek hasil 1 dan 2
-        self._check_employee_not_hasil_1_2()
+        if self.kemandoran_id and self.kemandoran_id.code != 'Pabrik':
+            self._check_employee_not_hasil_1_2()
+
         # fungsi untuk menambahkan employee panen ke dalam Nap
         self.lhm_line_ids.get_employee_panen_nap()
         # Panggil fungsi untuk mengambil gaji untuk setiap employee
@@ -421,7 +423,7 @@ class lhm_transaction(models.Model):
         # jelankan fungsi progress
         self._progress()
         # Panggil fungsi untuk mengambil material yang digunakan
-        self.get_material()
+        # self.get_material()
 
     # Fungsi untuk mengecek employee sesuai kemandoran
     def check_employee_in_kemandoran(self):
@@ -1411,11 +1413,13 @@ class lhm_transaction_line(models.Model):
         line    = super(lhm_transaction_line, self).create(values)
         line._check_transfer_employee()
         line._check_work_day()
+        line._validate_work_day_limit()
         return line
 
     def write(self, values):
         line    = super(lhm_transaction_line, self).write(values)
         self._check_work_day()
+        self._validate_work_day_limit()
         return line
 
     # (TODO) Pengencekan lebih dalam menganai hapus daftar karyawan di LHM
@@ -1484,45 +1488,74 @@ class lhm_transaction_line(models.Model):
         elif self.overtime_hour <= 0 :
             self.overtime_value = 0
 
-    @api.onchange('work_day')
-    def _onchange_work_day(self):
-        if self.work_day:
-            if self.attendance_id and self.attendance_id.type == 'na':
-                self.work_day = 0
-                return {
-                    'warning': {'title': _('Kesalahan Input Data'),
-                                'message': _("HK tidak boleh diisi jika Absensi: %s.") % self.attendance_id.code},
-                }
-            total_work_day  = 0
-            if isinstance(self.id, int):
-                domain = [
-                    ('employee_id', '=', self.employee_id.id),
-                    ('date', '=', self.date),
-                    ('id', '!=', self.id)]
-            else:
-                domain = [
-                    ('employee_id', '=', self.employee_id.id),
-                    ('date', '=', self.date),
-                    ('id', '!=', self._origin.id)]
-            data_lhm_line   = self.search(domain)
-            max_hk          = 1
+    # @api.onchange('work_day')
+    # def _onchange_work_day(self):
+    #     if self.work_day:
+    #         if self.attendance_id and self.attendance_id.type == 'na':
+    #             self.work_day = 0
+    #             return {
+    #                 'warning': {'title': _('Kesalahan Input Data'),
+    #                             'message': _("HK tidak boleh diisi jika Absensi: %s.") % self.attendance_id.code},
+    #             }
+    #         total_work_day  = 0
+    #         if isinstance(self.id, int):
+    #             domain = [
+    #                 ('employee_id', '=', self.employee_id.id),
+    #                 ('date', '=', self.date),
+    #                 ('id', '!=', self.id)]
+    #         else:
+    #             domain = [
+    #                 ('employee_id', '=', self.employee_id.id),
+    #                 ('date', '=', self.date),
+    #                 ('id', '!=', self._origin.id)]
+    #         data_lhm_line   = self.search(domain)
+    #         max_hk          = 1
 
-            if not data_lhm_line:
-                total_work_day  = 0
-            else:
-                for lhm_line in data_lhm_line:
-                    total_work_day = total_work_day + lhm_line.work_day
-            if (total_work_day + self.work_day) > max_hk:
-                if (max_hk - total_work_day) < 0 and not data_lhm_line:
-                    self.work_day = 1
-                elif (max_hk - total_work_day) < 0 and data_lhm_line:
-                    self.work_day = 0
-                else:
-                    self.work_day = max_hk - total_work_day
-                return {
-                        'warning': {'title': _('Kesalahan Input Data'), 'message': _("HK tidak boleh lebih dari: %s.") % max_hk },
-                    }
+    #         if not data_lhm_line:
+    #             total_work_day  = 0
+    #         else:
+    #             for lhm_line in data_lhm_line:
+    #                 total_work_day = total_work_day + lhm_line.work_day
+    #         if (total_work_day + self.work_day) > max_hk:
+    #             if (max_hk - total_work_day) < 0 and not data_lhm_line:
+    #                 self.work_day = 1
+    #             elif (max_hk - total_work_day) < 0 and data_lhm_line:
+    #                 self.work_day = 0
+    #             else:
+    #                 self.work_day = max_hk - total_work_day
+    #             return {
+    #                     'warning': {'title': _('Kesalahan Input Data'), 'message': _("HK tidak boleh lebih dari: %s.") % max_hk },
+    #                 }
     
+    def _validate_work_day_limit(self):
+        """Validasi agar total HK per karyawan per tanggal tidak melebihi 1."""
+        for line in self:
+            if not line.employee_id or not line.date:
+                continue
+
+            if line.attendance_id and line.attendance_id.type == 'na':
+                if line.work_day != 0:
+                    raise ValidationError(
+                        _("HK tidak boleh diisi jika Absensi: %s.") % line.attendance_id.code
+                    )
+                continue
+
+            domain = [
+                ('employee_id', '=', line.employee_id.id),
+                ('date', '=', line.date),
+                ('id', '!=', line.id)
+            ]
+            other_lines = self.search(domain)
+            total_hk = sum(other_lines.mapped('work_day')) + line.work_day
+            max_hk = 1
+
+            if total_hk > max_hk:
+                raise ValidationError(
+                    _("Total HK untuk %s pada tanggal %s tidak boleh lebih dari %s.")
+                    % (line.employee_id.name, line.date, max_hk)
+                )
+
+
     @api.constrains('employee_id', 'attendance_id')
     def _check_attendance_id(self):
         for record in self:

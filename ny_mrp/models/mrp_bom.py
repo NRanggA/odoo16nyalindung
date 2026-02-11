@@ -5,6 +5,7 @@ class MrpBom(models.Model):
     _inherit = 'mrp.bom'
 
     sequence_id = fields.Many2one('ir.sequence', string='Reference Sequence')
+    must_have_source_mo = fields.Boolean(string='Must Have Source MO', default=False, help='Jika dicentang, pembuatan MO dengan BOM ini harus memiliki MO sumber.')
 
     def create_sequence(self):
         for bom in self:

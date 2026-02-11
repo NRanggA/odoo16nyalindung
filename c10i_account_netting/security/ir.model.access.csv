@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_netting_account_user,account.netting.line accountant,model_account_netting,account.group_account_user,1,1,1,0
+access_account_netting_line_account_user,account.netting.line accountant,model_account_netting_line,account.group_account_user,1,1,1,1
+access_wizard_set_netting_line_account_user,wizard.set.netting.line accountant,model_wizard_set_netting_line,account.group_account_user,1,1,1,1

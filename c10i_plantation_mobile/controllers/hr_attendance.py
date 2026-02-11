@@ -181,7 +181,7 @@ class Attendance(ApiBase):
                 'employee_id': employee_found.id,
                 'latitude': datas.get('latitude','0.0'),
                 'longitude': datas.get('longitude','0.0'),
-                'waktu': fields.Datetime.now(),
+                'waktu': datas.get('waktu', fields.Datetime.now()),
                 # 'date': fields.Datetime.now(),
                 'keterangan': datas.get('note',''),
                 # 'statusmasuk': datas.get('statusmasuk',''),

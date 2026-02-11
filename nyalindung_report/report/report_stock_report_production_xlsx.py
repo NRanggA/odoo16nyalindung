@@ -174,6 +174,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         product_asamsemut = self.env['product.product'].search([('name','=','Asam Semut')], limit=1)
         sheet_product = self.env['product.product'].search([('name','=','Sheet')], limit=1)
         compound_product = self.env['product.product'].search([('name','=','Compo')], limit=1)
+        compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
 
         next_row = 2
         col = 1
@@ -214,7 +215,10 @@ class RekapBukuKontraktor(models.AbstractModel):
             ('state','=','done'),
             ('varieties_type','=','karet'),
         ], order='date_to desc', limit=1)
-        # Lateks
+        
+        ############################################
+        #            Start: Lateks                 #
+        ############################################
         # Saldo Awal dr Closing Sebelumnya dari tanggal from_date 
         #               + Penerimaan antara date_to Closing s.d from_date 
         #               + Produksi antara date_to Closing s.d from_date
@@ -230,58 +234,80 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty += sum(prev_latex_in.mapped('qty_received')) if prev_latex_in else 0.0
             # Produksi yang start_date-nya antara Tanggal setelah Closing s.d to_date
             prev_production_sheet = self.env['mrp.production'].search([('product_id','=',sheet_product.id),('state','in',['progress','done']),
-                ('date_start','>=', last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),('date_start','<=', obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
+                ('date_start','>', last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),('date_start','<', obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             prev_rm_moves = prev_production_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
             opening_qty -= sum(prev_rm_moves.mapped('product_qty')) if prev_rm_moves else 0.0
             # DO antara Tanggal setelah Closing s.d to_date
-            prev_latex_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+            prev_latex_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             opening_qty -= sum(prev_latex_delivery_moves.mapped('qty_done')) if prev_latex_delivery_moves else 0.0
             # Adjustment antara Tanggal setelah Closing s.d to_date
-            prev_latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            prev_latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
-            prev_latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            prev_latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             opening_qty += (sum(prev_latex_adjustment_in_moves.mapped('qty_done')) if prev_latex_adjustment_in_moves else 0.0) - (sum(prev_latex_adjustment_out_moves.mapped('qty_done')) if prev_latex_adjustment_out_moves else 0.0)
         else:
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
+        # IN
         latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
                         ('lhm_nap_id.date_nap','>=',obj.from_date),
                         ('lhm_nap_id.date_nap','<=',obj.to_date),
                         ('lhm_nap_id.state','in',['confirmed','done'])])
         receiving_qty = sum(latex_in.mapped('qty_received')) if latex_in else 0.0
 
+        # WIP
+        production_qty = 0.0
+        # production_sheet = self.env['mrp.production'].search([('product_id','=',sheet_product.id),
+        #                         ('state','in',['progress','done']),
+        #                         ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+        #                         ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         production_sheet = self.env['mrp.production'].search([('product_id','=',sheet_product.id),
-                                ('state','in',['progress','done']),
-                                ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
-                                ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+                                ('state','=','done'),
+                                ('date_start','=', False),
+                                ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                ('date_finished','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         rm_moves = production_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
-        production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-
-        latex_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+        for m in rm_moves:
+            # if m.state == 'done':
+            #     production_qty += m.quantity_done
+            # else:
+            #     production_qty += m.product_qty
+            production_qty += m.quantity_done
+        
+        # OUT
+        latex_delivery_moves_out = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        delivery_qty = sum(latex_delivery_moves.mapped('qty_done')) if latex_delivery_moves else 0.0
+        latex_delivery_moves_in = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
+                                    ('location_id.usage','=','customer'),('location_dest_id.usage','=','internal'),
+                                    ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        delivery_qty = (sum(latex_delivery_moves_out.mapped('qty_done')) if latex_delivery_moves_out else 0.0) - (sum(latex_delivery_moves_in.mapped('qty_done')) if latex_delivery_moves_in else 0.0)
 
-        latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+        # ADJUSTMENT
+        latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+        latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                 ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
                                 ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         adjustment_qty = (sum(latex_adjustment_in_moves.mapped('qty_done')) if latex_adjustment_in_moves else 0.0) - (sum(latex_adjustment_out_moves.mapped('qty_done')) if latex_adjustment_out_moves else 0.0)
         
         closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
+        ### End: Lateks
+        ############################################
+        
         datas.append({
             'product_id': product_latex.id,
             'product_name': product_latex.name,
@@ -293,7 +319,9 @@ class RekapBukuKontraktor(models.AbstractModel):
             'closing_qty': closing_qty
         })
 
-        ### Lump
+        ############################################
+        #             Start : Lump                 #
+        ############################################
         # Saldo Awal dr Closing Sebelumnya dari tanggal from_date 
         #               + Penerimaan antara date_to Closing s.d from_date 
         #               + Produksi antara date_to Closing s.d from_date
@@ -308,59 +336,81 @@ class RekapBukuKontraktor(models.AbstractModel):
                             ('lhm_nap_id.state','in',['confirmed','done'])])
             opening_qty += sum(prev_lump_in.mapped('qty_received')) if prev_lump_in else 0.0
             # Produksi yang start_date-nya antara Tanggal setelah Closing s.d to_date
-            prev_production_sheet = self.env['mrp.production'].search([('product_id','=',sheet_product.id),('state','in',['progress','done']),
-                ('date_start','>=', last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),('date_start','<=', obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
-            prev_rm_moves = prev_production_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+            prev_production_compo = self.env['mrp.production'].search([('product_id','=',compound_product.id),('state','in',['progress','done']),
+                ('date_start','>', last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),('date_start','<', obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            prev_rm_moves = prev_production_compo.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
             opening_qty -= sum(prev_rm_moves.mapped('product_qty')) if prev_rm_moves else 0.0
             # DO antara Tanggal setelah Closing s.d to_date
-            prev_lump_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+            prev_lump_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             opening_qty -= sum(prev_lump_delivery_moves.mapped('qty_done')) if prev_lump_delivery_moves else 0.0
             # Adjustment antara Tanggal setelah Closing s.d to_date
-            prev_lump_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            prev_lump_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
-            prev_lump_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            prev_lump_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                     ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             opening_qty += (sum(prev_lump_adjustment_in_moves.mapped('qty_done')) if prev_lump_adjustment_in_moves else 0.0) - (sum(prev_lump_adjustment_out_moves.mapped('qty_done')) if prev_lump_adjustment_out_moves else 0.0)
         else:
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
+        # IN
         lump_in = self.env['timbangan.pabrik'].search([('product_id','=',product_lump.id),
                         ('lhm_nap_id.date_nap','>=',obj.from_date),
                         ('lhm_nap_id.date_nap','<=',obj.to_date),
                         ('lhm_nap_id.state','in',['confirmed','done'])])
         receiving_qty = sum(lump_in.mapped('qty_received')) if lump_in else 0.0
 
-        production_sheet = self.env['mrp.production'].search([('product_id','=',sheet_product.id),
-                                ('state','in',['progress','done']),
-                                ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
-                                ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        rm_moves = production_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-        production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+        # WIP
+        production_qty = 0.0
+        # production_compo = self.env['mrp.production'].search([('product_id','=',compound_product.id),
+        #                         ('state','in',['progress','done']),
+        #                         ('date_start','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+        #                         ('date_start','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        production_compo = self.env['mrp.production'].search([('product_id','=',compound_product2.id),
+                ('state','=','done'),
+                ('date_start','=', False),
+                ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                ('date_finished','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        rm_moves = production_compo.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+        # production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+        for m in rm_moves:
+            # if m.state == 'done':
+            #     production_qty += m.quantity_done
+            # else:
+            #     production_qty += m.product_qty
+            production_qty += m.quantity_done
 
-        lump_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+        # OUT
+        lump_delivery_moves_out = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        delivery_qty = sum(lump_delivery_moves.mapped('qty_done')) if lump_delivery_moves else 0.0
+        lump_delivery_moves_in = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
+                                    ('location_id.usage','=','customer'),('location_dest_id.usage','=','internal'),
+                                    ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        delivery_qty = (sum(lump_delivery_moves_out.mapped('qty_done')) if lump_delivery_moves_out else 0.0) - (sum(lump_delivery_moves_in.mapped('qty_done')) if lump_delivery_moves_in else 0.0)  
 
-        lump_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+        # ADJUSTMENT
+        lump_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        lump_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+        lump_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
                                 ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
                                 ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
         adjustment_qty = (sum(lump_adjustment_in_moves.mapped('qty_done')) if lump_adjustment_in_moves else 0.0) - (sum(lump_adjustment_out_moves.mapped('qty_done')) if lump_adjustment_out_moves else 0.0)
         
         closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
+        ### End : Lump
+        ############################################
         datas.append({
             'product_id': product_lump.id,
             'product_name': product_lump.name,
@@ -372,7 +422,9 @@ class RekapBukuKontraktor(models.AbstractModel):
             'closing_qty': closing_qty
         })
 
-        ### Asam Semut
+        ############################################
+        #            Start : Asam Semut            #
+        ############################################
         # Saldo Awal dr Closing Sebelumnya dari tanggal from_date 
         #               + Penerimaan antara date_to Closing s.d from_date 
         #               + Produksi antara date_to Closing s.d from_date
@@ -382,9 +434,9 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty = last_closing.sheet_rm_closing_qty
             # Penerimaan antara Tanggal setelah Closing s.d to_date
             prev_receving_asam_semuts = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
-                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
-                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
+                                    ('location_id.usage','in',('supplier','customer','production')),('location_dest_id.usage','=','internal'),
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
             opening_qty += sum(prev_receving_asam_semuts.mapped('qty_done')) if prev_receving_asam_semuts else 0.0
             # Produksi yang start_date-nya antara Tanggal setelah Closing s.d to_date
             prev_out_asam_semut = self.env['mrp.manual.consume'].search([('product_id','=',product_asamsemut.id),
@@ -392,40 +444,66 @@ class RekapBukuKontraktor(models.AbstractModel):
                                     ('is_confirmed','=',True)])
             opening_qty -= sum(prev_out_asam_semut.mapped('consumed_qty')) if prev_out_asam_semut else 0.0
             # DO antara Tanggal setelah Closing s.d to_date
-            prev_lump_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
-                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
-            opening_qty -= sum(prev_lump_delivery_moves.mapped('qty_done')) if prev_lump_delivery_moves else 0.0
+            # prev_asamsemut_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
+            #                         ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
+            #                         ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+            #                         ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            # opening_qty -= sum(prev_asamsemut_delivery_moves.mapped('qty_done')) if prev_asamsemut_delivery_moves else 0.0
             # Adjustment antara Tanggal setelah Closing s.d to_date
-            prev_lump_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            prev_asammsemut_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
-            prev_lump_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            prev_asammsemut_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
                                     ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
-                                    ('state','=','done'),('date','>=',last_closing.date_to.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',obj.from_date.strftime('%Y-%m-%d 23:59:59'))])
-            opening_qty += (sum(prev_lump_adjustment_in_moves.mapped('qty_done')) if prev_lump_adjustment_in_moves else 0.0) - (sum(prev_lump_adjustment_out_moves.mapped('qty_done')) if prev_lump_adjustment_out_moves else 0.0)
+                                    ('state','=','done'),('date','>',last_closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('date','<',obj.from_date.strftime('%Y-%m-%d 00:00:00'))])
+            opening_qty += (sum(prev_asammsemut_adjustment_in_moves.mapped('qty_done')) if prev_asammsemut_adjustment_in_moves else 0.0) - (sum(prev_asammsemut_adjustment_out_moves.mapped('qty_done')) if prev_asammsemut_adjustment_out_moves else 0.0)
         else:
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
+        # IN
         receving_asam_semuts = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
-                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
+                                    ('location_id.usage','in',['supplier','customer','production']),('location_dest_id.usage','=','internal'),
                                     ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
-        receiving_qty += sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
+        receiving_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
 
-        out_asam_semut = self.env['mrp.manual.consume'].search([('product_id','=',product_asamsemut.id),
-                                    ('date','>=',obj.from_date),('date','<=',obj.to_date),
-                                    ('is_confirmed','=',True)])
-        production_qty -= sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
+        # WIP
+        # out_asam_semut = self.env['mrp.manual.consume'].search([('product_id','=',product_asamsemut.id),
+        #                             ('date','>=',obj.from_date),('date','<=',obj.to_date),
+        #                             ('is_confirmed','=',True)])
+        # production_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
+        production_qty = 0.0
+        production_all = self.env['mrp.production'].search([('product_id','in',[sheet_product.id, compound_product2.id]),
+                ('state','=','done'),
+                ('date_start','=', False),
+                ('date_finished','>=', obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                ('date_finished','<=', obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        rm_moves = production_all.move_raw_ids.filtered(lambda s: s.product_id.id==product_asamsemut.id)
+        # production_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+        for m in rm_moves:
+            # if m.state == 'done':
+            #     production_qty += m.quantity_done
+            # else:
+            #     production_qty += m.product_qty
+            production_qty += m.quantity_done
 
         delivery_qty = 0.0
 
-        adjustment_qty = 0.0 # TODO: harusnya ada adjustment asam semut juga
-        
+        adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                                    ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_asamsemut.id),
+                                ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
+                                ('state','=','done'),('date','>=',obj.from_date.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',obj.to_date.strftime('%Y-%m-%d 23:59:59'))])
+        adjustment_qty = (sum(adjustment_in_moves.mapped('qty_done')) if adjustment_in_moves else 0.0) - (sum(adjustment_out_moves.mapped('qty_done')) if adjustment_out_moves else 0.0)
+
         closing_qty = opening_qty + receiving_qty - production_qty - delivery_qty + adjustment_qty
+        ### End : Asam Semut
+        ############################################
         datas.append({
             'product_id': product_asamsemut.id,
             'product_name': product_asamsemut.name,

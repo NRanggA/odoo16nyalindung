@@ -17,12 +17,12 @@
                         </group>
                         <group>
                             <field name="to_date" />
-                            <field name="inventory_valuation" />
+                            <field name="inventory_valuation" invisible="0"/>
                             <field name="username" invisible="1"/>
                             <field name="show_value" widget="radio" />
                         </group>
                     </group>
-                    <group name="location" string="Product">
+                    <group name="product" string="Product">
                         <field name="product_ids"/>
                     </group>
                     <footer>

@@ -7,6 +7,16 @@ class SaleOrderLines(models.Model):
     comodel_name='product.pricelist.item',
     compute='_compute_pricelist_item_id2')
 
+    melon_line_ids = fields.One2many('sale.order.line.melon', 'order_line_id', string='melon')
+
+    qty_butir = fields.Float(string='Qty Butir')
+
+    # def _get_procurement_group_key(self):
+    #     if self.melon_line_ids:
+    #         precision = self.env['decimal.precision'].precision_get('Product Price')
+    #         return float_is_zero(self.price_unit, precision_digits=precision), self.order_id.id
+    #     return self.id, self.order_id.id
+
     @api.depends('product_id', 'product_uom', 'product_uom_qty')
     def _compute_pricelist_item_id2(self):
         for line in self:

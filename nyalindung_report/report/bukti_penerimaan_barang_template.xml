@@ -40,6 +40,11 @@
                                 <td style="border: none;"> : </td>
                                 <td style="border: none;" t-esc="o.no_kendaraan"/>
                             </tr>
+                            <tr>
+                                <td style="border: none;">No. PO</td>
+                                <td style="border: none;"> : </td>
+                                <td style="border: none;" t-esc="o.purchase_id.name"/>
+                            </tr>
                         </table>
                     </div>
 

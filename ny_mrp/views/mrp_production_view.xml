@@ -9,6 +9,13 @@
             <!-- <xpath expr="//field[@name='product_qty']" position="after">
                 <button string="Qty To Produce" name="get_target_production" type="object" class="btn-warning" states="draft"/>
             </xpath> -->
+            <field name="user_id" position="after">
+                <field name="must_have_source_mo" invisible="1"/>
+                <field name="source_mo_id" attrs="{'required': [('must_have_source_mo','=', True)], 'invisible': [('must_have_source_mo','=', False)]}" options="{'no_create': True}"/>
+            </field>
+            <field name="origin" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </field>
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="product_name" invisible="1"/>
             </xpath>
@@ -21,8 +28,8 @@
                             '|',                                      
                             ('product_id', '=', False),             
                             '|',                                     
-                            ('product_name', '!=', 'Sheet'),       
-                            ('state', '!=', 'draft')                 
+                                ('product_name', 'not in', ['Sheet','Compo']),
+                                ('state', '!=', 'draft')                 
                         ]}"/>
             </xpath>
             <page name="finished_products" position="before">
@@ -47,6 +54,21 @@
         <field name="arch" type="xml">
             <xpath expr="//footer/button[@name='action_set_qty']" position="attributes">
                 <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[@class='m-2']" position="replace">
+                <div class="m-2">
+                    Anda akan mengkonsumsi quantity komponen yang berbeda dengan nilai BOM 
+                    untuk produk di bawah ini, apakah Anda yakin akan melanjutkan?
+                    <b attrs="{'invisible': [('consumption', '=', 'strict')]}">
+                        Mohon konfirmasi jika ini memang disengaja.
+                    </b>
+                    <b attrs="{'invisible': [('consumption', '!=', 'strict')]}">
+                        Mohon periksa kembali konsumsi komponen Anda atau minta manajer 
+                        untuk memvalidasi 
+                        <span attrs="{'invisible':[('mrp_production_count', '!=', 1)]}">MO ini</span>
+                        <span attrs="{'invisible':[('mrp_production_count', '=', 1)]}">MO berikut</span>.
+                    </b>
+                </div>
             </xpath>
         </field>
     </record>

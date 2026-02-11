@@ -31,5 +31,6 @@
         'views/res_config_settings_view.xml',
         'views/hr_employee_view.xml',
         'views/hr_foreman_view.xml',
+        'report/report_view.xml',
     ],
 }

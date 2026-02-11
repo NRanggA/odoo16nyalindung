@@ -45,6 +45,9 @@
         'wizard/wizard_report_detail_receipt_views.xml',
         'report/report_detail_receipt_action.xml',
         
+
+        'views/product_views.xml',
+
         # 'views/views.xml',
         # 'views/templates.xml',
     ],

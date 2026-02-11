@@ -98,6 +98,9 @@ class AssetAcquisition(models.Model):
 										'prorata': line.asset_category_id.prorata,
 										'first_depreciation_manual_date': first_depreciation_date,
 										'category_id': line.asset_category_id.id,
+										'gain_account_id': line.asset_category_id.gain_account_id.id,
+										'loss_account_id': line.asset_category_id.loss_account_id.id,
+										'write_on_asset_sales_account_id': line.asset_category_id.write_on_asset_sales_account_id.id,
 										'acquisition_line_ids': [(4, line.id)],
 									},
 								}})
@@ -124,6 +127,9 @@ class AssetAcquisition(models.Model):
 									'prorata': line.asset_category_id.prorata,
 									'first_depreciation_manual_date': first_depreciation_date,
 									'category_id': line.asset_category_id.id,
+									'gain_account_id': line.asset_category_id.gain_account_id.id,
+									'loss_account_id': line.asset_category_id.loss_account_id.id,
+									'write_on_asset_sales_account_id': line.asset_category_id.write_on_asset_sales_account_id.id,
 									'acquisition_line_ids': [(4, line.id)],
 								},
 							}})
@@ -226,6 +232,9 @@ class AssetAcquisition(models.Model):
 								'prorata': parent_asset.prorata,
 								'first_depreciation_manual_date': first_depreciation_date,
 								'category_id': parent_asset.category_id.id,
+								'gain_account_id': line.asset_category_id.gain_account_id.id,
+								'loss_account_id': line.asset_category_id.loss_account_id.id,
+								'write_on_asset_sales_account_id': line.asset_category_id.write_on_asset_sales_account_id.id,
 								'acquisition_line_ids': [(4, line.id)],
 							},
 						}})
@@ -251,7 +260,7 @@ class AssetAcquisition(models.Model):
 					# debit_lines
 					move_line_vals_asset = {
 						'account_id': asset_category.account_asset_id.id,
-						'name': 'Reclass Asset to SPM',
+						'name': 'Reclass Asset Clearing to Asset',
 						'debit': sum(purchase_account_dict.values()),
 						'credit': 0.0,
 					}
@@ -261,7 +270,7 @@ class AssetAcquisition(models.Model):
 					for account, amount in purchase_account_dict.items():
 						move_line_vals = {
 							'account_id': credit_account.id if credit_account else account.id,
-							'name': 'Reclass SPM to Asset',
+							'name': 'Reclass Asset Clearing to Asset',
 							'credit': amount,
 							'debit': 0.0,
 						}
@@ -297,7 +306,7 @@ class AssetAcquisition(models.Model):
 					'parent_id': parent_id,
 					# 'name': f"Merge: {existing_asset.name}",
 				})
-			
+
 			# TODO: Recompute Parent Depreciation Board
 			if to_recompute_parent:
 				to_recompute_parent.compute_parent_depreciation_board()
@@ -333,7 +342,7 @@ class AssetAcquisition(models.Model):
 				# debit_lines
 				move_line_vals_asset = {
 					'account_id': product_expense or product_categ_expense,
-					'name': 'Reclass Asset to SPM',
+					'name': 'Reclass Asset Clearing to Asset',
 					'debit': amount,
 					'credit': 0.0,
 				}
@@ -342,7 +351,7 @@ class AssetAcquisition(models.Model):
 				credit_account = line.product_id.categ_id.asset_clearing_account_id
 				move_line_vals = {
 					'account_id': credit_account.id,
-					'name': 'Reclass SPM to Asset',
+					'name': 'Reclass Asset Clearing to Asset',
 					'credit': amount,
 					'debit': 0.0,
 				}

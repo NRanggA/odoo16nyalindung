@@ -38,5 +38,6 @@
         'views/hr_employee_type.xml',
         'views/stock_ripening_pisang_view.xml',
         'views/lhm_hanca_view.xml',
+        'views/lhm_project_view.xml',
     ],
 }

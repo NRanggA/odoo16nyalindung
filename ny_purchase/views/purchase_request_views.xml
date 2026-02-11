@@ -8,6 +8,15 @@
             <xpath expr="//button[@name='%(purchase_request.action_purchase_request_line_make_purchase_order)d']" position="attributes">
                 <attribute name="class">oe_highlight</attribute>
             </xpath>
+            <!-- <xpath expr="//field[@name='requested_by']" position="after">
+                <field name="approver_id" readonly="1" force_save="1"/>
+            </xpath> -->
+            <xpath expr="//field[@name='assigned_to']" position="replace">
+                <field name="assigned_to" readonly="1" force_save="1"/>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
         </field>
     </record>
     <record id="view_purchase_request_tree_inherit" model="ir.ui.view">

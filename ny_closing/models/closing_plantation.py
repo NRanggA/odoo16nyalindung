@@ -111,6 +111,10 @@ class ClosingPlantation(models.Model):
     # current_period_cost = fields.Float('Cost on Current Period')
     current_period_cost = fields.Float(compute='_compute_cost', store=True, string='Cost on Current Period')
     
+    adjustment_period_cost = fields.Float('Adjustment Cost on Current Period')
+    accumulated_tbm_cost_last_year = fields.Float('Accumulated TBM Cost Last Year')
+    accumulated_tbm_cost_this_year = fields.Float('Accumulated TBM Cost This Year')
+
     cost_line_ids = fields.One2many('closing.plantation.line', 'closing_id')
     cost_line_to_be_deferred_ids = fields.One2many('closing.plantation.line', 'closing_id', domain=[('to_be_deferred','=',True)], string="Cost to be Deferred")
     cost_line_as_cost_ids = fields.One2many('closing.plantation.line', 'closing_id', domain=[('to_be_deferred','=',False)], string="Cost to be Consumed")
@@ -146,6 +150,22 @@ class ClosingPlantation(models.Model):
                     new_mark_plant_block_period = 'tm'
 
             closing.mark_plant_block_period = new_mark_plant_block_period
+
+
+    def action_adjustment_period_cost(self):
+        for closing in self:
+            adjustment_move_lines = self.env['account.move.line'].search([
+                ('account_id','=',closing.tbm_account_id.id),
+                ('plantation_location_id','=',closing.plant_block_id.location_id.id),
+                ('move_id','!=', closing.closing_move_id.id),
+                ('parent_state','=','posted'),
+                ('date','>=',closing.date_from),
+                ('date','<=',closing.date_to),
+            ])
+
+            adjustment = sum(adjustment_move_lines.mapped('balance')) if adjustment_move_lines else 0.0
+            closing.adjustment_period_cost = adjustment
+
 
     @api.depends('status',
             'cost_line_ids.total_cost', 
@@ -458,6 +478,21 @@ class ClosingPlantation(models.Model):
                     ('parent_state','=','posted'),
                     ('date','<',closing.date_from)])
                 closing.accumulated_tbm_cost = sum(prev_tbm_move_lines.mapped('balance')) if prev_tbm_move_lines else 0.0
+
+                last_year_date = closing.date_from - relativedelta(years=1) - relativedelta(month=12, day=31)
+                prev_tbm_move_lines = self.env['account.move.line'].search([('account_id','=',closing.plant_block_id.tbm_account_id.id),
+                    ('plantation_location_id','=',closing.plant_block_id.location_id.id),
+                    ('parent_state','=','posted'),
+                    ('date','<',last_year_date)])
+                closing.accumulated_tbm_cost_last_year = sum(prev_tbm_move_lines.mapped('balance')) if prev_tbm_move_lines else 0.0
+                if closing.date_to.month > 1:
+                    prev_tbm_move_lines = self.env['account.move.line'].search([('account_id','=',closing.plant_block_id.tbm_account_id.id),
+                        ('plantation_location_id','=',closing.plant_block_id.location_id.id),
+                        ('parent_state','=','posted'),
+                        ('date','<',closing.date_from)])
+                    closing.accumulated_tbm_cost_this_year = sum(prev_tbm_move_lines.mapped('balance')) if prev_tbm_move_lines else 0.0
+                else:
+                    closing.accumulated_tbm_cost_this_year = 0.0
             
             # deferred_moves_cost = self.env['account.move.line'].search(self._get_domain_deferred_move_lines())
             # closing.accumulated_cost = sum(deferred_moves_cost.mapped('balance')) if deferred_moves_cost else 0.0
@@ -557,6 +592,7 @@ class ClosingPlantation(models.Model):
             
             # closing._compute_cost()
             # closing.current_period_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0
+            closing.action_adjustment_period_cost()
 
     def _prepare_move_lines_for_shorterm_block(self):
         self.ensure_one()

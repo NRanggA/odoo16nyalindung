@@ -24,7 +24,7 @@ class ProfileApi(ApiBase):
             if not raw_list_to_create:
                 raise ValidationError("Empty Data: Nothing to create")
             # Validate Mandatory Field
-            mandatory_fields = ['date','kemandoran_id','lhm_line_ids']
+            mandatory_fields = ['date','kemandoran_id']
             for line_to_check in raw_list_to_create:
                 to_check_keys = line_to_check.keys()
                 if any([(x not in to_check_keys) for x in mandatory_fields]):
@@ -32,11 +32,15 @@ class ProfileApi(ApiBase):
                 for key in to_check_keys:
                     if key in mandatory_fields and not line_to_check.get(key, False):
                         raise ValidationError(f"Field '{key}' are a mandatory Field)")
-                
-            list_to_create = []
+                if not line_to_check.get('lhm_line_ids', []) or not line_to_check.get('contractor_line_ids', []):
+                    raise ValidationError("Field 'lhm_line_ids' or 'contractor_line_ids' are mandatory field and must be filled.")
+
+            list_to_create = [] # lhm.transaction
+            list_to_create2 = {} # lhm.contractor
             data_validation_error = []
             line_validation_error = []
             for vals in raw_list_to_create:
+                ############# LHM
                 lhm_lines = []
                 for line_vals in vals.get('lhm_line_ids',[]):
                     # contract = request.env['hr.contract'].sudo().browse(line_vals['contract_id'])
@@ -98,6 +102,42 @@ class ProfileApi(ApiBase):
                 }
                 list_to_create.append(lhm_transaction)
             
+                ############# LHM CONTRACTOR
+                for cvals in vals.get('contractor_line_ids', []):
+                    if not cvals.get('contractor_id', False):
+                        data_validation_error.append("Field 'contractor_id' is mandatory in contractor_line_ids")
+                        continue
+
+                    contractor = request.env['res.partner'].sudo().browse(cvals['contractor_id'])
+                    if contractor.id not in list_to_create2:
+                        list_to_create2[contractor.id] = {
+                            'supplier_id': contractor.id,
+                            'date': vals['date'],
+                            'date_start': vals['date'],
+                            # 'date_end': vals['date'],
+                            # 'is_harian': True,
+                            'line_ids': [],
+                            # 'material_line_ids': [],
+                            'note': vals['note'],
+                            'user_id': check_user
+                        }
+                    for cvals in vals.get('contractor_line_ids', []):
+                        if cvals.get('contractor_id', False) != contractor.id:
+                            continue
+                        list_to_create2[contractor.id]['line_ids'].append((0,0,{
+                            'date': vals['date'],
+                            'varieties_id': cvals.get('varieties_id', False),
+                            'location_type_id': cvals.get('location_type_id', False),
+                            'location_id': cvals.get('location_id', False),
+                            'activity_id': cvals.get('activity_id', False),
+                            'product_id': cvals.get('product_id', False),
+                            'nilai': cvals.get('hasil_1', 0.0),
+                            'uom_id': cvals.get('satuan_1', False),
+                            'product_id_2': cvals.get('product_id_2', False),
+                            'nilai2': cvals.get('hasil_2', 0.0),
+                            'uom2_id': cvals.get('satuan_2', False),
+                        }))
+            
             if line_validation_error:
                 raise ValidationError("\n".join(line_validation_error))
 
@@ -107,6 +147,9 @@ class ProfileApi(ApiBase):
             created_lhm = False
             if list_to_create:
                 created_lhm = request.env['lhm.transaction'].with_user(check_user).create(list_to_create)
+            created_contractor = False
+            if list_to_create2:
+                created_contractor = request.env['lhm.contractor'].with_user(check_user).create(list(list_to_create2.values()))
             
             if created_lhm:
                 result = {'data': list(map(lambda x: {'id': x.id, 'name': x.name}, created_lhm)), 'count': len(created_lhm.ids)}
@@ -171,7 +214,6 @@ class ProfileApi(ApiBase):
         except Exception as error:
             return self._handle_exception(error)
         
-    
     @http.route(f"{ROUTES}/attendance/<kemandoran_id>", auth='public', website=False, csrf=False, type='http', methods=['GET'])
     def get_attendance_member(self, kemandoran_id=None):
         # check token

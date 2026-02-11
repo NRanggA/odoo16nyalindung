@@ -1,0 +1,24 @@
+<odoo>
+    <data>
+        <record id="view_wizard_action_save_entries" model="ir.ui.view">
+            <field name="name">action.save.wizard.form</field>
+            <field name="model">wizard.action.save.entries</field>
+            <field name="arch" type="xml">
+                <form string="Konfirmasi Pembayaran">
+                    <field name="confirmation_message" readonly="1" nolabel="1"/>
+                    <footer>
+                        <button string="OK" type="object" name="action_confirm" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_save_entries_wizard" model="ir.actions.act_window">
+            <field name="name">Konfirmasi Pembayaran</field>
+            <field name="res_model">wizard.action.save.entries</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

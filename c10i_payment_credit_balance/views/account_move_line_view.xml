@@ -1,0 +1,30 @@
+<odoo>
+    <!-- Tree View for Unreconciled Account Move Lines -->
+    <record id="view_customer_unreconciled_credit_balance_tree" model="ir.ui.view">
+        <field name="name">account.move.line.unreconciled.tree</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="name" string="Label"/>
+                <field name="move_id"/>
+                <field name="debit" optional="hide"/>
+                <field name="credit" optional="hide"/>
+                <field name="balance" sum="Total Balance"/>
+                <field name="matching_number" />
+                <field name="amount_residual" sum="Total Residual"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action to Show Unreconciled Account Move Lines for Credit Balance Account -->
+    <record id="action_customer_unreconciled_credit_balance" model="ir.actions.server">
+        <field name="name">Unreconciled Credit Balance</field>
+        <field name="model_id" ref="account.model_account_move_line"/>
+        <field name="state">code</field>
+        <field name="code">action = env['account.move.line'].action_view_credit_balance()</field>
+    </record>
+
+
+</odoo>

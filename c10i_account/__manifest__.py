@@ -29,8 +29,10 @@
         'views/res_config_settings_views.xml',
         'views/account_write_off_views.xml',
         'views/account_menuitem.xml',
+        'views/account_journal_views.xml',
 
         'data/sequence_data.xml',
+        'data/cron.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -4,3 +4,5 @@ from . import purchase_order_report_outstanding
 from . import purchase_request_report_outstanding
 from . import purchase_order_monitoring
 from . import purchase_request
+
+from . import hr_employee

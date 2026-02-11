@@ -606,18 +606,19 @@ class ReportStockMutation(models.AbstractModel):
         sheet.write('F5', 'Product Name', wbf['header'])
         sheet.write('G5', 'Qty', wbf['header'])
         sheet.write('H5', 'UOM', wbf['header'])
+        sheet.write('I5', 'KETERANGAN', wbf['header'])
         
         if obj.with_journal:
-            sheet.write('I5', 'Value', wbf['header'])
-            sheet.write('J5', 'Journal Entry', wbf['header'])
-            sheet.write('K5', 'Account', wbf['header'])
-            sheet.write('L5', 'Value on Journal', wbf['header'])
-            sheet.write('M5', 'Tipe Lokasi', wbf['header'])
-            sheet.write('N5', 'ORG', wbf['header'])
-            sheet.write('O5', 'Lokasi', wbf['header'])
-            sheet.write('P5', 'Aktivitas', wbf['header'])
-            sheet.write('Q5', 'Account', wbf['header'])
-            sheet.write('R5', 'Value on Journal', wbf['header'])
+            sheet.write('J5', 'Value', wbf['header'])
+            sheet.write('K5', 'Journal Entry', wbf['header'])
+            sheet.write('L5', 'Account', wbf['header'])
+            sheet.write('M5', 'Value on Journal', wbf['header'])
+            sheet.write('N5', 'Tipe Lokasi', wbf['header'])
+            sheet.write('O5', 'ORG', wbf['header'])
+            sheet.write('P5', 'Lokasi', wbf['header'])
+            sheet.write('Q5', 'Aktivitas', wbf['header'])
+            sheet.write('R5', 'Account', wbf['header'])
+            sheet.write('S5', 'Value on Journal', wbf['header'])
 
         row = 5
 
@@ -641,39 +642,43 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write(row, 5, stock.product_id.name, wbf['content']) 
             sheet.write(row, 6, stock.product_uom_qty, wbf['content_float'])  
             sheet.write(row, 7, stock.product_id.uom_id.name, wbf['content']) 
+            tags = ""
+            if stock.product_id.product_tag_ids:
+                tags = ', '.join(stock.product_id.product_tag_ids.mapped('name'))
+            sheet.write(row, 8, tags, wbf['content']) 
 
             if obj.with_journal:
                 for svl in stock.stock_valuation_layer_ids:
-                    sheet.write(row, 8, svl.value, wbf['content_float'])
+                    sheet.write(row, 9, svl.value, wbf['content_float'])
 
                 if stock.account_move_ids:
                     for acc_move in stock.account_move_ids:  
-                        sheet.write(row, 9, acc_move.name, wbf['content']) 
+                        sheet.write(row, 10, acc_move.name, wbf['content']) 
                         
                         for acc_move_line in acc_move.line_ids:
                             if stock.product_id.categ_id.property_stock_valuation_account_id.id == acc_move_line.account_id.id:
-                                sheet.write(row, 10, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])  
-                                sheet.write(row, 11, acc_move_line.balance, wbf['content_float'])  
+                                sheet.write(row, 11, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])  
+                                sheet.write(row, 12, acc_move_line.balance, wbf['content_float'])  
                                 # row += 1 
                             else:
-                                sheet.write(row, 12, acc_move_line.plantation_location_type_id.name if acc_move_line.plantation_location_type_id else '-', wbf['content'])
-                                sheet.write(row, 13, acc_move_line.plantation_varieties_id.name if acc_move_line.plantation_varieties_id else '-', wbf['content'])
-                                sheet.write(row, 14, acc_move_line.plantation_location_id.name if acc_move_line.plantation_location_id else '-', wbf['content'])
-                                sheet.write(row, 15, f"{acc_move_line.plantation_activity_id.code} - {acc_move_line.plantation_activity_id.name}" if acc_move_line.plantation_activity_id else '-', wbf['content'])
-                                sheet.write(row, 16, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])
-                                sheet.write(row, 17, acc_move_line.balance, wbf['content_float'])
+                                sheet.write(row, 13, acc_move_line.plantation_location_type_id.name if acc_move_line.plantation_location_type_id else '-', wbf['content'])
+                                sheet.write(row, 14, acc_move_line.plantation_varieties_id.name if acc_move_line.plantation_varieties_id else '-', wbf['content'])
+                                sheet.write(row, 15, acc_move_line.plantation_location_id.name if acc_move_line.plantation_location_id else '-', wbf['content'])
+                                sheet.write(row, 16, f"{acc_move_line.plantation_activity_id.code} - {acc_move_line.plantation_activity_id.name}" if acc_move_line.plantation_activity_id else '-', wbf['content'])
+                                sheet.write(row, 17, f"{acc_move_line.account_id.code} - {acc_move_line.account_id.name}", wbf['content'])
+                                sheet.write(row, 18, acc_move_line.balance, wbf['content_float'])
                             
                                 row += 1 
                 else:
-                    sheet.write(row, 9, '-', wbf['content']) 
-                    sheet.write(row, 10, '-', wbf['content'])  
+                    sheet.write(row, 10, '-', wbf['content']) 
                     sheet.write(row, 11, '-', wbf['content'])  
-                    sheet.write(row, 12, '-', wbf['content'])  
+                    sheet.write(row, 11, '-', wbf['content'])  
                     sheet.write(row, 13, '-', wbf['content'])  
                     sheet.write(row, 14, '-', wbf['content'])  
                     sheet.write(row, 15, '-', wbf['content'])  
                     sheet.write(row, 16, '-', wbf['content'])  
                     sheet.write(row, 17, '-', wbf['content'])  
+                    sheet.write(row, 18, '-', wbf['content'])  
 
                 
                 if row == first_journal_row:  

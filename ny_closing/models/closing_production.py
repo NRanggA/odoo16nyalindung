@@ -102,6 +102,11 @@ class ClosingProductionFinishGood(models.Model):
     adjustment_qty = fields.Float(string='Adjustment Qty')
     adjustment_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Value')
 
+    adjustment_closing_qty = fields.Float(string='Adjustment Closing Qty')
+    adjustment_closing_value = fields.Float(compute='_compute_outgoing_value', store=True, string ='Adjustment Closing Value')
+
+    adjustment_value_only = fields.Float(string='Adjustment Value only')
+
     closing_qty = fields.Float(compute='_compute_closing', store=True, string='Closing Qty')
     closing_value = fields.Float(compute='_compute_closing', store=True, string='Closing Value')
 
@@ -172,7 +177,7 @@ class ClosingProductionFinishGood(models.Model):
             line.onhand_value = line.opening_value + line.plantation_cost + line.manufacturing_cost
             line.new_cost_price = line.onhand_value/line.onhand_qty if line.onhand_qty else 0.0
 
-    @api.depends('new_cost_price', 'outgoing_qty', 'ripening_qty', 'scrap_qty', 'adjustment_qty')
+    @api.depends('new_cost_price', 'outgoing_qty', 'ripening_qty', 'scrap_qty', 'adjustment_qty', 'adjustment_closing_qty')
     def _compute_outgoing_value(self):
         for line in self:
             line.outgoing_value = line.outgoing_qty * line.new_cost_price
@@ -180,6 +185,7 @@ class ClosingProductionFinishGood(models.Model):
             line.ripening_value = line.ripening_qty * line.new_cost_price
             line.scrap_value = line.scrap_qty * line.new_cost_price
             line.adjustment_value = line.adjustment_qty * line.new_cost_price
+            line.adjustment_closing_value = line.adjustment_closing_qty * line.new_cost_price
             line.ripening_incoming_qty = line.ripening_qty
             line.ripening_incoming_value = line.ripening_value
 
@@ -187,12 +193,12 @@ class ClosingProductionFinishGood(models.Model):
             'outgoing_qty', 'outgoing_value',
             'ripening_qty', 'ripening_value',
             'scrap_qty', 'scrap_value',
-            'adjustment_qty', 'adjustment_value'
+            'adjustment_qty', 'adjustment_value', 'adjustment_value_only'
             )
     def _compute_closing(self):
         for line in self:
             line.closing_qty = line.onhand_qty - line.ripening_qty - line.outgoing_qty - line.outgoing_issue_qty - line.scrap_qty + line.adjustment_qty
-            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.outgoing_issue_value - line.scrap_value + line.adjustment_value
+            line.closing_value = line.onhand_value - line.ripening_value - line.outgoing_value - line.outgoing_issue_value - line.scrap_value + line.adjustment_value + line.adjustment_value_only 
     
     @api.depends('closing_id', 'closing_id.varieties_type', 
         'ripening_incoming_qty', 'closing_id.pisang_ripening_cost', 
@@ -485,10 +491,25 @@ class ClosingProduction(models.Model):
     sheet_rm_inventory_account_id = fields.Many2one('account.account', string='Inventory Account Asam Semut')
     sheet_rm_purchase_account_id = fields.Many2one('account.account', string='Purchase Account Asam Semut')
     sheet_rm_consumption_account_id = fields.Many2one('account.account', string='Consumption Account Asam Semut')
+    sheet_rm_adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account Asam Semut')
     sheet_rm_opening_qty = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Begining Qty of Asam Semut')
     sheet_rm_opening_qty_manual = fields.Float(string='Begining Qty of Asam Semut')
     sheet_rm_opening_value = fields.Float(compute='_compute_opening_rm', inverse='_invrs_opening_rm', readonly=False, store=True, string='Begining Value of Asam Semut')
     sheet_rm_opening_value_manual = fields.Float(string='Begining Value of Asam Semut')
+    
+    sheet_rm_opening_adjustment_value_enable = fields.Boolean(string='Enable Adjustment Opening Value')
+    sheet_rm_opening_adjustment_value = fields.Float(string='Adjustment Opening Value')
+    sheet_rm_opening_adjustment_diff = fields.Float(compute='_compute_opening_adj_value_diff', store=True, string='Adjustment Opening Value Diff')
+    # sheet_rm_closing_adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account Asam Semut')
+    @api.depends('sheet_rm_opening_value', 'sheet_rm_opening_adjustment_value_enable',
+                 'sheet_rm_opening_adjustment_value')
+    def _compute_opening_adj_value_diff(self):
+        for closing in self:
+            if closing.sheet_rm_opening_adjustment_value_enable:
+                closing.sheet_rm_opening_adjustment_diff = closing.sheet_rm_opening_adjustment_value - closing.sheet_rm_opening_value
+            else:
+                closing.sheet_rm_opening_adjustment_diff = 0
+    
     sheet_rm_incoming_qty = fields.Float(string='Incoming Qty of Asam Semut')
     sheet_rm_incoming_value = fields.Float(string='Incoming Qty of Asam Semut')
     sheet_rm_onhand_qty = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='Onhand Qty of Asam Semut')
@@ -496,11 +517,31 @@ class ClosingProduction(models.Model):
     sheet_rm_cost_price = fields.Float(compute='_compute_onhand_asam_semut', store=True, string='New Cost Price of Asam Semut')
     sheet_rm_outgoing_qty = fields.Float(string='Consumed Qty of Asam Semut')
     sheet_rm_outgoing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Consumed Qty of Asam Semut')
+    sheet_rm_adjustment_qty = fields.Float(string='Adjustment Qty of Asam Semut')
+    sheet_rm_adjustment_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Adjustment Value of Asam Semut')
     sheet_rm_closing_qty = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Qty of Asam Semut')
     sheet_rm_closing_value = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Ending Value of Asam Semut')
+    
+    sheet_rm_closing_adjustment_value_enable = fields.Boolean(string='Enable Adjustment Closing Value')
+    sheet_rm_closing_adjustment_value = fields.Float(string='Adjustment Closing Value')
+    sheet_rm_closing_adjustment_diff = fields.Float(compute='_compute_closing_adj_value_diff', store=True, string='Adjustment Closing Value Diff')
+    sheet_rm_closing_value2 = fields.Float(compute='_compute_closing_adj_value_diff', store=True, string='Ending Value of Asam Semut')
+    # sheet_rm_closing_adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account Asam Semut')
+    @api.depends('sheet_rm_closing_value', 'sheet_rm_closing_adjustment_value_enable', 
+                 'sheet_rm_closing_adjustment_value')
+    def _compute_closing_adj_value_diff(self):
+        for closing in self:
+            if closing.sheet_rm_closing_adjustment_value_enable:
+                closing.sheet_rm_closing_adjustment_diff = closing.sheet_rm_closing_adjustment_value - closing.sheet_rm_closing_value
+                closing.sheet_rm_closing_value2 = closing.sheet_rm_closing_value + closing.sheet_rm_closing_adjustment_diff
+            else:
+                closing.sheet_rm_closing_adjustment_diff = 0
+                closing.sheet_rm_closing_value2 = closing.sheet_rm_closing_value
+
     sheet_raw_material_cost = fields.Float(compute='_compute_closing_asam_semut', store=True, string='Raw Material Cost of Sheet')
 
     latex_wip_onhand_qty = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current WIP Lateks')
+    latex_wip_adjustment_qty = fields.Float(string='Adjustment WIP Lateks')
     latex_wip_onhand_value = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Current Value WIP Lateks')
     latex_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Lateks')
     latex_wip_outgoing_qty = fields.Float(string='Finished Process Sheet')
@@ -558,6 +599,7 @@ class ClosingProduction(models.Model):
     lump_wip_cost_price = fields.Float(compute='_compute_onhand_wip_rm', store=True, string='Cost Price WIP Lump')
     lump_wip_outgoing_qty = fields.Float(string='Finished Process Compo')
     lump_wip_outgoing_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Finished Process Value Compo')
+    lump_wip_adjustment_qty = fields.Float(string='Adjustment WIP Lump')
     lump_wip_qty = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Lump')
     lump_wip_value = fields.Float(compute='_compute_closing_wip_value_rm', store=True, string='Closing WIP Value Lump')
     
@@ -656,20 +698,23 @@ class ClosingProduction(models.Model):
             closing.lump_plantation_cost = sum(closing.plantation_cost_ids.mapped('total_cost_lump')) if closing.plantation_cost_ids else 0.0
     
     @api.depends('sheet_rm_opening_qty', 'sheet_rm_opening_value',
-                 'sheet_rm_incoming_qty', 'sheet_rm_incoming_value')
+                 'sheet_rm_incoming_qty', 'sheet_rm_incoming_value',
+                 'sheet_rm_opening_adjustment_diff')
     def _compute_onhand_asam_semut(self):
         for closing in self:
             closing.sheet_rm_onhand_qty = closing.sheet_rm_opening_qty + closing.sheet_rm_incoming_qty
-            closing.sheet_rm_onhand_value = closing.sheet_rm_opening_value + closing.sheet_rm_incoming_value
+            closing.sheet_rm_onhand_value = closing.sheet_rm_opening_value + closing.sheet_rm_opening_adjustment_diff + closing.sheet_rm_incoming_value
             closing.sheet_rm_cost_price = closing.sheet_rm_onhand_value/closing.sheet_rm_onhand_qty if closing.sheet_rm_onhand_qty else 0.0
     
     @api.depends('sheet_rm_outgoing_qty', 'sheet_rm_cost_price',
-                 'sheet_rm_onhand_qty', 'sheet_rm_onhand_value')
+                 'sheet_rm_onhand_qty', 'sheet_rm_onhand_value',
+                 'sheet_rm_adjustment_qty', 'sheet_rm_adjustment_value')
     def _compute_closing_asam_semut(self):
         for closing in self:
             closing.sheet_rm_outgoing_value = closing.sheet_rm_cost_price * closing.sheet_rm_outgoing_qty
-            closing.sheet_rm_closing_qty = closing.sheet_rm_onhand_qty - closing.sheet_rm_outgoing_qty
-            closing.sheet_rm_closing_value = closing.sheet_rm_onhand_value - closing.sheet_rm_outgoing_value
+            closing.sheet_rm_adjustment_value = closing.sheet_rm_cost_price * closing.sheet_rm_adjustment_qty
+            closing.sheet_rm_closing_qty = closing.sheet_rm_onhand_qty - closing.sheet_rm_outgoing_qty + closing.sheet_rm_adjustment_qty
+            closing.sheet_rm_closing_value = closing.sheet_rm_onhand_value - closing.sheet_rm_outgoing_value + closing.sheet_rm_adjustment_value
             closing.sheet_raw_material_cost = closing.sheet_rm_outgoing_value
 
     @api.depends('latex_opening_qty', 'latex_opening_value', 
@@ -732,14 +777,16 @@ class ClosingProduction(models.Model):
 
     @api.depends('latex_wip_outgoing_qty', 
                 'latex_wip_cost_price', 'latex_wip_onhand_qty',
-                 'lump_wip_outgoing_qty', 'lump_wip_cost_price', 'lump_wip_onhand_qty')
+                'latex_wip_adjustment_qty',
+                'lump_wip_outgoing_qty', 'lump_wip_cost_price', 'lump_wip_onhand_qty',
+                'lump_wip_adjustment_qty',)
     def _compute_closing_wip_value_rm(self):
         for closing in self:
             closing.latex_wip_outgoing_value = round(closing.latex_wip_outgoing_qty * closing.latex_wip_cost_price, 2)
-            closing.latex_wip_qty = closing.latex_wip_onhand_qty - closing.latex_wip_outgoing_qty
+            closing.latex_wip_qty = closing.latex_wip_onhand_qty - closing.latex_wip_outgoing_qty + closing.latex_wip_adjustment_qty
             closing.latex_wip_value = closing.latex_wip_onhand_value - closing.latex_wip_outgoing_value
             closing.lump_wip_outgoing_value = round(closing.lump_wip_outgoing_qty * closing.lump_wip_cost_price, 2)
-            closing.lump_wip_qty = closing.lump_wip_onhand_qty - closing.lump_wip_outgoing_qty
+            closing.lump_wip_qty = closing.lump_wip_onhand_qty - closing.lump_wip_outgoing_qty + closing.lump_wip_adjustment_qty
             closing.lump_wip_value = closing.lump_wip_onhand_value - closing.lump_wip_outgoing_value
 
     @api.depends('latex_delivered_qty', 'lump_delivered_qty', 
@@ -1151,24 +1198,47 @@ class ClosingProduction(models.Model):
 
     def _get_mrp_inprogress_prev_month(self, product):
         self.ensure_one()
+        inprogress_qty = 0.0
         mrp = self.env['mrp.production'].search([('product_id','=',product.id),('state','=',['progress','done']),
                 ('date_start','<', self.date_from.strftime('%Y-%m-%d 00:00:00')),
                 '|',
                     ('date_finished','=', False),
                     ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00'))])
-        return mrp
+        return inprogress_qty
 
     def _get_mrp_done_this_month(self, product):
         self.ensure_one()
+        # Old Version
+        # mrp = self.env['mrp.production'].search([('product_id','=',product.id),('state','=','done'),
+        #         ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+        #         ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        finished_mo = self.env['mrp.production'].search([
+                ('source_mo_id.product_id','=',product.id),('state','=','done'),
+                ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+                ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        source_mo = finished_mo.mapped('source_mo_id')
+        return source_mo
+    def _get_mrp_done_this_month_compo(self, product):
+        self.ensure_one()
+        # Old Version
         mrp = self.env['mrp.production'].search([('product_id','=',product.id),('state','=','done'),
                 ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
                 ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        # finished_mo = self.env['mrp.production'].search([
+        #         ('source_mo_id.product_id','=',product.id),('state','=','done'),
+        #         ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+        #         ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        # source_mo = finished_mo.mapped('source_mo_id')
         return mrp
 
     def _get_mrp_inprogress_this_month(self, product):
         self.ensure_one()
-        mrp = self.env['mrp.production'].search([('product_id','=',product.id),('state','in',['progress','done']),
-                ('date_start','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),('date_start','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
+        mrp = self.env['mrp.production'].search([('product_id','=',product.id),
+                ('state','=','done'),
+                ('date_start','=',False),
+                '&',    
+                    ('date_finished','>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date_finished','<=', self.date_to.strftime('%Y-%m-%d 23:59:59'))])
         return mrp
 
     def _compute_rm_cost_sheet(self):
@@ -1249,15 +1319,9 @@ class ClosingProduction(models.Model):
             sheet_product = self.env['product.product'].search([('name','=','Sheet')], limit=1)
             closing.sheet_product_id = sheet_product.id
             compound_product = self.env['product.product'].search([('name','=','Compo')], limit=1)
+            compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
             closing.compound_product_id = compound_product.id
             
-            # Begining Balance Latex and Lump
-            # Saat ini tidak perlu nanti diinput manual dulu saja
-            # krn nanti harusnya Begining Balance adalah saldo Closing balance bulan sebelumnya
-            # if not closing.prev_closing_id:
-            #     closing.latex_opening_value = self.env['account.move.line'].search([('')])
-            #     closing.lump_opening_value = 
-
             # Get Plantation Cost
             plantation_cost, summerize_cost = closing._compute_plantation_cost_karet()
             if closing.plantation_cost_ids:
@@ -1281,14 +1345,14 @@ class ClosingProduction(models.Model):
             closing.manufacturing_cost = mrp_cost
             closing.mrp_cost_ids = summerize_mrp_cost
             
-            # Get Lateks and Lump Receiving Qty from NAP
+            # IN : Get Lateks and Lump Receiving Qty from NAP
+            # TODO: Seharusnya ambil dari stock move saja bukan dari timbangan pabrik
             product_latex = self.env['product.product'].search([('name','=','Lateks')], limit=1)
             closing.latex_product_id = product_latex.id
             latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            # closing.latex_incoming_qty = sum(latex_in.mapped('product_qty')) if latex_in else 0.0
             closing.latex_incoming_qty = sum(latex_in.mapped('qty_received')) if latex_in else 0.0
             
             product_lump = self.env['product.product'].search([('name','=','Lump')], limit=1)
@@ -1297,60 +1361,95 @@ class ClosingProduction(models.Model):
                             ('lhm_nap_id.date_nap','>=',closing.date_from),
                             ('lhm_nap_id.date_nap','<=',closing.date_to),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
-            # closing.lump_incoming_qty = sum(compound_in.mapped('product_qty')) if compound_in else 0.0
             closing.lump_incoming_qty = sum(compound_in.mapped('qty_received')) if compound_in else 0.0
             
-            # GET BEGINING WIP
-            # Saat ini tidak perlu nanti diinput manual dulu saja
-
-            # GET Work Inprogress MO PREV MONTH
-            mrp_sheet_prev = closing._get_mrp_inprogress_prev_month(sheet_product)
-            if mrp_sheet_prev:
-                rm_moves = mrp_sheet_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
-                closing.latex_wip_opening_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-            mrp_compound_prev = closing._get_mrp_inprogress_prev_month(compound_product)
-            if mrp_compound_prev:
-                rm_moves = mrp_compound_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-                closing.lump_wip_opening_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            # WIP : GET Beginning WIP
+            # GET Work Inprogress Saldo awal WIP atau MO PREV MONTH
+            closing.latex_wip_opening_qty = self.prev_closing_id.latex_wip_qty
+            closing.lump_wip_opening_qty = self.prev_closing_id.lump_wip_qty
+            # mrp_sheet_prev = closing._get_mrp_inprogress_prev_month(sheet_product)
+            # if mrp_sheet_prev:
+            #     rm_moves = mrp_sheet_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
+            #     closing.latex_wip_opening_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            # mrp_compound_prev = closing._get_mrp_inprogress_prev_month(compound_product)
+            # if mrp_compound_prev:
+            #     rm_moves = mrp_compound_prev.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+            #     closing.lump_wip_opening_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
-            # GET NEW MO THIS MONTH
+            # WIP : GET NEW MO THIS MONTH
             mrp_sheet = closing._get_mrp_inprogress_this_month(sheet_product)
             if mrp_sheet:
                 rm_moves = mrp_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-            mrp_compound = closing._get_mrp_inprogress_this_month(compound_product)
+            mrp_compound = closing._get_mrp_inprogress_this_month(compound_product2)
             if mrp_compound:
                 rm_moves = mrp_compound.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
-            # GET MO DONE THIS MONTH
+            # WIP : GET MO DONE THIS MONTH
+            outgoing_wip_sheet = 0
+            rm_moves1 = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','production'),
+                                    ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('production_id.date_start','<=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
+            outgoing_wip_sheet = sum(rm_moves1.mapped('qty_done')) if rm_moves1 else 0.0
             mrp_sheet_done = closing._get_mrp_done_this_month(sheet_product)
             if mrp_sheet_done:
                 rm_moves = mrp_sheet_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
-                closing.latex_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-            mrp_compound_done = closing._get_mrp_done_this_month(compound_product)
-            if mrp_compound_done:
-                rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-                closing.lump_wip_outgoing_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-            
-            # closing.sheet_raw_material_cost = closing._compute_rm_cost_sheet()
-            # Get Receiving Asam Semut
-            receving_asam_semuts = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
-                                    ('location_id.usage','!=','internal'),('location_dest_id.usage','=','internal'),
+                outgoing_wip_sheet += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
+            closing.latex_wip_outgoing_qty = outgoing_wip_sheet
+
+            # TODO: REMOVE THIS di CLOSING FEB 2026
+            outgoing_wip_lump = 0
+            rm_moves2 = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
+                                    ('location_id.usage','=','internal'),('location_dest_id.usage','=','production'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
-            # Get Purchase Amount Asam Semut
-            closing.action_compute_sheet_rm_cost()
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                                    ('production_id.date_start','<=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
+            outgoing_wip_lump = sum(rm_moves2.mapped('qty_done')) if rm_moves2 else 0.0
+            # mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
+            # if mrp_compound_done:
+            #     rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+            #     outgoing_wip_lump += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
+            closing.lump_wip_outgoing_qty = outgoing_wip_lump
+            # WIP : Asam semut hanya untuk SHEET
+            # WIP : Get Receiving Asam Semut
+            receving_asam_semuts = self.env['stock.move.line'].search([
+                        ('product_id.name','=','Asam Semut'),('state','=','done'),
+                        ('location_id.usage','not in',('internal','inventory')),
+                        ('location_dest_id.usage','=','internal'),
+                        ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                        ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            
+            # WIP : Get Purchase Amount Asam Semut
+            # TODO : harusnya value purchase diambil dari stock valuation layer bukan dari account move line
             closing.sheet_rm_incoming_qty = sum(receving_asam_semuts.mapped('qty_done')) if receving_asam_semuts else 0.0
-            closing.sheet_rm_incoming_value = sum([x.move_id.price_unit*x.qty_done for x in receving_asam_semuts]) if receving_asam_semuts else 0.0
-            # Get Consumed Asam Semut
+            closing.action_compute_sheet_rm_cost()
+            
+            # WIP : Get Consumed Asam Semut
             out_asam_semut = self.env['mrp.manual.consume'].search([('product_id.name','=','Asam Semut'),
                                     ('date','>=',closing.date_from),('date','<=',closing.date_to),
                                     ('is_confirmed','=',True)])
             closing.sheet_rm_outgoing_qty = sum(out_asam_semut.mapped('consumed_qty')) if out_asam_semut else 0.0
 
-            # Get Sales
-            latex_delivery_moves = self.env['stock.move.line'].search([('product_id.name','=','Lateks'),
+            # WIP : Get Adjustment Asam Semut
+            asam_semut_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
+                                    ('move_id.picking_id','=',False),('state','=','done'),
+                                    ('location_id.usage','=','internal'),
+                                    ('location_dest_id.usage','=','inventory'),
+                                    ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            asam_semut_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Asam Semut'),
+                                    ('move_id.picking_id','=',False),('state','=','done'),
+                                    ('location_dest_id.usage','=','internal'),
+                                    ('location_id.usage','=','inventory'),
+                                    ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                    ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
+            closing.sheet_rm_adjustment_qty = (sum(asam_semut_adjustment_in_moves.mapped('qty_done')) if asam_semut_adjustment_in_moves else 0.0) - (sum(asam_semut_adjustment_out_moves.mapped('qty_done')) if asam_semut_adjustment_out_moves else 0.0)
+
+            # OUT : Get Sales
+            latex_delivery_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
@@ -1361,12 +1460,12 @@ class ClosingProduction(models.Model):
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
             closing.lump_delivered_qty = sum(lump_delivery_moves.mapped('qty_done')) if lump_delivery_moves else 0.0
 
-            # Get Adjustment
-            latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            # ADJ : Get Adjustment
+            latex_adjustment_out_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
-            latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id.name','=','Latex'),
+            latex_adjustment_in_moves = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_dest_id.usage','=','internal'),('location_id.usage','=','inventory'),
                                     ('state','=','done'),('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))])
@@ -1493,6 +1592,58 @@ class ClosingProduction(models.Model):
                                 ])
                 ripening_outgoing_qty = (sum(out_moves_ripening_loc.mapped('qty_done')) if out_moves_ripening_loc else 0.0) - (sum(return_moves_ripening_loc.mapped('qty_done')) if return_moves_ripening_loc else 0.0)
 
+                # Get Adjustment
+                adjustment_out_moves = self.env['stock.move.line'].search([
+                    ('product_id', '=', product.id),
+                    ('location_id.usage', '=', 'internal'),
+                    ('location_dest_id.usage', '=', 'inventory'),
+                    ('move_id.scrap_ids', '=', False), 
+                    ('move_id.picking_id', '=', False),
+                    ('state', '=', 'done'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                ])
+
+                adjustment_in_moves = self.env['stock.move.line'].search([
+                    ('product_id', '=', product.id),
+                    ('location_dest_id.usage', '=', 'internal'),
+                    ('location_id.usage', '=', 'inventory'),
+                    ('move_id.scrap_ids', '=', False),
+                    ('move_id.picking_id', '=', False),
+                    ('state', '=', 'done'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                ])
+
+                adjustment_qty = (sum(adjustment_in_moves.mapped('qty_done')) if adjustment_in_moves else 0.0) - (sum(adjustment_out_moves.mapped('qty_done')) if adjustment_out_moves else 0.0)
+
+                # for move in adjustment_in_moves:
+                #     print(f"==== Adjusment In Move {move.reference} - {move.qty_done}")
+
+                # for move in adjustment_out_moves:
+                #     print(f"==== Adjusment Out Move {move.reference} - {move.qty_done}")
+
+                # print(f"==== Adjusment product {product.name} = {adjustment_qty}")
+                # Find Material Request Issue
+                issued_moves_out = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_id.usage','=','internal'),
+                                ('move_id.mr_line_id','!=',False),
+                                ('location_dest_id.usage','=','inventory'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                issued_moves_return = self.env['stock.move.line'].search([('product_id','=',product.id),
+                                ('state','=','done'),
+                                ('location_dest_id.usage','=','internal'),
+                                ('location_id.usage','=','inventory'),
+                                ('move_id.mr_line_id','!=',False),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_issue_stock_move_ids = [(6, 0, issued_moves_out.move_id.ids + issued_moves_return.move_id.ids)]
+                outgoing_issue_qty = (sum(issued_moves_out.mapped('qty_done')) if issued_moves_out else 0.0) - (sum(issued_moves_return.mapped('qty_done')) if issued_moves_return else 0.0)
+
                 values_to_create = {
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
@@ -1504,7 +1655,10 @@ class ClosingProduction(models.Model):
                     'scrap_qty': scrap_qty,
                     'ripening_qty': ripening_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
                     'outgoing_qty': outgoing_qty,
+                    'outgoing_issue_qty': outgoing_issue_qty,
+                    'outgoing_issue_stock_move_ids': outgoing_issue_stock_move_ids,
                     'ripening_outgoing_qty': ripening_outgoing_qty if product.id in closing.pisang_with_grade_ids.ids else 0.0,
+                    'adjustment_qty': adjustment_qty,
                 }
                 if prev_closing_fg:
                     values_to_create.update({
@@ -1518,7 +1672,6 @@ class ClosingProduction(models.Model):
             
             # for exvals in to_create:
             #     exvals['plantation_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.plantation_cost
-            
             # Other Plantation Product
             if to_create:
                 closing.fg2_valuation_ids = list(map(lambda x: (0,0,x), to_create))
@@ -1686,11 +1839,63 @@ class ClosingProduction(models.Model):
                 total_produced += produced_qty
                 # Find Delivery/Sales
                 outgoing_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
-                                ('location_id.usage','=','internal'),('location_dest_id.usage','!=','internal'),
+                                ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
+                                ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                                ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                                ])
+                outgoing_moves_ret = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                                ('location_id.usage','=','customer'),('location_dest_id.usage','=','internal'),
                                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
                                 ])
                 outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty')) if outgoing_moves else 0.0
+                outgoing_qty -= sum(outgoing_moves_ret.mapped('product_uom_qty')) if outgoing_moves_ret else 0.0
+
+                # Find Adjustment
+                # Punya pak hendra
+                # adjustment_out_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                #                 ('location_id.usage','=','internal'),('location_dest_id.usage','=','inventory'),
+                #                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                #                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                #                 ])
+                # adjustment_in_moves = self.env['stock.move'].search([('product_id','=',product.id),('state','=','done'),
+                #                 ('location_id.usage','=','inventory'),('location_dest_id.usage','=','internal'),
+                #                 ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                #                 ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                #                 ])
+                # adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                # adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+
+                adjustment_out_moves = self.env['stock.move'].search([
+                    ('product_id', '=', product.id),
+                    ('state', '=', 'done'),
+                    ('scrap_ids', '=', False),
+                    ('picking_id', '=', False),
+                    ('location_id.usage', '=', 'internal'),
+                    ('location_dest_id.usage', '=', 'inventory'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                ])
+
+                adjustment_in_moves = self.env['stock.move'].search([
+                    ('product_id', '=', product.id),
+                    ('state', '=', 'done'),
+                    ('scrap_ids', '=', False),
+                    ('picking_id', '=', False),
+                    ('location_id.usage', '=', 'inventory'),
+                    ('location_dest_id.usage', '=', 'internal'),
+                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
+                ])
+
+                # Hitung qty adjustment (in - out)
+                adjustment_qty = (
+                    sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
+                ) - (
+                    sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
+                )
+
+
                 values_to_create = {
                     'product_id': product.id,
                     'prev_closing_fg_id': prev_closing_fg.id if prev_closing_fg else False,
@@ -1699,6 +1904,7 @@ class ClosingProduction(models.Model):
                     'incoming_qty': produced_qty,
                     'manufacturing_cost': 0.0,
                     'outgoing_qty': outgoing_qty,
+                    'adjustment_qty': adjustment_qty,
                 }
                 if prev_closing_fg:
                     values_to_create.update({
@@ -1713,12 +1919,21 @@ class ClosingProduction(models.Model):
                 exvals['manufacturing_cost'] = (exvals['incoming_qty'] / total_produced if total_produced else 0.0) * closing.latex_wip_outgoing_value
 
             # Finish Good : Compo
-            mrp_compound_done = closing._get_mrp_done_this_month(closing.compound_product_id)
+            # mrp_compound_done = closing._get_mrp_done_this_month(closing.compound_product_id)
+            # compound_product2 = self.env['product.product'].search([('name','=','WIP Compo')], limit=1)
+            # mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
             finished_compo_qty = 0.0
-            if mrp_compound_done:
-                # rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-                # finished_compo_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
-                finished_compo_qty = sum(mrp_compound_done.mapped('qty_produced')) if mrp_compound_done else 0.0
+            # if mrp_compound_done:
+            #     # rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+            #     # finished_compo_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            #     finished_compo_qty = sum(mrp_compound_done.mapped('qty_produced')) if mrp_compound_done else 0.0
+            production_moves_compo = self.env['stock.move'].search([('product_id','=',closing.compound_product_id.id),
+                            ('state','=','done'),
+                            ('location_id.usage','=','production'),('location_dest_id.usage','=','internal'),
+                            ('date','>=',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
+                            ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59'))
+                            ])
+            finished_compo_qty = sum(production_moves_compo.mapped('product_uom_qty')) if production_moves_compo else 0.0
                 
             prev_closing_fg_compo = False
             if closing.prev_closing_id:
@@ -2084,8 +2299,8 @@ class ClosingProduction(models.Model):
             vals_adjs_11 = vals_src11.copy()
             vals_adjs_11.update({
                 'account_id': self.latex_adjustment_account_id.id,
-                'debit': vals_src9['credit'],
-                'credit': vals_src9['debit'],
+                'debit': vals_src11['credit'],
+                'credit': vals_src11['debit'],
             })
             move_lines_outgoing.append((0,0,vals_adjs_11))
             
@@ -2132,8 +2347,9 @@ class ClosingProduction(models.Model):
             move_lines_receiving.append((0,0,vals_src_31))
         # END: Purchase Asam Semut
 
-        # BEGIN: Konsumsi Asam Semut
+        # BEGIN: Outgoing Asam Semut
         if self.sheet_rm_outgoing_qty or self.sheet_rm_outgoing_value:
+            # Persediaan Biaya Asam Semut ke Asam Semut
             vals_dest32 = {
                 'name': 'Konsumsi Asam Semut',
                 'plantation_varieties_id': varieties.id,
@@ -2142,32 +2358,89 @@ class ClosingProduction(models.Model):
                 'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
                 'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
             }
-            move_lines_wip.append((0,0,vals_dest32))
+            move_lines_outgoing.append((0,0,vals_dest32))
             vals_src_32 = vals_dest32.copy()
             vals_src_32.update({
                 'account_id': self.sheet_rm_inventory_account_id.id,
                 'debit': vals_dest32['credit'],
                 'credit': vals_dest32['debit'],
             })
-            move_lines_wip.append((0,0,vals_src_32))
-
-            vals_dest33 = {
-                'name': 'Cost Asam Semut to WIP Latex',
+            move_lines_outgoing.append((0,0,vals_src_32))
+            
+            # Asam Semut ke WIP Lates
+            vals_dest32 = {
+                'name': 'Cost Asam Semut to WIP Lates',
                 'plantation_varieties_id': varieties.id,
                 'product_id': False,
                 'account_id': self.latex_wip_account_id.id,
                 'debit': round(self.sheet_rm_outgoing_value if self.sheet_rm_outgoing_value>0 else 0.0, 2),
                 'credit': round(abs(self.sheet_rm_outgoing_value) if self.sheet_rm_outgoing_value<0 else 0.0, 2),
             }
-            move_lines_wip.append((0,0,vals_dest33))
-            vals_src_33 = vals_dest33.copy()
+            move_lines_wip.append((0,0,vals_dest32))
+            vals_src_33 = vals_dest32.copy()
             vals_src_33.update({
                 'account_id': self.sheet_rm_consumption_account_id.id,
-                'debit': vals_dest33['credit'],
-                'credit': vals_dest33['debit'],
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
             })
             move_lines_wip.append((0,0,vals_src_33))
-        # END: Purchase Asam Semut
+        # END: Outgoing Asam Semut
+        
+        # BEGIN: Adjustment Asam Semut
+        if self.sheet_rm_opening_adjustment_value_enable and self.sheet_rm_opening_adjustment_diff:
+            vals_dest32 = {
+                'name': 'Adjustment Selisih Nilai Asam Semut',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_opening_adjustment_diff if self.sheet_rm_opening_adjustment_diff>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_opening_adjustment_diff) if self.sheet_rm_opening_adjustment_diff<0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_adjustment_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_src_32))
+        
+        if self.sheet_rm_closing_adjustment_value_enable and self.sheet_rm_closing_adjustment_diff:
+            vals_dest32 = {
+                'name': 'Adjustment Selisih Nilai Asam Semut',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_closing_adjustment_diff if self.sheet_rm_closing_adjustment_diff>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_closing_adjustment_diff) if self.sheet_rm_closing_adjustment_diff<0 else 0.0, 2),
+            }
+            move_lines_outgoing.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_adjustment_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_outgoing.append((0,0,vals_src_32))
+        
+        if self.sheet_rm_adjustment_qty and self.sheet_rm_adjustment_value:
+            vals_dest32 = {
+                'name': 'Adjustment Selisih Nilai Asam Semut',
+                'plantation_varieties_id': varieties.id,
+                'product_id': False,
+                'account_id': self.sheet_rm_inventory_account_id.id,
+                'debit': round(self.sheet_rm_adjustment_value if self.sheet_rm_adjustment_value>0 else 0.0, 2),
+                'credit': round(abs(self.sheet_rm_adjustment_value) if self.sheet_rm_adjustment_value<0 else 0.0, 2),
+            }
+            move_lines_wip.append((0,0,vals_dest32))
+            vals_src_32 = vals_dest32.copy()
+            vals_src_32.update({
+                'account_id': self.sheet_rm_adjustment_account_id.id,
+                'debit': vals_dest32['credit'],
+                'credit': vals_dest32['debit'],
+            })
+            move_lines_wip.append((0,0,vals_src_32))
+        # END: Adjustment Asam Semut
             
         if move_lines_receiving:
             # handling Pembuatan
@@ -2276,7 +2549,7 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_production.append((0,0,vals_src))
             
-            if line.outgoing_qty or linr.outgoing_value:
+            if line.outgoing_qty or line.outgoing_value:
                 vals_src = {
                     'name': 'Cost of Goods Sold',
                     'plantation_location_type_id': False,
@@ -2297,6 +2570,44 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_production.extend([(0,0,vals_src),(0,0,vals_dest)])
             
+            # buat fungsi untuk journal adjustment
+            # kalau nilainya minus maka inventory ada di credit, debit nya ada account adjustment
+            # Kalau nilainya positif maka inventory ada di debit, credit nya account adjustment
+            if line.adjustment_qty or line.adjustment_value:
+                adjustment_value = line.adjustment_value or 0.0
+
+                if adjustment_value < 0:
+                    debit_account = line.adjustment_account_id.id
+                    credit_account = line.inventory_account_id.id
+                    debit_val = abs(adjustment_value)
+                    credit_val = abs(adjustment_value)
+                else:
+                    debit_account = line.inventory_account_id.id
+                    credit_account = line.adjustment_account_id.id
+                    debit_val = adjustment_value
+                    credit_val = adjustment_value
+
+                vals_src = {
+                    'name': 'Adjustment',
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': debit_account,
+                    'product_id': line.product_id.id,
+                    'debit': round(debit_val if debit_val > 0 else 0.0, 2),
+                    'credit': 0.0,
+                }
+                vals_dest = vals_src.copy()
+                vals_dest.update({
+                    'account_id': credit_account,
+                    'debit': 0.0,
+                    'credit': round(credit_val if credit_val > 0 else 0.0, 2),
+                })
+                move_lines_production.extend([(0, 0, vals_src), (0, 0, vals_dest)])
+
+
             if move_lines_production:
                 first_bal = check_balance = 0.0
                 for x,y,val in move_lines_production:
@@ -2464,6 +2775,57 @@ class ClosingProduction(models.Model):
                 })
                 move_lines_cogs.append((0, 0, vals_src5))
             
+            if line.outgoing_issue_stock_move_ids:
+                remaining_issue_value = round(line.outgoing_issue_value, 2)
+                for smi in line.outgoing_issue_stock_move_ids:
+                    if smi.location_id.usage=='internal' and smi.location_dest_id.usage!='internal':
+                        issue_value = round(smi.quantity_done * line.new_cost_price, 2)
+                    elif smi.location_id.usage!='internal' and smi.location_dest_id.usage=='internal':
+                        issue_value = round(-1 * smi.quantity_done * line.new_cost_price, 2)
+                    remaining_issue_value -= issue_value
+                    vals_issues = {
+                        'name': f"{line.product_id.name} Issued",
+                        'plantation_location_type_id': False,
+                        'plantation_varieties_id': varieties.id,
+                        'plantation_location_id': False,
+                        'plantation_activity_id': False,
+                        'plantation_src_journal_id': False,
+                        'account_id': smi.plantation_activity_id.account_id.id,
+                        'product_id': line.product_id.id,
+                        'debit': issue_value if issue_value>0 else 0.0,
+                        'credit': abs(issue_value) if issue_value<0 else 0.0,
+                    }
+                    move_lines_cogs.append((0, 0, vals_issues))
+                # if remaining_issue_value:
+                #     vals_src4 = {
+                #         'name': f"{smi.product_id.name} Difference",
+                #         'plantation_location_type_id': False,
+                #         'plantation_varieties_id': False,
+                #         'plantation_location_id': False,
+                #         'plantation_activity_id': False,
+                #         'plantation_src_journal_id': False,
+                #         'account_id': line.adjustment_account_id.id,
+                #         'product_id': line.product_id.id,
+                #         'debit': round(remaining_issue_value, 2) if remaining_issue_value>0 else 0.0,
+                #         'credit': round(abs(remaining_issue_value), 2) if remaining_issue_value<0 else 0.0,
+                #     }
+                #     move_lines_cogs.append((0, 0, vals_src4))
+                vals_src4 = {
+                    'name': f"{smi.product_id.name} Issued",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': False,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.inventory_account_id.id,
+                    'product_id': line.product_id.id,
+                    # 'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
+                    # 'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
+                    'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
+                    'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_src4))
+            
             # 7. Journal Susut
             if line.adjustment_qty or line.adjustment_value:
                 vals_adj = {
@@ -2473,7 +2835,7 @@ class ClosingProduction(models.Model):
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
-                    'account_id': line.adjustment_account_id.id,
+                    'account_id': line.inventory_account_id.id,
                     'product_id': line.product_id.id,
                     'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
                     'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
@@ -2481,8 +2843,31 @@ class ClosingProduction(models.Model):
                 move_lines_cogs.append((0, 0, vals_adj))
                 vals_src5 = vals_adj.copy()
                 vals_src5.update({
-                    'name': f"Inventory Scrap",
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'account_id': line.adjustment_account_id.id,
+                    'debit': vals_adj['credit'],
+                    'credit': vals_adj['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src5))
+            # 7. Journal Susut
+            if line.adjustment_closing_qty or line.adjustment_closing_value:
+                vals_adj = {
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
                     'account_id': line.inventory_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(line.adjustment_closing_value, 2) if line.adjustment_closing_value>0 else 0.0,
+                    'credit': round(abs(line.adjustment_closing_value), 2) if line.adjustment_closing_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_adj))
+                vals_src5 = vals_adj.copy()
+                vals_src5.update({
+                    'name': f"Adjustment Cost {line.product_id.name} Mentah",
+                    'account_id': line.adjustment_account_id.id,
                     'debit': vals_adj['credit'],
                     'credit': vals_adj['debit'],
                 })
@@ -2520,8 +2905,13 @@ class ClosingProduction(models.Model):
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
             move_lines_production2.append((0,0,vals_src2))
 
+        move_lines_production = [line for line in move_lines_production if line[2].get('account_id')]
+        move_lines_production2 = [line for line in move_lines_production2 if line[2].get('account_id')]
+        move_lines_cogs = [line for line in move_lines_cogs if line[2].get('account_id')]
+
         if check_bal and check_bal>=-1.0 and check_bal<=1.0:
             move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
+
         if move_lines_production or move_lines_production2:
             values = {
                 'date': self.date_to,
@@ -2530,7 +2920,7 @@ class ClosingProduction(models.Model):
                 'line_ids': move_lines_production+move_lines_production2,
             }
             new_move = self.env['account.move'].create(values)
-            self.closing_move_ids = [(4, new_move.id)]
+            self.closing_move_ids = [(4, new_move.id)]        
         if move_lines_cogs:
             values = {
                 'date': self.date_to,
@@ -2662,7 +3052,7 @@ class ClosingProduction(models.Model):
                 move_lines_cogs.append((0, 0, vals_src4))
             
             # 7. Journal Susut
-            if line.adjustment_qty or line.adjustment_value:
+            if line.adjustment_qty or line.adjustment_value or line.adjustment_value_only:
                 vals_adj = {
                     'name': f"Adjustment Cost {line.product_id.name} Mentah",
                     'plantation_location_type_id': False,
@@ -2670,16 +3060,16 @@ class ClosingProduction(models.Model):
                     'plantation_location_id': False,
                     'plantation_activity_id': False,
                     'plantation_src_journal_id': False,
-                    'account_id': line.adjustment_account_id.id,
+                    'account_id': line.inventory_account_id.id,
                     'product_id': line.product_id.id,
-                    'debit': round(line.adjustment_value, 2) if line.adjustment_value>0 else 0.0,
-                    'credit': round(abs(line.adjustment_value), 2) if line.adjustment_value<0 else 0.0,
+                    'debit': round(line.adjustment_value + line.adjustment_value_only, 2) if line.adjustment_value or line.adjustment_value_only > 0 else 0.0,
+                    'credit': round(abs(line.adjustment_value + line.adjustment_value_only), 2) if line.adjustment_value or line.adjustment_value_only < 0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_adj))
                 vals_src5 = vals_adj.copy()
                 vals_src5.update({
                     'name': f"Inventory Scrap",
-                    'account_id': line.inventory_account_id.id,
+                    'account_id': line.adjustment_account_id.id,
                     'debit': vals_adj['credit'],
                     'credit': vals_adj['debit'],
                 })

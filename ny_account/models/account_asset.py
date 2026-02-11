@@ -12,6 +12,8 @@ class AccountAssetAsset(models.Model):
     no_line                     = fields.Boolean(string="Mandatory", related="location_type_id.no_line")
     location_id                 = fields.Many2one('lhm.location', string='Lokasi')
     activity_id                 = fields.Many2one('lhm.activity', string="Aktivitas")
+    account_activity_id         = fields.Many2one(related='activity_id.account_id', string="Allocation", readonly=True, store=True)
+    account_activity_cost_id    = fields.Many2one(related='activity_id.cost_account_id', string="Default Plantation Cost Account", readonly=True, store=True)
     varieties_id                = fields.Many2one('plant.varieties', string="ORG", ondelete='restrict')
     varieties_validator         = fields.Boolean(compute='_set_plantation_validator', store=True, string="Varieties Validator")
     @api.depends('location_type_id')
@@ -30,6 +32,12 @@ class AccountAssetAsset(models.Model):
     accumulated_depreciation    = fields.Monetary('Accumulated Depreciation', readonly=True, states={'draft': [('readonly', False)]})
     value_residual              = fields.Monetary(compute='_amount_residual', string='Residual Value')
     value                       = fields.Monetary(string='Gross Value', required=True, readonly=True, states={'draft': [('readonly', False)]})
+
+
+    # Penambahan filed lokasi dan luas 
+    lokasi  = fields.Char('Lokasi Tanah')
+    luas    = fields.Float('Luas', digits='Unit of Measure')
+
 
     @api.depends('varieties_id','location_type_id', 'state')
     def _filter_locations(self):

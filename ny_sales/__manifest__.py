@@ -11,6 +11,7 @@
         'views/product_pricelist_views.xml',
         'views/accountview_move_form.xml',
         'views/sale_order_views.xml',
+        'views/product_product_views.xml',
         # 'views/menu_views.xml',
     ],
     'installable': True,

@@ -310,7 +310,8 @@ class HrEmployeeExpense(models.Model):
                             'line_ids' : [Command.create({
                                 'product_id' : line.product_id.id,
                                 'name' : line.name,
-                                'account_id' : line.account_id.id,
+                                # 'account_id' : line.account_id.id,
+                                'account_id' : record.contra_account_for_advance.id,
                                 'amount' : abs(record.amount_total2),
                             }) for line in record.advance_to_settle_ids.line_ids]
                     })
@@ -388,30 +389,63 @@ class HrEmployeeExpense(models.Model):
             else:
                 payment.advance_found = False
 
-    @api.depends("account_move_id.line_ids.amount_residual")
-    def _compute_advance_residual(self):
-        for payment in self:
-            if not payment.is_advance:
-                payment.advance_residual = 0.0
-                continue
-            residual_company = 0.0
-            advance_account = payment.company_id.employee_advance_account_id
-            if not advance_account:
-                raise ValidationError(_('Please configure Employee Advance Account on your Accounting Settings'))
-            for line in payment.account_move_id.line_ids:
-                if line.account_id == advance_account:
-                    residual_company += line.amount_residual
-            payment.advance_residual = residual_company
+    # @api.depends("account_move_id.line_ids.amount_residual")
+    # def _compute_advance_residual(self):
+    #     for payment in self:
+    #         if not payment.is_advance:
+    #             payment.advance_residual = 0.0
+    #             continue
+    #         residual_company = 0.0
+    #         advance_account = payment.company_id.employee_advance_account_id
+    #         if not advance_account:
+    #             raise ValidationError(_('Please configure Employee Advance Account on your Accounting Settings'))
+    #         for line in payment.account_move_id.line_ids:
+    #             if line.account_id == advance_account:
+    #                 residual_company += line.amount_residual
+    #         payment.advance_residual = residual_company
 
-            # if payment.settlement_ids.id:
-            if payment.settlement_ids:
-                # for settle in payment.settlement_ids:
-                for settle in payment.settlement_ids.filtered(lambda s: s.employee_expense_state == 'approve'):
-                    if settle.account_move_id:
-                        for line in settle.account_move_id.line_ids:
-                            if line.account_id == advance_account:
-                                residual_company += line.amount_residual
-            payment.advance_residual = residual_company
+    #         # if payment.settlement_ids.id:
+    #         if payment.settlement_ids:
+    #             # for settle in payment.settlement_ids:
+    #             for settle in payment.settlement_ids.filtered(lambda s: s.employee_expense_state == 'approved'):
+    #                 if settle.account_move_id:
+    #                     for line in settle.account_move_id.line_ids:
+    #                         if line.account_id == advance_account:
+    #                             residual_company += line.amount_residual
+    #         payment.advance_residual = residual_company
+
+    @api.depends("account_move_id.line_ids.matched_credit_ids")
+    def _compute_advance_residual(self):
+        advance_account = self.env.company.employee_advance_account_id
+        if not advance_account:
+            raise ValidationError(_('Please configure Employee Advance Account on your Accounting Settings'))
+
+        for rec in self:
+            if not rec.is_advance or not rec.account_move_id:
+                rec.advance_residual = 0.0
+                continue
+
+            advance_lines = rec.account_move_id.line_ids.filtered(lambda l: l.account_id == advance_account)
+
+            residual_total = 0.0
+
+            for line in advance_lines:
+                debit_balance_total = 0.0 
+                partials = line.matched_credit_ids
+
+                if not partials:
+                    residual_total += line.balance
+                    continue
+
+                for part in partials:
+                    debit_balance_total += part.debit_move_id.balance
+
+                final_residual = line.balance - debit_balance_total
+                residual_total += final_residual 
+
+            rec.advance_residual = residual_total
+
+
 
 
     @api.depends('amount_total', 'advance_to_settle_ids')
@@ -777,6 +811,10 @@ class HrEmployeeExpenseLine(models.Model):
             'product_id': self.product_id.id,
             'debit': amount if amount > 0 else 0.0,
             'credit': abs(amount) if amount < 0 else 0.0,
+            'plantation_location_type_id': self.location_type_id.id,
+            'plantation_varieties_id': self.varieties_id.id,
+            'plantation_location_id': self.location_id.id,
+            'plantation_activity_id': self.activity_id.id,
         }
 
     def unlink(self):

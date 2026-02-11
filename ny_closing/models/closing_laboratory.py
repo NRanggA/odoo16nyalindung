@@ -118,7 +118,7 @@ class ClosingLaboratory(models.Model):
                                                             ('date_start','<',closing.date_from.strftime('%Y-%m-%d 00:00:00')),
                                                             '|',
                                                                 ('date_end','=',False),
-                                                                ('date_end','>=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
+                                                                ('date_end','>',closing.date_from.strftime('%Y-%m-%d 00:00:00'))])
             closing.opening_wip_qty = sum(open_prod_orders.mapped('product_qty')) if open_prod_orders else 0.0
 
             # domain_op_wip = closing._get_domain_source_move_lines()

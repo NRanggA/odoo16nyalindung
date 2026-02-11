@@ -1,0 +1,73 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_lhm_nap_pisang_monitoring_tree" model="ir.ui.view">
+        <field name="name">lhm.nap.pisang.monitoring.tree</field>
+        <field name="model">lhm.nap.pisang.monitoring</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="bulan"/>
+                <field name="jumlah_lhm_per_bulan"/>
+                <field name="total_hasil_1"/>
+                <!-- <field name="lhm_names"/> -->
+                <field name="total_product_qty"/>
+                <!-- <field name="nap_names"/> -->
+                <field name="nap_mr" optional="show"/>
+                <field name="nap_mr_return" optional="show"/>
+                <field name="nett"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Wizard Form -->
+    <record id="view_lhm_nap_pisang_monitoring_wizard_form" model="ir.ui.view">
+        <field name="name">lhm.nap.pisang.monitoring.wizard.form</field>
+        <field name="model">lhm.nap.pisang.monitoring.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Filter Monitoring Pisang">
+                <group>
+                    <field name="plant_varieties_id" invisible="1"/>
+                    <field name="available_activity_ids" invisible="1"/>
+                    <field name="harvest_activity_ids" widget="many2many_tags"
+                        domain="[('id', 'in', available_activity_ids)]"
+                        options="{'no_create': True, 'no_create_edit': True}"/>
+                    <field name="from_month"/>
+                    <field name="to_month"/>
+                </group>
+                <footer>
+                    <button name="action_view_report" string="Tampilkan" type="object" class="btn-primary"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Window -->
+    <record id="action_lhm_nap_pisang_monitoring" model="ir.actions.act_window">
+        <field name="name">Cek Total Qty Pisang LHM vs NAP</field>
+        <field name="res_model">lhm.nap.pisang.monitoring</field>
+        <field name="view_id" ref="view_lhm_nap_pisang_monitoring_tree"/>
+        <field name="view_mode">tree</field>
+        <field name="type">ir.actions.act_window</field>
+        <!-- <field name="search_view_id" ref="view_lhm_nap_pisang_monitoring_search"/> -->
+        <!-- <field name="context">{'search_default_this_month': 1, 'current_month': time.strftime('%Y-%m')}</field> -->
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="action_lhm_nap_pisang_monitoring_wizard" model="ir.actions.act_window">
+        <field name="name">Filter Monitoring Pisang LHM vs NAP</field>
+        <field name="res_model">lhm.nap.pisang.monitoring.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Submenu -->
+    <menuitem id="menu_lhm_nap_pisang_monitoring"
+              name="Cek Total Qty Pisang LHM vs NAP"
+              parent="menu_lhm_transaction_main"
+              action="action_lhm_nap_pisang_monitoring"/>
+
+    <menuitem id="menu_lhm_nap_pisang_monitoring"
+            name="Cek Total Qty Pisang LHM vs NAP"
+            parent="menu_lhm_transaction_main"
+            action="action_lhm_nap_pisang_monitoring_wizard"/>
+</odoo>

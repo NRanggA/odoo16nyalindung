@@ -207,6 +207,7 @@ class ReportStockMutation(models.AbstractModel):
         sheet.set_column('M:M', 20)
         sheet.set_column('N:N', 20)
         sheet.set_column('O:O', 20)
+        sheet.set_column('P:P', 20)
 
         row = 0
 
@@ -219,7 +220,7 @@ class ReportStockMutation(models.AbstractModel):
         headers = [
             "Date", "Account", "JRNL", "Partner", "Ref", "Move", "Tipe Lokasi","ORG",
             "Lokasi", "Activity", "Analytic Account", "Entry Label",
-            "Debit", "Credit", "Cumm. Balance", "Currency"
+            "Debit", "Credit", "Cumm. Balance", "Currency", "Matching"
         ]
         for col, header in enumerate(headers):
             sheet.write(row, col, header, wbf['header'])
@@ -255,10 +256,11 @@ class ReportStockMutation(models.AbstractModel):
 
             account_type = account.account_type
             # if account_type in ['bank', 'cash']:
-            if account_type == 'asset_cash' :
-                order = 'date asc, debit desc, credit desc'
-            else:
-                order = 'date asc, name asc'
+            # if account_type == 'asset_cash' :
+            #     order = 'date asc, debit desc, credit desc'
+            # else:
+            #     order = 'date asc, name asc'
+            order = 'date asc, move_name asc'
 
             # Hitung Saldo Awal
             if account_move:
@@ -287,6 +289,7 @@ class ReportStockMutation(models.AbstractModel):
             sheet.write(row, 13, total_credit, wbf['opening_balance'])
             sheet.write(row, 14, opening_balance, wbf['opening_balance'])
             sheet.write(row, 15, '', wbf['opening_balance'])
+            sheet.write(row, 16, '', wbf['opening_balance'])
             row += 1
 
             account_move_lines = self.env['account.move.line'].search(domain, order=order)
@@ -313,6 +316,7 @@ class ReportStockMutation(models.AbstractModel):
                 sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['content_float'])
 
                 sheet.write(row, 15, move_line.amount_currency if move_line.currency_id != move_line.company_id.currency_id else 0, wbf['content_float'])
+                sheet.write(row, 16, move_line.matching_number or '', wbf['content'])
 
                 row += 1
             # Menutup looping account_move_lines dengan baris saldo akhir
@@ -335,7 +339,7 @@ class ReportStockMutation(models.AbstractModel):
             # sheet.write_formula(row, 14, f'=SUM(O{row - len(account_move_lines)}:O{last_balance_row})', wbf['opening_balance'])
             sheet.write_formula(row, 14, f'=O{row}+M{row+1}-N{row+1}', wbf['opening_balance'])
             sheet.write(row, 15, '', wbf['account'])
-            sheet.write(row, 15, '', wbf['account'])
+            sheet.write(row, 16, '', wbf['account'])
             row += 1
         
         # Pengaturan Cetak
