@@ -17,3 +17,8 @@ class Employee(models.Model):
 
     blok_tanam_id = fields.Many2one('lhm.plant.block', string='Blok Tanam', groups="hr.group_hr_user")
     payslip_group_id = fields.Many2one('hr.payslip.group', string='Payslip Group')
+
+class EmployeeBase(models.AbstractModel):
+    _inherit = 'hr.employee.base'
+
+    payslip_group_id = fields.Many2one('hr.payslip.group', string='Payslip Group')
