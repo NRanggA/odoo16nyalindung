@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form" model="ir.ui.view">
+        <field name="name">hr.employee.view.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_employee_form_inherit_lhm"/>
+        <field name="arch" type="xml">
+            <field name="plantation_varieties_id" position="before" >
+                <field name="gae_distribution_id" />
+                <field name="filter_gae_location_ids" invisible="1"/>
+                <field name="gae_to_location_ids" widget="many2many_tags" domain="[('id', 'in', filter_gae_location_ids)]"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gae_plan_user,gae.plan user,model_gae_plan,base.group_user,1,0,0,0
+access_gae_plan_line_user,gae.plan.line user,model_gae_plan_line,base.group_user,1,0,0,0
+access_gae_plan_acc_user,gae.plan user,model_gae_plan,account.group_account_user,1,1,1,1
+access_gae_plan_line_acc_user,gae.plan.line user,model_gae_plan_line,account.group_account_user,1,1,1,1
+access_closing_gae_line_acc_user,closing.gae.line user,model_closing_gae_line,account.group_account_user,1,1,1,1
+access_closing_gae_acc_user,closing.gae user,model_closing_gae,account.group_account_user,1,1,1,1
+access_move_line_set_gae,move.line.set.gae user,model_move_line_set_gae,account.group_account_user,1,1,1,1

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="closing_process_view_form" model="ir.ui.view">
+        <field name="name">closing.process.view.form</field>
+        <field name="model">closing.process</field>
+        <field name="inherit_id" ref="ny_closing.closing_process_view_form"/>
+        <field name="arch" type="xml">
+            <button name="button_continue_to_closing_plantation" position="after">
+                <button string="Summerize Cost" name="summerize_gae_cost" type="object" states="closing_gae"/>
+                <button string="Create Closing Entries" name="create_account_move_gae" type="object" states="closing_gae"/>
+            </button>
+            <button name="button_continue_to_closing_plantation" position="attributes">
+                <attribute name="states">closing_gae</attribute>
+            </button>
+            <button name="button_continue_to_closing_nursery" position="after">
+                <button string="Continue" name="button_continue_to_closing_gae" type="object" class="oe_highlight" states="closing_nursery"/>
+            </button>
+            <page name="running_workshop" position="attributes">
+                <attribute name="attrs">{'invisible': [('state','not in',['running_workshop','running_vehicle','running_machine','closing_laboratory','closing_project','closing_nursery','closing_laboratory','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
+            </page>
+            <page name="running_vehicle" position="attributes">
+                <attribute name="attrs">{'invisible': [('state','not in',['running_vehicle','running_machine','closing_laboratory','closing_project','closing_nursery','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
+            </page>
+            <page name="running_machine" position="attributes">
+                <attribute name="attrs">{'invisible': [('state','not in',['running_machine','closing_project','closing_nursery','closing_gae','closing_laboratory','closing_plantation','closing_production','done'])]}</attribute>
+            </page>
+            <page name="closing_laboratory" position="attributes">
+                <attribute name="attrs">{'invisible': [('state','not in',['closing_laboratory','closing_project','closing_nursery','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
+            </page>
+            <page name="closing_project" position="attributes">
+                <attribute name="attrs">{'invisible': [('state','not in',['closing_project','closing_nursery','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
+            </page>
+            <page name="closing_nursery" position="attributes">
+                <attribute name="attrs">{'invisible': [('state','not in',['closing_nursery','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
+            </page>
+            <page name="closing_plantation" position="before">
+                <page name="closing_gae" string="Closing GAE">
+                    <field name="closing_gae_ids" string="Plantation" attrs="{'invisible': [('state','not in',['closing_gae','closing_plantation','closing_production','done'])]}">>
+                        <tree>
+                            <field name="date_from" />
+                            <field name="date_to" />
+                            <field name="gae_distribution_id" />
+                            <field name="amount" string="Amount"/>
+                        </tree>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>

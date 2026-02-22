@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_cost_map_view_tree" model="ir.ui.view">
+        <field name="name">hr_payslip_cost_map.view.tree</field>
+        <field name="model">hr.payslip.cost.map</field>
+        <field name="inherit_id" ref="ny_hr_payroll_account.hr_payslip_cost_map_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="account_id" position="before">
+                <field name="gae_distribution_id" />
+                <field name="gae_to_location_ids" widget="many2many_tags"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_payslip_cost_map_gc_view_tree" model="ir.ui.view">
+        <field name="name">hr_payslip_cost_map.gc.view.tree</field>
+        <field name="model">hr.payslip.cost.map</field>
+        <field name="inherit_id" ref="ny_hr_payroll_account.hr_payslip_cost_map_gc_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="account_id" position="before">
+                <field name="gae_distribution_id" />
+                <field name="gae_to_location_ids" widget="many2many_tags"/>
+            </field>
+        </field>
+    </record>
+</odoo>

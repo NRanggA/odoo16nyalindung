@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="closing_gae_view_form" model="ir.ui.view">
+        <field name="name">closing.gae.view.form</field>
+        <field name="model">closing.gae</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group>
+                            <field name="gae_distribution_id" />
+                            <button name="action_view_move_lines" string="View Journals" type="object" class="btn-info" icon="fa-search"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="line" string="Lines">
+                            <field name="line_ids">
+                                <tree>
+                                    <field name="plantation_varieties_id" />
+                                    <field name="account_id" />
+                                    <field name="amount" sum="Total"/>
+                                    <button name="action_view_move_lines" string="View Journals" type="object" class="btn-info" icon="fa-search"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="closing_gae_view_tree" model="ir.ui.view">
+        <field name="name">closing.gae.view.tree</field>
+        <field name="model">closing.gae</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="gae_distribution_id" />
+                <field name="amount" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="closing_gae_view_search" model="ir.ui.view">
+        <field name="name">closing.gae.view.search</field>
+        <field name="model">closing.gae</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="gae_distribution_id" />
+            </search>
+        </field>
+    </record>
+
+    <record id="closing_gae_action" model="ir.actions.act_window">
+        <field name="name">Closing GAE</field>
+        <field name="res_model">closing.gae</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

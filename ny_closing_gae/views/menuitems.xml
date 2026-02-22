@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_closing_gae"
+        parent="ny_closing.menu_detail_closing_process"
+        action="ny_closing_gae.closing_gae_action"
+        sequence="16"
+        groups="base.group_no_one"/>
+    
+    <menuitem
+        id="menu_gae_plan"
+        parent="ny_closing.menu_detail_closing_process"
+        action="ny_closing_gae.gae_plan_action"
+        sequence="100"
+        groups="base.group_no_one"/>
+</odoo>
