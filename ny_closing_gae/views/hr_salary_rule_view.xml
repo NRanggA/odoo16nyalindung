@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ny_hr_salary_rule_form" model="ir.ui.view">
+        <field name="name">ny.hr.salary.rule.view.form</field>
+        <field name="model">hr.salary.rule</field>
+        <field name="inherit_id" ref="ny_hr_payroll_account.ny_hr_salary_rule_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='accounting']/field[@name='config_account_ids']/tree/field[@name='is_general_charge']" position="after">
+                <field name="is_gea_rule" attrs="{'readonly': ['|',('is_general_charge','=',True),('is_map_from_lhm','=',True)]}" />
+            </xpath>
+            <!-- <xpath expr="//page[@name='accounting']/field[@name='config_account_ids']/tree/field[@name='default_debit_account_id']" position="attributes">
+            </xpath> -->
+        </field>
+    </record>
+
+</odoo>
