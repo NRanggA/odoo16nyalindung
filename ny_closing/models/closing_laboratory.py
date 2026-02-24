@@ -15,7 +15,8 @@ class ClosingLaboratory(models.Model):
     date_from = fields.Date('Date From', required=True)
     date_to = fields.Date('Date To', required=True)
     lab_product_id = fields.Many2one('lab.product', string='Product', ondelete='restrict', required=True)
-    
+    adjustment_account_id = fields.Many2one('account.account', string='Adjustment Account')
+
     opening_wip_qty = fields.Float()
     opening_wip_value = fields.Float()
     incoming_wip_qty = fields.Float()
@@ -234,6 +235,26 @@ class ClosingLaboratory(models.Model):
                     'credit': vals_dest['debit'],
                 })
                 move_lines.append((0,0,vals_src))
+            
+            if closing.adjustment_fg_value:
+                if not closing.adjustment_account_id:
+                    raise ValidationError(f"Adjustment Account tidak boleh kosong jika terdapat penyesuaian nilai pada FG. Silahkan diisi terlebih dahulu pada Closing Laboratory {closing.lab_product_id.product_id.name}")
+                vals_dest_adj = {
+                    'name': 'Lab Adjustment',
+                    'plantation_location_type_id': closing.lab_product_id.location_id.type_id.id,
+                    'plantation_location_id': closing.lab_product_id.location_id.id,
+                    'account_id': closing.adjustment_account_id.id if closing.adjustment_fg_value < 0 else closing.lab_product_id.account_id.id,
+                    'debit': closing.adjustment_fg_value if closing.adjustment_fg_value > 0 else 0.0,
+                    'credit': abs(closing.adjustment_fg_value) if closing.adjustment_fg_value < 0 else 0.0,
+                }
+                move_lines.append((0,0,vals_dest_adj))
+                vals_src_adj = vals_dest_adj.copy()
+                vals_src_adj.update({
+                    'account_id': closing.lab_product_id.account_id.id if closing.adjustment_fg_value > 0 else closing.adjustment_account_id.id,
+                    'debit': vals_dest_adj['credit'],
+                    'credit': vals_dest_adj['debit'],
+                })
+                move_lines.append((0,0,vals_src_adj))
             
             # Create Jurnal Consumption
             if closing.outgoing_stock_move_ids:

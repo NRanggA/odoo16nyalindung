@@ -367,7 +367,7 @@ class ClosingProject(models.Model):
         src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
         if not src_account_ids:
             raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
-        last_year_date = self.date_to - relativedelta(years=1) - relativedelta(month=12, days=31)
+        last_year_date = self.date_to - relativedelta(years=1) - relativedelta(month=12, day=31)
         domain = [('plantation_location_id','=',self.project_id.location_id.id),
                 ('parent_state','=','posted'),
                 ('date','<=',last_year_date)]

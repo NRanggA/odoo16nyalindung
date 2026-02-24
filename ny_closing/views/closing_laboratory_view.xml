@@ -17,6 +17,7 @@
                             <field name="date_to" />
                         </group>
                         <group>
+                            <field name="adjustment_account_id" options="{'no_create': True}"/>
                             <field name="closing_move_id" readonly="1"/>
                         </group>
                     </group>

@@ -107,6 +107,7 @@ class ProjectClosingReportExcel(models.AbstractModel):
         worksheet.write(next_row+1, 5, 'Bulan Ini' , wbf['header'])
         # worksheet.write(next_row+1, 6, 'Penyesuaian' , wbf['header'])
         worksheet.merge_range(next_row, 6, next_row+1, 6, 'Saldo Akhir' , wbf['header'])
+        worksheet.merge_range(next_row, 7, next_row+1, 7, 'Status' , wbf['header'])
 
         next_row += 2
         for c in range(6):
@@ -123,6 +124,7 @@ class ProjectClosingReportExcel(models.AbstractModel):
             worksheet.write(next_row, 5, line.total_cost or 0.0, wbf['content_float'])
             # worksheet.write(next_row, 6, line.adjustment_period_cost or 0.0, wbf['content_float'])
             worksheet.write(next_row, 6, line.accumultated_cip_last_year + line.accumultated_cip_this_year + line.total_cost, wbf['content_float'])
+            worksheet.write(next_row, 7, line.project_id.state, wbf['content_float'])
             next_row += 1
         
         next_row += 1
