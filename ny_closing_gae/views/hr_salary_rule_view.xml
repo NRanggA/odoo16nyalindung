@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='accounting']/field[@name='config_account_ids']/tree/field[@name='is_general_charge']" position="after">
                 <field name="is_gea_rule" attrs="{'readonly': ['|',('is_general_charge','=',True),('is_map_from_lhm','=',True)]}" />
+                <!-- <field name="allocate_to_project" attrs="{'readonly': ['|',('is_general_charge','=',True),('is_map_from_lhm','=',True)]}" /> -->
             </xpath>
             <!-- <xpath expr="//page[@name='accounting']/field[@name='config_account_ids']/tree/field[@name='default_debit_account_id']" position="attributes">
             </xpath> -->

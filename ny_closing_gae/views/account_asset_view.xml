@@ -7,7 +7,9 @@
         <field name="inherit_id" ref="om_account_asset.view_account_asset_asset_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='analytic_distribution']" position="after">
-                <field name="gae_distribution_id" />
+                <field name="gae_dest_type" required="1"/>
+                <field name="gae_distribution_id" attrs="{'invisible': [('gae_dest_type','=','direct')], 'required': [('gae_dest_type','=','indirect')]}"/>
+                <field name="plantation_varieties_ids" widget="many2many_tags" attrs="{'invisible': [('gae_dest_type','=','indirect')], 'required': [('gae_dest_type','=','direct')]}"/>
             </xpath>
         </field>
     </record>
