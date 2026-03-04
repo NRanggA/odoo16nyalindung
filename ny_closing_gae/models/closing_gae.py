@@ -33,37 +33,40 @@ class ClosingGae(models.Model):
         action['domain'] = domain
         return action
 
-    def summarize_move_line(self):
-        for closing in self:
-            if closing.closing_process_id and closing.parent_state!='closing_plantation':
-                raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
+    # def summarize_move_line(self):
+    #     for closing in self:
+    #         if closing.closing_process_id and closing.parent_state!='closing_plantation':
+    #             raise ValidationError(f"Tidak dapat mengubah data Closing Plantation yang karena Closing Procedure sudah berstatus {closing.parent_state}")
             
-            closing.line_ids.unlink()
-            move_lines = self.env['account.move.line'].search([
-                ('date', '>=', closing.date_from),
-                ('date', '<=', closing.date_to),
-                ('gae_distribution_id', '=', closing.gae_distribution_id.id),
-                ('parent_state', '=', 'posted'),
-            ])
-            to_create = []
-            for account in move_lines.mapped('account_id'):
-                account_lines = move_lines.filtered(lambda l: l.account_id == account)
-                total_amount = sum(account_lines.mapped('balance'))
-                remaining_amount = total_amount
-                last_line = len(closing.gae_distribution_id.line_ids)
-                for dist_plan in closing.gae_distribution_id.line_ids:
-                    if not last_line:
-                        dist_amount = remaining_amount
-                    else:
-                        dist_amount = total_amount * dist_plan.distribution_percentage / 100
-                    to_create.append((0, 0, {
-                        'plantation_varieties_id': dist_plan.varieties_id.id,
-                        'account_id': account.id,
-                        'amount': dist_amount,
-                    }))
-                    last_line -= 1
-                    remaining_amount -= dist_amount
-            closing.line_ids = to_create
+    #         closing.line_ids.unlink()
+    #         move_lines = self.env['account.move.line'].search([
+    #             ('date', '>=', closing.date_from),
+    #             ('date', '<=', closing.date_to),
+    #             ('gae_distribution_id', '=', closing.gae_distribution_id.id),
+    #             ('parent_state', '=', 'posted'),
+    #         ])
+    #         to_create = []
+    #         for account in move_lines.mapped('account_id'):
+    #             account_lines = move_lines.filtered(lambda l: l.account_id == account)
+    #             total_amount = sum(account_lines.mapped('balance'))
+    #             remaining_amount = total_amount
+    #             last_line = len(closing.gae_distribution_id.line_ids)
+    #             for dist_plan in closing.gae_distribution_id.line_ids:
+    #                 if not last_line:
+    #                     dist_amount = remaining_amount
+    #                 else:
+    #                     dist_amount = total_amount * dist_plan.distribution_percentage / 100
+    #                 to_create.append((0, 0, {
+    #                     'plantation_varieties_id': dist_plan.varieties_id.id,
+    #                     'account_id': account.id,
+    #                     'amount': dist_amount,
+    #                 }))
+    #                 last_line -= 1
+    #                 remaining_amount -= dist_amount
+    #         closing.line_ids = to_create
+    
+    def summarize_move_line(self):
+        pass
     
     def create_account_move(self):
         closing_journal = self.env.ref('ny_closing_gae.plantation_closing_gae_journal')
