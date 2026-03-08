@@ -364,7 +364,8 @@ class ReportProductionPenyadap(models.AbstractModel):
 
         from_date = obj.from_date
         to_date = obj.to_date
-        kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 195, 199, 200, 217]
+        # kemandoran_ids = obj.kemandoran_id.ids if obj.kemandoran_id else [140, 193, 195, 199, 200, 217]
+        kemandoran_ids = (obj.kemandoran_id.ids if obj.kemandoran_id else self.env["hr.foreman"].search([("is_sadap", "=", True)]).ids)
 
         attendance_data = {}
 
