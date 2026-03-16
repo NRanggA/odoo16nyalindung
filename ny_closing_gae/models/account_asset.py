@@ -10,6 +10,8 @@ class AccountAssetAsset(models.Model):
     gae_distribution_id = fields.Many2one('gae.plan', string='GAE Distribution')
     plantation_varieties_ids = fields.Many2many('plant.varieties', 'asset_varieties_rel', string='Distribution ORG')
 
+    gae_direct_activity_id = fields.Many2one('lhm.activity', string='Direct GAE Activity', domain="[('type_id.code','in',['FC','PJ'])]")
+    gae_expense_depre_account_id = fields.Many2one('account.account', string='GAE Expense Depreciation Account')
 
 class AccountAssetDepreciationLine(models.Model):
     _inherit = 'account.asset.depreciation.line'
@@ -42,7 +44,7 @@ class AccountAssetDepreciationLine(models.Model):
             move_vals['line_ids'] = [(0,0, move_line_1)]
 
             remaining_amount = amount
-            count_org = len(asset_id.plantation_varieties_ids.ids)
+            count_org = len(asset_id.plantation_varieties_ids.ids) - 1
             total_ha = sum(asset_id.plantation_varieties_ids.mapped('plant_block_ids.planted'))
             for org in asset_id.plantation_varieties_ids:
                 if not total_ha:
@@ -55,22 +57,33 @@ class AccountAssetDepreciationLine(models.Model):
                 
                 depr_tm_amount = 0.0
                 block_remaining_amt = org_amount
-                count_block = len(org.plant_block_ids.ids)
-                for block in org.plant_block_ids:
+                count_block = len(org.plant_block_ids.ids) - 1
+                count_org -= 1
+                for block in org.plant_block_ids.sorted(key=lambda r: r.status):
                     if not count_block:
                         dest_amount = block_remaining_amt
                     else:
-                        dest_amount = round(org_amount * block.planted / total_ha, 2)
-                    
+                        dest_amount = round(org_amount * block.planted / total_ha_2, 2)
                     if block.status=='tm':
                         depr_tm_amount += dest_amount
+                        count_block -= 1
+                        continue
+                    if not block.planted:
+                        count_block -= 1
                         continue
                     
                     move_line_2 = {
                         'name': asset_name,
                         'plantation_varieties_id': block.varieties_id.id,
+                        # 'plantation_location_id': block.location_id.id,
+                        # 'account_id': block.tbm_account_id.id,
+                        'plantation_location_type_id': block.location_id.type_id.id,
                         'plantation_location_id': block.location_id.id,
-                        'account_id': block.tbm_account_id.id,
+                        # 'plantation_activity_id': block.activity_id.id,
+                        'plantation_activity_id': line.asset_id.gae_direct_activity_id.id,
+                        # 'account_id': block.activity_id.account_id.id,
+                        'account_id': line.asset_id.gae_direct_activity_id.account_id.id,
+
                         'credit': 0.0 if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else -dest_amount,
                         'debit': dest_amount if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else 0.0,
                         'partner_id': line.asset_id.partner_id.id,
@@ -80,18 +93,23 @@ class AccountAssetDepreciationLine(models.Model):
                     move_vals['line_ids'].append((0,0, move_line_2))
                     count_block -= 1
                     block_remaining_amt -= dest_amount
+                    print(":::::::::::::::::::::", asset_id.name, move_line_2['debit'], move_line_2['credit'])
                 
+                print(".......SISA UNTUK TM........", block_remaining_amt, depr_tm_amount)
                 if depr_tm_amount:
                     move_line_3 = {
                         'name': asset_name,
                         'plantation_varieties_id': block.varieties_id.id,
-                        'account_id': category_id.account_depreciation_expense_id.id,
-                        'credit': 0.0 if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else -dest_amount,
-                        'debit': dest_amount if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                        # 'account_id': category_id.account_depreciation_expense_id.id,
+                        'account_id': line.asset_id.gae_direct_activity_id.cost_account_id.id,
+                        
+                        'credit': 0.0 if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else -depr_tm_amount,
+                        'debit': depr_tm_amount if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else 0.0,
                         'partner_id': line.asset_id.partner_id.id,
                         'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
                         'amount_currency': dest_amount,
                     }
+                    print(":::::::::::::::::::::::::", asset_id.name, move_line_3['debit'], move_line_3['credit'])
                     move_vals['line_ids'].append((0,0, move_line_3))
         elif asset_id.gae_dest_type=='indirect' and  asset_id.gae_distribution_id:
             move_line_1 = {
@@ -117,7 +135,8 @@ class AccountAssetDepreciationLine(models.Model):
                 move_line_2 = {
                     'name': asset_name,
                     'plantation_varieties_id': dist_plan.varieties_id.id,
-                    'account_id': category_id.account_depreciation_expense_id.id,
+                    # 'account_id': category_id.account_depreciation_expense_id.id,
+                    'account_id': line.asset_id.gae_expense_depre_account_id.id,
                     'credit': 0.0 if float_compare(amount, 0.0, precision_digits=prec) > 0 else -amount,
                     'debit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
                     'partner_id': line.asset_id.partner_id.id,

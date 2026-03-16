@@ -1408,10 +1408,10 @@ class ClosingProduction(models.Model):
                                     ('date','<=',closing.date_to.strftime('%Y-%m-%d 23:59:59')),
                                     ('production_id.date_start','<=',closing.date_from.strftime('%Y-%m-%d 23:59:59'))])
             outgoing_wip_lump = sum(rm_moves2.mapped('qty_done')) if rm_moves2 else 0.0
-            # mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
-            # if mrp_compound_done:
-            #     rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
-            #     outgoing_wip_lump += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
+            mrp_compound_done = closing._get_mrp_done_this_month(compound_product2)
+            if mrp_compound_done:
+                rm_moves = mrp_compound_done.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+                outgoing_wip_lump += sum(rm_moves.mapped('quantity_done')) if rm_moves else 0.0
             closing.lump_wip_outgoing_qty = outgoing_wip_lump
             # WIP : Asam semut hanya untuk SHEET
             # WIP : Get Receiving Asam Semut
