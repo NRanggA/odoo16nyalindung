@@ -8,8 +8,8 @@ class WizardReportProduction(models.TransientModel):
     
     from_date           = fields.Date('From Date')
     to_date             = fields.Date('To Date')
-    kemandoran_id       = fields.Many2many("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True, domain=[("id", "in", [140, 193, 195, 199, 200, 217])],)
-
+    # kemandoran_id       = fields.Many2many("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True, domain=[("id", "in", [140, 193, 195, 199, 200, 217])],)
+    kemandoran_id       = fields.Many2many("hr.foreman", string="Kemandoran", ondelete="restrict", tracking=True, domain=[("is_sadap", "=", True)],)
 
     def create_report(self):
         if not self.from_date or not self.to_date:
