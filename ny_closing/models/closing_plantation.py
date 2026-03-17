@@ -483,12 +483,13 @@ class ClosingPlantation(models.Model):
                 prev_tbm_move_lines = self.env['account.move.line'].search([('account_id','=',closing.plant_block_id.tbm_account_id.id),
                     ('plantation_location_id','=',closing.plant_block_id.location_id.id),
                     ('parent_state','=','posted'),
-                    ('date','<',last_year_date)])
+                    ('date','<=',last_year_date)])
                 closing.accumulated_tbm_cost_last_year = sum(prev_tbm_move_lines.mapped('balance')) if prev_tbm_move_lines else 0.0
                 if closing.date_to.month > 1:
                     prev_tbm_move_lines = self.env['account.move.line'].search([('account_id','=',closing.plant_block_id.tbm_account_id.id),
                         ('plantation_location_id','=',closing.plant_block_id.location_id.id),
                         ('parent_state','=','posted'),
+                        ('date','>',last_year_date),
                         ('date','<',closing.date_from)])
                     closing.accumulated_tbm_cost_this_year = sum(prev_tbm_move_lines.mapped('balance')) if prev_tbm_move_lines else 0.0
                 else:

@@ -157,10 +157,11 @@ class ClosingProject(models.Model):
         for closing in self:
             new_mark_project_period = 'none'
             if closing.project_id.project_tanaman:
-                if closing.date_to>=closing.project_id.harvest_date_schedule:
-                    new_mark_project_period = 'harvesting'
-                else:
-                    new_mark_project_period = 'preharvest'
+                # if closing.date_to>=closing.project_id.harvest_date_schedule:
+                #     new_mark_project_period = 'harvesting'
+                # else:
+                #     new_mark_project_period = 'preharvest'
+                new_mark_project_period = 'preharvest'
             else:
                 if closing.project_id.state=='done':
                     new_mark_project_period = 'done'
@@ -258,6 +259,7 @@ class ClosingProject(models.Model):
                 v_existing_move_id integer;
                 sums_deferred_aml record;
                 v_accumulated_cost numeric := 0.0;
+                v_residual_amt := 0.0,
             BEGIN
                 select date_from from closing_project where id=p_closing_project_id INTO v_closing_project_date_from;
                 select date_to from closing_project where id=p_closing_project_id INTO v_closing_project_date_to;
@@ -318,7 +320,9 @@ class ClosingProject(models.Model):
                                 sub.plantation_src_journal_id
                 LOOP
                     -- v_accumulated_cost := v_accumulated_cost + sums_cost_aml.accumulated_cost;
-
+                    v_residual_amt := sums_deferred_aml.deferred_cost + sums_deferred_aml.new_deferred_cost - sums_deferred_aml.accumulated_cost;
+                
+                    IF v_residual_amt != 0 THEN
                     INSERT INTO closing_project_plant_deferred
                             (id, closing_id,  
                             plantation_location_type_id, plantation_location_id, 
@@ -338,6 +342,8 @@ class ClosingProject(models.Model):
                             sums_deferred_aml.accumulated_cost,
                             (sums_deferred_aml.deferred_cost + sums_deferred_aml.new_deferred_cost - sums_deferred_aml.accumulated_cost),
                             p_user_id, p_user_id, (now() at time zone 'UTC'), (now() at time zone 'UTC'));
+                    END IF;
+                            
                 END LOOP;
 
                 UPDATE closing_project SET 
@@ -395,26 +401,31 @@ class ClosingProject(models.Model):
             if closing.project_id.project_tanaman and closing.project_id.plant_block_id:
                 closing.cost_line_ids.unlink()
                 closing.deferred_cost_line_ids.unlink()
-                if closing.project_id.harvest_date_schedule <= closing.date_from:
-                    # Only Cost to be distributed as Cost
-                    date_from = closing.date_from.strftime('%Y-%m-%d')
-                    date_to = closing.project_id.date_finished.strftime('%Y-%m-%d') if closing.project_id.date_finished<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
-                    self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
-                elif closing.project_id.harvest_date_schedule > closing.date_to:
-                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> lebih besar", closing.id)
-                    # Only Cost to be Accrued
-                    date_from = closing.date_from.strftime('%Y-%m-%d')
-                    date_to = closing.date_to.strftime('%Y-%m-%d')
-                    self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), true, {self.env.user.id}, {self.env.company.id})")
-                else:
-                    # Possible Cost to be Accrued
-                    date_from1 = closing.date_from.strftime('%Y-%m-%d') if closing.project_id.date_start<closing.date_from else closing.project_id.date_start.strftime('%Y-%m-%d')
-                    date_to1 = (closing.project_id.harvest_date_schedule - relativedelta(days=1)).strftime('%Y-%m-%d')
-                    self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from1}','YYYY-MM-DD'), to_date('{date_to1}','YYYY-MM-DD'), true, {self.env.user.id}, {self.env.company.id})")
+                # if closing.project_id.harvest_date_schedule <= closing.date_from:
+                #     # Only Cost to be distributed as Cost
+                #     date_from = closing.date_from.strftime('%Y-%m-%d')
+                #     date_to = closing.project_id.date_finished.strftime('%Y-%m-%d') if closing.project_id.date_finished<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
+                #     self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
+                # elif closing.project_id.harvest_date_schedule > closing.date_to:
+                #     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> lebih besar", closing.id)
+                #     # Only Cost to be Accrued
+                #     date_from = closing.date_from.strftime('%Y-%m-%d')
+                #     date_to = closing.date_to.strftime('%Y-%m-%d')
+                #     self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), true, {self.env.user.id}, {self.env.company.id})")
+                # else:
+                #     # Possible Cost to be Accrued
+                #     date_from1 = closing.date_from.strftime('%Y-%m-%d') if closing.project_id.date_start<closing.date_from else closing.project_id.date_start.strftime('%Y-%m-%d')
+                #     date_to1 = (closing.project_id.harvest_date_schedule - relativedelta(days=1)).strftime('%Y-%m-%d')
+                #     self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from1}','YYYY-MM-DD'), to_date('{date_to1}','YYYY-MM-DD'), true, {self.env.user.id}, {self.env.company.id})")
                     
-                    date_from2 = closing.project_id.harvest_date_schedule.strftime('%Y-%m-%d')
-                    date_to2 = closing.project_id.date_finished.strftime('%Y-%m-%d') if closing.project_id.date_finished<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
-                    self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from2}','YYYY-MM-DD'), to_date('{date_to2}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
+                #     date_from2 = closing.project_id.harvest_date_schedule.strftime('%Y-%m-%d')
+                #     date_to2 = closing.project_id.date_finished.strftime('%Y-%m-%d') if closing.project_id.date_finished<=closing.date_to else closing.date_to.strftime('%Y-%m-%d')
+                #     self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from2}','YYYY-MM-DD'), to_date('{date_to2}','YYYY-MM-DD'), false, {self.env.user.id}, {self.env.company.id})")
+
+                # Only Cost to be Accrued
+                date_from = closing.date_from.strftime('%Y-%m-%d')
+                date_to = closing.date_to.strftime('%Y-%m-%d')
+                self.env.cr.execute(f"select procedure_summerize_project_plant_cost({closing.id}, {closing.project_id.id}, to_date('{date_from}','YYYY-MM-DD'), to_date('{date_to}','YYYY-MM-DD'), true, {self.env.user.id}, {self.env.company.id})")
 
                 self.env.cr.execute(f"select procedure_summerize_project_deferred_cost({closing.id}, {closing.project_id.id}, {self.env.user.id}, {self.env.company.id})")
                 closing.total_cost = sum(closing.cost_line_ids.mapped('total_cost')) if closing.cost_line_ids else 0.0

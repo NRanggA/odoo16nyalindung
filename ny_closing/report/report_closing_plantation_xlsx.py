@@ -409,9 +409,9 @@ class PlantationClosingReportExcel(models.AbstractModel):
         worksheet.merge_range(next_row-1, 3, next_row-1, 7, 'Harga Perolehan' , wbf['header'])
         worksheet.merge_range(next_row, 3, next_row+1, 3, 'Saldo Akhir\nTahun Lalu' , wbf['header'])
         worksheet.merge_range(next_row, 4, next_row, 6, 'Tahun Berjalan' , wbf['header'])
-        worksheet.write(next_row+1, 4, 'Saldo Awal' , wbf['header'])
+        worksheet.write(next_row+1, 4, 's.d Bulan Lalu' , wbf['header'])
         worksheet.write(next_row+1, 5, 'Bulan Ini' , wbf['header'])
-        worksheet.write(next_row+1, 6, 'Penyesuaian' , wbf['header'])
+        worksheet.write(next_row+1, 6, 'Penyesuaian di Bulan ini' , wbf['header'])
         # worksheet.write(next_row+1, 7, 'Saldo Akhir' , wbf['header'])
         worksheet.merge_range(next_row, 7, next_row+1, 7, 'Saldo Akhir' , wbf['header'])
 
