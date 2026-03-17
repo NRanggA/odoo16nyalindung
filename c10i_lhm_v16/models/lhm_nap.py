@@ -1441,7 +1441,20 @@ class TimbanganPabrik(models.Model):
     stock_move_ids     = fields.One2many('stock.move', 'nap_tim_pabrik_id',string='Stock Move', ondelete='cascade')
     timbangan_kebun_id = fields.Many2one('timbangan.kebun', string="Data Timbangan Kebun", ondelete='cascade')
     qty_received       = fields.Float(string='Quantity Received', compute='_compute_stock_move_qty', store=True)
+    diff_warning = fields.Char(compute='_compute_warning', store=True, string="Reminder")
     # drc_line_ids       = fields.One2many('lhm.drc.line', 'timbangan_pabrik_id', string="DRC Lines", ondelete="cascade")
+
+    @api.depends('timbangan_kebun_id','timbangan_kebun_id.product_qty', 'product_qty')
+    def _compute_warning(self):
+        for l in self:
+            diff_warning = ""
+            if l.timbangan_kebun_id.product_qty > l.product_qty:
+                diff_warning = "Penerimaan Kebun Lebih Besar dari Pabrik"
+            elif l.timbangan_kebun_id.product_qty < l.product_qty:
+                diff_warning = "Penerimaan Pabrik Lebih Besar dari Kebun"
+            else:
+                diff_warning = ""
+            l.diff_warning = diff_warning
 
     # Relasi ke NAP Header
     lhm_nap_id         = fields.Many2one('lhm.nap', string='LHM NAP')

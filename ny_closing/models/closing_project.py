@@ -259,7 +259,7 @@ class ClosingProject(models.Model):
                 v_existing_move_id integer;
                 sums_deferred_aml record;
                 v_accumulated_cost numeric := 0.0;
-                v_residual_amt := 0.0,
+                v_residual_amt numeric := 0.0;
             BEGIN
                 select date_from from closing_project where id=p_closing_project_id INTO v_closing_project_date_from;
                 select date_to from closing_project where id=p_closing_project_id INTO v_closing_project_date_to;

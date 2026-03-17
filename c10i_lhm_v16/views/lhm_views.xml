@@ -1950,6 +1950,8 @@
                                         <!-- <field name="lokasi_tp"/> -->
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
+                                        <field name="diff_warning" 
+                                            widget="badge" decoration-danger="1"/>
                                         <field name="uom_id"/>
                                         <field name="tgl_terima"/>
                                         <field name="drc" invisible="1"/>
