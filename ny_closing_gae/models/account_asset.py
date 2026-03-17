@@ -84,8 +84,8 @@ class AccountAssetDepreciationLine(models.Model):
                         # 'account_id': block.activity_id.account_id.id,
                         'account_id': line.asset_id.gae_direct_activity_id.account_id.id,
 
-                        'credit': 0.0 if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else -dest_amount,
                         'debit': dest_amount if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                        'credit': 0.0 if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else -dest_amount,
                         'partner_id': line.asset_id.partner_id.id,
                         'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
                         'amount_currency': dest_amount,
@@ -93,9 +93,9 @@ class AccountAssetDepreciationLine(models.Model):
                     move_vals['line_ids'].append((0,0, move_line_2))
                     count_block -= 1
                     block_remaining_amt -= dest_amount
-                    print(":::::::::::::::::::::", asset_id.name, move_line_2['debit'], move_line_2['credit'])
+                    # print(":::::::::::::::::::::", asset_id.name, move_line_2['debit'], move_line_2['credit'])
                 
-                print(".......SISA UNTUK TM........", block_remaining_amt, depr_tm_amount)
+                # print(".......SISA UNTUK TM........", block_remaining_amt, depr_tm_amount)
                 if depr_tm_amount:
                     move_line_3 = {
                         'name': asset_name,
@@ -103,13 +103,13 @@ class AccountAssetDepreciationLine(models.Model):
                         # 'account_id': category_id.account_depreciation_expense_id.id,
                         'account_id': line.asset_id.gae_direct_activity_id.cost_account_id.id,
                         
-                        'credit': 0.0 if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else -depr_tm_amount,
                         'debit': depr_tm_amount if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                        'credit': 0.0 if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else -depr_tm_amount,
                         'partner_id': line.asset_id.partner_id.id,
                         'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
-                        'amount_currency': dest_amount,
+                        'amount_currency': depr_tm_amount,
                     }
-                    print(":::::::::::::::::::::::::", asset_id.name, move_line_3['debit'], move_line_3['credit'])
+                    # print(":::::::::::::::::::::::::", asset_id.name, move_line_3['debit'], move_line_3['credit'])
                     move_vals['line_ids'].append((0,0, move_line_3))
         elif asset_id.gae_dest_type=='indirect' and  asset_id.gae_distribution_id:
             move_line_1 = {
@@ -120,7 +120,7 @@ class AccountAssetDepreciationLine(models.Model):
                 'partner_id': line.asset_id.partner_id.id,
                 'analytic_distribution': analytic_distribution,
                 'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
-                'amount_currency': - 1.0 * line.amount
+                'amount_currency': - 1.0 * amount
             }
             move_vals['line_ids'] = [(0,0, move_line_1)]
 
@@ -137,8 +137,8 @@ class AccountAssetDepreciationLine(models.Model):
                     'plantation_varieties_id': dist_plan.varieties_id.id,
                     # 'account_id': category_id.account_depreciation_expense_id.id,
                     'account_id': line.asset_id.gae_expense_depre_account_id.id,
-                    'credit': 0.0 if float_compare(amount, 0.0, precision_digits=prec) > 0 else -amount,
-                    'debit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                    'debit': dist_amount if float_compare(dist_amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                    'credit': 0.0 if float_compare(dist_amount, 0.0, precision_digits=prec) > 0 else -dist_amount,
                     'partner_id': line.asset_id.partner_id.id,
                     # 'analytic_distribution': analytic_distribution,
                     'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
