@@ -125,7 +125,7 @@ class AccountAssetDepreciationLine(models.Model):
             move_vals['line_ids'] = [(0,0, move_line_1)]
 
             remaining_amount = amount
-            last_line = len(asset_id.gae_distribution_id.line_ids)
+            last_line = len(asset_id.gae_distribution_id.line_ids) - 1
             for dist_plan in asset_id.gae_distribution_id.line_ids:
                 if not last_line:
                     dist_amount = remaining_amount
