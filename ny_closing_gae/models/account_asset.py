@@ -130,7 +130,7 @@ class AccountAssetDepreciationLine(models.Model):
                 if not last_line:
                     dist_amount = remaining_amount
                 else:
-                    dist_amount = amount * dist_plan.distribution_percentage / 100
+                    dist_amount = round(amount * dist_plan.distribution_percentage / 100, 2)
                 
                 move_line_2 = {
                     'name': asset_name,
