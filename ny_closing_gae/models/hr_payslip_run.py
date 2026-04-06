@@ -20,12 +20,12 @@ class HrPayslipRun(models.Model):
             if cml.gae_to_location and cml.gae_to_location_ids:
                 block_tanams = self.env['lhm.plant.block'].search([('location_id','=',cml.gae_to_location_ids.ids)])
                 remaining_cost = cml.debit_amount
-                len_block = len(block_tanams.filtered(lambda l: l.planted>0).ids)
+                len_block = len(block_tanams.filtered(lambda l: l.planted>0).ids) - 1
                 total_ha = sum(block_tanams.filtered(lambda l: l.planted>0).mapped('planted'))
                 tm_per_varieaties = {}
                 for block_planted in block_tanams.filtered(lambda l: l.planted>0):
                     if not len_block:
-                        dr_amount - remaining_cost
+                        dr_amount = remaining_cost
                     else:
                         dr_amount = round(cml.debit_amount * block_planted.planted / total_ha,2)
                     if block_planted.status == 'tm':
@@ -68,10 +68,10 @@ class HrPayslipRun(models.Model):
                     distributed_cm_to_add.append(vals_to_add)
             elif cml.gae_distribution_id:
                 remaining_cost = cml.debit_amount
-                len_dist = len(cml.gae_distribution_id.line_ids.ids)
+                len_dist = len(cml.gae_distribution_id.line_ids.ids) - 1
                 for dist_plan in cml.gae_distribution_id.line_ids:
                     if not len_dist:
-                        dr_amount - remaining_cost
+                        dr_amount = remaining_cost
                     else:
                         dr_amount = cml.debit_amount * dist_plan.distribution_percentage / 100.0
                     distributed_cm_to_add.append({
