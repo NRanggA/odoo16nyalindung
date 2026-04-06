@@ -72,8 +72,38 @@ class ClosingProcess(models.Model):
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
-
+    
+    SELECTION = [('draft','New'),
+        ('running_workshop', 'Running Workshop'),
+        ('running_vehicle', 'Running Vehicle'),
+        ('running_machine', 'Running Machine'),
+        ('closing_laboratory', 'Closing Laboratory'),
+        ('closing_project', 'Closing Project'),
+        ('closing_nursery', 'Closing Nursery'),
+        ('closing_gae', 'Closing GAE'),
+        ('closing_plantation', 'Closing Plantation'),
+        ('closing_production', 'Closing Production'),
+        ('done', 'Done'),
+        ('cancel', 'Cancel'),
+    ]
+    
     def button_back(self):
+        selection_key = list(map(lambda x: x[0], self.SELECTION))
         for rec in self:
-            if rec.state=='closing_gae':
+            index_state = selection_key.index(rec.state)
+            if rec.state=='closing_laboratory':
+                rec.closing_laboratory_ids.action_cancel()
+            elif rec.state=='closing_project':
+                rec.closing_project_ids.action_cancel()
+            elif rec.state=='closing_nursery':
+                rec.closing_nursery_ids.action_cancel()
+            elif rec.state=='closing_gae':
                 rec.closing_gae_ids.action_cancel()
+            elif rec.state=='closing_plantation':
+                rec.closing_plantation_ids.action_cancel()
+            elif rec.state=='closing_production':
+                rec.closing_plantation_ids.action_cancel()
+            
+            if index_state:
+                rec.write({'state': selection_key[index_state-1],
+                    f"mark_{selection_key[index_state-1]}_is_done": False})
