@@ -24,6 +24,7 @@ class HrPayslipRun(models.Model):
                 total_ha = sum(block_tanams.filtered(lambda l: l.planted>0).mapped('planted'))
                 tm_per_varieaties = {}
                 for block_planted in block_tanams.filtered(lambda l: l.planted>0):
+                        # .sorted(key=lambda r: r.status):
                     if not len_block:
                         dr_amount = remaining_cost
                     else:
@@ -32,6 +33,8 @@ class HrPayslipRun(models.Model):
                         if block_planted.varieties_id.id not in tm_per_varieaties:
                             tm_per_varieaties.update({block_planted.varieties_id.id: 0.0})
                         tm_per_varieaties[block_planted.varieties_id.id] += dr_amount
+                        remaining_cost -= dr_amount
+                        len_block -= 1
                         continue
                     vals_to_add = {
                         'payslip_line_id': cml.payslip_line_id.id,
