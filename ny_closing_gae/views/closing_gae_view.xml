@@ -21,7 +21,7 @@
                         <page name="line" string="Lines">
                             <field name="line_ids">
                                 <tree>
-                                    <field name="plantation_varieties_id" />
+                                    <!-- <field name="plantation_varieties_id" /> -->
                                     <field name="account_id" />
                                     <field name="amount" sum="Total"/>
                                     <button name="action_view_move_lines" string="View Journals" type="object" class="btn-info" icon="fa-search"/>
