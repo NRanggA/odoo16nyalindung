@@ -6,6 +6,10 @@
         <field name="model">closing.gae</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="create_account_move" string="Create Closing Entries" type="object" 
+                        class="oe_highlight"/>
+                </header>
                 <sheet>
                     <group>
                         <group>

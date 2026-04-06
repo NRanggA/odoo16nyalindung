@@ -147,7 +147,7 @@
                                 </tree>
                             </field>
                         </page>
-                        <page name="ripening" string="Ripening Location" attrs="{'invisible': [('ripening_incoming_qty','=',0),('ripening_outgoing_qty','=',0)]}">
+                        <page name="ripening" string="Ripening Location" attrs="{'invisible': [('ripening_incoming_qty','=',0),('ripening_outgoing_qty','=',0),('ripening_closing_qty','=',0)]}">
                             <table class="table table-sm table-bordered table-hover" style="width: 80%">
                                 <thead class="thead-light">
                                     <tr>
@@ -197,6 +197,13 @@
                                         <td style="text-align: right;"><field name="ripening_outgoing_qty"/></td>
                                         <td></td>
                                         <td style="text-align: right;"><field name="ripening_outgoing_value"/></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Adjustment</td>
+                                        <td style="text-align: right;"><field name="ripening_adjustment_qty"/></td>
+                                        <td></td>
+                                        <td style="text-align: right;"><field name="ripening_adjustment_value"/></td>
                                         <td></td>
                                     </tr>
                                     <tr>
@@ -552,6 +559,8 @@
                 <field name="new_cost_price_ripening" optional="hide" />
                 <field name="ripening_outgoing_qty" sum="ripening_outgoing_qty" />
                 <field name="ripening_outgoing_value" sum="ripening_outgoing_value" optional="hide"/>
+                <field name="ripening_adjustment_qty" sum="ripening_adjustment_qty" />
+                <field name="ripening_adjustment_value" sum="ripening_adjustment_value" optional="hide"/>
                 <!-- <field name="ripening_scrap_qty" sum="ripening_scrap_qty" />
                 <field name="ripening_scrap_value" sum="ripening_scrap_value" optional="hide"/> -->
                 <!-- <field name="adjustment_qty" sum="adjustment_qty" />

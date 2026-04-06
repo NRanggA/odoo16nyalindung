@@ -130,6 +130,9 @@ class ClosingProductionFinishGood(models.Model):
 
     ripening_scrap_qty = fields.Float(string='Scrap Ripening Qty')
     ripening_scrap_value = fields.Float(compute='_compute_outgoing_ripening_value', store=True, string ='Scrap Value')
+
+    ripening_adjustment_qty = fields.Float(string='Ripening Adjustment Qty')
+    ripening_adjustment_value = fields.Float(compute='_compute_outgoing_ripening_value', store=True, string ='Adjustment Value')
     
     ripening_closing_qty = fields.Float(compute='_compute_closing_ripening', store=True, string='Closing Ripening Qty')
     ripening_closing_value = fields.Float(compute='_compute_closing_ripening', store=True, string='Closing Ripening Value')
@@ -220,19 +223,21 @@ class ClosingProductionFinishGood(models.Model):
             line.ripening_onhand_value = line.ripening_opening_value + line.ripening_incoming_value + line.ripening_cost
             line.new_cost_price_ripening = line.ripening_onhand_value/line.ripening_onhand_qty if line.ripening_onhand_qty else 0.0
 
-    @api.depends('new_cost_price_ripening', 'ripening_outgoing_qty', 'ripening_scrap_qty')
+    @api.depends('new_cost_price_ripening', 'ripening_outgoing_qty', 'ripening_adjustment_qty', 'ripening_scrap_qty')
     def _compute_outgoing_ripening_value(self):
         for line in self:
             line.ripening_outgoing_value = line.ripening_outgoing_qty * line.new_cost_price_ripening
+            line.ripening_adjustment_value = line.ripening_adjustment_qty * line.new_cost_price_ripening
             line.ripening_scrap_value = line.ripening_scrap_qty * line.new_cost_price_ripening
 
     @api.depends('ripening_onhand_qty', 'ripening_onhand_value', 
             'ripening_outgoing_qty', 'ripening_outgoing_value',
+            'ripening_adjustment_qty', 'ripening_adjustment_value',
             'ripening_scrap_qty', 'ripening_scrap_value')
     def _compute_closing_ripening(self):
         for line in self:
-            line.ripening_closing_qty = line.ripening_onhand_qty - line.ripening_outgoing_qty - line.ripening_scrap_qty
-            line.ripening_closing_value = line.ripening_onhand_value - line.ripening_outgoing_value - line.ripening_scrap_value
+            line.ripening_closing_qty = line.ripening_onhand_qty - line.ripening_outgoing_qty - line.ripening_adjustment_qty - line.ripening_scrap_qty
+            line.ripening_closing_value = line.ripening_onhand_value - line.ripening_outgoing_value - line.ripening_adjustment_value - line.ripening_scrap_value
 
     def _help_compute_plantation_cost(self):
         self.ensure_one()
@@ -2663,6 +2668,7 @@ class ClosingProduction(models.Model):
             }
             check_bal += vals_dest['debit'] - vals_dest['credit']
             # print('................vals_dest', line.product_id.name, vals_dest['debit'], vals_dest['credit'])
+            # print(">>>>>>>>>>>>>>>>>", check_bal)
             move_lines_production.append((0,0,vals_dest))
 
             # 2. Journal Transfer to Ripening
@@ -2749,6 +2755,7 @@ class ClosingProduction(models.Model):
                 })
                 check_bal += vals_dest2['debit'] - vals_dest2['credit']
                 # print('................vals_dest2', line.product_id.name, vals_dest2['debit'], vals_dest2['credit'])
+                # print(">>>>>>>>>>>>>>>>>", check_bal)
                 move_lines_production2.append((0,0,vals_dest2))
             
             # 6. Journal Cost of Goods Sold (COGS > Inventory) from Ripening Location
@@ -2764,6 +2771,29 @@ class ClosingProduction(models.Model):
                     'product_id': line.product_id.id,
                     'debit': round(line.ripening_outgoing_value, 2) if line.ripening_outgoing_value>0 else 0.0,
                     'credit': round(abs(line.ripening_outgoing_value), 2) if line.ripening_outgoing_value<0 else 0.0,
+                }
+                move_lines_cogs.append((0, 0, vals_cogs2))
+                vals_src5 = vals_cogs2.copy()
+                vals_src5.update({
+                    'name': f"Inventory to Cogs",
+                    'account_id': line.inventory_ripening_account_id.id,
+                    'debit': vals_cogs2['credit'],
+                    'credit': vals_cogs2['debit'],
+                })
+                move_lines_cogs.append((0, 0, vals_src5))
+            
+            if line.ripening_adjustment_qty or line.ripening_adjustment_value:
+                vals_cogs2 = {
+                    'name': f"Ripening Adjustment {line.product_id.name}",
+                    'plantation_location_type_id': False,
+                    'plantation_varieties_id': varieties.id,
+                    'plantation_location_id': False,
+                    'plantation_activity_id': False,
+                    'plantation_src_journal_id': False,
+                    'account_id': line.adjustment_account_id.id,
+                    'product_id': line.product_id.id,
+                    'debit': round(line.ripening_adjustment_value, 2) if line.ripening_adjustment_value>0 else 0.0,
+                    'credit': round(abs(line.ripening_adjustment_value), 2) if line.ripening_adjustment_value<0 else 0.0,
                 }
                 move_lines_cogs.append((0, 0, vals_cogs2))
                 vals_src5 = vals_cogs2.copy()
@@ -2887,6 +2917,7 @@ class ClosingProduction(models.Model):
             }
             check_bal += vals_src['debit'] - vals_src['credit']
             # print('................vals_src', vals_src['debit'], vals_src['credit'])
+            # print(">>>>>>>>>>>>>>>>>", check_bal)
             move_lines_production.append((0,0,vals_src))
         
         for ripe_cost in self.mrp_cost_ids:
@@ -2903,12 +2934,14 @@ class ClosingProduction(models.Model):
             }
             check_bal += round(vals_src2['debit'] - vals_src2['credit'], 2)
             # print('................vals_src2', vals_src2['debit'], vals_src2['credit'])
+            # print(">>>>>>>>>>>>>>>>>", check_bal)
             move_lines_production2.append((0,0,vals_src2))
 
         move_lines_production = [line for line in move_lines_production if line[2].get('account_id')]
         move_lines_production2 = [line for line in move_lines_production2 if line[2].get('account_id')]
         move_lines_cogs = [line for line in move_lines_cogs if line[2].get('account_id')]
 
+        # print(">>>>>>>>>>>>>>>>>", check_bal)
         if check_bal and check_bal>=-1.0 and check_bal<=1.0:
             move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
 

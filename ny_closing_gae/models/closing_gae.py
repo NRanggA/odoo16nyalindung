@@ -51,31 +51,14 @@ class ClosingGae(models.Model):
             total_amount = sum(move_lines.mapped('balance'))
             for account in move_lines.mapped('account_id'):
                 account_lines = move_lines.filtered(lambda l: l.account_id == account)
-                total_amount = sum(account_lines.mapped('balance'))
-                # remaining_amount = total_amount
-                # last_line = len(closing.gae_distribution_id.line_ids)
-                # for dist_plan in closing.gae_distribution_id.line_ids:
-                    # if not last_line:
-                    #     dist_amount = remaining_amount
-                    # else:
-                    #     dist_amount = total_amount * dist_plan.distribution_percentage / 100
-                    # to_create.append((0, 0, {
-                    #     # 'plantation_varieties_id': dist_plan.varieties_id.id,
-                    #     'account_id': account.id,
-                    #     'amount': dist_amount,
-                    # }))
-                    # last_line -= 1
-                    # remaining_amount -= dist_amount
+                amount = sum(account_lines.mapped('balance'))
                 to_create.append((0, 0, {
                     # 'plantation_varieties_id': False,
                     'account_id': account.id,
-                    'amount': total_amount,
+                    'amount': amount,
                 }))
             closing.line_ids = to_create
             closing.amount = total_amount
-    
-    # def summarize_move_line(self):
-    #     pass
     
     def create_account_move(self):
         closing_journal = self.env.ref('ny_closing_gae.plantation_closing_gae_journal')
@@ -91,10 +74,9 @@ class ClosingGae(models.Model):
                 ('date', '>=', closing.date_from),
                 ('date', '<=', closing.date_to),
                 ('gae_distribution_id', '=', closing.gae_distribution_id.id),
-                # ('account_id', '=', line.account_id.id),
                 ('parent_state', '=', 'posted'),
             ])
-            # for line in closing.line_ids:
+            
             for source_move in source_move_lines.move_id:
                 for source_line in source_move.line_ids.filtered(lambda l: l.gae_distribution_id):
                     company_currency = source_line.company_id.currency_id
@@ -109,7 +91,9 @@ class ClosingGae(models.Model):
                             dist_amount = remaining_amount
                         else:
                             dist_amount = round(source_line.balance * dist_plan.distribution_percentage / 100, 2)
-                        
+                        if not dist_amount:
+                            last_line -= 1
+                            continue
                         move_line_2 = {
                             'name': 'Closing GAE from ' + source_move.name,
                             'plantation_varieties_id': dist_plan.varieties_id.id,
@@ -137,10 +121,16 @@ class ClosingGae(models.Model):
                     }
                     move_lines.append((0,0, move_line_1))
             move_vals['line_ids'] = move_lines
-            move = self.env['account.move'].create(move_vals)
+            if closing.closing_move_id:
+                closing.closing_move_id.button_draft()
+                closing.closing_move_id.write(move_vals)
+                move = closing.closing_move_id
+            else:
+                move = self.env['account.move'].create(move_vals)
 
             closing.write({'closing_move_id': move.id})
-    
+            move._post(soft=False)
+
     def action_cancel(self):
         for closing in self:
             if closing.closing_move_id:

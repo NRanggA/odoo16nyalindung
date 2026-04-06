@@ -38,7 +38,7 @@
                 <attribute name="attrs">{'invisible': [('state','not in',['closing_nursery','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
             </page>
             <page name="closing_plantation" position="before">
-                <page name="closing_gae" string="Closing GAE">
+                <page name="closing_gae" string="Closing GAE" attrs="{'invisible': [('state','not in',['closing_gae','closing_plantation','closing_production','done'])]}">
                     <group>
                         <group><field name="mark_closing_gae_is_done" string="Mark as Done"/></group>
                     </group>
