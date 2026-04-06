@@ -21,21 +21,22 @@ class ClosingProcess(models.Model):
                 ('date_from', '=', rec.date_from),
                 ('date_to', '=', rec.date_to),
             ], limit=1)
-            domain = [('gae_distribution_id', '!=', False),('date', '>=', rec.date_from), ('date', '<=', rec.date_to), ('parent_state', '=', 'posted')]
+            domain = [('gae_distribution_id', '!=', False),('date', '>=', rec.date_from), 
+                      ('date', '<=', rec.date_to), ('parent_state', '=', 'posted')]
             if existing_gae:
                 if len(existing_gae.ids)==1:
                     domain.append(('gae_distribution_id', '=', existing_gae.gae_distribution_id.id))
                 else:
                     domain.append(('gae_distribution_id', 'not in', existing_gae.gae_distribution_id.ids))
-            
             account_move_lines = self.env['account.move.line'].search(domain)
             to_create = []
             for line in account_move_lines.mapped('gae_distribution_id'):
-                to_create.append((0, 0, {
+                to_create.append({
+                    'closing_process_id': rec.id,
                     'date_from': rec.date_from,
                     'date_to': rec.date_to,
                     'gae_distribution_id': line.id,
-                }))
+                })
             if to_create:
                 self.env['closing.gae'].create(to_create)
 

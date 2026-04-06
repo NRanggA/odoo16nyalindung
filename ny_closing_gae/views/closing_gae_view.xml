@@ -15,6 +15,7 @@
                         <group>
                             <field name="gae_distribution_id" />
                             <button name="action_view_move_lines" string="View Journals" type="object" class="btn-info" icon="fa-search"/>
+                            <field name="closing_move_id" />
                         </group>
                     </group>
                     <notebook>

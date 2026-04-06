@@ -16,6 +16,9 @@
             <button name="button_continue_to_closing_nursery" position="after">
                 <button string="Continue" name="button_continue_to_closing_gae" type="object" class="oe_highlight" states="closing_nursery"/>
             </button>
+            <button name="button_back" position="attributes">
+                <attribute name="states">running_vehicle,running_machine,closing_laboratory,closing_project,closing_nursery,closing_gae,closing_plantation,closing_production</attribute>
+            </button>
             <page name="running_workshop" position="attributes">
                 <attribute name="attrs">{'invisible': [('state','not in',['running_workshop','running_vehicle','running_machine','closing_laboratory','closing_project','closing_nursery','closing_laboratory','closing_gae','closing_plantation','closing_production','done'])]}</attribute>
             </page>
@@ -36,6 +39,9 @@
             </page>
             <page name="closing_plantation" position="before">
                 <page name="closing_gae" string="Closing GAE">
+                    <group>
+                        <group><field name="mark_closing_gae_is_done" string="Mark as Done"/></group>
+                    </group>
                     <field name="closing_gae_ids" string="Plantation" attrs="{'invisible': [('state','not in',['closing_gae','closing_plantation','closing_production','done'])]}">>
                         <tree>
                             <field name="date_from" />

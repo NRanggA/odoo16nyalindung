@@ -136,6 +136,7 @@ class ClosingGae(models.Model):
                         'amount_currency': - 1.0 * source_line.balance,
                     }
                     move_lines.append((0,0, move_line_1))
+            move_vals['line_ids'] = move_lines
             move = self.env['account.move'].create(move_vals)
 
             closing.write({'closing_move_id': move.id})
