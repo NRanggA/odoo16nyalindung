@@ -111,7 +111,7 @@ class ClosingGae(models.Model):
                     last_line -= 1
                     remaining_amount -= dist_amount
                 move_line_1 = {
-                    'name': 'Closing GAE from ' + source_move.name,
+                    'name': 'Closing GAE from ' + source_line.move_id.name,
                     'account_id': source_line.account_id.id,
                     'debit': 0.0 if float_compare(source_line.balance, 0.0, precision_digits=prec) > 0 else -source_line.balance,
                     'credit': source_line.balance if float_compare(source_line.balance, 0.0, precision_digits=prec) > 0 else 0.0,
