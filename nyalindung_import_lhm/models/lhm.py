@@ -286,10 +286,6 @@ class lhm_transaction(models.Model):
                         ),
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                         'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
-                        
-                        'drc_latex' : handle_nan(row.get('DRC SHEET', ''), 0),
-                        'drc_lump' : handle_nan(row.get('DRC COMPO', ''), 0),
-                        'do_lansir': handle_nan(row.get('LANSIR', ''), False),
                     }))
                     processed_employees[employee_nik] = True
                 else:
@@ -375,10 +371,6 @@ class lhm_transaction(models.Model):
                         ),
                         'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                         'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
-
-                        'drc_latex' : handle_nan(row.get('DRC SHEET', ''), 0),
-                        'drc_lump' : handle_nan(row.get('DRC COMPO', ''), 0),
-                        'do_lansir': handle_nan(row.get('LANSIR', ''), False),
                     }))
             else:
                 # I
@@ -433,10 +425,6 @@ class lhm_transaction(models.Model):
                     ),
                     'hasil_2'           : handle_nan(row.get('HASIL 2', ''), 0),
                     'satuan_2'          : activity.uom2_id.id if activity and activity.uom2_id else False,
-
-                    'drc_latex' : handle_nan(row.get('DRC SHEET', ''), 0),
-                    'drc_lump' : handle_nan(row.get('DRC COMPO', ''), 0),
-                    'do_lansir': handle_nan(row.get('LANSIR', ''), False),
                 }))
         
 

@@ -88,15 +88,6 @@
             <xpath expr="//field[@name='lhm_line_ids']/tree/field[@name='contract_wage_value']" position="attributes">
                 <attribute name="groups">base.group_no_one,c10i_hr_payroll.group_hr_payroll_user,ny_plantation.plantation_kepala_mandor_user</attribute>
             </xpath>
-            <xpath expr="//field[@name='lhm_line_ids']/tree/field[@name='contract_wage_value']" position="before">
-                <field name="drc_latex" />
-                <field name="drc_lump" />
-                <field name="do_lansir" />
-                <field name="upah_produksi_sheet" groups="base.group_no_one,c10i_hr_payroll.group_hr_payroll_user,ny_plantation.plantation_kepala_mandor_user" optional="hide"/>
-                <field name="upah_produksi_compo" groups="base.group_no_one,c10i_hr_payroll.group_hr_payroll_user,ny_plantation.plantation_kepala_mandor_user" optional="hide"/>
-                <field name="inst_produksi_sheet" groups="base.group_no_one,c10i_hr_payroll.group_hr_payroll_user,ny_plantation.plantation_kepala_mandor_user" optional="hide"/>
-                <field name="inst_produksi_compo" groups="base.group_no_one,c10i_hr_payroll.group_hr_payroll_user,ny_plantation.plantation_kepala_mandor_user" optional="hide"/>
-            </xpath>
         </field>
     </record>
 </odoo>
