@@ -373,10 +373,11 @@ class ClosingProject(models.Model):
         src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
         if not src_account_ids:
             raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
-        last_year_date = self.date_to - relativedelta(years=1) - relativedelta(month=12, day=31)
+        # last_year_date = self.date_to - relativedelta(years=1) - relativedelta(month=12, day=31)
+        first_date_year = self.date_to - relativedelta(month=1, day=1)
         domain = [('plantation_location_id','=',self.project_id.location_id.id),
                 ('parent_state','=','posted'),
-                ('date','<=',last_year_date)]
+                ('date','<',first_date_year)]
         if len(src_account_ids)==1:
             domain.append(('account_id','=',src_account_ids[0]))
         else:
@@ -387,9 +388,11 @@ class ClosingProject(models.Model):
         src_account_ids = self.project_id.location_id.type_id.activity_ids.account_id.ids
         if not src_account_ids:
             raise ValidationError(_(f"Could not find accounts for all related activity inside Location Type {self.plant_block_id.location_id.type_id.code}"))
+        first_date_year = self.date_to - relativedelta(month=1, day=1)
         domain = [('plantation_location_id','=',self.project_id.location_id.id),
                 ('parent_state','=','posted'),
-                ('date','<=',self.date_to)]
+                ('date','>=',first_date_year),
+                ('date','<',self.date_from)]
         if len(src_account_ids)==1:
             domain.append(('account_id','=',src_account_ids[0]))
         else:
