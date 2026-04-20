@@ -142,6 +142,23 @@ class HrPayslip(models.Model):
                 'contract_id': contract.id,
             }
             res.append(basis_premi_koreksi_attendance)
+
+            # Perubahan karena Mitra
+            # Perhitungan berbasis LHM
+            lhm_count = self.env['lhm.transaction.line'].search_count([('employee_id','=',employee_id),
+                            ('date','>=',date_from),('date','<=',date_to),
+                            ('attendance_id.code','!=','KJ'),('lhm_id.state','=','done'),
+                            '|',('hasil_1','>',0),('hasil_2','>',0)
+                            ])
+            basis_insentif_kehadiran_baru = {
+                'name': 'Basis Inst. Kehadiran dan Komunikasi',
+                'sequence': 200,
+                'code': 'HKVALID',
+                'number_of_days': lhm_count,
+                'number_of_hours': 0.0,
+                'contract_id': contract.id,
+            }
+            res.append(basis_insentif_kehadiran_baru)
         return res
 
     def action_print_report(self):
