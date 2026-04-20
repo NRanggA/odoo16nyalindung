@@ -2,6 +2,7 @@ from . import hr_foreman
 from . import hr_employee
 from . import lhm_plant_block
 from . import lhm_transaction
+from . import lhm_transaction_line
 from . import lhm_drc
 from . import lhm_nap
 from . import hr_employee_type
