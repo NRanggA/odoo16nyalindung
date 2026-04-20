@@ -17,7 +17,8 @@
     # any module necessary for this one to work correctly
     'depends': [
         'c10i_lhm_v16',
-        'mrp'
+        'mrp',
+        'report_xlsx',
     ],
 
     # always loaded
@@ -27,7 +28,11 @@
         'views/mrp_manual_consume_view.xml',
         'views/mrp_production_view.xml',
         'views/mrp_bom_views.xml',
+        
         'wizard/sheet_to_produce_view.xml',
         'wizard/wizard_action_validate_view.xml',
+        'wizard/production_report_wizard_view.xml',
+        
+        'report/report_view.xml',
     ],
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Report action for Production Order XLSX -->
+    <record id="action_report_production_order_xlsx" model="ir.actions.report">
+        <field name="name">Laporan Produksi</field>
+        <field name="model">production.report.wizard</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">ny_mrp.report_production_order_xlsx</field>
+        <field name="report_file">ny_mrp.report_production_order_xlsx</field>
+    </record>
+        <!-- <field name="print_report_name">'Laporan Produksi - %s' % (object.date_from.strftime('%d-%m-%Y') + ' s.d. ' + object.date_to.strftime('%d-%m-%Y'))</field> -->
+
+</odoo>

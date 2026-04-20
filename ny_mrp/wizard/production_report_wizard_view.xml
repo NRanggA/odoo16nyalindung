@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View for Production Report Wizard -->
+    <record id="view_production_report_wizard_form" model="ir.ui.view">
+        <field name="name">production.report.wizard.form</field>
+        <field name="model">production.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Laporan Produksi">
+                <group>
+                    <group>
+                        <field name="report_type" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_report" string="Cetak Laporan" type="object" class="btn-primary"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Production Report Wizard -->
+    <record id="action_production_report_wizard" model="ir.actions.act_window">
+        <field name="name">Laporan Produksi</field>
+        <field name="res_model">production.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_production_report"
+              name="Laporan Produksi"
+              parent="mrp.menu_mrp_reporting"
+              action="action_production_report_wizard"
+              sequence="10"/>
+</odoo>

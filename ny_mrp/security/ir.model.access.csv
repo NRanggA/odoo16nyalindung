@@ -3,4 +3,5 @@ access_mrp_manual_consume_user,mrp_manual_consume user,model_mrp_manual_consume,
 access_mrp_production,mrp_production_user,model_mrp_production,mrp.group_mrp_user,1,1,1,1
 access_wizard_mrp_sheet_to_produce,wizard.mrp.sheet.to.produce,model_wizard_mrp_sheet_to_produce,mrp.group_mrp_user,1,1,1,1
 access_wizard_mrp_action_validate,wizard.action.validate,model_wizard_action_validate,mrp.group_mrp_user,1,1,1,1
+access_production_report_wizard,production.report.wizard,model_production_report_wizard,mrp.group_mrp_user,1,1,1,1
 
