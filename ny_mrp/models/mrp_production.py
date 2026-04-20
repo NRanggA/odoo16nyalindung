@@ -8,7 +8,7 @@ class MrpProduction(models.Model):
     manual_consume_ids = fields.One2many('mrp.manual.consume', 'component_consume_production_id', string='Manual Consumed')
     product_name = fields.Char('Product Name', related='product_id.name', readonly=True, store=True)
     must_have_source_mo = fields.Boolean(related='bom_id.must_have_source_mo', string='Must Have Source MO', store=True)
-    source_mo_id = fields.Many2one('mrp.production', string='Asal MO', readonly=True, help='MO asal dari mana MO ini dibuat melalui proses split atau backorder.')
+    source_mo_id = fields.Many2one('mrp.production', string='Asal MO', readonly=False, help='MO asal dari mana MO ini dibuat melalui proses split atau backorder.')
     wip_date_start = fields.Datetime(related='source_mo_id.date_finished', string='WIP Start Date', help='Tanggal mulai WIP dari MO ini.', readonly=True, store=True)
     finish_mo_ids = fields.One2many('mrp.production', 'source_mo_id', string='Akhir MO', readonly=True)
     state_mo_wip = fields.Selection([

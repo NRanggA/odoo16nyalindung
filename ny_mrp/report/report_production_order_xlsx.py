@@ -431,19 +431,19 @@ class ReportProductionOrderXlsx(models.AbstractModel):
                 status = 'Dalam Proses'
             else:
                 status = 'Belum Diproses'
-            worksheet.write(next_row, col, status, wbf['content_center'])
+            worksheet2.write(next_row, col, status, wbf['content_center'])
             col += 1
             # Tanggal Selesai
             if mo_final:
                 finish_date = max(mo_final.mapped('date_finished')).date() if mo_final else ''
-                worksheet.write(next_row, col, finish_date, wbf['content_date'])
+                worksheet2.write(next_row, col, finish_date, wbf['content_date'])
             else:
-                worksheet.write(next_row, col, '', wbf['content'])
+                worksheet2.write(next_row, col, '', wbf['content'])
             col += 1
             # Compo qty
             compo_mo = mo_final.filtered(lambda x: x.product_id.name == 'Compo')
             compo_qty = sum(compo_mo.mapped('product_qty')) if compo_mo else 0
-            worksheet.write(next_row, col, compo_qty, wbf['content_float'])
+            worksheet2.write(next_row, col, compo_qty, wbf['content_float'])
             col += 1
             # DRC (%) - Using formula: Compo / Lump
             worksheet2.write_formula(next_row, col, 
@@ -454,9 +454,9 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             if mo_final and mo.date_finished:
                 finish_date = max(mo_final.mapped('date_finished'))
                 duration = (finish_date.date() - mo.date_finished.date()).days
-                worksheet.write(next_row, col, duration, wbf['content_float'])
+                worksheet2.write(next_row, col, duration, wbf['content_float'])
             else:
-                worksheet.write(next_row, col, '', wbf['content'])
+                worksheet2.write(next_row, col, '', wbf['content'])
             next_row += 1
         
         # Write grandtotal for Lump sheet
