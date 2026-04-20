@@ -424,24 +424,39 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             worksheet2.write(next_row, col, asam_qty, wbf['content_float'])
             col += 1
             # Status
-            status = 'Selesai' if mo.state == 'done' else mo.state.title()
-            worksheet2.write(next_row, col, status, wbf['content_center'])
+            mo_final = mo.finish_mo_ids.filtered(lambda x: x.state == 'done')
+            if mo_final:
+                status = 'Selesai'
+            elif mo.finish_mo_ids:
+                status = 'Dalam Proses'
+            else:
+                status = 'Belum Diproses'
+            worksheet.write(next_row, col, status, wbf['content_center'])
             col += 1
             # Tanggal Selesai
-            finish_date = mo.date_finished.date() if mo.date_finished else ''
-            worksheet2.write(next_row, col, finish_date, wbf['content_date'])
+            if mo_final:
+                finish_date = max(mo_final.mapped('date_finished')).date() if mo_final else ''
+                worksheet.write(next_row, col, finish_date, wbf['content_date'])
+            else:
+                worksheet.write(next_row, col, '', wbf['content'])
             col += 1
-            # Compo qty (the finished product)
-            compo_qty = mo.product_qty
-            worksheet2.write(next_row, col, compo_qty, wbf['content_float'])
+            # Compo qty
+            compo_mo = mo_final.filtered(lambda x: x.product_id.name == 'Compo')
+            compo_qty = sum(compo_mo.mapped('product_qty')) if compo_mo else 0
+            worksheet.write(next_row, col, compo_qty, wbf['content_float'])
             col += 1
             # DRC (%) - Using formula: Compo / Lump
             worksheet2.write_formula(next_row, col, 
                 f"={xl_rowcol_to_cell(next_row, 7)}/{xl_rowcol_to_cell(next_row, 3)}", 
                 wbf['content_percent'])
             col += 1
-            # Durasi (Hari) - For Compo (single-stage), leave empty as there's no two-stage process
-            worksheet2.write(next_row, col, '', wbf['content'])
+            # Durasi (Hari) - only if finished
+            if mo_final and mo.date_finished:
+                finish_date = max(mo_final.mapped('date_finished'))
+                duration = (finish_date.date() - mo.date_finished.date()).days
+                worksheet.write(next_row, col, duration, wbf['content_float'])
+            else:
+                worksheet.write(next_row, col, '', wbf['content'])
             next_row += 1
         
         # Write grandtotal for Lump sheet
