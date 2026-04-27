@@ -32,6 +32,9 @@
                 <field name="nik_mandor" />
                 <field name="nik_tap_kontrol" />
             </field>
+            <field name="company_id" position="after">
+                <field name="is_sadap" invisible="1"/>
+            </field>
         </field>
     </record>
 

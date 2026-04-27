@@ -13,3 +13,14 @@ class HrForeman(models.Model):
     nik_kepala_mandor = fields.Char("NIK Kepala Mandor", related='kepala_mandor_id.no_induk', readonly=True)
     nik_mandor = fields.Char("NIK Mandor", related='mandor_id.no_induk', readonly=True)
     nik_tap_kontrol = fields.Char("NIK Tap Kontrol", related='tap_kontrol_id.no_induk', readonly=True)
+
+    is_sadap = fields.Boolean("Sadapan", compute="_compute_is_sadap", inverse="_inverse_is_sadap", store=True)
+
+    @api.depends('name')
+    def _compute_is_sadap(self):
+        for rec in self:
+            if rec.name and rec.name.lower().startswith('sadap '):
+                rec.is_sadap = True
+
+    def _inverse_is_sadap(self):
+        pass

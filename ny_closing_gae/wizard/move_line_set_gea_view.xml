@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="move_line_set_gae_view_form" model="ir.ui.view">
+        <field name="name">move.line.set.gae.view.form</field>
+        <field name="model">move.line.set.gae</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="gae_distribution_id" />
+                </group>
+                <footer>
+                    <button string="Apply" type="object" name="action_set_gae" class="btn-primary"/>
+                    or
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="move_line_set_gae_action" model="ir.actions.act_window">
+        <field name="name">Set GAE Distribution</field>
+        <field name="res_model">move.line.set.gae</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

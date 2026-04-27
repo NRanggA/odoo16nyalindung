@@ -98,7 +98,10 @@ class PlantationClosingReportExcel(models.AbstractModel):
                 SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA PANEN' THEN cpl.total_cost ELSE 0 END) as cost_manpower_panen,
                 SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_manpower_rawat,
                 SUM(CASE WHEN caj.name->>'en_US'='INVENTORY JOURNAL' THEN cpl.total_cost ELSE 0 END) as cost_material,
-                SUM(CASE WHEN caj.name->>'en_US' NOT IN ('LHM Payroll','Buku Kontraktor','INVENTORY JOURNAL') THEN cpl.total_cost ELSE 0 END) as cost_other2,
+                SUM(CASE WHEN 
+                            caj.name->>'en_US' NOT IN ('LHM Payroll','Buku Kontraktor','INVENTORY JOURNAL')
+                            or (caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'!~'BIAYA PANEN' and caa.name->>'en_US'!~'BIAYA RAWAT')
+                        THEN cpl.total_cost ELSE 0 END) as cost_other2,
                 SUM(cpl.total_cost) as total_cost
             FROM
                 closing_plantation cp
@@ -134,7 +137,10 @@ class PlantationClosingReportExcel(models.AbstractModel):
                 SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA PANEN' THEN cpl.total_cost ELSE 0 END) as cost_manpower_panen1,
                 SUM(CASE WHEN caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'~'BIAYA RAWAT' THEN cpl.total_cost ELSE 0 END) as cost_manpower_rawat1,
                 SUM(CASE WHEN caj.name->>'en_US'='INVENTORY JOURNAL' THEN cpl.total_cost ELSE 0 END) as cost_material,
-                SUM(CASE WHEN caj.name->>'en_US' NOT IN ('LHM Payroll','Buku Kontraktor','INVENTORY JOURNAL') THEN cpl.total_cost ELSE 0 END) as cost_other2,
+                SUM(CASE WHEN 
+                        caj.name->>'en_US' NOT IN ('LHM Payroll','Buku Kontraktor','INVENTORY JOURNAL') 
+                        or (caj.name->>'en_US' IN ('LHM Payroll','Buku Kontraktor') and caa.name->>'en_US'!~'BIAYA PANEN' and caa.name->>'en_US'!~'BIAYA RAWAT')
+                    THEN cpl.total_cost ELSE 0 END) as cost_other2,
                 SUM(cpl.total_cost) as total_cost1,
                 SUM(0) as cost_panen2,
                 SUM(0) as cost_rawat2,
@@ -403,9 +409,9 @@ class PlantationClosingReportExcel(models.AbstractModel):
         worksheet.merge_range(next_row-1, 3, next_row-1, 7, 'Harga Perolehan' , wbf['header'])
         worksheet.merge_range(next_row, 3, next_row+1, 3, 'Saldo Akhir\nTahun Lalu' , wbf['header'])
         worksheet.merge_range(next_row, 4, next_row, 6, 'Tahun Berjalan' , wbf['header'])
-        worksheet.write(next_row+1, 4, 'Saldo Awal' , wbf['header'])
+        worksheet.write(next_row+1, 4, 's.d Bulan Lalu' , wbf['header'])
         worksheet.write(next_row+1, 5, 'Bulan Ini' , wbf['header'])
-        worksheet.write(next_row+1, 6, 'Penyesuaian' , wbf['header'])
+        worksheet.write(next_row+1, 6, 'Penyesuaian di Bulan ini' , wbf['header'])
         # worksheet.write(next_row+1, 7, 'Saldo Akhir' , wbf['header'])
         worksheet.merge_range(next_row, 7, next_row+1, 7, 'Saldo Akhir' , wbf['header'])
 
