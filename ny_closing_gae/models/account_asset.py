@@ -93,7 +93,7 @@ class AccountAssetDepreciationLine(models.Model):
                     move_vals['line_ids'].append((0,0, move_line_2))
                     count_block -= 1
                     block_remaining_amt -= dest_amount
-                    remaining_amount -= dist_amount
+                    remaining_amount -= dest_amount
                     # print(":::::::::::::::::::::", asset_id.name, move_line_2['debit'], move_line_2['credit'])
                 
                 # print(".......SISA UNTUK TM........", block_remaining_amt, depr_tm_amount)
