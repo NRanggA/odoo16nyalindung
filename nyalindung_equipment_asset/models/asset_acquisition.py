@@ -39,6 +39,7 @@ class AssetAcquisition(models.Model):
 		return result
 	
 	def action_submit(self):
+		# print("=== MASUK ACTION_SUBMIT ===")
 		for acquisition in self:
 			# seq.name = '{}-{}/DPKS/DIT.{}/{}'.format(res.type.upper(), self.env['ir.sequence'].next_by_code('bpdpks.spp'), res.operating_unit_id.code, year)
 			if any(l.acquisition_type=='create' and not l.asset_category_id for l in acquisition.line_ids):
@@ -49,6 +50,7 @@ class AssetAcquisition(models.Model):
 			acquisition.action_done()
 
 	def action_done(self):
+		# print("=== MASUK ACTION_DONE ===")
 		for acquisition in self:
 			if any(l.acquisition_type=='create' and not l.asset_category_id for l in acquisition.line_ids):
 				raise ValidationError("Please input Asset Model for creating a new Asset.")
@@ -88,6 +90,7 @@ class AssetAcquisition(models.Model):
 									'purchase_account_values': {},
 									'asset_values': {
 										'name': f"{line.name}",
+										'code': equip.seq_no,
 										'value': price_unit,
 										'date': acquisition.date,
 										'acquisition_date': acquisition.date,
@@ -111,12 +114,14 @@ class AssetAcquisition(models.Model):
 				else:
 					for qty in range(int(line.product_qty)):
 						key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:False:{qty}"
+						equip = line.equipment_register_line_id.equipment_ids[:1]
 						if key not in dict_asset_grouped.keys():
 							first_depreciation_date = acquisition.date
 							dict_asset_grouped.update({key: {
 								'purchase_account_values': {},
 								'asset_values': {
 									'name': f"{line.name}",
+									'code': (equip and equip[0].seq_no) or False,
 									'value': price_unit,
 									'date': acquisition.date,
 									'acquisition_date': acquisition.date,
@@ -216,11 +221,13 @@ class AssetAcquisition(models.Model):
 				key_code_group = False
 				for qty in range(int(line.product_qty)):
 					key = f"{key_asset_model_id}:{key_line_group}:{key_code_group}:False:{qty}"
+					# equip = line.equipment_register_line_id.equipment_ids[:1] #KalauDibutuhkan
 					if key not in dict_asset_grouped.keys():
 						dict_asset_grouped.update({key: {
 							'purchase_account_values': {},
 							'asset_values': {
 								'name': f"{line.name}",
+								# 'code': (equip and equip[0].seq_no) or False, #KalauDibutuhkan
 								'parent_id': parent_asset.id,
 								'value': price_unit,
 								'date': acquisition.date,
@@ -281,9 +288,14 @@ class AssetAcquisition(models.Model):
 					new_move._post()
 
 				# Create Asset
-				# print(">>>>>>>>>>>", asset_vals)
+				# print("ASSET VALS:", values['asset_values'])
+				# print("VALS CODE:", asset_vals.get('code'))
 				new_asset = AccountAsset.create(asset_vals)
+				# print("AFTER CREATE:", new_asset.code)
 				new_asset.validate()
+				# print("AFTER VALIDATE:", new_asset.code)
+				# print("KEY:", key)
+				# print(stop)
 				list_assets |= new_asset
 
 			for exs_asset, values in existing_asset_dict.items():
