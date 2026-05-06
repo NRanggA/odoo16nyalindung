@@ -1386,10 +1386,25 @@ class ClosingProduction(models.Model):
             if mrp_sheet:
                 rm_moves = mrp_sheet.move_raw_ids.filtered(lambda s: s.product_id.id==product_latex.id)
                 closing.latex_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            # Pengurang MO jikalau ada Unbuild
+            unbuild_sheet = self.env['mrp.unbuild'].search([('product_id','=',sheet_product.id),
+                ('state','=','done'),
+                ('mo_id','in',mrp_sheet.ids)])
+            if unbuild_sheet:
+                rm_moves = unbuild_sheet.produce_line_ids.filtered(lambda s: s.product_id.id==product_latex.id)
+                closing.latex_wip_incoming_qty -= sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            
             mrp_compound = closing._get_mrp_inprogress_this_month(compound_product2)
             if mrp_compound:
                 rm_moves = mrp_compound.move_raw_ids.filtered(lambda s: s.product_id.id==product_lump.id)
                 closing.lump_wip_incoming_qty = sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
+            # Pengurang MO jikalau ada Unbuild
+            unbuild_compound = self.env['mrp.unbuild'].search([('product_id','=',compound_product2.id),
+                ('state','=','done'),
+                ('mo_id','in',mrp_compound.ids)])
+            if unbuild_compound:
+                rm_moves = unbuild_compound.produce_line_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+                closing.lump_wip_incoming_qty -= sum(rm_moves.mapped('product_qty')) if rm_moves else 0.0
             
             # WIP : GET MO DONE THIS MONTH
             outgoing_wip_sheet = 0
