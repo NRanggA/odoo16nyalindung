@@ -54,21 +54,26 @@ class AccountAssetDepreciationLine(models.Model):
                         continue
                     if not count_org: # Last ORG
                         org_amount = remaining_amount
+                        remaining_amount = 0.0
+                        count_org = 0
                     else:
                         org_amount = round(amount * total_ha_per_org / total_ha)
+                        remaining_amount -= org_amount
+                        count_org -= 1
                     depr_tm_amount = 0.0
                     block_remaining_amt = org_amount
-                    count_org -= 1
-                    remaining_amount -= org_amount
                     count_block = len(org.plant_block_ids.filtered(lambda b: b.planted > 0).ids) - 1
                     for block in org.plant_block_ids.filtered(lambda b: b.planted > 0).sorted(key=lambda r: r.status):
                         if not count_block: # Last Block
                             dest_amount = block_remaining_amt
+                            block_remaining_amt = 0.0
+                            count_block = 0
                         else:
                             dest_amount = round(org_amount * block.planted / total_ha_per_org, 2)
+                            block_remaining_amt -= dest_amount
+                            count_block -= 1
                         if block.status=='tm':
                             depr_tm_amount += dest_amount
-                            count_block -= 1
                             continue
                         move_line_2 = {
                             'name': asset_name,
@@ -89,8 +94,6 @@ class AccountAssetDepreciationLine(models.Model):
                             'amount_currency': dest_amount,
                         }
                         move_vals['line_ids'].append((0,0, move_line_2))
-                        block_remaining_amt -= dest_amount
-                        count_block -= 1
                     
                     if depr_tm_amount:
                         move_line_3 = {
@@ -136,8 +139,11 @@ class AccountAssetDepreciationLine(models.Model):
             for dist_plan in asset_id.gae_distribution_id.line_ids:
                 if not last_line:
                     dist_amount = remaining_amount
+                    remaining_amount = 0.0
                 else:
                     dist_amount = round(amount * dist_plan.distribution_percentage / 100, 2)
+                    remaining_amount -= dist_amount
+                    last_line -= 1
                 
                 move_line_2 = {
                     'name': asset_name,
@@ -152,6 +158,4 @@ class AccountAssetDepreciationLine(models.Model):
                     'amount_currency': dist_amount,
                 }
                 move_vals['line_ids'].append((0,0, move_line_2))
-                last_line -= 1
-                remaining_amount -= dist_amount
         return move_vals
