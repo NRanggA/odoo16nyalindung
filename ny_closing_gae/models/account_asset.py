@@ -46,72 +46,78 @@ class AccountAssetDepreciationLine(models.Model):
             remaining_amount = amount
             count_org = len(asset_id.plantation_varieties_ids.ids) - 1
             total_ha = sum(asset_id.plantation_varieties_ids.mapped('plant_block_ids.planted'))
-            for org in asset_id.plantation_varieties_ids:
-                if not total_ha:
-                    continue
-                total_ha_2 = sum(org.plant_block_ids.mapped('planted'))
-                if not count_org:
-                    org_amount = remaining_amount
-                else:
-                    org_amount = round(amount * total_ha_2 / total_ha)
-                
-                depr_tm_amount = 0.0
-                block_remaining_amt = org_amount
-                count_block = len(org.plant_block_ids.ids) - 1
-                count_org -= 1
-                for block in org.plant_block_ids.sorted(key=lambda r: r.status):
-                    if not count_block:
-                        dest_amount = block_remaining_amt
+            if total_ha:
+                for org in asset_id.plantation_varieties_ids:
+                    total_ha_per_org = sum(org.plant_block_ids.mapped('planted'))
+                    if not total_ha_per_org:
+                        count_org -= 1
+                        continue
+                    if not count_org: # Last ORG
+                        org_amount = remaining_amount
                     else:
-                        dest_amount = round(org_amount * block.planted / total_ha_2, 2)
-                    if block.status=='tm':
-                        depr_tm_amount += dest_amount
-                        count_block -= 1
-                        continue
-                    if not block.planted:
-                        count_block -= 1
-                        continue
-                    
-                    move_line_2 = {
-                        'name': asset_name,
-                        'plantation_varieties_id': block.varieties_id.id,
-                        # 'plantation_location_id': block.location_id.id,
-                        # 'account_id': block.tbm_account_id.id,
-                        'plantation_location_type_id': block.location_id.type_id.id,
-                        'plantation_location_id': block.location_id.id,
-                        # 'plantation_activity_id': block.activity_id.id,
-                        'plantation_activity_id': line.asset_id.gae_direct_activity_id.id,
-                        # 'account_id': block.activity_id.account_id.id,
-                        'account_id': line.asset_id.gae_direct_activity_id.account_id.id,
+                        org_amount = round(amount * total_ha_per_org / total_ha)
+                    depr_tm_amount = 0.0
+                    block_remaining_amt = org_amount
+                    count_org -= 1
+                    remaining_amount -= org_amount
+                    count_block = len(org.plant_block_ids.filtered(lambda b: b.planted > 0).ids) - 1
+                    for block in org.plant_block_ids.filtered(lambda b: b.planted > 0).sorted(key=lambda r: r.status):
+                        if not count_block: # Last Block
+                            dest_amount = block_remaining_amt
+                        else:
+                            dest_amount = round(org_amount * block.planted / total_ha_per_org, 2)
+                        if block.status=='tm':
+                            depr_tm_amount += dest_amount
+                            count_block -= 1
+                            continue
+                        move_line_2 = {
+                            'name': asset_name,
+                            'plantation_varieties_id': block.varieties_id.id,
+                            # 'plantation_location_id': block.location_id.id,
+                            # 'account_id': block.tbm_account_id.id,
+                            'plantation_location_type_id': block.location_id.type_id.id,
+                            'plantation_location_id': block.location_id.id,
+                            # 'plantation_activity_id': block.activity_id.id,
+                            'plantation_activity_id': line.asset_id.gae_direct_activity_id.id,
+                            # 'account_id': block.activity_id.account_id.id,
+                            'account_id': line.asset_id.gae_direct_activity_id.account_id.id,
 
-                        'debit': dest_amount if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else 0.0,
-                        'credit': 0.0 if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else -dest_amount,
-                        'partner_id': line.asset_id.partner_id.id,
-                        'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
-                        'amount_currency': dest_amount,
-                    }
-                    move_vals['line_ids'].append((0,0, move_line_2))
-                    count_block -= 1
-                    block_remaining_amt -= dest_amount
-                    remaining_amount -= dest_amount
-                    # print(":::::::::::::::::::::", asset_id.name, move_line_2['debit'], move_line_2['credit'])
-                
-                # print(".......SISA UNTUK TM........", block_remaining_amt, depr_tm_amount)
-                if depr_tm_amount:
-                    move_line_3 = {
-                        'name': asset_name,
-                        'plantation_varieties_id': block.varieties_id.id,
-                        # 'account_id': category_id.account_depreciation_expense_id.id,
-                        'account_id': line.asset_id.gae_direct_activity_id.cost_account_id.id,
-                        
-                        'debit': depr_tm_amount if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else 0.0,
-                        'credit': 0.0 if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else -depr_tm_amount,
-                        'partner_id': line.asset_id.partner_id.id,
-                        'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
-                        'amount_currency': depr_tm_amount,
-                    }
-                    # print(":::::::::::::::::::::::::", asset_id.name, move_line_3['debit'], move_line_3['credit'])
-                    move_vals['line_ids'].append((0,0, move_line_3))
+                            'debit': dest_amount if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                            'credit': 0.0 if float_compare(dest_amount, 0.0, precision_digits=prec) > 0 else -dest_amount,
+                            'partner_id': line.asset_id.partner_id.id,
+                            'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
+                            'amount_currency': dest_amount,
+                        }
+                        move_vals['line_ids'].append((0,0, move_line_2))
+                        block_remaining_amt -= dest_amount
+                        count_block -= 1
+                    
+                    if depr_tm_amount:
+                        move_line_3 = {
+                            'name': asset_name,
+                            'plantation_varieties_id': block.varieties_id.id,
+                            # 'account_id': category_id.account_depreciation_expense_id.id,
+                            'account_id': line.asset_id.gae_direct_activity_id.cost_account_id.id,
+                            
+                            'debit': depr_tm_amount if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                            'credit': 0.0 if float_compare(depr_tm_amount, 0.0, precision_digits=prec) > 0 else -depr_tm_amount,
+                            'partner_id': line.asset_id.partner_id.id,
+                            'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
+                            'amount_currency': depr_tm_amount,
+                        }
+                        move_vals['line_ids'].append((0,0, move_line_3))
+            else:
+                move_line_2 = {
+                    'name': asset_name,
+                    'account_id': line.asset_id.gae_expense_depre_account_id.id,
+                    'debit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
+                    'credit': 0.0 if float_compare(amount, 0.0, precision_digits=prec) > 0 else -amount,
+                    'partner_id': line.asset_id.partner_id.id,
+                    # 'analytic_distribution': analytic_distribution,
+                    # 'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
+                    # 'amount_currency': amount,
+                }
+                move_vals['line_ids'].append((0,0, move_line_2))
         elif asset_id.gae_dest_type=='indirect' and  asset_id.gae_distribution_id:
             move_line_1 = {
                 'name': asset_name,
