@@ -5,8 +5,8 @@ from odoo.tools import float_compare, float_is_zero
 class AccountAssetAsset(models.Model):
     _inherit = 'account.asset.asset'
 
-    gae_dest_type = fields.Selection([('direct', 'Direct to ORG'), ('indirect', 'Indirect through GAE Distribution')], 
-        string='GAE Distribution Method')
+    gae_dest_type = fields.Selection([('direct', 'Direct to ORG'), ('indirect', 'Indirect through GAE Distribution'),('to_activity', 'Direct to Activity')], 
+        string='GAE Distribution Method', default='to_activity')
     gae_distribution_id = fields.Many2one('gae.plan', string='GAE Distribution')
     plantation_varieties_ids = fields.Many2many('plant.varieties', 'asset_varieties_rel', string='Distribution ORG')
 
