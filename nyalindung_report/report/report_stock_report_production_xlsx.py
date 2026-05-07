@@ -282,6 +282,16 @@ class RekapBukuKontraktor(models.AbstractModel):
             #     production_qty += m.product_qty
             production_qty += m.quantity_done
         
+        # Unbuild
+        unbuild_sheet = self.env['mrp.unbuild'].search([('product_id','=',sheet_product.id),
+                ('state','=','done'),
+                ('mo_id','in',production_sheet.ids)])
+        rm_moves_unbuild = unbuild_sheet.produce_line_ids.filtered(lambda s: s.product_id.id==product_latex.id)
+        for m in rm_moves_unbuild:
+            # production_qty += m.quantity_done
+            production_qty -= m.quantity_done
+            # closing.latex_wip_incoming_qty -= sum(rm_moves_unbuild.mapped('product_qty')) if rm_moves_unbuild else 0.0
+        
         # OUT
         latex_delivery_moves_out = self.env['stock.move.line'].search([('product_id','=',product_latex.id),
                                     ('location_id.usage','=','internal'),('location_dest_id.usage','=','customer'),
@@ -385,6 +395,16 @@ class RekapBukuKontraktor(models.AbstractModel):
             # else:
             #     production_qty += m.product_qty
             production_qty += m.quantity_done
+        
+        # Unbuild
+        unbuild_compo = self.env['mrp.unbuild'].search([('product_id','=',compound_product2.id),
+                ('state','=','done'),
+                ('mo_id','in',production_compo.ids)])
+        rm_moves_unbuild2 = unbuild_compo.produce_line_ids.filtered(lambda s: s.product_id.id==product_lump.id)
+        for m in rm_moves_unbuild2:
+            # production_qty += m.quantity_done
+            production_qty -= m.quantity_done
+            # closing.latex_wip_incoming_qty -= sum(rm_moves_unbuild2.mapped('product_qty')) if rm_moves_unbuild else 0.0
 
         # OUT
         lump_delivery_moves_out = self.env['stock.move.line'].search([('product_id','=',product_lump.id),
@@ -488,6 +508,16 @@ class RekapBukuKontraktor(models.AbstractModel):
             # else:
             #     production_qty += m.product_qty
             production_qty += m.quantity_done
+        
+        # Unbuild
+        unbuild_all = self.env['mrp.unbuild'].search([('product_id','in',[sheet_product.id, compound_product2.id]),
+                ('state','=','done'),
+                ('mo_id','in',production_all.ids)])
+        rm_moves_unbuild3 = unbuild_all.produce_line_ids.filtered(lambda s: s.product_id.id==product_asamsemut.id)
+        for m in rm_moves_unbuild3:
+            # production_qty += m.quantity_done
+            production_qty -= m.quantity_done
+            # closing.latex_wip_incoming_qty -= sum(rm_moves_unbuild3.mapped('product_qty')) if rm_moves_unbuild else 0.0
 
         delivery_qty = 0.0
 

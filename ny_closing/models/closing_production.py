@@ -2655,8 +2655,9 @@ class ClosingProduction(models.Model):
         
         move_lines_production = []
         move_lines_production2 = []
-        move_lines_cogs = []
         check_bal = 0.0
+        move_lines_cogs = []
+        check_bal_cogs = 0.0
         for line in self.fg2_valuation_ids:
             if any([line.ripening_qty>0,line.outgoing_qty>0,line.scrap_qty>0,line.adjustment_qty>0]) and not line.inventory_account_id:
                 raise ValidationError(f"Silahkan isi akun Inventory valuation untuk Product {line.product_id.name}")
@@ -2840,6 +2841,7 @@ class ClosingProduction(models.Model):
                         'debit': issue_value if issue_value>0 else 0.0,
                         'credit': abs(issue_value) if issue_value<0 else 0.0,
                     }
+                    check_bal_cogs += vals_issues['debit'] - vals_issues['credit']
                     move_lines_cogs.append((0, 0, vals_issues))
                 # if remaining_issue_value:
                 #     vals_src4 = {
@@ -2869,6 +2871,7 @@ class ClosingProduction(models.Model):
                     'debit': round(abs(line.outgoing_issue_value), 2) if line.outgoing_issue_value<0 else 0.0,
                     'credit': round(line.outgoing_issue_value, 2) if line.outgoing_issue_value>0 else 0.0,
                 }
+                check_bal_cogs += vals_src4['debit'] - vals_src4['credit']
                 move_lines_cogs.append((0, 0, vals_src4))
             
             # 7. Journal Susut
@@ -2958,9 +2961,19 @@ class ClosingProduction(models.Model):
 
         # print(">>>>>>>>>>>>>>>>>", check_bal)
         if check_bal and check_bal>=-1.0 and check_bal<=1.0:
+            # print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<", move_lines_production[0][2]['debit'])
             move_lines_production[0][2]['debit'] = move_lines_production[0][2]['debit'] - check_bal
+            # print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<", move_lines_production[0][2]['debit'])
+        
+        # print(">>>>>>>>>>>>>>>>>cogs", check_bal_cogs)
+        if check_bal_cogs and check_bal_cogs>=-1.0 and check_bal_cogs<=1.0:
+            # print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<", move_lines_cogs[0][2]['debit'])
+            move_lines_cogs[0][2]['debit'] = move_lines_cogs[0][2]['debit'] - check_bal_cogs
+            # print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<", move_lines_cogs[0][2]['debit'])
 
         if move_lines_production or move_lines_production2:
+            # check_bbb = round(sum([round(x[2].get('debit',0.0)-x[2].get('credit',0.0),2) for x in move_lines_production+move_lines_production2]),2)
+            # print("...............", check_bbb)
             values = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
@@ -2970,6 +2983,8 @@ class ClosingProduction(models.Model):
             new_move = self.env['account.move'].create(values)
             self.closing_move_ids = [(4, new_move.id)]        
         if move_lines_cogs:
+            # check_ccc = round(sum([round(x[2].get('debit',0.0)-x[2].get('credit',0.0),2) for x in move_lines_cogs]),2)
+            # print("...............", check_ccc)
             values = {
                 'date': self.date_to,
                 'journal_id': misc_journal.id,
