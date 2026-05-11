@@ -10,7 +10,6 @@ from odoo.addons.c10i_base_api.controllers.main import ApiBase, HEADERS, DateEnc
 ROUTES = f"{BASE_ROUTE}/plantationai/lhm"
 
 class ProfileApi(ApiBase):
-    
     @http.route(ROUTES, auth='public', website=False, csrf=False, type='http', methods=['POST'])
     def submit_new_lhm(self):
         # check token
@@ -19,8 +18,9 @@ class ProfileApi(ApiBase):
             return Response(json.dumps({'message': message}), headers=HEADERS, status=400)
         
         datas = self._get_payload() or {}
+        existing_block_mapped = {}
         try:
-            raw_list_to_create = datas.get('values', [])
+            raw_list_to_create = datas.get('data', [])
             if not raw_list_to_create:
                 raise ValidationError("Empty Data: Nothing to create")
             # Validate Mandatory Field
@@ -32,45 +32,76 @@ class ProfileApi(ApiBase):
                 for key in to_check_keys:
                     if key in mandatory_fields and not line_to_check.get(key, False):
                         raise ValidationError(f"Field '{key}' are a mandatory Field)")
-                if not line_to_check.get('lhm_line_ids', []) or not line_to_check.get('contractor_line_ids', []):
-                    raise ValidationError("Field 'lhm_line_ids' or 'contractor_line_ids' are mandatory field and must be filled.")
+                if not line_to_check.get('lhm_line_ids', []):
+                    raise ValidationError("Field 'lhm_line_ids' are mandatory field and must be filled.")
 
             list_to_create = [] # lhm.transaction
-            list_to_create2 = {} # lhm.contractor
             data_validation_error = []
             line_validation_error = []
             for vals in raw_list_to_create:
                 ############# LHM
                 lhm_lines = []
                 for line_vals in vals.get('lhm_line_ids',[]):
-                    # contract = request.env['hr.contract'].sudo().browse(line_vals['contract_id'])
+                    # {
+                    #     "employee_id": 2370,
+                    #     "attendance_type_id": 1,
+                    #     "work_day": 1.0,
+                    #     "is_borong": false,
+                    #     "plant_block_id": 323,
+                    #     "activity_id": 4892,
+                    #     "product_id_1": null, >> "product_id"
+                    #     "hasil_1": 20.0,
+                    #     "uom_id_1": 28, >> "satuan_1"
+                    #     "product_id_2": null,
+                    #     "hasil_2": 0.0,
+                    #     "uom_id_2": null >> "satuan_2"
+                    # },
+                    
                     employee = request.env['hr.employee'].sudo().browse(line_vals['employee_id'])
                     if not employee.contract_id:
                         line_validation_error.append("Karyawan {employee.name} ({employee.no_induk or ''}) tidak memiliki Kontrak Aktif")
                         continue
+                    if not line_vals.get('plant_block_id', False):
+                        line_validation_error.append("Field 'plant_block_id' is mandatory in lhm_line_ids")
+                        continue
+                    location_id = varieties_id = location_type_id = False
+                    if line_vals['plant_block_id'] in existing_block_mapped:
+                        location_id = existing_block_mapped[line_vals['plant_block_id']][0]
+                        varieties_id = existing_block_mapped[line_vals['plant_block_id']][1]
+                        location_type_id = existing_block_mapped[line_vals['plant_block_id']][2]
+                    else:
+                        plant_block = request.env['lhm.plant.block'].sudo().browse(line_vals['plant_block_id'])
+                        if not plant_block:
+                            line_validation_error.append(f"Plant Block dengan ID {line_vals['plant_block_id']} tidak ditemukan")
+                            continue
+                        location_id = plant_block.location_id.id
+                        varieties_id = plant_block.varieties_id.id
+                        location_type_id = plant_block.location_id.type_id.id
+                        existing_block_mapped[line_vals['plant_block_id']] = (location_id, varieties_id, location_type_id)
+                    
                     lhm_lines.append((0,0,{
                         'date': vals['date'],
                         # 'date': line_vals.get('date', False),
                         'employee_id': line_vals.get('employee_id', False),
                         'work_day': line_vals.get('work_day', 0.0),
-                        'attendance_id': line_vals.get('attendance_id', False),
+                        'attendance_id': line_vals.get('attendance_type_id', False),
                         # 'non_work_day': line_vals.get(' 'non_work_day', False),
-                        'varieties_id': line_vals.get('varieties_id', False),
-                        'location_type_id': line_vals.get('location_type_id', False),
-                        'location_id': line_vals.get('location_id', False),
+                        'varieties_id': varieties_id,
+                        'location_type_id': location_type_id,
+                        'location_id': location_id,
                         'activity_id': line_vals.get('activity_id', False),
                         # 'work_result': line_vals.get(' 'work_result', False),
                         # 'satuan_id': line_vals.get(' 'satuan_id', False),
-                        'product_id': line_vals.get('product_id', False),
+                        'product_id': line_vals.get('product_id_id', False),
                         'hasil_1': line_vals.get('hasil_1', 0.0),
-                        'satuan_1': line_vals.get('satuan_1', False),
+                        'satuan_1': line_vals.get('uom_id_1', False),
                         'product_id_2': line_vals.get('product_id_2', False),
                         'hasil_2': line_vals.get('hasil_2', 0.0),
-                        'satuan_2': line_vals.get('satuan_2', False),
+                        'satuan_2': line_vals.get('uom_id_2', False),
                         # 'is_hasil_2': line_vals.get(' 'is_hasil_2', False),
-                        'unit_price': line_vals.get('unit_price', 0.0),
-                        'premi': line_vals.get('premi', 0.0),
-                        'overtime_hour': line_vals.get('overtime_hour', 0),
+                        # 'unit_price': line_vals.get('unit_price', 0.0),
+                        # 'premi': line_vals.get('premi', 0.0),
+                        # 'overtime_hour': line_vals.get('overtime_hour', 0),
                         # 'penalty': line_vals.get('penalty', 0.0),
                         'contract_id': employee.contract_id.id,
                         # 'contract_wage_value': round(contract.wage / contract.wage_day, 2)
@@ -79,64 +110,98 @@ class ProfileApi(ApiBase):
                 
                 material_lines = []
                 for material_vals in vals.get('material_line_ids',[]):
-                    material_lines.append((0,0,{
-                        'date': vals['date'],
-                        'from_mobile_apps': True,
-                        'product_id': material_vals.get('product_id', False),
-                        'activity_id': material_vals.get('activity_id', False),
-                        'location_id': material_vals.get('location_id', False),
-                        'product_uom_id': material_vals.get('product_uom_id', False),
-                        'realization': material_vals.get('realization', 0.0)
-                    }))
+                    # Find material request line based on product_id, activity_id, and plant_block_id
+                    location_id = varieties_id = location_type_id = False
+                    if material_vals['plant_block_id'] in existing_block_mapped:
+                        location_id = existing_block_mapped[material_vals['plant_block_id']][0]
+                    else:
+                        plant_block = request.env['lhm.plant.block'].sudo().browse(material_vals['plant_block_id'])
+                        if not plant_block:
+                            line_validation_error.append(f"Plant Block dengan ID {material_vals['plant_block_id']} tidak ditemukan")
+                            continue
+                        location_id = plant_block.location_id.id
+                        varieties_id = plant_block.varieties_id.id
+                        location_type_id = plant_block.location_id.type_id.id
+                        existing_block_mapped[material_vals['plant_block_id']] = (location_id, varieties_id, location_type_id)
+                    
+                    if not material_vals.get('mr_id', False):
+                        line_validation_error.append("Field 'mr_id' is mandatory in material_line_ids")
+                        continue
+                    if not material_vals.get('product_id', False):
+                        line_validation_error.append("Field 'product_id' is mandatory in material_line_ids")
+                    if not material_vals.get('activity_id', False):
+                        line_validation_error.append("Field 'activity_id' is mandatory in material_line_ids")
+
+                    mr_lines = request.env['material.request.line'].sudo().search([
+                        ('mr_id','=', material_vals.get('mr_id', False)),
+                        ('product_id', '=', material_vals.get('product_id', False)),
+                        ('location_id', '=', location_id),
+                        ('activity_id', '=', material_vals.get('activity_id', False)),
+                    ])
+                    if mr_lines:
+                        stock_moves = mr_lines.move_ids.filtered(lambda m: m.state == 'done')
+                        if stock_moves:
+                            material_lines.append((0,0,{
+                                'date': vals['date'],
+                                'from_mobile_apps': True,
+                                'move_id': stock_moves[0].id,
+                                'picking_id': stock_moves[0].picking_id.id,
+                                'product_id': material_vals.get('product_id', False),
+                                'activity_id': material_vals.get('activity_id', False),
+                                'location_id': location_id,
+                                'product_uom_id': material_vals.get('uom_id', False),
+                                'realization': material_vals.get('product_qty', 0.0)
+                            }))
+                        # else:
+                        #     line_validation_error.append(f"Material Request Line dengan Product ID {material_vals.get('product_id', False)}, Blok Tanam {material_vals.get('plant_block_id', False)}, dan Activity ID {material_vals.get('activity_id', False)} tidak memiliki Stock Move yang sudah valid.")
 
                 lhm_transaction = {
-                    # 'name'
                     'date': vals['date'],
+                    'origin': vals.get('origin', False),
                     'kemandoran_id': vals['kemandoran_id'],
                     'lhm_line_ids': lhm_lines,
                     'material_line_ids': material_lines,
-                    # emp_out_ids
-                    # emp_in_ids
-                    'note': vals['note'],
-                    # 'lhm_nap_line_ids'
+                    # 'note': vals['note'],
                 }
+                print(">>>>>>>>>>>>>>>..", lhm_transaction)
                 list_to_create.append(lhm_transaction)
             
+                # TODO: harus dipindah ke API sndiri
                 ############# LHM CONTRACTOR
-                for cvals in vals.get('contractor_line_ids', []):
-                    if not cvals.get('contractor_id', False):
-                        data_validation_error.append("Field 'contractor_id' is mandatory in contractor_line_ids")
-                        continue
+                # for cvals in vals.get('contractor_line_ids', []):
+                #     if not cvals.get('contractor_id', False):
+                #         data_validation_error.append("Field 'contractor_id' is mandatory in contractor_line_ids")
+                #         continue
 
-                    contractor = request.env['res.partner'].sudo().browse(cvals['contractor_id'])
-                    if contractor.id not in list_to_create2:
-                        list_to_create2[contractor.id] = {
-                            'supplier_id': contractor.id,
-                            'date': vals['date'],
-                            'date_start': vals['date'],
-                            # 'date_end': vals['date'],
-                            # 'is_harian': True,
-                            'line_ids': [],
-                            # 'material_line_ids': [],
-                            'note': vals['note'],
-                            'user_id': check_user
-                        }
-                    for cvals in vals.get('contractor_line_ids', []):
-                        if cvals.get('contractor_id', False) != contractor.id:
-                            continue
-                        list_to_create2[contractor.id]['line_ids'].append((0,0,{
-                            'date': vals['date'],
-                            'varieties_id': cvals.get('varieties_id', False),
-                            'location_type_id': cvals.get('location_type_id', False),
-                            'location_id': cvals.get('location_id', False),
-                            'activity_id': cvals.get('activity_id', False),
-                            'product_id': cvals.get('product_id', False),
-                            'nilai': cvals.get('hasil_1', 0.0),
-                            'uom_id': cvals.get('satuan_1', False),
-                            'product_id_2': cvals.get('product_id_2', False),
-                            'nilai2': cvals.get('hasil_2', 0.0),
-                            'uom2_id': cvals.get('satuan_2', False),
-                        }))
+                #     contractor = request.env['res.partner'].sudo().browse(cvals['contractor_id'])
+                #     if contractor.id not in list_to_create2:
+                #         list_to_create2[contractor.id] = {
+                #             'supplier_id': contractor.id,
+                #             'date': vals['date'],
+                #             'date_start': vals['date'],
+                #             # 'date_end': vals['date'],
+                #             # 'is_harian': True,
+                #             'line_ids': [],
+                #             # 'material_line_ids': [],
+                #             'note': vals['note'],
+                #             'user_id': check_user
+                #         }
+                #     for cvals in vals.get('contractor_line_ids', []):
+                #         if cvals.get('contractor_id', False) != contractor.id:
+                #             continue
+                #         list_to_create2[contractor.id]['line_ids'].append((0,0,{
+                #             'date': vals['date'],
+                #             'varieties_id': cvals.get('varieties_id', False),
+                #             'location_type_id': cvals.get('location_type_id', False),
+                #             'location_id': cvals.get('location_id', False),
+                #             'activity_id': cvals.get('activity_id', False),
+                #             'product_id': cvals.get('product_id', False),
+                #             'nilai': cvals.get('hasil_1', 0.0),
+                #             'uom_id': cvals.get('satuan_1', False),
+                #             'product_id_2': cvals.get('product_id_2', False),
+                #             'nilai2': cvals.get('hasil_2', 0.0),
+                #             'uom2_id': cvals.get('satuan_2', False),
+                #         }))
             
             if line_validation_error:
                 raise ValidationError("\n".join(line_validation_error))
@@ -147,9 +212,10 @@ class ProfileApi(ApiBase):
             created_lhm = False
             if list_to_create:
                 created_lhm = request.env['lhm.transaction'].with_user(check_user).create(list_to_create)
-            created_contractor = False
-            if list_to_create2:
-                created_contractor = request.env['lhm.contractor'].with_user(check_user).create(list(list_to_create2.values()))
+            
+            # created_contractor = False
+            # if list_to_create2:
+            #     created_contractor = request.env['lhm.contractor'].with_user(check_user).create(list(list_to_create2.values()))
             
             if created_lhm:
                 result = {'data': list(map(lambda x: {'id': x.id, 'name': x.name}, created_lhm)), 'count': len(created_lhm.ids)}
@@ -175,10 +241,10 @@ class ProfileApi(ApiBase):
             conditions = []
             params = []
             if lhm_id:
-                conditions.append("id = %s")
+                conditions.append("lt.id = %s")
                 params.append(int(lhm_id))
             elif datas.get('date_from') and datas.get('date_to'):
-                conditions.append("date >= %s AND date <= %s")
+                conditions.append("lt.date >= %s AND lt.date <= %s")
                 params.extend([datas['date_from'], datas['date_to']])
             limit = datas.get('limit', 10)
             offset = datas.get('offset', 0)
@@ -186,10 +252,11 @@ class ProfileApi(ApiBase):
             params.extend([limit, offset])
             cr = request.env.cr
             cr.execute(f"""
-                SELECT id, name, kemandoran_id, date, origin, state
-                FROM lhm_transaction
+                SELECT lt.id, lt.name, lt.kemandoran_id, hf.afdeling_id, lt.date, lt.origin, lt.state
+                FROM lhm_transaction lt
+                       INNER JOIN hr_foreman hf ON hf.id = lt.kemandoran_id
                 {where_clause}
-                ORDER BY date DESC
+                ORDER BY lt.date DESC
                 LIMIT %s OFFSET %s
             """, params)
             lhm_records = cr.dictfetchall()
@@ -199,18 +266,22 @@ class ProfileApi(ApiBase):
 
             for lhm in lhm_records:
                 # lhm_line_records = request.env['lhm.transaction.line'].with_user(check_user).search_read(domain=[('lhm_id','=',lhm['id'])], fields=fields2)
+                
+                # lhm_line.date,
                 query_line = """SELECT 
                         lhm_line.id,
                         lhm_line.employee_id,
-                        lhm_line.date,
+                        lhm_line.attendance_id as attendance_type_id,
+                        lhm_line.work_day,
+                        lhm_line.is_borong,
                         block.id as plant_block_id,
                         lhm_line.activity_id,
+                        lhm_line.product_id as product_id_1,
                         lhm_line.hasil_1,
-                        lhm_line.satuan_1,
-                        lhm_line.product_id,
+                        lhm_line.satuan_1 as uom_id_1,
+                        lhm_line.product_id_2,
                         lhm_line.hasil_2,
-                        lhm_line.satuan_2,
-                        lhm_line.product_id_2
+                        lhm_line.satuan_2 as uom_id_2
                     FROM lhm_transaction_line lhm_line
                         left join lhm_plant_block block on block.location_id = lhm_line.location_id
                     WHERE lhm_line.lhm_id = %s
@@ -221,13 +292,16 @@ class ProfileApi(ApiBase):
                 # material_line_records = request.env['lhm.transaction.material.line'].with_user(check_user).search_read(domain=[('lhm_id','=',lhm['id'])], fields=fields3)
                 query_material_line = """SELECT
                         material_line.id,
+                        mrl.mr_id,
                         material_line.product_id,
-                        material_line.activity_id,
                         block.id as plant_block_id,
+                        material_line.activity_id,
                         material_line.product_uom_id as uom_id,
-                        material_line.realization as product_qty
+                        coalesce(material_line.realization,0) as product_qty
                     FROM lhm_transaction_material_line material_line
                         left join lhm_plant_block block on block.location_id = material_line.location_id
+                        left join stock_move sm ON sm.id = material_line.move_id
+                        left join material_request_line mrl ON mrl.id = sm.mr_line_id
                     WHERE material_line.lhm_id = %s
                 """
                 request.env.cr.execute(query_material_line, (lhm['id'],))
