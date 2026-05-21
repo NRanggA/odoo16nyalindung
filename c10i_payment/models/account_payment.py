@@ -63,7 +63,8 @@ class AccountPayment(models.Model):
             # Especially for inbound payments where customer pays more than the invoice residual amount
             # User must assign write-off amount and account
             if self.payment_type=='inbound' and pline.amount_to_pay > pline.amount_residual:
-                if pline.write_off_amount != pline.payment_difference:
+                # if pline.write_off_amount != pline.payment_difference:
+                if round(pline.write_off_amount, 2) != round(pline.payment_difference, 2):
                     raise UserError(_("Write-off amount must be equal to Payment Difference since Customer Pay more than Invoice Residual Amount."))
                 elif not pline.write_off_account_id:
                     raise UserError(_("Write-off amount must assign to an Account since Customer Pay more than Invoice Residual Amount."))
