@@ -210,7 +210,13 @@ class RekapBukuKontraktor(models.AbstractModel):
 
         datas = []
 
-        last_closing = self.env['closing.production'].search([
+        # last_closing = self.env['closing.production'].search([
+        #     ('date_to','<',obj.from_date),
+        #     ('state','=','done'),
+        #     ('varieties_type','=','karet'),
+        # ], order='date_to desc', limit=1)
+
+        last_closing = self.env['closing.production'].sudo().search([
             ('date_to','<',obj.from_date),
             ('state','=','done'),
             ('varieties_type','=','karet'),
@@ -227,7 +233,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         if last_closing:
             opening_qty = last_closing.latex_closing_qty
             # Penerimaan antara Tanggal setelah Closing s.d to_date
-            prev_latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
+            prev_latex_in = self.env['timbangan.pabrik'].sudo().search([('product_id','=',product_latex.id),
                             ('lhm_nap_id.date_nap','>',last_closing.date_to),
                             ('lhm_nap_id.date_nap','<',obj.from_date),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
@@ -257,7 +263,7 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
         # IN
-        latex_in = self.env['timbangan.pabrik'].search([('product_id','=',product_latex.id),
+        latex_in = self.env['timbangan.pabrik'].sudo().search([('product_id','=',product_latex.id),
                         ('lhm_nap_id.date_nap','>=',obj.from_date),
                         ('lhm_nap_id.date_nap','<=',obj.to_date),
                         ('lhm_nap_id.state','in',['confirmed','done'])])
@@ -340,7 +346,7 @@ class RekapBukuKontraktor(models.AbstractModel):
         if last_closing:
             opening_qty = last_closing.lump_closing_qty
             # Penerimaan antara Tanggal setelah Closing s.d to_date
-            prev_lump_in = self.env['timbangan.pabrik'].search([('product_id','=',product_lump.id),
+            prev_lump_in = self.env['timbangan.pabrik'].sudo().search([('product_id','=',product_lump.id),
                             ('lhm_nap_id.date_nap','>',last_closing.date_to),
                             ('lhm_nap_id.date_nap','<',obj.from_date),
                             ('lhm_nap_id.state','in',['confirmed','done'])])
@@ -370,7 +376,7 @@ class RekapBukuKontraktor(models.AbstractModel):
             opening_qty = 0.0 # TODO: hrsnya dari saldo awal
         
         # IN
-        lump_in = self.env['timbangan.pabrik'].search([('product_id','=',product_lump.id),
+        lump_in = self.env['timbangan.pabrik'].sudo().search([('product_id','=',product_lump.id),
                         ('lhm_nap_id.date_nap','>=',obj.from_date),
                         ('lhm_nap_id.date_nap','<=',obj.to_date),
                         ('lhm_nap_id.state','in',['confirmed','done'])])
