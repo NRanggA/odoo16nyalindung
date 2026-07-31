@@ -33,7 +33,7 @@ class LhmContractor(ApiBase):
             offset = datas.get('offset', 0)
             cont_records = request.env['lhm.contractor.line'].with_user(check_user).search(domain=domain, order="date desc", limit=limit, offset=offset)
             if not cont_records:
-                raise MissingError("Data LHM not found")
+                raise MissingError("Data BK not found")
             line_data = []
             for line in cont_records:
                 line_data.append({

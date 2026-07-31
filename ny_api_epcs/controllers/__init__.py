@@ -12,8 +12,7 @@ from . import product_category
 from . import product_product
 from . import product_uom
 # from . import lhm_hanca
-
+from . import hr_attendance
 from . import material_request
 from . import lhm_transaction
 # from . import lhm_contractor
-from . import hr_attendance

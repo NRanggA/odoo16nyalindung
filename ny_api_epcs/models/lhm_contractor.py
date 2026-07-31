@@ -6,6 +6,13 @@ from odoo.addons import decimal_precision as dp
 class LhmContractor(models.Model):
     _inherit = 'lhm.contractor'
 
-    payment_type = fields.Selection(selection_add=[('custom','Custom Range')], default='custom', ondelete={'custom': 'set default'})
+    # payment_type = fields.Selection(selection_add=[('custom','Custom Range')], default='custom', ondelete={'custom': 'set default'})
+    # spk_number = fields.Char()
+    origin = fields.Char(string="Origin")
+
+class LhmContractorLine(models.Model):
+    _inherit = 'lhm.contractor.line'
+
+    # payment_type = fields.Selection(selection_add=[('custom','Custom Range')], default='custom', ondelete={'custom': 'set default'})
     spk_number = fields.Char()
     origin = fields.Char(string="Origin")
