@@ -31,11 +31,9 @@ class ApiBase(http.Controller):
         """
         # Create or Update API Client List
         client_req_addrs = request.httprequest.environ['REMOTE_ADDR']
-        # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth")
         added_addrs = request.env['c10i_base_api.client.list'].sudo().search([('name','=',client_req_addrs)], limit=1)
         if not added_addrs:
             added_addrs = request.env['c10i_base_api.client.list'].sudo().create({'name': client_req_addrs})
-        # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth", added_addrs)
         # Blacklisted Address
         if added_addrs.blacklist:
             # return False, 'Unauthorized, You have failed authorization proceess several times. Please contact the admin for further details.'
@@ -47,7 +45,6 @@ class ApiBase(http.Controller):
         if not scope:
             return False, 'Invalid API Service'
 
-        # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth auth_header", auth_header)
         if not auth_header or not auth_header.startswith('Bearer '):
             added_addrs.write({
                 'number_of_error_allowed': added_addrs.number_of_error_allowed-1,
@@ -55,7 +52,6 @@ class ApiBase(http.Controller):
             })
             return False, 'Unauthorized, please contact the admin for further details.'
         token = auth_header.split(' ')[-1]
-        # print(">>>>>>>>>>>>>>>>>>>>>>> verify_auth token", token)
         check_user = request.env['res.users.apikeys']._check_credentials(scope=scope, key=token)
         
         if not check_user:

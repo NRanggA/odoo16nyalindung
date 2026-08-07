@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lhm_transaction_form_inherit_epcs" model="ir.ui.view">
+        <field name="name">lhm.transaction.form.inherit.epcs</field>
+        <field name="model">lhm.transaction</field>
+        <field name="inherit_id" ref="c10i_lhm_v16.view_lhm_transaction_form"/>
+        <field name="arch" type="xml">
+            <field name="skb" position="after">
+                <field name="origin"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
