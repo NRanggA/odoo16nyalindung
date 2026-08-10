@@ -124,11 +124,11 @@ class Attendance(ApiBase):
                 check_out_str = vals.get('check_out')
                 attendance_date = None
                 if check_in_str:
-                    check_in = jakarta_tz.localize(datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc)
+                    check_in = jakarta_tz.localize(datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc).replace(tzinfo=None)
                     attendance_date = check_in.date()
                     check_in_str = check_in.strftime("%Y-%m-%d %H:%M:%S")
                 elif check_out_str:
-                    check_out = jakarta_tz.localize(datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc)
+                    check_out = jakarta_tz.localize(datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc).replace(tzinfo=None)
                     attendance_date = check_out.date()
                     check_out_str = check_out.strftime("%Y-%m-%d %H:%M:%S")
 
