@@ -90,6 +90,7 @@ class Attendance(ApiBase):
         #         }
         #     ]
         # }
+        jakarta_tz = timezone('Asia/Jakarta')
         try:
             raw_list_to_create = datas.get('data', [])
             if not raw_list_to_create:
@@ -110,15 +111,26 @@ class Attendance(ApiBase):
                 employee_found = request.env['hr.employee'].sudo().search([('id', '=', vals.get('employee_id'))], limit=1)
                 if not employee_found:
                     raise ValidationError(f"Employee with id {vals.get('employee_id')} not found")
+                attendance_type = request.env['hr.attendance.type'].sudo().search([('id', '=', vals.get('type_id'))], limit=1)
+                if not attendance_type:
+                    raise ValidationError(f"Attendance Type with id {vals.get('type_id')} not found")
+                if attendance_type.code == 'KJ' and not (vals.get('check_in') or vals.get('check_out')):
+                    raise ValidationError(f"Attendance Type 'KJ' requires both 'check_in' or 'check_out' times")
+                elif (vals.get('check_in') or vals.get('check_out')) and attendance_type.code != 'KJ':
+                    raise ValidationError(f"Attendance Type '{attendance_type.code}' does not allow 'check_in' or 'check_out' times")
 
                 # Tentukan tanggal dari check_in atau check_out
                 check_in_str = vals.get('check_in')
                 check_out_str = vals.get('check_out')
                 attendance_date = None
                 if check_in_str:
-                    attendance_date = datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S").date()
+                    check_in = jakarta_tz.localize(datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc)
+                    attendance_date = check_in.date()
+                    check_in_str = check_in.strftime("%Y-%m-%d %H:%M:%S")
                 elif check_out_str:
-                    attendance_date = datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S").date()
+                    check_out = jakarta_tz.localize(datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc)
+                    attendance_date = check_out.date()
+                    check_out_str = check_out.strftime("%Y-%m-%d %H:%M:%S")
 
                 # 2. Cek existing attendance sheet berdasarkan employee dan tanggal check_in/check_out
                 domain = [('employee_id', '=', employee_found.id)]
