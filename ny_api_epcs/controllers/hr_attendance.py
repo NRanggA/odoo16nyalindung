@@ -90,6 +90,7 @@ class Attendance(ApiBase):
         #         }
         #     ]
         # }
+        jakarta_tz = timezone('Asia/Jakarta')
         try:
             raw_list_to_create = datas.get('data', [])
             if not raw_list_to_create:
@@ -116,9 +117,13 @@ class Attendance(ApiBase):
                 check_out_str = vals.get('check_out')
                 attendance_date = None
                 if check_in_str:
-                    attendance_date = datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S").date()
+                    check_in = jakarta_tz.localize(datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc)
+                    attendance_date = check_in.date()
+                    check_in_str = check_in.strftime("%Y-%m-%d %H:%M:%S")
                 elif check_out_str:
-                    attendance_date = datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S").date()
+                    check_out = jakarta_tz.localize(datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc)
+                    attendance_date = check_out.date()
+                    check_out_str = check_out.strftime("%Y-%m-%d %H:%M:%S")
 
                 # 2. Cek existing attendance sheet berdasarkan employee dan tanggal check_in/check_out
                 domain = [('employee_id', '=', employee_found.id)]
