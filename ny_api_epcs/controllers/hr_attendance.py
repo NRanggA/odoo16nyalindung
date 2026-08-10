@@ -114,8 +114,8 @@ class Attendance(ApiBase):
                 attendance_type = request.env['hr.attendance.type'].sudo().search([('id', '=', vals.get('type_id'))], limit=1)
                 if not attendance_type:
                     raise ValidationError(f"Attendance Type with id {vals.get('type_id')} not found")
-                if attendance_type.code == 'KJ' and (not vals.get('check_in') or not vals.get('check_out')):
-                    raise ValidationError(f"Attendance Type 'KJ' requires both 'check_in' and 'check_out' times")
+                if attendance_type.code == 'KJ' and not (vals.get('check_in') or vals.get('check_out')):
+                    raise ValidationError(f"Attendance Type 'KJ' requires both 'check_in' or 'check_out' times")
                 elif (vals.get('check_in') or vals.get('check_out')) and attendance_type.code != 'KJ':
                     raise ValidationError(f"Attendance Type '{attendance_type.code}' does not allow 'check_in' or 'check_out' times")
 
