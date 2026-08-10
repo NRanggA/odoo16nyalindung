@@ -44,6 +44,7 @@ class ProfileApi(ApiBase):
                 lhm_lines = []
                 is_lhm = None
                 is_lhm_contractor = None
+                kemandoran_rec = request.env['hr.foreman'].sudo().browse(vals['kemandoran_id'])
                 for line_vals in vals.get('lhm_line_ids',[]):
                     # {
                     #     "employee_id": 2370,
@@ -93,6 +94,9 @@ class ProfileApi(ApiBase):
                         plant_block = request.env['lhm.plant.block'].sudo().browse(line_vals['plant_block_id'])
                         if not plant_block:
                             line_validation_error.append(f"Plant Block dengan ID {line_vals['plant_block_id']} tidak ditemukan")
+                            continue
+                        if plant_block.afdeling_id != kemandoran_rec.afdeling_id:
+                            line_validation_error.append(f"Plant Block dengan ID {line_vals['plant_block_id']} ({plant_block.name}) memiliki Afdeling (Afdeling: {plant_block.afdeling_id.name or 'Kosong'}) yang tidak sesuai dengan Afdeling di Kemandoran {kemandoran_rec.afdeling_id.name} (Afdeling: {kemandoran_rec.afdeling_id.name or 'Kosong'})")
                             continue
                         location_id = plant_block.location_id.id
                         varieties_id = plant_block.varieties_id.id
