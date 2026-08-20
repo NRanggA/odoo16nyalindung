@@ -125,11 +125,11 @@ class Attendance(ApiBase):
                 attendance_date = None
                 if check_in_str:
                     check_in = jakarta_tz.localize(datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc).replace(tzinfo=None)
-                    attendance_date = check_in.date()
+                    attendance_date = datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S").date()
                     check_in_str = check_in.strftime("%Y-%m-%d %H:%M:%S")
                 elif check_out_str:
                     check_out = jakarta_tz.localize(datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc).replace(tzinfo=None)
-                    attendance_date = check_out.date()
+                    attendance_date = datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S").date()
                     check_out_str = check_out.strftime("%Y-%m-%d %H:%M:%S")
 
                 # 2. Cek existing attendance sheet berdasarkan employee dan tanggal check_in/check_out
