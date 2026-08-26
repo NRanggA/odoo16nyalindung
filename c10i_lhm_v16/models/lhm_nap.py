@@ -729,7 +729,9 @@ class lhm_nap(models.Model):
                     raise UserError(f"(BKH) Data tidak ditemukan di Timbangan Kebun untuk lokasi {location_name} dan tanggal {key[1]}.")
                 
                 # Jumlahkan total data kebun untuk lokasi dan tanggal yang sesuai
-                kebun_total = sum(kebun_data[k] for k in corresponding_kebun_keys)
+                # kebun_total = sum(kebun_data[k] for k in corresponding_kebun_keys) #Bug
+                kebun_total = round(sum(kebun_data[k] for k in corresponding_kebun_keys), 2) #Fixed
+                contractor_day_total = round(contractor_day_total, 2) #Add
                 if contractor_day_total != kebun_total:
                     raise UserError(
                         f"Jumlah hasil tidak sesuai untuk lokasi {location_name} dan tanggal {key[1]}. "
