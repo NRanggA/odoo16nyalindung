@@ -122,15 +122,21 @@ class Attendance(ApiBase):
                 # Tentukan tanggal dari check_in atau check_out
                 check_in_str = vals.get('check_in')
                 check_out_str = vals.get('check_out')
+                date_str = vals.get('date')
                 attendance_date = None
                 if check_in_str:
                     check_in = jakarta_tz.localize(datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc).replace(tzinfo=None)
                     attendance_date = datetime.strptime(check_in_str, "%Y-%m-%d %H:%M:%S").date()
                     check_in_str = check_in.strftime("%Y-%m-%d %H:%M:%S")
-                elif check_out_str:
+
+                if check_out_str:
                     check_out = jakarta_tz.localize(datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S")).astimezone(utc).replace(tzinfo=None)
-                    attendance_date = datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S").date()
+                    if not attendance_date:
+                        attendance_date = datetime.strptime(check_out_str, "%Y-%m-%d %H:%M:%S").date()
                     check_out_str = check_out.strftime("%Y-%m-%d %H:%M:%S")
+
+                if not check_out_str and not check_in_str and date_str:
+                    attendance_date = datetime.strptime(date_str, '%Y-%m-%d')
 
                 # 2. Cek existing attendance sheet berdasarkan employee dan tanggal check_in/check_out
                 domain = [('employee_id', '=', employee_found.id)]

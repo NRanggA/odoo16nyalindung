@@ -95,9 +95,9 @@ class ProfileApi(ApiBase):
                         if not plant_block:
                             line_validation_error.append(f"Plant Block dengan ID {line_vals['plant_block_id']} tidak ditemukan")
                             continue
-                        if plant_block.afdeling_id != kemandoran_rec.afdeling_id:
-                            line_validation_error.append(f"Plant Block dengan ID {line_vals['plant_block_id']} ({plant_block.name}) memiliki Afdeling (Afdeling: {plant_block.afdeling_id.name or 'Kosong'}) yang tidak sesuai dengan Afdeling di Kemandoran {kemandoran_rec.afdeling_id.name} (Afdeling: {kemandoran_rec.afdeling_id.name or 'Kosong'})")
-                            continue
+                        # if plant_block.afdeling_id != kemandoran_rec.afdeling_id:
+                        #     line_validation_error.append(f"Plant Block dengan ID {line_vals['plant_block_id']} ({plant_block.name}) memiliki Afdeling (Afdeling: {plant_block.afdeling_id.name or 'Kosong'}) yang tidak sesuai dengan Afdeling di Kemandoran {kemandoran_rec.afdeling_id.name} (Afdeling: {kemandoran_rec.afdeling_id.name or 'Kosong'})")
+                        #     continue
                         location_id = plant_block.location_id.id
                         varieties_id = plant_block.varieties_id.id
                         location_type_id = plant_block.location_id.type_id.id
@@ -120,7 +120,7 @@ class ProfileApi(ApiBase):
                             'activity_id': line_vals.get('activity_id', False),
                             # 'work_result': line_vals.get(' 'work_result', False),
                             # 'satuan_id': line_vals.get(' 'satuan_id', False),
-                            'product_id': line_vals.get('product_id_id', False),
+                            'product_id': line_vals.get('product_id_1', False),
                             'hasil_1': line_vals.get('hasil_1', 0.0),
                             'satuan_1': line_vals.get('uom_id_1', False),
                             'product_id_2': line_vals.get('product_id_2', False),
@@ -145,7 +145,7 @@ class ProfileApi(ApiBase):
                             'location_type_id': location_type_id,
                             'location_id': location_id,
                             'activity_id': line_vals.get('activity_id', False),
-                            'product_id': line_vals.get('product_id_id', False),
+                            'product_id': line_vals.get('product_id_1', False),
                             'nilai': line_vals.get('hasil_1', 0.0),
                             'uom_id': line_vals.get('uom_id_1', False),
                             'product_id_2': line_vals.get('product_id_2', False),
