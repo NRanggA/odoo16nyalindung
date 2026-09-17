@@ -2,6 +2,7 @@ from odoo import http, fields
 from odoo.http import request, Response
 from odoo.exceptions import MissingError, ValidationError
 import json
+from calendar import monthrange
 from datetime import datetime, time
 from pytz import timezone, utc
 
@@ -225,20 +226,26 @@ class ProfileApi(ApiBase):
                 supplier_id = line.get('supplier_id')
                 if not supplier_id:
                     continue
-                month_year = fields.Date.from_string(vals['date']).strftime('%Y-%m')
-                key = (supplier_id, month_year)
+                line_date = fields.Date.to_date(line['date'])
+                month_start = line_date.replace(day=1)
+                month_end = line_date.replace(
+                    day=monthrange(line_date.year, line_date.month)[1]
+                )
+                key = (supplier_id, month_start, month_end)
                 if key not in grouping_by_supplier_per_month:
                     grouping_by_supplier_per_month[key] = []
                 del line['supplier_id']  # Remove supplier_id from line data
                 grouping_by_supplier_per_month[key].append(line)
             updated_lhm_contractor_list = [] # lhm.contractor
-            for supplier_id, month_year in grouping_by_supplier_per_month.keys():
+            for supplier_id, month_start, month_end in grouping_by_supplier_per_month.keys():
                 existing_lhm_contractor = request.env['lhm.contractor'].with_user(check_user).search([
                     ('supplier_id', '=', supplier_id),
-                    ('date_start', '>=', f"{month_year}-01"),
-                    ('date_end', '<=', f"{month_year}-31")
+                    ('date_start', '>=', month_start),
+                    ('date_end', '<=', month_end)
                 ], limit=1)
-                lhm_contractor_lines1 = grouping_by_supplier_per_month[(supplier_id, month_year)]
+                lhm_contractor_lines1 = grouping_by_supplier_per_month[
+                    (supplier_id, month_start, month_end)
+                ]
                 if existing_lhm_contractor:
                     # Update existing LHM Contractor
                     existing_lhm_contractor.write({
@@ -251,8 +258,8 @@ class ProfileApi(ApiBase):
                         'type': 'vendor',
                         # 'afdeling_id': vals['kemandoran_id'],
                         'payment_type': 'payment0',
-                        'date_start': f"{month_year}-01",
-                        'date_end': f"{month_year}-31",
+                        'date_start': month_start,
+                        'date_end': month_end,
                         'origin': vals.get('origin', False),
                         'supplier_id': supplier_id,
                         'line_ids': list(map(lambda x: (0, 0, x), lhm_contractor_lines1)),
@@ -278,6 +285,11 @@ class ProfileApi(ApiBase):
             else:
                 raise MissingError("Failed to create Laporan Harian Mandor")
         except Exception as error:
+            # The exception is converted into an HTTP response below, so it no
+            # longer reaches Odoo's request-level transaction handler. Roll
+            # back explicitly to prevent partially created LHM lines from
+            # being committed when an ORM validation raises an exception.
+            request.env.cr.rollback()
             return self._handle_exception(error)
     
     @http.route([ROUTES, f"{ROUTES}/<lhm_id>"], auth='public', website=False, csrf=False, type='http', methods=['GET'])
