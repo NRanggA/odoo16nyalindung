@@ -20,10 +20,11 @@ class SaleOrderLines(models.Model):
     @api.depends('product_id', 'product_uom', 'product_uom_qty')
     def _compute_pricelist_item_id2(self):
         for line in self:
-            if not line.product_id or line.display_type or not line.order_id.pricelist_id_2:
+            pricelist_2 = getattr(line.order_id, 'pricelist_id_2', False)
+            if not line.product_id or line.display_type or not pricelist_2:
                 line.pricelist_item_id2 = False
             else:
-                line.pricelist_item_id2 = line.order_id.pricelist_id_2._get_product_rule(
+                line.pricelist_item_id2 = pricelist_2._get_product_rule(
                     line.product_id,
                     line.product_uom_qty or 1.0,
                     uom=line.product_uom,
