@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Category for User Form -->
+    <record id="module_category_management_viewer" model="ir.module.category">
+        <field name="name">Management &amp; Audit</field>
+        <field name="sequence">25</field>
+    </record>
+
+    <!-- Main Group: Management Viewer / Auditor -->
+    <record id="group_management_viewer" model="res.groups">
+        <field name="name">Management Viewer / Auditor (Read-Only)</field>
+        <field name="category_id" ref="module_category_management_viewer"/>
+        <field name="implied_ids" eval="[
+            (4, ref('base.group_user')),
+            (4, ref('account.group_account_readonly')),
+            (4, ref('c10i_lhm_v16.plantation_base_user'))
+        ]"/>
+        <field name="comment">Hak akses khusus peninjau/auditor untuk melihat data dan mencetak/mengunduh seluruh laporan di 7 modul operasional dan finansial.</field>
+    </record>
+
+</odoo>

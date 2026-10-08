@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 1. INVENTORY (Menus with existing group restrictions) -->
+    <record id="stock.menu_stock_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="stock.all_picking" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="stock.menu_action_production_lot_form" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="stock.menu_package" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="stock.menu_warehouse_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <!-- 2. PLANTATION (Submenus with existing group restrictions) -->
+    <record id="c10i_lhm_v16.submenu_lhm_transaction" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="c10i_lhm_v16.menu_create_contractor_book" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="c10i_lhm_v16.menu_lhm_contractor_bill" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="c10i_lhm_v16.menu_lhm_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <!-- 3. MANUFACTURING (MRP) -->
+    <record id="mrp.menu_mrp_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="mrp.menu_mrp_workorder_todo" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="mrp.menu_view_resource_search_mrp" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="mrp.menu_mrp_workcenter_productivity_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="mrp.menu_mrp_work_order_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="mrp.product_variant_mrp" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <!-- 4. PURCHASE -->
+    <record id="purchase.menu_purchase_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="purchase.purchase_report_main" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="purchase.purchase_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <!-- 5. PURCHASE REQUEST -->
+    <record id="purchase_request.parent_menu_purchase_request" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="purchase_request.menu_purchase_request" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <!-- 6. SALES -->
+    <record id="sale.menu_sale_quotations" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="sale.menu_sale_order" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="sale.res_partner_menu" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="sale.menu_sale_invoicing" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="sale.product_menu_catalog" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="sale.menu_sale_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <!-- 7. ACCOUNTING -->
+    <record id="account.menu_finance" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="account.menu_finance_entries" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="account.menu_finance_reports" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="accounting_pdf_reports.menu_finance_audit_reports" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="accounting_pdf_reports.menu_finance_legal_statement" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+    <record id="accounting_pdf_reports.menu_finance_partner_reports" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('group_management_viewer'))]"/>
+    </record>
+
+</odoo>
