@@ -35,6 +35,7 @@ Executive Officers, and Auditors across 7 core operational and financial modules
         'ny_account_report1',
         'c10i_inventory_report',
         'accounting_pdf_reports',
+        'ny_sales',
     ],
     'data': [
         'security/viewer_security.xml',
