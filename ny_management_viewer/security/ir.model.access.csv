@@ -12,7 +12,7 @@ access_viewer_wiz_stock_prod,wizard.stock.prod.viewer,nyalindung_report.model_wi
 access_viewer_lhm_trans,lhm.transaction.viewer,c10i_lhm_v16.model_lhm_transaction,ny_management_viewer.group_management_viewer,1,0,0,0
 access_viewer_lhm_trans_line,lhm.transaction.line.viewer,c10i_lhm_v16.model_lhm_transaction_line,ny_management_viewer.group_management_viewer,1,0,0,0
 access_viewer_lhm_nap,lhm.nap.viewer,ny_plantation.model_lhm_nap,ny_management_viewer.group_management_viewer,1,0,0,0
-access_viewer_lhm_nap_line,lhm.nap.line.viewer,ny_plantation.model_lhm_nap_line,ny_management_viewer.group_management_viewer,1,0,0,0
+access_viewer_lhm_nap_line,lhm.nap.line.viewer,c10i_lhm_v16.model_lhm_nap_line,ny_management_viewer.group_management_viewer,1,0,0,0
 access_viewer_lhm_drc,lhm.drc.viewer,ny_plantation.model_lhm_drc,ny_management_viewer.group_management_viewer,1,0,0,0
 access_viewer_lhm_drc_line,lhm.drc.line.viewer,ny_plantation.model_lhm_drc_line,ny_management_viewer.group_management_viewer,1,0,0,0
 access_viewer_lhm_plant_block,lhm.plant.block.viewer,c10i_lhm_v16.model_lhm_plant_block,ny_management_viewer.group_management_viewer,1,0,0,0
