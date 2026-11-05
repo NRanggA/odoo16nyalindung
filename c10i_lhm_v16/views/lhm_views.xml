@@ -1121,7 +1121,13 @@
                             <group>
                                 <!-- <field name="status"/> -->
                                 <field name="need_to_be_approved" attrs="{'invisible': [('need_to_be_approved','=',False)]}"/>
-                                <field name="tm_year" attrs="{'readonly': [('status','=','tm')]}"/>
+                                <!-- [FIX 05/11/2026 - Alfi (KSI)] Tanggal Menjadi TM diisi, Tahun Menjadi TM dihitung otomatis. Tanggal bisa diubah Plantation Manager
+                                     kapan saja (user lain readonly); tidak lagi readonly begitu status TM karena itu membuat nilai tidak tersimpan.
+                                     Kode asli: c10i_lhm_v16/CHANGELOG.md -->
+                                <field name="can_edit_tm" invisible="1"/>
+                                <field name="tm_date" attrs="{'readonly': [('can_edit_tm','=',False)]}" force_save="1"/>
+                                <field name="tm_year" readonly="1"/>
+                                <!-- [FIX 05/11/2026] END -->
                                 <field name="tbm_age" attrs="{'invisible': [('status','=','tm')]}"/>
                                 <field name="tm_age" attrs="{'invisible': [('status','=','tbm')]}"/>
                                 <field name="tm_category_id" attrs="{'invisible': [('status','=','tbm')]}"/>
@@ -1140,6 +1146,12 @@
                             </page>
                         </notebook>
                     </sheet>
+                    <!-- [FIX 05/11/2026 - Alfi (KSI)] riwayat perubahan blok tanam -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                    <!-- [FIX 05/11/2026] END -->
                 </form>
             </field>
         </record>

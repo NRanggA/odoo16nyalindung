@@ -20,6 +20,9 @@ from decimal import Decimal, getcontext
 class lhm_plant_block(models.Model):
     _name           = 'lhm.plant.block'
     _description    = 'LHM Planting Block'
+    # [FIX 05/11/2026 - Alfi (KSI)] riwayat perubahan status / Tanggal-Tahun Menjadi TM tercatat di chatter
+    _inherit        = ['mail.thread']
+    # [FIX 05/11/2026] END
 
     def _default_location_type(self):
         location_type_ids   = self.env['lhm.location.type'].search([('plantation','=',True)])
@@ -30,6 +33,13 @@ class lhm_plant_block(models.Model):
 
     def _default_year(self):
         return int(time.strftime('%Y'))
+
+    # [FIX 05/11/2026 - Alfi (KSI)] Tahun Menjadi TM dihitung dari Tanggal Menjadi TM
+    @api.depends('tm_date')
+    def _compute_tm_year(self):
+        for block in self:
+            block.tm_year = block.tm_date.year if block.tm_date else 0
+    # [FIX 05/11/2026] END
 
     @api.depends('year', 'tm_year')
     def _compute_time_plant(self):
@@ -79,9 +89,14 @@ class lhm_plant_block(models.Model):
     plantable           = fields.Float("Plantable")
     koefisien_luas      = fields.Float("Koefisien Luasan")
     total_plant         = fields.Float("Jumlah Pokok",  compute="_compute_total_plant", store=True)
-    status              = fields.Selection(selection=[('tbm','Tanaman Belum Menghasilkan'),('tm','Tanaman Menghasilkan')],string="Status", compute="_compute_time_plant", store=True)
+    # [FIX 05/11/2026 - Alfi (KSI)] tracking pada status; Tanggal Menjadi TM (tm_date) baru. tm_year tetap ada (dihitung dari
+    # tanggal) supaya kode lain yang membaca tm_year / status tidak perlu diubah. Kode asli: c10i_lhm_v16/CHANGELOG.md
+    status              = fields.Selection(selection=[('tbm','Tanaman Belum Menghasilkan'),('tm','Tanaman Menghasilkan')],string="Status", compute="_compute_time_plant", store=True, tracking=True)
     need_to_be_approved = fields.Boolean('Butuh Approval untuk masuk ke Kategori Tanaman Menghasilkan', compute='_compute_time_plant', store=True)
-    tm_year             = fields.Integer(string='Tahun Menjadi TM')
+    tm_date             = fields.Date(string='Tanggal Menjadi TM', tracking=True)
+    tm_year             = fields.Integer(string='Tahun Menjadi TM', compute='_compute_tm_year', store=True)
+    can_edit_tm         = fields.Boolean(compute='_compute_can_edit_tm')   # untuk attrs readonly di form
+    # [FIX 05/11/2026] END
     # tm_category         = fields.Selection([('young', 'Young'), ('prime', 'Prime'), ('old','Old')], string='TM Category', compute='_compute_time_plant', store=True)
     tm_category_id      = fields.Many2one('lhm.tm.category', string='TM Category', compute='_compute_time_plant', store=True)
     tm_age              = fields.Char('Umur TM', compute='_compute_time_plant', store=True)
@@ -130,8 +145,50 @@ class lhm_plant_block(models.Model):
             # self.block = self.afdeling_id.code or False
 
     def button_set_as_tm(self):
-        self.status = 'tm'
-        self.tm_year = int(time.strftime('%Y'))
+        # [FIX 05/11/2026 - Alfi (KSI)] Tanggal Menjadi TM = hari ini (tidak backdate); status dan tm_year dihitung dari tanggal.
+        # Kode asli: c10i_lhm_v16/CHANGELOG.md
+        self.tm_date = fields.Date.context_today(self)
+        # [FIX 05/11/2026] END
+
+    # [FIX 05/11/2026 - Alfi (KSI)] Hak ubah Tanggal Menjadi TM di form: hanya Plantation Manager (user lain readonly).
+    @api.depends_context('uid')
+    def _compute_can_edit_tm(self):
+        is_manager = self.env.user.has_group('c10i_lhm_v16.group_plantation_manager')
+        for block in self:
+            block.can_edit_tm = is_manager
+
+    def _get_tm_min_date(self):
+        """Tanggal paling awal blok TBM boleh menjadi TM: awal period Open paling awal
+        (period yang sudah Closed tidak boleh berubah). Bila tidak ada period Open: awal bulan berjalan."""
+        self.ensure_one()
+        company = self.company_id or self.env.company
+        period = self.env['account.period'].search([('state', '=', 'draft'), ('special', '=', False),
+                                                    ('company_id', '=', company.id)], order='date_start', limit=1)
+        return period.date_start if period else fields.Date.context_today(self).replace(day=1)
+
+    def _check_tm_change(self, values):
+        """Aturan ubah Tanggal Menjadi TM (dipanggil dari write):
+        - hanya Plantation Manager;
+        - tidak boleh melebihi hari ini / tahun berjalan;
+        - blok TBM yang baru menjadi TM tidak boleh mundur ke period yang sudah Closed.
+        Koreksi blok yang sudah TM (termasuk melengkapi yang masih kosong) tetap boleh dan tercatat di chatter.
+        Nilai yang sama dengan sebelumnya tidak dianggap perubahan."""
+        if 'tm_date' not in values or self.env.su:
+            return
+        new_date = fields.Date.to_date(values.get('tm_date')) or False
+        changed = self.filtered(lambda b: b.tm_date != new_date)
+        if not changed:
+            return
+        if not self.env.user.has_group('c10i_lhm_v16.group_plantation_manager'):
+            raise UserError(_("Hanya Plantation Manager yang boleh mengubah Tanggal Menjadi TM blok tanam."))
+        if new_date and new_date > fields.Date.context_today(self):
+            raise UserError(_("Tanggal Menjadi TM (%s) tidak boleh melebihi hari ini.") % new_date.strftime('%d/%m/%Y'))
+        for block in changed.filtered(lambda b: b.status == 'tbm' and new_date):
+            min_date = block._get_tm_min_date()
+            if new_date < min_date:
+                raise UserError(_("Blok %s masih TBM: Tanggal Menjadi TM tidak boleh sebelum %s, karena period "
+                                  "sebelumnya sudah Closed.") % (block.name, min_date.strftime('%d/%m/%Y')))
+    # [FIX 05/11/2026] END
 
     @api.model
     def create(self, values):
@@ -163,7 +220,10 @@ class lhm_plant_block(models.Model):
 
 
     def write(self, values):
-        
+        # [FIX 05/11/2026 - Alfi (KSI)] Aturan ubah Tahun/Tanggal Menjadi TM dicek di satu tempat (_check_tm_change)
+        self._check_tm_change(values)
+        # [FIX 05/11/2026] END
+
         # if values.get('active') == False:
         # if 'active' in values and not values.get('active'):
             # if self.plant_block_ids:

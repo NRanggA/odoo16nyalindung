@@ -97,7 +97,12 @@ class ClosingPlantation(models.Model):
     plant_block_id = fields.Many2one('lhm.plant.block', string='Blok Tanam', ondelete='restrict', required=True)
     varieties_id = fields.Many2one(related='plant_block_id.varieties_id', store=True)
     type_of_plant = fields.Selection(related='plant_block_id.type_of_plant', store=True)
-    status = fields.Selection(related='plant_block_id.status', store=True)
+    # [FIX 05/11/2026 - Alfi (KSI)] Status disalin dari blok SAAT closing dibuat lalu dibekukan. Dulu related ke status blok,
+    # sehingga perubahan status blok hari ini ikut mengubah semua closing bulan-bulan sebelumnya.
+    # Kode asli: ny_closing/CHANGELOG.md
+    status = fields.Selection([('tbm', 'Tanaman Belum Menghasilkan'), ('tm', 'Tanaman Menghasilkan'), ('none', 'None')],
+                              string='Status', compute='_compute_status', store=True, readonly=False)
+    # [FIX 05/11/2026] END
     plant_season_ids = fields.Many2many('plantation.season', 'closing_plantation_season_rel', string='Season', ondelete='restrict')
     mark_plant_block_period = fields.Selection([('none','None'),('tm','TM'),('tbm','TBM'),('preharvest','Pre-Harvesting'),('harvesting','Harvesting')], compute='_compute_mark', string='Block Mark')
 
@@ -122,6 +127,13 @@ class ClosingPlantation(models.Model):
     pct_deferred_to_cost = fields.Float()
 
     closing_move_id = fields.Many2one('account.move', string='Journal Entry')
+
+    # [FIX 05/11/2026 - Alfi (KSI)] status closing diambil dari blok saat closing dibuat (lihat field status)
+    @api.depends('plant_block_id')
+    def _compute_status(self):
+        for closing in self:
+            closing.status = closing.plant_block_id.status
+    # [FIX 05/11/2026] END
 
     @api.depends('plant_block_id','type_of_plant','status','plant_season_ids','plant_season_ids.harvest_date_schedule')
     def _compute_mark(self):
