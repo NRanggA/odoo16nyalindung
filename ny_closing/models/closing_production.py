@@ -1832,6 +1832,26 @@ class ClosingProduction(models.Model):
     
     ############################### END VALUATION RAW MATERIAL ###################################
 
+    # [FIX 05/11/2026 - Alfi (KSI)] Query adjustment Finish Good dijadikan satu method,
+    # dipakai RSS I, RSS III, Cutting dan Compo (compute_initial_and_cost_fg2).
+    # Sebelumnya query ini hanya ada di loop mrp_products, sehingga Compo adjustment tidak ketarik ke closing.
+    # Filter dan rumus sama persis dengan query asli. Detail & kode asli: ny_closing/CHANGELOG.md
+    def _get_fg_adjustment_qty(self, product):
+        self.ensure_one()
+        domain = [
+            ('product_id', '=', product.id),
+            ('state', '=', 'done'),
+            ('scrap_ids', '=', False),
+            ('picking_id', '=', False),
+            ('date', '>=', self.date_from.strftime('%Y-%m-%d 00:00:00')),
+            ('date', '<=', self.date_to.strftime('%Y-%m-%d 23:59:59')),
+        ]
+        in_moves = self.env['stock.move'].search(domain + [('location_id.usage', '=', 'inventory'), ('location_dest_id.usage', '=', 'internal')])
+        out_moves = self.env['stock.move'].search(domain + [('location_id.usage', '=', 'internal'), ('location_dest_id.usage', '=', 'inventory')])
+        # Hitung qty adjustment (in - out)
+        return sum(in_moves.mapped('product_uom_qty')) - sum(out_moves.mapped('product_uom_qty'))
+    # [FIX 05/11/2026] END
+
     def compute_initial_and_cost_fg2(self):
         for closing in self:
             if closing.closing_process_id and closing.parent_state!='closing_production':
@@ -1886,34 +1906,10 @@ class ClosingProduction(models.Model):
                 # adjustment_qty = sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
                 # adjustment_qty -= sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
 
-                adjustment_out_moves = self.env['stock.move'].search([
-                    ('product_id', '=', product.id),
-                    ('state', '=', 'done'),
-                    ('scrap_ids', '=', False),
-                    ('picking_id', '=', False),
-                    ('location_id.usage', '=', 'internal'),
-                    ('location_dest_id.usage', '=', 'inventory'),
-                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
-                ])
-
-                adjustment_in_moves = self.env['stock.move'].search([
-                    ('product_id', '=', product.id),
-                    ('state', '=', 'done'),
-                    ('scrap_ids', '=', False),
-                    ('picking_id', '=', False),
-                    ('location_id.usage', '=', 'inventory'),
-                    ('location_dest_id.usage', '=', 'internal'),
-                    ('date', '>=', closing.date_from.strftime('%Y-%m-%d 00:00:00')),
-                    ('date', '<=', closing.date_to.strftime('%Y-%m-%d 23:59:59')),
-                ])
-
-                # Hitung qty adjustment (in - out)
-                adjustment_qty = (
-                    sum(adjustment_in_moves.mapped('product_uom_qty')) if adjustment_in_moves else 0.0
-                ) - (
-                    sum(adjustment_out_moves.mapped('product_uom_qty')) if adjustment_out_moves else 0.0
-                )
+                # [FIX 05/11/2026 - Alfi (KSI)] Query adjustment asli dipindah ke _get_fg_adjustment_qty()
+                # (filter sama persis) supaya bisa dipakai juga oleh Compo. Kode asli: ny_closing/CHANGELOG.md
+                adjustment_qty = closing._get_fg_adjustment_qty(product)
+                # [FIX 05/11/2026] END
 
 
                 values_to_create = {
@@ -1973,6 +1969,9 @@ class ClosingProduction(models.Model):
                             ])
             outgoing_qty22 = sum(outgoing_moves22_1.mapped('product_uom_qty')) if outgoing_moves22_1 else 0.0
             outgoing_qty22 -= sum(outgoing_moves22_2.mapped('product_uom_qty')) if outgoing_moves22_2 else 0.0
+            # [FIX 05/11/2026 - Alfi (KSI)] Compo adjustment ikut dihitung (sebelumnya tidak ada, sehingga selalu 0)
+            adjustment_qty_compo = closing._get_fg_adjustment_qty(closing.compound_product_id)
+            # [FIX 05/11/2026] END
             values_to_create_compo = {
                 'product_id': closing.compound_product_id.id,
                 'prev_closing_fg_id': prev_closing_fg_compo.id if prev_closing_fg_compo else False,
@@ -1981,11 +1980,17 @@ class ClosingProduction(models.Model):
                 'incoming_qty': finished_compo_qty,
                 'manufacturing_cost': closing.lump_wip_outgoing_value,
                 'outgoing_qty': outgoing_qty22,
+                # [FIX 05/11/2026 - Alfi (KSI)] Compo adjustment
+                'adjustment_qty': adjustment_qty_compo,
+                # [FIX 05/11/2026] END
             }
             if prev_closing_fg_compo:
                 values_to_create_compo.update({
                     'inventory_account_id': prev_closing_fg_compo.inventory_account_id.id if prev_closing_fg_compo.inventory_account_id else False,
                     'cogs_account_id': prev_closing_fg_compo.cogs_account_id.id if prev_closing_fg_compo.cogs_account_id else False,
+                    # [FIX 05/11/2026 - Alfi (KSI)] Adjustment account Compo dibawa dari closing sebelumnya, sama seperti RSS
+                    'adjustment_account_id': prev_closing_fg_compo.adjustment_account_id.id if prev_closing_fg_compo.adjustment_account_id else False,
+                    # [FIX 05/11/2026] END
                 })
             to_create.append((values_to_create_compo))
 
