@@ -11,6 +11,11 @@ class MrpProduction(models.Model):
     source_mo_id = fields.Many2one('mrp.production', string='Asal MO', readonly=False, help='MO asal dari mana MO ini dibuat melalui proses split atau backorder.')
     wip_date_start = fields.Datetime(related='source_mo_id.date_finished', string='WIP Start Date', help='Tanggal mulai WIP dari MO ini.', readonly=True, store=True)
     finish_mo_ids = fields.One2many('mrp.production', 'source_mo_id', string='Akhir MO', readonly=True)
+    # [FIX 06/11/2026 - Alfi (KSI)] Jumlah lembar WIP Compo untuk kontrol fisik di pabrik. Hanya untuk MO WIP Compo
+    # (MO Compo / barang jadi tidak diisi). Wajib sebelum Mark as Done, sesudahnya tetap bisa dikoreksi
+    # dan setiap perubahan tercatat di riwayat MO. Kode asli: ny_mrp/CHANGELOG.md
+    qty_lembar = fields.Integer(string='Jumlah Lembar', tracking=True, copy=False)
+    # [FIX 06/11/2026] END
     state_mo_wip = fields.Selection([
         ('none', 'None'),
         ('inprogress', 'In Progress'),
@@ -78,7 +83,21 @@ class MrpProduction(models.Model):
                              'default_bom_id': self.bom_id.id}
         return action
 
+    # [FIX 06/11/2026 - Alfi (KSI)] MO WIP Compo wajib berisi Jumlah Lembar sebelum selesai.
+    def _is_wip_compo(self):
+        self.ensure_one()
+        return self.product_id.name == 'WIP Compo'
+
+    def _check_qty_lembar_before_done(self):
+        for rec in self:
+            if rec._is_wip_compo() and rec.qty_lembar <= 0:
+                raise UserError(_("Isi Jumlah Lembar dulu sebelum Mark as Done (MO WIP Compo %s).") % rec.name)
+    # [FIX 06/11/2026] END
+
     def button_mark_done(self):
+        # [FIX 06/11/2026 - Alfi (KSI)] cek Jumlah Lembar MO WIP Compo sebelum wizard konfirmasi
+        self._check_qty_lembar_before_done()
+        # [FIX 06/11/2026] END
         for rec in self:
             # Wizard konfirmasi
             if not rec.env.context.get('from_wizard'):

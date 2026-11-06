@@ -32,6 +32,11 @@
                                 ('state', '!=', 'draft')                 
                         ]}"/>
             </xpath>
+            <!-- [FIX 06/11/2026 - Alfi (KSI)] Jumlah Lembar hanya tampil di MO WIP Compo -->
+            <xpath expr="//label[@for='product_qty']/following-sibling::div[1]" position="after">
+                <field name="qty_lembar" attrs="{'invisible': [('product_name', '!=', 'WIP Compo')]}"/>
+            </xpath>
+            <!-- [FIX 06/11/2026] END -->
             <page name="finished_products" position="before">
                 <page name="manual_consume" string="Manual Consume">
                     <!-- attrs="{'readonly': ['|', ('state', '=', 'cancel'), '&amp;', ('state', '=', 'done'), ('is_locked', '=', True)]}" -->

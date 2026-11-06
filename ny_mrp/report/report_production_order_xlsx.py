@@ -374,18 +374,29 @@ class ReportProductionOrderXlsx(models.AbstractModel):
         worksheet2.write(next_row, col, 'Nomor MO', wbf['header'])
         worksheet2.set_column(col, col, 25)
         col += 1
+        # [FIX 06/11/2026 - Alfi (KSI)] posisi kolom Lump dan Compo dicatat untuk rumus DRC (dulu nomor kolom ditulis tetap)
+        col_lump = col
+        # [FIX 06/11/2026] END
         worksheet2.write(next_row, col, "Lump", wbf['header'])
         worksheet2.set_column(col, col, 10)
         col += 1
         worksheet2.write(next_row, col, "Asam Semut", wbf['header'])
         worksheet2.set_column(col, col, 10)
         col += 1
+        # [FIX 06/11/2026 - Alfi (KSI)] kolom Lembar (jumlah lembar WIP Compo)
+        worksheet2.write(next_row, col, "Lembar", wbf['header'])
+        worksheet2.set_column(col, col, 10)
+        col += 1
+        # [FIX 06/11/2026] END
         worksheet2.write(next_row, col, "Status", wbf['header'])
         worksheet2.set_column(col, col, 12)
         col += 1
         worksheet2.write(next_row, col, "Tgl Selesai", wbf['header'])
         worksheet2.set_column(col, col, 12)
         col += 1
+        # [FIX 06/11/2026 - Alfi (KSI)] posisi kolom Compo untuk rumus DRC
+        col_compo = col
+        # [FIX 06/11/2026] END
         worksheet2.write(next_row, col, "Compo", wbf['header'])
         worksheet2.set_column(col, col, 10)
         col += 1
@@ -423,6 +434,10 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             asam_qty = sum(asam_line.mapped('quantity_done')) if asam_line else 0
             worksheet2.write(next_row, col, asam_qty, wbf['content_float'])
             col += 1
+            # [FIX 06/11/2026 - Alfi (KSI)] Lembar (kosong bila belum diisi, misalnya MO lama)
+            worksheet2.write(next_row, col, mo.qty_lembar or '', wbf['content_center'])
+            col += 1
+            # [FIX 06/11/2026] END
             # Status
             mo_final = mo.finish_mo_ids.filtered(lambda x: x.state == 'done')
             if mo_final:
@@ -446,9 +461,11 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             worksheet2.write(next_row, col, compo_qty, wbf['content_float'])
             col += 1
             # DRC (%) - Using formula: Compo / Lump
+            # [FIX 06/11/2026 - Alfi (KSI)] kolom Compo/Lump mengikuti posisi header (dulu kolom 7 dan 3 ditulis tetap)
             worksheet2.write_formula(next_row, col, 
-                f"={xl_rowcol_to_cell(next_row, 7)}/{xl_rowcol_to_cell(next_row, 3)}", 
+                f"={xl_rowcol_to_cell(next_row, col_compo)}/{xl_rowcol_to_cell(next_row, col_lump)}", 
                 wbf['content_percent'])
+            # [FIX 06/11/2026] END
             col += 1
             # Durasi (Hari) - only if finished
             if mo_final and mo.date_finished:
@@ -476,6 +493,12 @@ class ReportProductionOrderXlsx(models.AbstractModel):
                 f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row - 1, col)})", 
                 wbf['total_float'])
             col += 1
+            # [FIX 06/11/2026 - Alfi (KSI)] total Lembar
+            worksheet2.write_formula(next_row, col, 
+                f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row - 1, col)})", 
+                wbf['total_center'])
+            col += 1
+            # [FIX 06/11/2026] END
             worksheet2.write(next_row, col, "", wbf['total'])
             col += 1
             worksheet2.write(next_row, col, "", wbf['total'])
@@ -486,9 +509,11 @@ class ReportProductionOrderXlsx(models.AbstractModel):
                 wbf['total_float'])
             col += 1
             # Average DRC (%)
+            # [FIX 06/11/2026 - Alfi (KSI)] kolom Compo/Lump mengikuti posisi header
             worksheet2.write_formula(next_row, col, 
-                f"={xl_rowcol_to_cell(next_row, 7)}/{xl_rowcol_to_cell(next_row, 3)}", 
+                f"={xl_rowcol_to_cell(next_row, col_compo)}/{xl_rowcol_to_cell(next_row, col_lump)}", 
                 wbf['total_percent'])
+            # [FIX 06/11/2026] END
             col += 1
             # Average Durasi
             worksheet2.write_formula(next_row, col, 
