@@ -234,6 +234,42 @@ class ReportStockMutation(models.AbstractModel):
             """
         return query
 
+    # [FIX 06/11/2026 - Alfi (KSI)] Kolom Asal / Tujuan di Stock Card: pihak atau tujuan setiap baris sesuai jenis transaksi
+    # (customer/vendor, lokasi kebun + aktivitas + karyawan untuk Store Issue, produksi, scrap, adjustment).
+    # Field plantation/MRP dibaca hanya bila modulnya terpasang, karena c10i_stock tidak bergantung pada modul itu.
+    def _get_asal_tujuan(self, line, location):
+        incoming = line.location_dest_id == location
+        other = line.location_id if incoming else line.location_dest_id
+        move = line.move_id
+        picking = line.picking_id
+        partner = picking.partner_id or move.partner_id
+        usage = other.usage
+        if usage == 'customer':
+            name = partner.name or other.name
+            return f"{name} (retur)" if incoming else name
+        if usage == 'supplier':
+            name = partner.name or other.name
+            return f"{name} (vendor)" if incoming else f"{name} (retur ke vendor)"
+        if usage == 'production':
+            if 'raw_material_production_id' in move._fields and move.raw_material_production_id:
+                return "Bahan produksi %s" % move.raw_material_production_id.product_id.name
+            return 'Hasil produksi' if incoming else 'Produksi'
+        if usage == 'inventory':
+            if other.scrap_location:
+                return 'Scrap'
+            if 'plantation_location_id' in move._fields and move.plantation_location_id:
+                parts = [move.plantation_location_id.name]
+                if 'plantation_activity_name' in move._fields and move.plantation_activity_name:
+                    parts.append(move.plantation_activity_name)
+                if picking and 'employee_id' in picking._fields and picking.employee_id:
+                    parts.append(picking.employee_id.name)
+                return ' / '.join(parts)
+            if picking:
+                return picking.picking_type_id.name or other.name
+            return 'Penyesuaian stok'
+        return other.complete_name or other.name
+    # [FIX 06/11/2026] END
+
     def generate_xlsx_report(self, workbook, datas, obj):
         workbook = self.add_workbook_format(workbook)
         wbf = self.wbf
@@ -246,10 +282,13 @@ class ReportStockMutation(models.AbstractModel):
         sheet = workbook.add_worksheet("Stock Card Report")
         sheet.set_column('A:A', 20)
         sheet.set_column('B:B', 30)
-        sheet.set_column('C:C', 10)
+        # [FIX 06/11/2026 - Alfi (KSI)] kolom C = Asal / Tujuan, kolom sesudahnya bergeser satu
+        sheet.set_column('C:C', 40)
         sheet.set_column('D:D', 10)
         sheet.set_column('E:E', 10)
-        sheet.set_column('F:F', 20)
+        sheet.set_column('F:F', 10)
+        sheet.set_column('G:G', 20)
+        # [FIX 06/11/2026] END
 
         row = 1
         for product in products:
@@ -277,10 +316,13 @@ class ReportStockMutation(models.AbstractModel):
             # Header Kolom
             sheet.write(row, 0, 'Date', wbf['header'])
             sheet.write(row, 1, 'Transaction', wbf['header'])
-            sheet.write(row, 2, 'Penerimaan', wbf['header'])
-            sheet.write(row, 3, 'Pengeluaran', wbf['header'])
-            sheet.write(row, 4, 'Satuan', wbf['header'])
-            sheet.write(row, 5, 'Balance', wbf['header'])
+            # [FIX 06/11/2026 - Alfi (KSI)] kolom Asal / Tujuan setelah Transaction
+            sheet.write(row, 2, 'Asal / Tujuan', wbf['header'])
+            sheet.write(row, 3, 'Penerimaan', wbf['header'])
+            sheet.write(row, 4, 'Pengeluaran', wbf['header'])
+            sheet.write(row, 5, 'Satuan', wbf['header'])
+            sheet.write(row, 6, 'Balance', wbf['header'])
+            # [FIX 06/11/2026] END
             row += 1
 
             # Menghitung Saldo Awal
@@ -290,7 +332,9 @@ class ReportStockMutation(models.AbstractModel):
 
             # Tulis Saldo Awal
             sheet.write(row, 1, 'Saldo Awal', wbf['header'])
-            sheet.write(row, 5, opening, wbf['total_float'])
+            # [FIX 06/11/2026 - Alfi (KSI)] kolom Balance bergeser ke G
+            sheet.write(row, 6, opening, wbf['total_float'])
+            # [FIX 06/11/2026] END
 
             row += 1
 
@@ -315,6 +359,9 @@ class ReportStockMutation(models.AbstractModel):
                 sheet.write(row, 0, local_time.strftime('%d-%m-%Y %H:%M:%S'), wbf['content'])
                 transaction_name = move.reference or move.picking_id.name
                 sheet.write(row, 1, transaction_name, wbf['content'])
+                # [FIX 06/11/2026 - Alfi (KSI)] Asal / Tujuan; kolom Penerimaan s.d. Balance bergeser satu
+                sheet.write(row, 2, self._get_asal_tujuan(move, obj.location_id) or '', wbf['content'])
+                # [FIX 06/11/2026] END
                 qty = move.qty_done
                 # if move.location_id.usage == 'internal' and move.location_dest_id.usage != 'internal':
                 #     qty = -qty
@@ -325,23 +372,25 @@ class ReportStockMutation(models.AbstractModel):
                 #     sheet.write(row, 3, '', wbf['positive'])
                 if move.location_id.id == obj.location_id.id and move.location_dest_id.id != obj.location_id.id:
                     qty = -qty
-                    sheet.write(row, 2, '', wbf['negative'])
-                    sheet.write(row, 3, qty, wbf['negative'])
+                    sheet.write(row, 3, '', wbf['negative'])
+                    sheet.write(row, 4, qty, wbf['negative'])
                 elif move.location_id.id != obj.location_id.id and move.location_dest_id.id == obj.location_id.id:
-                    sheet.write(row, 2, qty, wbf['positive'])
-                    sheet.write(row, 3, '', wbf['positive'])
+                    sheet.write(row, 3, qty, wbf['positive'])
+                    sheet.write(row, 4, '', wbf['positive'])
                 
-                sheet.write(row, 4, move.product_id.uom_id.name, wbf['content'])
+                sheet.write(row, 5, move.product_id.uom_id.name, wbf['content'])
 
                 # Update Balance
                 balance += qty
-                sheet.write(row, 5, balance, wbf['total_float'])
+                sheet.write(row, 6, balance, wbf['total_float'])
 
                 row += 1
 
             # Tulis Saldo Akhir
-            sheet.merge_range(row, 0, row, 4, 'Saldo Akhir', wbf['header'])
-            sheet.write(row, 5, balance, wbf['total_float'])
+            # [FIX 06/11/2026 - Alfi (KSI)] Saldo Akhir mengikuti kolom yang bergeser
+            sheet.merge_range(row, 0, row, 5, 'Saldo Akhir', wbf['header'])
+            sheet.write(row, 6, balance, wbf['total_float'])
+            # [FIX 06/11/2026] END
             row += 3
 
         # Pengaturan Cetak
