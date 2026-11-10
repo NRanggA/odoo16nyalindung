@@ -11,9 +11,12 @@ class MrpProduction(models.Model):
     source_mo_id = fields.Many2one('mrp.production', string='Asal MO', readonly=False, help='MO asal dari mana MO ini dibuat melalui proses split atau backorder.')
     wip_date_start = fields.Datetime(related='source_mo_id.date_finished', string='WIP Start Date', help='Tanggal mulai WIP dari MO ini.', readonly=True, store=True)
     finish_mo_ids = fields.One2many('mrp.production', 'source_mo_id', string='Akhir MO', readonly=True)
-    # [FIX 06/11/2026 - Alfi (KSI)] Jumlah lembar WIP Compo untuk kontrol fisik di pabrik. Hanya untuk MO WIP Compo
-    # (MO Compo / barang jadi tidak diisi). Wajib sebelum Mark as Done, sesudahnya tetap bisa dikoreksi
+    # [FIX 06/11/2026 - Alfi (KSI)] Jumlah lembar WIP Compo untuk kontrol fisik di pabrik.
+    # Wajib sebelum Mark as Done, sesudahnya tetap bisa dikoreksi
     # dan setiap perubahan tercatat di riwayat MO. Kode asli: ny_mrp/CHANGELOG.md
+    # [FIX 10/11/2026 - Alfi (KSI)] juga untuk MO Compo (barang jadi): terisi dari lembar MO WIP Compo asal
+    # dan bisa diubah, supaya jumlah lembar masuk dan keluar pengeringan bisa dibandingkan.
+    # [FIX 10/11/2026] END
     qty_lembar = fields.Integer(string='Jumlah Lembar', tracking=True, copy=False)
     # [FIX 06/11/2026] END
     state_mo_wip = fields.Selection([
@@ -65,7 +68,12 @@ class MrpProduction(models.Model):
         else:
             raise UserError("Field 'Bills of Material' wajib diisi untuk membuat nomor MO.")
 
-        return super(MrpProduction, self).create(vals)
+        # [FIX 10/11/2026 - Alfi (KSI)] MO Compo yang dibuat dengan Asal MO langsung terisi Jumlah Lembar dari WIP asal
+        res = super(MrpProduction, self).create(vals)
+        if res.product_id.name == 'Compo' and res.source_mo_id and not res.qty_lembar:
+            res.qty_lembar = res._get_sisa_lembar_asal()
+        return res
+        # [FIX 10/11/2026] END
 
     def action_draft(self):
         for production in self:
@@ -84,15 +92,32 @@ class MrpProduction(models.Model):
         return action
 
     # [FIX 06/11/2026 - Alfi (KSI)] MO WIP Compo wajib berisi Jumlah Lembar sebelum selesai.
+    # [FIX 10/11/2026 - Alfi (KSI)] berlaku juga untuk MO Compo
     def _is_wip_compo(self):
         self.ensure_one()
-        return self.product_id.name == 'WIP Compo'
+        return self.product_id.name in ('WIP Compo', 'Compo')
 
     def _check_qty_lembar_before_done(self):
         for rec in self:
             if rec._is_wip_compo() and rec.qty_lembar <= 0:
-                raise UserError(_("Isi Jumlah Lembar dulu sebelum Mark as Done (MO WIP Compo %s).") % rec.name)
+                raise UserError(_("Isi Jumlah Lembar dulu sebelum Mark as Done (MO %s %s).") % (rec.product_id.name, rec.name))
     # [FIX 06/11/2026] END
+
+    # [FIX 10/11/2026 - Alfi (KSI)] Jumlah Lembar MO Compo diisi dari MO WIP Compo asal. Bila satu WIP dipecah ke
+    # beberapa MO Compo, yang diisi adalah sisa lembar yang belum dipakai MO Compo lain.
+    def _get_sisa_lembar_asal(self):
+        self.ensure_one()
+        src = self.source_mo_id
+        if not src or not src.qty_lembar:
+            return 0
+        lain = src.finish_mo_ids.filtered(lambda m: m.id != self._origin.id and m.state != 'cancel')
+        return max(src.qty_lembar - sum(lain.mapped('qty_lembar')), 0)
+
+    @api.onchange('source_mo_id')
+    def _onchange_source_mo_qty_lembar(self):
+        if self.product_id.name == 'Compo' and self.state in ('draft', 'confirmed', 'progress', 'to_close'):
+            self.qty_lembar = self._get_sisa_lembar_asal()
+    # [FIX 10/11/2026] END
 
     def button_mark_done(self):
         # [FIX 06/11/2026 - Alfi (KSI)] cek Jumlah Lembar MO WIP Compo sebelum wizard konfirmasi

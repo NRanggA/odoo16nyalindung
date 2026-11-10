@@ -47,3 +47,68 @@ f"={xl_rowcol_to_cell(next_row, 7)}/{xl_rowcol_to_cell(next_row, 3)}",
 - Mark as Done dengan Jumlah Lembar terisi: berhasil; field tetap bisa diubah setelah Done, perubahan tercatat di chatter.
 - MO selain WIP Compo (Sheet, Compo, RSS): field tidak tampil, Mark as Done tidak terpengaruh.
 - Laporan Produksi (Olah Bahan Baku dan Barang Jadi): kolom Lembar dan totalnya tampil; DRC sama dengan sebelum perubahan (Compo / Lump).
+
+---
+
+## [FIX 10/11/2026 - Alfi (KSI)] Jumlah Lembar juga di MO Compo, dengan Selisih Lembar di Laporan Produksi
+
+**File:** `models/mrp_production.py`, `views/mrp_production_view.xml`, `report/report_production_order_xlsx.py`
+**Perlu upgrade modul:** ya, `-u ny_mrp` (view form MO).
+
+### Masalah
+Jumlah lembar hanya dicatat di MO WIP Compo. Berat Compo selalu lebih kecil dari WIP karena pengeringan, jadi lembar yang hilang atau rusak selama pengeringan tidak terlihat tanpa jumlah lembar di sisi Compo.
+
+### Penyebab
+Jumlah Lembar sebelumnya sengaja dibatasi untuk MO WIP Compo saja. Diperluas ke MO Compo sesuai keputusan review 10/11/2026.
+
+### Perubahan
+- MO Compo: field Jumlah Lembar tampil di bawah Quantity, terisi otomatis dari MO WIP Compo asal saat Asal MO dipilih (atau saat MO dibuat dengan Asal MO), dan bisa diubah. Bila satu WIP dipecah ke beberapa MO Compo, yang terisi adalah sisa lembar yang belum dipakai.
+- MO Compo wajib berisi Jumlah Lembar sebelum Mark as Done (aturan yang sama dengan MO WIP Compo).
+- Laporan Produksi, sheet Olahan Lump: kolom Lembar Compo (jumlah lembar MO Compo selesai) dan Selisih Lembar (rumus Lembar - Lembar Compo, kosong bila salah satu belum diisi) setelah kolom Compo, berikut totalnya. Rumus DRC tetap memakai posisi kolom dari header.
+
+### Kode asli (sebelum diubah)
+
+`models/mrp_production.py` (baris 14–15):
+
+```python
+# [FIX 06/11/2026 - Alfi (KSI)] Jumlah lembar WIP Compo untuk kontrol fisik di pabrik. Hanya untuk MO WIP Compo
+# (MO Compo / barang jadi tidak diisi). Wajib sebelum Mark as Done, sesudahnya tetap bisa dikoreksi
+```
+
+`models/mrp_production.py` (baris 68):
+
+```python
+return super(MrpProduction, self).create(vals)
+```
+
+`models/mrp_production.py` (baris 89):
+
+```python
+return self.product_id.name == 'WIP Compo'
+```
+
+`models/mrp_production.py` (baris 94):
+
+```python
+raise UserError(_("Isi Jumlah Lembar dulu sebelum Mark as Done (MO WIP Compo %s).") % rec.name)
+```
+
+`views/mrp_production_view.xml` (baris 35):
+
+```xml
+<!-- [FIX 06/11/2026 - Alfi (KSI)] Jumlah Lembar hanya tampil di MO WIP Compo -->
+```
+
+`views/mrp_production_view.xml` (baris 37):
+
+```xml
+<field name="qty_lembar" attrs="{'invisible': [('product_name', '!=', 'WIP Compo')]}"/>
+```
+
+`report/report_production_order_xlsx.py`: hanya tambahan, tidak ada baris asli yang diubah.
+
+### Uji
+- MO Compo baru, Asal MO = MO WIP Compo berlembar 52 → Jumlah Lembar terisi 52; diubah 50 → tersimpan, tercatat di chatter.
+- Jumlah Lembar 0 → Mark as Done ditolak.
+- Laporan Produksi: baris WIP itu Lembar 52, Lembar Compo 50, Selisih 2; MO lama kolom baru kosong; total dan DRC benar.
+- MO lain (Sheet, RSS) tidak berubah, field tidak tampil.

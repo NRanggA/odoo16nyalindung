@@ -384,6 +384,9 @@ class ReportProductionOrderXlsx(models.AbstractModel):
         worksheet2.set_column(col, col, 10)
         col += 1
         # [FIX 06/11/2026 - Alfi (KSI)] kolom Lembar (jumlah lembar WIP Compo)
+        # [FIX 10/11/2026 - Alfi (KSI)] posisi kolom dicatat untuk rumus Selisih Lembar
+        col_lembar = col
+        # [FIX 10/11/2026] END
         worksheet2.write(next_row, col, "Lembar", wbf['header'])
         worksheet2.set_column(col, col, 10)
         col += 1
@@ -400,6 +403,15 @@ class ReportProductionOrderXlsx(models.AbstractModel):
         worksheet2.write(next_row, col, "Compo", wbf['header'])
         worksheet2.set_column(col, col, 10)
         col += 1
+        # [FIX 10/11/2026 - Alfi (KSI)] kolom Lembar Compo dan Selisih Lembar (WIP - Compo)
+        col_lembar_compo = col
+        worksheet2.write(next_row, col, "Lembar Compo", wbf['header'])
+        worksheet2.set_column(col, col, 10)
+        col += 1
+        worksheet2.write(next_row, col, "Selisih Lembar", wbf['header'])
+        worksheet2.set_column(col, col, 10)
+        col += 1
+        # [FIX 10/11/2026] END
         worksheet2.write(next_row, col, "DRC (%)", wbf['header'])
         worksheet2.set_column(col, col, 10)
         col += 1
@@ -460,6 +472,18 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             compo_qty = sum(compo_mo.mapped('product_qty')) if compo_mo else 0
             worksheet2.write(next_row, col, compo_qty, wbf['content_float'])
             col += 1
+            # [FIX 10/11/2026 - Alfi (KSI)] Lembar Compo (MO Compo selesai) dan Selisih; kosong bila salah satu belum diisi
+            lembar_compo = sum(compo_mo.mapped('qty_lembar')) if compo_mo else 0
+            worksheet2.write(next_row, col, lembar_compo or '', wbf['content_center'])
+            col += 1
+            if mo.qty_lembar and lembar_compo:
+                worksheet2.write_formula(next_row, col,
+                    f"={xl_rowcol_to_cell(next_row, col_lembar)}-{xl_rowcol_to_cell(next_row, col_lembar_compo)}",
+                    wbf['content_center'])
+            else:
+                worksheet2.write(next_row, col, '', wbf['content_center'])
+            col += 1
+            # [FIX 10/11/2026] END
             # DRC (%) - Using formula: Compo / Lump
             # [FIX 06/11/2026 - Alfi (KSI)] kolom Compo/Lump mengikuti posisi header (dulu kolom 7 dan 3 ditulis tetap)
             worksheet2.write_formula(next_row, col, 
@@ -508,6 +532,13 @@ class ReportProductionOrderXlsx(models.AbstractModel):
                 f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row - 1, col)})", 
                 wbf['total_float'])
             col += 1
+            # [FIX 10/11/2026 - Alfi (KSI)] total Lembar Compo dan Selisih Lembar
+            for _i in range(2):
+                worksheet2.write_formula(next_row, col,
+                    f"=SUM({xl_rowcol_to_cell(first_row, col)}:{xl_rowcol_to_cell(next_row - 1, col)})",
+                    wbf['total_center'])
+                col += 1
+            # [FIX 10/11/2026] END
             # Average DRC (%)
             # [FIX 06/11/2026 - Alfi (KSI)] kolom Compo/Lump mengikuti posisi header
             worksheet2.write_formula(next_row, col, 
