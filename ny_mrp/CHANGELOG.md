@@ -112,3 +112,44 @@ raise UserError(_("Isi Jumlah Lembar dulu sebelum Mark as Done (MO WIP Compo %s)
 - Jumlah Lembar 0 → Mark as Done ditolak.
 - Laporan Produksi: baris WIP itu Lembar 52, Lembar Compo 50, Selisih 2; MO lama kolom baru kosong; total dan DRC benar.
 - MO lain (Sheet, RSS) tidak berubah, field tidak tampil.
+
+---
+
+## [FIX 10/11/2026 - Alfi (KSI)] Laporan Produksi: angka rumus tampil tanpa Enable Editing; Selisih Lembar menunggu semua MO Compo selesai
+
+**File:** `report/report_production_order_xlsx.py`
+**Perlu upgrade modul:** ya, `-u ny_mrp` (kode laporan; cukup restart, upgrade aman).
+
+### Masalah
+File Excel Laporan Produksi yang baru di-download (Protected View) menampilkan 0 untuk semua rumus (DRC, TOTAL, Selisih Lembar) sampai user klik Enable Editing. Selain itu Selisih Lembar terlihat besar bila satu WIP dipecah ke beberapa MO Compo dan baru sebagian yang selesai.
+
+### Penyebab
+xlsxwriter menulis rumus tanpa nilai hasil (tersimpan 0); Excel baru menghitung ulang setelah file boleh diedit. Selisih dihitung dari MO Compo yang sudah Done saja.
+
+### Perubahan
+- Kelas `_SheetDenganNilai` membungkus worksheet Olahan Lateks dan Olahan Lump: mencatat angka yang ditulis, lalu setiap `write_formula` diberi nilai hasil (SUM, AVERAGE, + - * /; pembagian nol atau AVERAGE kosong = #DIV/0! seperti Excel). Rumus tetap ada.
+- Selisih Lembar hanya diisi bila semua MO Compo dari WIP itu sudah Done atau Cancel.
+
+### Kode asli (sebelum diubah)
+
+`report/report_production_order_xlsx.py` (baris 201):
+
+```python
+worksheet = workbook.add_worksheet("Olahan Lateks")
+```
+
+`report/report_production_order_xlsx.py` (baris 367):
+
+```python
+worksheet2 = workbook.add_worksheet("Olahan Lump")
+```
+
+`report/report_production_order_xlsx.py` (baris 479):
+
+```python
+if mo.qty_lembar and lembar_compo:
+```
+
+### Uji
+- Download laporan, buka tanpa Enable Editing: DRC, TOTAL, Lembar Compo, Selisih tampil dengan angka benar; setelah Enable Editing angka sama.
+- WIP dengan satu MO Compo Done dan satu masih proses: Selisih kosong; setelah semua Done: Selisih terisi.

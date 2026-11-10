@@ -1,5 +1,63 @@
 from odoo import api, models, fields, _
 from xlsxwriter.utility import xl_rowcol_to_cell, xl_col_to_name
+# [FIX 10/11/2026 - Alfi (KSI)] Rumus Excel ditulis bersama hasil hitungannya. xlsxwriter hanya menulis rumus
+# (nilai tersimpan 0), sehingga di Protected View (file hasil download) DRC, TOTAL, dan Selisih
+# tampil 0 sampai user klik Enable Editing. Pembungkus ini mencatat angka yang ditulis ke sheet
+# lalu menghitung hasil setiap rumus (SUM, AVERAGE, + - * /) dari angka tersebut; rumus tetap ada.
+import re
+from xlsxwriter.utility import xl_cell_to_rowcol
+
+
+class _SheetDenganNilai(object):
+    _REF = re.compile(r'(SUM|AVERAGE)\(([A-Z]+[0-9]+):([A-Z]+[0-9]+)\)|([A-Z]+[0-9]+)')
+    _ANGKA = re.compile(r'[0-9eE.+\-*/() ]*')
+
+    def __init__(self, sheet):
+        self._sheet = sheet
+        self._nilai = {}
+
+    def __getattr__(self, name):
+        return getattr(self._sheet, name)
+
+    def write(self, row, col, value=None, *args):
+        angka = isinstance(value, (int, float)) and not isinstance(value, bool)
+        self._nilai[(row, col)] = value if angka else None
+        return self._sheet.write(row, col, value, *args)
+
+    def write_formula(self, row, col, formula, cell_format=None, value=None):
+        if value is None:
+            value = self._hitung(formula)
+        self._nilai[(row, col)] = value if isinstance(value, (int, float)) else None
+        return self._sheet.write_formula(row, col, formula, cell_format, value)
+
+    def _hitung(self, formula):
+        kosong = []
+
+        def ganti(m):
+            if m.group(1):
+                r1, c1 = xl_cell_to_rowcol(m.group(2))
+                r2, c2 = xl_cell_to_rowcol(m.group(3))
+                isi = [self._nilai.get((r, c)) for r in range(r1, r2 + 1) for c in range(c1, c2 + 1)]
+                isi = [v for v in isi if v is not None]
+                if m.group(1) == 'SUM':
+                    return repr(float(sum(isi)))
+                if not isi:
+                    kosong.append(True)
+                    return '0'
+                return repr(float(sum(isi)) / len(isi))
+            r, c = xl_cell_to_rowcol(m.group(4))
+            return repr(float(self._nilai.get((r, c)) or 0))
+
+        expr = self._REF.sub(ganti, formula.lstrip('='))
+        if kosong:
+            return '#DIV/0!'
+        if not self._ANGKA.fullmatch(expr):
+            return 0
+        try:
+            return eval(expr, {'__builtins__': {}}, {})
+        except ZeroDivisionError:
+            return '#DIV/0!'
+# [FIX 10/11/2026] END
 
 
 class ReportProductionOrderXlsx(models.AbstractModel):
@@ -198,7 +256,9 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             mrp_datas = finish_mos.mapped('source_mo_id').filtered(lambda x: x)
 
         # WORKSHEET 1: Olahan Lateks (Lateks/Lump → Sheet → RSS I/II/III/Cutting)
-        worksheet = workbook.add_worksheet("Olahan Lateks")
+        # [FIX 10/11/2026 - Alfi (KSI)] sheet dibungkus supaya rumus tersimpan bersama hasilnya
+        worksheet = _SheetDenganNilai(workbook.add_worksheet("Olahan Lateks"))
+        # [FIX 10/11/2026] END
         
         next_row = 1
         col = 1
@@ -364,7 +424,9 @@ class ReportProductionOrderXlsx(models.AbstractModel):
 
         ########################################################### 
         # WORKSHEET 2: Olahan Lump (Lump → Compo)
-        worksheet2 = workbook.add_worksheet("Olahan Lump")
+        # [FIX 10/11/2026 - Alfi (KSI)] sheet dibungkus supaya rumus tersimpan bersama hasilnya
+        worksheet2 = _SheetDenganNilai(workbook.add_worksheet("Olahan Lump"))
+        # [FIX 10/11/2026] END
         
         next_row = 1
         col = 1
@@ -473,10 +535,12 @@ class ReportProductionOrderXlsx(models.AbstractModel):
             worksheet2.write(next_row, col, compo_qty, wbf['content_float'])
             col += 1
             # [FIX 10/11/2026 - Alfi (KSI)] Lembar Compo (MO Compo selesai) dan Selisih; kosong bila salah satu belum diisi
+            # atau masih ada MO Compo dari WIP ini yang belum selesai (supaya lembar yang masih diproses tidak terbaca hilang)
             lembar_compo = sum(compo_mo.mapped('qty_lembar')) if compo_mo else 0
             worksheet2.write(next_row, col, lembar_compo or '', wbf['content_center'])
             col += 1
-            if mo.qty_lembar and lembar_compo:
+            semua_selesai = all(m.state in ('done', 'cancel') for m in mo.finish_mo_ids)
+            if mo.qty_lembar and lembar_compo and semua_selesai:
                 worksheet2.write_formula(next_row, col,
                     f"={xl_rowcol_to_cell(next_row, col_lembar)}-{xl_rowcol_to_cell(next_row, col_lembar_compo)}",
                     wbf['content_center'])
