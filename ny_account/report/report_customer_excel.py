@@ -181,6 +181,10 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
 
         return workbook
 
+    # [FIX 13/11/2026 - Alfi (KSI)] Credit note (Customer Credit Note) ikut ditampilkan sebagai baris minus, supaya invoice yang
+    # dibatalkan atau dikurangi lewat credit note tidak lagi terhitung sebagai penjualan penuh.
+    # Dulu hanya Customer Invoice yang dibaca. Kolom Referensi: invoice yang dibalik (untuk credit note),
+    # atau credit note yang membaliknya (untuk invoice). Kode asli: ny_account/CHANGELOG.md
     def get_query(self):
         query = """
             WITH down_payments AS (
@@ -195,6 +199,16 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
                 AND ai.state = 'posted'
                 AND CAST(pt.name AS TEXT) ILIKE '%%down payment%%'
                 GROUP BY ai.id
+            ),
+            refunds AS (
+                SELECT
+                    rinv.reversed_entry_id AS invoice_id,
+                    STRING_AGG(rinv.name, ', ' ORDER BY rinv.name) AS refund_names
+                FROM account_move rinv
+                WHERE rinv.move_type = 'out_refund'
+                AND rinv.state = 'posted'
+                AND rinv.reversed_entry_id IS NOT NULL
+                GROUP BY rinv.reversed_entry_id
             )
             SELECT 
                 ai.invoice_date, 
@@ -206,32 +220,40 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
                 ail.plantation_activity_id,
                 ail.product_id, 
                 ail.name AS description, 
-                ail.quantity, 
+                ail.quantity * (CASE WHEN ai.move_type = 'out_refund' THEN -1 ELSE 1 END) AS quantity,
                 ail.price_unit, 
-                ail.price_subtotal,
+                ail.price_subtotal * (CASE WHEN ai.move_type = 'out_refund' THEN -1 ELSE 1 END) AS price_subtotal,
                 ai.invoice_payment_term_id AS term_of_payment,
                 CASE 
                     WHEN CAST(pt.name AS TEXT) ILIKE '%%down payment%%' THEN 0 
                     ELSE COALESCE(dp.total_down_payment, 0) 
                 END AS down_payment,
-                (ail.price_subtotal - 
+                (ail.price_subtotal * (CASE WHEN ai.move_type = 'out_refund' THEN -1 ELSE 1 END) - 
                     CASE 
                         WHEN CAST(pt.name AS TEXT) ILIKE '%%down payment%%' THEN 0 
                         ELSE COALESCE(dp.total_down_payment, 0) 
                     END
-                ) AS outstanding_amount
+                ) AS outstanding_amount,
+                ai.move_type,
+                CASE
+                    WHEN ai.move_type = 'out_refund' THEN COALESCE(orig.name, ai.ref)
+                    ELSE rf.refund_names
+                END AS reference
             FROM account_move ai
             LEFT JOIN account_move_line ail ON ai.id = ail.move_id
             LEFT JOIN product_product pp ON ail.product_id = pp.id
             LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
             LEFT JOIN down_payments dp ON ai.id = dp.invoice_id
-            WHERE ai.move_type = 'out_invoice'
+            LEFT JOIN account_move orig ON ai.reversed_entry_id = orig.id
+            LEFT JOIN refunds rf ON ai.id = rf.invoice_id
+            WHERE ai.move_type IN ('out_invoice', 'out_refund')
             AND ai.state = 'posted'
             AND ai.invoice_date BETWEEN %s AND %s
             AND ail.display_type IN ('product')
             ORDER BY ai.invoice_date, ai.name;
         """
         return query
+    # [FIX 13/11/2026] END
 
     def generate_xlsx_report(self, workbook, datas, obj):
         workbook = self.add_workbook_format(workbook)
@@ -267,11 +289,17 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
         sheet.set_column('M:M', 15)
         sheet.set_column('N:N', 9)
         sheet.set_column('O:O', 15)
+        # [FIX 13/11/2026 - Alfi (KSI)] Kolom tambahan Jenis Dokumen dan Referensi
+        sheet.set_column('P:P', 13)
+        sheet.set_column('Q:Q', 24)
+        # [FIX 13/11/2026] END
 
 
         # Header Kolom
+        # [FIX 13/11/2026 - Alfi (KSI)] Tambah kolom Jenis Dokumen dan Referensi di paling kanan (kolom lama tidak bergeser)
         headers = ['Tanggal Invoice', 'No. Invoice', 'Konsumen', 'Tipe Lokasi', 'ORG', 'Lokasi', 'Aktivitas','Product', 'Deskripsi', 'Quantity',
-                'Harga', 'Total Harga', 'Term of Payment', 'Down Payment', 'Net AR']
+                'Harga', 'Total Harga', 'Term of Payment', 'Down Payment', 'Net AR', 'Jenis Dokumen', 'Referensi']
+        # [FIX 13/11/2026] END
         for col, header in enumerate(headers):
             sheet.write(row, col, header, wbf['header'])
         row += 1
@@ -282,7 +310,9 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
         results = self.env.cr.fetchall()
 
         # Tulis data ke sheet
-        for invoice_date, invoice_name, partner_id, plantation_location_type_id, plantation_varieties_id, plantation_location_id, plantation_activity_id, product_id, description, quantity, price_unit, price_subtotal, term_of_payment, down_payment, outstanding_amount in results:
+        # [FIX 13/11/2026 - Alfi (KSI)] Ditambah move_type dan reference dari query
+        for invoice_date, invoice_name, partner_id, plantation_location_type_id, plantation_varieties_id, plantation_location_id, plantation_activity_id, product_id, description, quantity, price_unit, price_subtotal, term_of_payment, down_payment, outstanding_amount, move_type, reference in results:
+        # [FIX 13/11/2026] END
 
             
             sheet.write(row, 0, invoice_date.strftime('%d-%m-%Y') if invoice_date else '', wbf['content'])
@@ -307,4 +337,8 @@ class ReportCustomerInvoiceXlsx(models.AbstractModel):
             sheet.write(row, 12, payment_term_name, wbf['content'])
             sheet.write(row, 13, down_payment, wbf['total_float'])
             sheet.write(row, 14, outstanding_amount, wbf['total_float'])
+            # [FIX 13/11/2026 - Alfi (KSI)] Credit note ditandai, dan dihubungkan dengan invoice yang dibaliknya
+            sheet.write(row, 15, 'Credit Note' if move_type == 'out_refund' else 'Invoice', wbf['content'])
+            sheet.write(row, 16, reference or '-', wbf['content'])
+            # [FIX 13/11/2026] END
             row += 1
