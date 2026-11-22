@@ -33,7 +33,8 @@
                         ]}"/>
             </xpath>
             <!-- [FIX 06/11/2026 - Alfi (KSI)] Jumlah Lembar tampil di MO WIP Compo -->
-            <!-- [FIX 10/11/2026 - Alfi (KSI)] juga di MO Compo (terisi dari WIP asal) -->
+            <!-- [FIX 10/11/2026 - Alfi (KSI)] juga di MO Compo -->
+            <!-- [FIX 23/11/2026 - Alfi (KSI)] di MO Compo diisi manual dari hasil hitung, tidak terisi dari WIP asal -->
             <xpath expr="//label[@for='product_qty']/following-sibling::div[1]" position="after">
                 <field name="qty_lembar" attrs="{'invisible': [('product_name', 'not in', ['WIP Compo', 'Compo'])]}"/>
             </xpath>

@@ -153,3 +153,74 @@ if mo.qty_lembar and lembar_compo:
 ### Uji
 - Download laporan, buka tanpa Enable Editing: DRC, TOTAL, Lembar Compo, Selisih tampil dengan angka benar; setelah Enable Editing angka sama.
 - WIP dengan satu MO Compo Done dan satu masih proses: Selisih kosong; setelah semua Done: Selisih terisi.
+
+---
+
+## [FIX 23/11/2026 - Alfi (KSI)] Jumlah Lembar MO Compo diisi manual dari hasil hitung
+
+**File:** `models/mrp_production.py`, `views/mrp_production_view.xml`
+**Perlu upgrade modul:** ya, `-u ny_mrp` (kode Python dan komentar view; tidak ada perubahan database).
+
+### Masalah
+Jumlah Lembar MO Compo terisi otomatis dari sisa lembar MO WIP Compo asal. Bila operator langsung menerima angka itu tanpa menghitung, Lembar Compo selalu sama dengan Lembar WIP dan Selisih Lembar di Laporan Produksi selalu 0, sehingga lembar yang hilang atau rusak saat pengeringan tidak pernah terlihat.
+
+### Penyebab
+Isian otomatis saat Asal MO dipilih (onchange) dan saat MO Compo dibuat dengan Asal MO (create).
+
+### Perubahan
+- Isian otomatis Jumlah Lembar MO Compo dihapus (onchange `source_mo_id`, isian di `create`, dan fungsi `_get_sisa_lembar_asal`). `create` kembali seperti kode asli.
+- Jumlah Lembar MO Compo kosong sampai diisi operator dari hasil hitung; Mark as Done tetap ditolak bila Jumlah Lembar kosong/0.
+- Laporan Produksi tidak berubah: Lembar Compo dan Selisih Lembar tetap dihitung dari angka yang diisi.
+
+### Kode asli (sebelum diubah)
+
+`models/mrp_production.py` (baris 17–18):
+
+```python
+# [FIX 10/11/2026 - Alfi (KSI)] juga untuk MO Compo (barang jadi): terisi dari lembar MO WIP Compo asal
+# dan bisa diubah, supaya jumlah lembar masuk dan keluar pengeringan bisa dibandingkan.
+```
+
+`models/mrp_production.py` (baris 71–76):
+
+```python
+# [FIX 10/11/2026 - Alfi (KSI)] MO Compo yang dibuat dengan Asal MO langsung terisi Jumlah Lembar dari WIP asal
+res = super(MrpProduction, self).create(vals)
+if res.product_id.name == 'Compo' and res.source_mo_id and not res.qty_lembar:
+    res.qty_lembar = res._get_sisa_lembar_asal()
+return res
+# [FIX 10/11/2026] END
+```
+
+`models/mrp_production.py` (baris 105–120):
+
+```python
+
+# [FIX 10/11/2026 - Alfi (KSI)] Jumlah Lembar MO Compo diisi dari MO WIP Compo asal. Bila satu WIP dipecah ke
+# beberapa MO Compo, yang diisi adalah sisa lembar yang belum dipakai MO Compo lain.
+def _get_sisa_lembar_asal(self):
+    self.ensure_one()
+    src = self.source_mo_id
+    if not src or not src.qty_lembar:
+        return 0
+    lain = src.finish_mo_ids.filtered(lambda m: m.id != self._origin.id and m.state != 'cancel')
+    return max(src.qty_lembar - sum(lain.mapped('qty_lembar')), 0)
+
+@api.onchange('source_mo_id')
+def _onchange_source_mo_qty_lembar(self):
+    if self.product_id.name == 'Compo' and self.state in ('draft', 'confirmed', 'progress', 'to_close'):
+        self.qty_lembar = self._get_sisa_lembar_asal()
+# [FIX 10/11/2026] END
+```
+
+`views/mrp_production_view.xml` (baris 36):
+
+```xml
+<!-- [FIX 10/11/2026 - Alfi (KSI)] juga di MO Compo (terisi dari WIP asal) -->
+```
+
+### Uji
+- MO Compo baru dengan Asal MO = MO WIP Compo berlembar: Jumlah Lembar kosong (0), baik lewat form maupun saat dibuat dengan Asal MO.
+- Mark as Done dengan Jumlah Lembar 0: ditolak dengan pesan.
+- Jumlah Lembar diisi lebih kecil dari lembar WIP, lalu Done: Laporan Produksi menampilkan Selisih Lembar sesuai.
+- MO WIP Compo tidak berubah (tetap wajib diisi).
