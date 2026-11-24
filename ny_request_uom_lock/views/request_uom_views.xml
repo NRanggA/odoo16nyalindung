@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo><record id="pr_form" model="ir.ui.view">
+    <field name="name">MOM PR scoped UOM</field>
+    <field name="model">purchase.request</field>
+    <field name="inherit_id" ref="purchase_request.view_purchase_request_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='line_ids']/tree" position="inside">
+        <field name="mom_enforce_uom" invisible="1"/>
+      </xpath>
+      <xpath expr="//field[@name='line_ids']/tree/field[@name='product_uom_id'][1]" position="attributes">
+        <attribute name="attrs">{'readonly':[('mom_enforce_uom','=',True)]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='line_ids']/tree/field[@name='product_uom_id'][2]" position="attributes">
+        <attribute name="attrs">{'readonly':[('mom_enforce_uom','=',True)]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+      <xpath expr="//sheet" position="inside">
+        <field name="mom_enforce_uom" invisible="1"/>
+      </xpath>
+    </field>
+  </record>
+  <record id="mr_form" model="ir.ui.view">
+    <field name="name">MOM MR scoped UOM</field>
+    <field name="model">material.request</field>
+    <field name="inherit_id" ref="c10i_material_request.material_request_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='line_ids']/tree" position="inside">
+        <field name="mom_enforce_uom" invisible="1"/>
+      </xpath>
+      <xpath expr="//field[@name='line_ids']/tree/field[@name='uom_id']" position="attributes">
+        <attribute name="attrs">{'readonly':['|',('mom_enforce_uom','=',True),('parent.state','!=','draft')]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='line_ids']/form" position="inside">
+        <field name="mom_enforce_uom" invisible="1"/>
+      </xpath>
+      <xpath expr="//field[@name='line_ids']/form//field[@name='uom_id']" position="attributes">
+        <attribute name="attrs">{'readonly':['|',('mom_enforce_uom','=',True),('parent.state','!=','draft')]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+      <xpath expr="//sheet" position="inside">
+        <field name="mom_enforce_uom" invisible="1"/>
+      </xpath>
+    </field>
+  </record>
+  <record id="purchase_pr_uom_form" model="ir.ui.view">
+    <field name="name">MOM Purchase PR UOM lock</field>
+    <field name="model">purchase.order</field>
+    <field name="inherit_id" ref="purchase.purchase_order_form"/>
+    <field name="priority">90</field>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='order_line']/tree" position="inside">
+        <field name="mom_pr_uom_locked" invisible="1"/>
+      </xpath>
+      <xpath expr="//field[@name='order_line']/tree//field[@name='product_uom' and @groups='uom.group_uom']" position="attributes">
+        <attribute name="attrs">{'readonly':['|',('mom_pr_uom_locked','=',True),('state','in',('purchase','done','cancel'))],'required':[('display_type','=',False)]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='order_line']/form" position="inside">
+        <field name="mom_pr_uom_locked" invisible="1"/>
+      </xpath>
+      <xpath expr="//field[@name='order_line']/form//field[@name='product_uom' and @groups='uom.group_uom']" position="attributes">
+        <attribute name="attrs">{'readonly':[('mom_pr_uom_locked','=',True)],'required':[('display_type','=',False)]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='order_line']/kanban" position="inside">
+        <field name="mom_pr_uom_locked" invisible="1"/>
+      </xpath>
+      <xpath expr="//field[@name='order_line']/kanban//field[@name='product_uom' and @groups='uom.group_uom']" position="attributes">
+        <attribute name="attrs">{'readonly':[('mom_pr_uom_locked','=',True)],'required':[('display_type','=',False)]}</attribute>
+        <attribute name="force_save">1</attribute>
+      </xpath>
+    </field>
+  </record>
+<record id="pr_line_uom_form" model="ir.ui.view"><field name="name">MOM PR line UOM lock</field><field name="model">purchase.request.line</field><field name="inherit_id" ref="purchase_request.purchase_request_line_form"/><field name="arch" type="xml"><xpath expr="//field[@name='product_uom_id']" position="before"><field name="mom_enforce_uom" invisible="1"/></xpath><xpath expr="//field[@name='product_uom_id']" position="attributes"><attribute name="attrs">{'readonly':['|',('mom_enforce_uom','=',True),('is_editable','=',False)]}</attribute><attribute name="force_save">1</attribute></xpath></field></record><record id="create_rfq_wizard_uom_lock" model="ir.ui.view">
+  <field name="name">Create RFQ wizard UoM lock</field>
+  <field name="model">purchase.request.line.make.purchase.order</field>
+  <field name="inherit_id" ref="purchase_request.view_purchase_request_line_make_purchase_order"/>
+  <field name="arch" type="xml">
+    <xpath expr="//field[@name='item_ids']/tree" position="inside">
+      <field name="mom_source_uom_locked" invisible="1"/>
+    </xpath>
+    <xpath expr="//field[@name='item_ids']/tree/field[@name='product_uom_id'][1]" position="attributes">
+      <attribute name="attrs">{'readonly': [('mom_source_uom_locked', '=', True)]}</attribute>
+      <attribute name="force_save">1</attribute>
+    </xpath>
+    <xpath expr="//field[@name='item_ids']/tree/field[@name='product_uom_id'][2]" position="attributes">
+      <attribute name="attrs">{'readonly': [('mom_source_uom_locked', '=', True)]}</attribute>
+      <attribute name="force_save">1</attribute>
+    </xpath>
+  </field>
+</record></odoo>

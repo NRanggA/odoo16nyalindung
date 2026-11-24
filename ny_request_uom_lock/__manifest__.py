@@ -1,0 +1,1 @@
+{'name': 'Nyalindung Request UoM Lock', 'summary': 'Kunci satuan PR/MR dan RFQ/PO yang bersumber dari PR', 'version': '16.0.1.2.0', 'license': 'LGPL-3', 'depends': ['purchase_request', 'c10i_material_request'], 'data': ['views/request_uom_views.xml'], 'pre_init_hook': 'pre_init_hook', 'installable': True, 'application': False}
