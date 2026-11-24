@@ -69,7 +69,7 @@ class AccountMove(models.Model):
     def action_post(self):
         """Override action_post untuk menambahkan logika skip validasi e-Faktur."""
         param_obj = self.env['ir.config_parameter'].sudo()
-        self.env.cr.commit()
+        # [FIX 24/11/2026 - Task 20] Let Odoo commit or roll back the entire request.
         skip_efaktur_validation = param_obj.get_param('custom.skip_efaktur_validation', default='False') == 'True'
 
         for rec in self:

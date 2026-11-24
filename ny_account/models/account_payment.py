@@ -106,29 +106,43 @@ class AccountPayment(models.Model):
             if rec.amount_charge and rec.charge_account_id:
                 return self.env.ref('ny_account.action_report_payment_amount_charge').report_action(self)
 
-    def action_post(self):
-        for rec in self:
-            # if rec.env.context.get('from_wizard'):
-            #     continue
-            if not rec.env.context.get('from_wizard'):
-                if rec.is_internal_transfer:
-                    confirmation_message = f"Apakah anda yakin ingin memproses dari rekening {rec.journal_id.name} ke {rec.destination_journal_id.name} ?"
-                else:
-                    confirmation_message = "Apakah anda yakin ingin memproses dari rekening: %s ?" % rec.journal_id.name
-                return {
-                    'type'      : 'ir.actions.act_window',
-                    'res_model' : 'wizard.action.confirm.payment',
-                    'view_mode' : 'form',
-                    'view_id'   : self.env.ref('ny_account.view_wizard_action_confirm_payment').id,
-                    'target'    : 'new',
-                    'context': {
-                        'active_id'             : self.id, 
-                        'active_model'          : self._name,
-                        'confirmation_message'  : confirmation_message  
-                    },
-                }
+    # [FIX 24/11/2026 - Task 20] Confirm Payment supports multiple Draft records.
+    def _check_payment_confirmation(self):
+        if not self or self.exists() != self:
+            raise UserError(_('Semua pembayaran harus masih tersedia dan Draft.'))
+        self.check_access_rights('write')
+        self.check_access_rule('write')
+        if any(payment.state != 'draft' for payment in self):
+            raise UserError(_('Pilih hanya pembayaran Draft.'))
+        for payment in self:
+            if payment.paired_internal_transfer_payment_id in self:
+                raise UserError(_('Pilih dokumen asal transfer saja, bukan kedua pasangannya.'))
 
-            res = super().action_post()
+    def action_post(self):
+        if not self:
+            return True
+        self._check_payment_confirmation()
+        if not self.env.context.get('from_wizard'):
+            if len(self) > 1:
+                confirmation_message = _('Konfirmasi %s pembayaran dalam satu transaksi?') % len(self)
+            elif self.is_internal_transfer:
+                confirmation_message = f"Apakah anda yakin ingin memproses dari rekening {self.journal_id.name} ke {self.destination_journal_id.name} ?"
+            else:
+                confirmation_message = "Apakah anda yakin ingin memproses dari rekening: %s ?" % self.journal_id.name
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'wizard.action.confirm.payment',
+                'view_mode': 'form',
+                'view_id': self.env.ref('ny_account.view_wizard_action_confirm_payment').id,
+                'target': 'new',
+                'context': dict(self.env.context, active_id=self[:1].id,
+                                active_ids=self.ids, active_model=self._name,
+                                confirmation_message=confirmation_message),
+            }
+
+        for rec in self:
+            # c10i_payment expects a singleton; post and number each payment once.
+            res = super(AccountPayment, rec).action_post()
 
             if rec.journal_id.type in ['bank', 'cash'] and rec.payment_type in ['inbound', 'outbound']:
                 sequence = None
@@ -212,7 +226,8 @@ class AccountPayment(models.Model):
 
                             # Tambahkan pengecekan konteks ketika dari wizard, dan validasi sekali lagi nilai amount tidak boleh 0
 
-            return res
+        return res
+    # [FIX 24/11/2026] END
 
 
     def button_open_journal_entry(self):

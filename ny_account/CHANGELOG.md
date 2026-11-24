@@ -6,6 +6,81 @@ Setiap perubahan ditandai di kode dengan komentar `# [FIX <tanggal> - <nama>] ..
 
 ---
 
+## [FIX 24/11/2026 - Task 20] Confirm Payment beberapa pembayaran dalam satu transaksi
+
+**File:** `models/account_payment.py`, `wizard/action_confirm_payment.py`, `models/account_move.py`.
+**Perlu upgrade modul:** tidak (perubahan Python, restart Odoo setelah deployment).
+
+### Masalah dan penyebab
+Confirm Payment untuk beberapa pembayaran memakai `self.id`/`active_id`, sehingga terjadi Expected singleton atau hanya satu pembayaran yang diproses. Jalur posting juga mengembalikan hasil dari dalam loop dan memanggil parent pada seluruh recordset. Commit manual di `account.move.action_post` dapat memotong transaksi sebelum seluruh proses selesai.
+
+### Perubahan
+- Wizard menerima `active_ids`, tetap mendukung `active_id` tunggal, dan mempertahankan context pengguna.
+- Validasi dokumen tersedia, status Draft, hak akses tulis, serta larangan memilih kedua pasangan Internal Transfer; diperiksa kembali saat konfirmasi.
+- Parent posting dipanggil untuk satu pembayaran per iterasi. Penomoran, rekonsiliasi, pasangan transfer, dan biaya administrasi tetap memakai jalur yang sudah ada.
+- Hapus commit manual agar kegagalan request membatalkan seluruh batch. Sequence PostgreSQL dapat tetap memiliki nomor terlewat setelah rollback.
+- Hanya memindahkan task 20 dari `ny_mom_fixes` port 8071; tidak menambahkan dependency addon tersebut atau mengubah task lain.
+
+### Hasil validasi 24/11/2026
+
+11 skenario lulus pada database lokal pengujian `odoo_mom_test`: satu pembayaran; tiga pembayaran; rollback kegagalan pembayaran kedua; status berubah sesudah wizard dibuka; pilihan hilang/kosong/model salah; kompatibilitas `active_id` dan penolakan posting ulang; ID duplikat; penolakan hak akses tulis; penolakan kedua pasangan transfer; jurnal biaya administrasi; serta tidak ada commit terlalu awal.
+
+Metode dari file yang disiapkan dimuat ke proses Odoo shell terpisah; override task 20 dari `ny_mom_fixes` dilewati agar tidak menutupi hasil. Semua skenario diakhiri rollback, commit manual diblokir, dan penomoran menggunakan sequence sementara. Ini pengujian backend; belum merupakan deployment atau uji antarmuka produksi.
+
+### Kode asli yang diganti
+
+Awal `models/account_payment.py:action_post`:
+
+```python
+    def action_post(self):
+        for rec in self:
+            # if rec.env.context.get('from_wizard'):
+            #     continue
+            if not rec.env.context.get('from_wizard'):
+                if rec.is_internal_transfer:
+                    confirmation_message = f"Apakah anda yakin ingin memproses dari rekening {rec.journal_id.name} ke {rec.destination_journal_id.name} ?"
+                else:
+                    confirmation_message = "Apakah anda yakin ingin memproses dari rekening: %s ?" % rec.journal_id.name
+                return {
+                    'type'      : 'ir.actions.act_window',
+                    'res_model' : 'wizard.action.confirm.payment',
+                    'view_mode' : 'form',
+                    'view_id'   : self.env.ref('ny_account.view_wizard_action_confirm_payment').id,
+                    'target'    : 'new',
+                    'context': {
+                        'active_id'             : self.id,
+                        'active_model'          : self._name,
+                        'confirmation_message'  : confirmation_message
+                    },
+                }
+
+            res = super().action_post()
+```
+
+`return res` sebelumnya berada di dalam loop pembayaran; sekarang setelah loop.
+
+`wizard/action_confirm_payment.py:action_confirm`:
+
+```python
+    def action_confirm(self):
+        active_model = self.env.context.get('active_model')
+        active_id = self.env.context.get('active_id')
+        if active_model == 'account.payment':
+            payment_record = self.env[active_model].browse(active_id)
+            # if payment_record.employee_expense_id:
+            payment_record.with_context(from_wizard=True).action_post()
+
+        return {'type': 'ir.actions.act_window_close'}
+```
+
+`models/account_move.py:action_post` menghapus baris:
+
+```python
+        self.env.cr.commit()
+```
+
+---
+
 ## [FIX 13/11/2026 - Alfi (KSI)] Report Customer Invoice ikut menampilkan credit note sebagai baris minus
 
 **File:** `report/report_customer_excel.py`

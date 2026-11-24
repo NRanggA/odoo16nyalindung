@@ -1,4 +1,5 @@
 from odoo import models, api, fields, _
+from odoo.exceptions import UserError
 
 class WizardActionConfirmPayment(models.TransientModel):
     _name = 'wizard.action.confirm.payment'
@@ -15,12 +16,17 @@ class WizardActionConfirmPayment(models.TransientModel):
         return res
 
 
+    # [FIX 24/11/2026 - Task 20] Recheck all selected payments at confirmation.
     def action_confirm(self):
-        active_model = self.env.context.get('active_model')
-        active_id = self.env.context.get('active_id')
-        if active_model == 'account.payment':
-            payment_record = self.env[active_model].browse(active_id)
-            # if payment_record.employee_expense_id:
-            payment_record.with_context(from_wizard=True).action_post()
-            
+        self.ensure_one()
+        if self.env.context.get('active_model') != 'account.payment':
+            raise UserError(_('Model pembayaran tidak sesuai.'))
+        ids = self.env.context.get('active_ids') or [self.env.context.get('active_id')]
+        ids = list(dict.fromkeys(record_id for record_id in ids if record_id))
+        payments = self.env['account.payment'].browse(ids).exists()
+        if not payments or len(payments) != len(ids):
+            raise UserError(_('Semua pembayaran harus masih tersedia dan Draft.'))
+        payments._check_payment_confirmation()
+        payments.with_context(from_wizard=True).action_post()
         return {'type': 'ir.actions.act_window_close'}
+    # [FIX 24/11/2026] END
