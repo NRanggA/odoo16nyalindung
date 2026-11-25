@@ -50,6 +50,7 @@
         'report/report_amount_charge_template.xml',
 
         'report/action_report_payment.xml',
+        'report/report_internal_transfer.xml',
 
         # Direct Payment
         'views/account_skb_views.xml',

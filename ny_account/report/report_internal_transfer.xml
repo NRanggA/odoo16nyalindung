@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+ <template id="report_internal_transfer">
+ <t t-call="web.html_container">
+  <t t-foreach="docs" t-as="o">
+   <t t-set="detail" t-value="transfer_details[o.id]"/>
+   <div class="article" t-att-data-oe-model="o._name" t-att-data-oe-id="o.id">
+    <style>
+   .ny-it-page { font-family: Arial, sans-serif; font-size: 10px; color: #000; padding: 4px 8px; }
+   .ny-it-page table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+   .ny-it-page .it-frame { border: 1px solid #000; }
+   .ny-it-page .it-frame &gt; tbody &gt; tr &gt; td, .ny-it-page .it-frame &gt; tr &gt; td { border: 1px solid #000; padding: 5px; vertical-align: top; }
+   .ny-it-page .it-info td, .ny-it-page .it-info th { border: none; padding: 2px 1px; vertical-align: top; text-align: left; }
+   .ny-it-page .it-info th { width: 30%; font-weight: bold; }
+   .ny-it-page .it-title { font-size: 13px; font-weight: bold; margin: 0 0 3px; }
+   .ny-it-page .it-company { font-size: 10px; font-weight: bold; }
+   .ny-it-page .it-small { font-size: 8px; }
+   .ny-it-page .it-orange { background-color: #ffa500; font-weight: bold; }
+   .ny-it-page .it-lines th, .ny-it-page .it-lines td { border: 1px solid #000; padding: 4px; vertical-align: top; }
+   .ny-it-page .it-lines th { background-color: #ffa500; text-align: center; }
+   .ny-it-page .it-lines { margin-top: 8px; }
+   .ny-it-page .it-money { text-align: right; white-space: nowrap; }
+   .ny-it-page .it-total { margin-top: 5px; }
+   .ny-it-page .it-total th { width: 12%; }
+   .ny-it-page .it-sign { margin-top: 10px; page-break-inside: avoid; }
+   .ny-it-page .it-sign th, .ny-it-page .it-sign td { border: 1px solid #000; text-align: center; padding: 3px; }
+   .ny-it-page .it-sign .it-space td { height: 40px; }
+   .ny-it-page .it-note { font-size: 8px; margin: 6px 0 0; }
+  </style>
+  <div class="page ny-it-page">
+     <table class="it-frame">
+      <tr>
+       <td style="width: 61%;">
+        <table class="it-info"><tr>
+         <td style="width: 39%; vertical-align: middle;"><img t-if="transfer_logo" t-att-src="transfer_logo" style="width: 170px; max-width: 100%; height: auto;" alt="PT Nyalindung"/></td>
+         <td><div class="it-title">INTERNAL TRANSFER</div><div class="it-company" t-esc="o.company_id.name"/><div class="it-small">Jl. Raya Purwakarta No. 625 Km.9<br/>Padalarang / Kab. Bandung Barat</div></td>
+        </tr></table>
+       </td>
+       <td style="width: 39%;">
+        <table class="it-info">
+         <tr><th>Nomor</th><td>: <span t-esc="o.name or '-'"/></td></tr>
+         <tr><th>Tanggal</th><td>: <span t-esc="o.date.strftime('%d/%m/%Y') if o.date else '-'"/></td></tr>
+         <tr><th>Status</th><td>: <span t-esc="detail['status']"/></td></tr>
+         <tr><th>Mata Uang</th><td>: <span t-esc="o.currency_id.name"/></td></tr>
+        </table>
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <table class="it-info">
+         <tr><th>Jurnal Sumber</th><td>: <span t-esc="o.journal_id.name"/></td></tr>
+         <tr><th>Rekening Sumber</th><td>: <span t-esc="o.journal_id.bank_account_id.acc_number or '-'"/></td></tr>
+         <tr><th>Jurnal Tujuan</th><td>: <span t-esc="o.destination_journal_id.name or '-'"/></td></tr>
+         <tr><th>Rekening Tujuan</th><td>: <span t-esc="o.destination_journal_id.bank_account_id.acc_number or '-'"/></td></tr>
+        </table>
+       </td>
+       <td>
+        <table class="it-lines" style="margin-top: 0;">
+         <tr><th colspan="2">Rincian COA Transfer</th></tr>
+         <tr><td style="width: 30%;">Kode Akun</td><td t-esc="o.company_id.transfer_account_id.code or '-'"/></tr>
+         <tr><td>Nama Akun</td><td t-esc="o.company_id.transfer_account_id.name or '-'"/></tr>
+        </table>
+        <table class="it-info"><tr><th>Dept. / Divisi</th><td>: <span t-esc="o.department_id.name or '-'"/></td></tr></table>
+       </td>
+      </tr>
+     </table>
+     <table class="it-lines">
+      <thead><tr><th style="width: 24%;">Sumber Dana</th><th style="width: 18%;">Tujuan Dana</th><th style="width: 12%;">Tanggal</th><th style="width: 20%;">Jumlah</th><th style="width: 26%;">Keterangan</th></tr></thead>
+      <tbody><tr><td t-esc="o.journal_id.name"/><td t-esc="o.destination_journal_id.name or '-'"/><td t-esc="o.date.strftime('%d/%m/%Y') if o.date else '-'"/><td class="it-money" t-esc="detail['amount']"/><td style="word-wrap: break-word;" t-esc="o.ref or '-'"/></tr></tbody>
+     </table>
+     <table class="it-info it-total">
+      <tr><th>Jumlah</th><td>: <strong t-esc="detail['amount']"/></td></tr>
+      <tr><th>Terbilang</th><td style="font-style: italic;">: # <span t-esc="detail['words']"/> #</td></tr>
+     </table>
+     <table class="it-sign">
+      <tr class="it-orange"><th>Dibuat Oleh</th><th>Diperiksa Oleh</th><th>Disetujui Oleh</th><th>Penerima</th></tr>
+      <tr class="it-space"><td/><td/><td/><td/></tr>
+      <tr class="it-small"><td>Nama Jelas Dan Tanggal</td><td>Nama Jelas Dan Tanggal</td><td>Nama Jelas Dan Tanggal</td><td>Nama Jelas Dan Tanggal</td></tr>
+     </table>
+     </div>
+   </div>
+  </t>
+ </t>
+</template>
+
+    <record id="action_report_internal_transfer" model="ir.actions.report">
+        <field name="name">Internal Transfer</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ny_account.report_internal_transfer</field>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_payment_vendor_report"/>
+        <field name="print_report_name">'Internal Transfer - %s' % (object.name or 'Draft')</field>
+    </record>
+</odoo>
